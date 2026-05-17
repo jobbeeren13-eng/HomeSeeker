@@ -1,7 +1,9 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
 const DB_PATH = process.env.DATABASE_URL || '/tmp/homeseeker.db';
+if (!fs.existsSync('/tmp')) fs.mkdirSync('/tmp', { recursive: true });
 const db = new Database(DB_PATH);
 
 db.exec(`PRAGMA journal_mode = WAL`);
@@ -58,18 +60,13 @@ db.exec(`
   );
 `);
 
-// Migrate existing DBs that still have the old column name
 try {
   const cols = db.prepare(`PRAGMA table_info(users)`).all().map(r => r.name);
   if (cols.includes('document_readiness') && !cols.includes('application_readiness')) {
     db.exec(`ALTER TABLE users RENAME COLUMN document_readiness TO application_readiness`);
     console.log('[db] Migrated document_readiness → application_readiness');
   }
-} catch (e) {
-  // ALTER COLUMN not supported on very old SQLite — ignore
-}
-
-// ── Prepared statements ──────────────────────────────────
+} catch (e) {}
 
 const getUser = db.prepare('SELECT * FROM users WHERE chat_id = ?');
 const getUserByEmail = db.prepare('SELECT * FROM users WHERE email = ?');
@@ -102,18 +99,12 @@ const setUserPaid = db.prepare(`
   UPDATE users SET betaald = 1, stripe_customer_id = ?, stripe_subscription_id = ?, trial_start_date = datetime('now')
   WHERE email = ?
 `);
-const cancelUserByStripe = db.prepare(
-  'UPDATE users SET betaald = 0, actief = 0 WHERE stripe_customer_id = ?'
-);
-const cancelUserByChatId = db.prepare(
-  'UPDATE users SET betaald = 0, actief = 0 WHERE chat_id = ?'
-);
+const cancelUserByStripe = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE stripe_customer_id = ?');
+const cancelUserByChatId = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE chat_id = ?');
 const setUserChatId = db.prepare('UPDATE users SET chat_id = ? WHERE email = ?');
 
 const isListingSent = db.prepare('SELECT 1 FROM sent_listings WHERE url = ? AND chat_id = ?');
-const markListingSent = db.prepare(
-  'INSERT OR IGNORE INTO sent_listings (url, chat_id) VALUES (?, ?)'
-);
+const markListingSent = db.prepare('INSERT OR IGNORE INTO sent_listings (url, chat_id) VALUES (?, ?)');
 
 const getChat = db.prepare('SELECT * FROM telegram_chats WHERE chat_id = ?');
 const upsertChat = db.prepare(`
@@ -123,18 +114,7 @@ const upsertChat = db.prepare(`
 `);
 
 module.exports = {
-  db,
-  getUser,
-  getUserByEmail,
-  getAllActiveUsers,
-  upsertUser,
-  setUserActive,
-  setUserPaid,
-  cancelUserByStripe,
-  cancelUserByChatId,
-  setUserChatId,
-  isListingSent,
-  markListingSent,
-  getChat,
-  upsertChat,
+  db, getUser, getUserByEmail, getAllActiveUsers, upsertUser, setUserActive,
+  setUserPaid, cancelUserByStripe, cancelUserByChatId, setUserChatId,
+  isListingSent, markListingSent, getChat, upsertChat,
 };
