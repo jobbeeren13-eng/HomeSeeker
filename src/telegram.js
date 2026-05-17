@@ -1,14 +1,107 @@
 const TelegramBot = require('node-telegram-bot-api');
-const { getUser, upsertChat, setUserActive, cancelUserByChatId } = require('./database');
+const { getUser, getListingByUrl, upsertChat, setUserActive, cancelUserByChatId } = require('./database');
 const { generateLetter } = require('./letter');
+const { rowToListing } = require('./scraper');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
-let bot = null;
+const PRIVATE_MSG = `Sorry, this is a private service. 
 
-// AI letter sessions: chat_id -> { step, data, listingUrl }
-const aiSessions = new Map();
+To get access, visit:
+👉 https://homeseeker.app
+
+After subscribing, come back here and send /start.`;
+
+const SOURCE_BADGES = {
+  funda: '🔵 Funda',
+  pararius: '🟣 Pararius',
+  kamernet: '🟠 Kamernet',
+  huurwoningen: '🟢 Huurwoningen',
+  jaap: '🟡 Jaap',
+};
+
+const LETTER_QUESTIONS = [
+  "What's your current living situation and why are you moving?",
+  'Tell us about your work situation (employer, contract type, duration).',
+  'Anything else the landlord should know? (pets, partner, etc.) — or type *skip*',
+];
+
+let bot = null;
+const letterState = new Map();
+const listingCache = new Map();
+let listingCacheId = 0;
+
+function cacheListing(listing) {
+  const id = String(++listingCacheId);
+  listingCache.set(id, listing);
+  if (listingCache.size > 500) {
+    const oldest = listingCache.keys().next().value;
+    listingCache.delete(oldest);
+  }
+  return id;
+}
+
+function getCachedListing(id, fallbackUrl) {
+  return listingCache.get(id) || listingFromUrl(fallbackUrl);
+}
+
+function hasAccess(chatId) {
+  const user = getUser.get(String(chatId));
+  return !!(user && user.betaald === 1 && user.actief === 1);
+}
+
+async function denyAccess(chatId) {
+  await bot.sendMessage(chatId, PRIVATE_MSG);
+}
+
+function clearLetterState(chatId) {
+  letterState.delete(String(chatId));
+}
+
+function getPlatformBadge(source) {
+  return SOURCE_BADGES[source] || `📋 ${source || 'Listing'}`;
+}
+
+function formatCityDisplay(city) {
+  if (!city) return '';
+  return city.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function listingFromUrl(url) {
+  const row = getListingByUrl.get(url);
+  if (row) return rowToListing(row);
+  return { url, address: '', city: '', price: '', priceNumber: 0, source: '' };
+}
+
+async function sendStyleChoice(chatId, listing) {
+  await bot.sendMessage(chatId, 'Choose your letter style:', {
+    reply_markup: {
+      inline_keyboard: [[
+        { text: '🎯 Professional', callback_data: 'letter_style:professional' },
+        { text: '😊 Friendly', callback_data: 'letter_style:friendly' },
+        { text: '🌍 Expat', callback_data: 'letter_style:expat' },
+      ]],
+    },
+  });
+}
+
+async function sendLetterOptions(chatId, listing, letter) {
+  const subject = encodeURIComponent(`Interesse in ${listing.address || 'huurwoning'}`);
+  const body = encodeURIComponent(letter);
+  const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+  const waLink = `https://wa.me/?text=${encodeURIComponent(letter)}`;
+
+  await bot.sendMessage(chatId, '✅ Your letter is ready! Choose how to send it:', {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '📋 Copy letter', callback_data: 'letter_copy' }],
+        [{ text: '📧 Open in email', url: mailtoLink }],
+        [{ text: '💬 WhatsApp', url: waLink }],
+      ],
+    },
+  });
+}
 
 function createBot(useWebhook = false) {
   if (!TOKEN) {
@@ -24,9 +117,12 @@ function createBot(useWebhook = false) {
   });
 
   bot.onText(/\/start/, async (msg) => {
-    console.log('[telegram] /start from chat_id=%s username=%s', msg.chat.id, msg.from?.username);
     const chatId = String(msg.chat.id);
+    clearLetterState(chatId);
     upsertChat.run(chatId, msg.from?.username || '', msg.from?.first_name || '');
+
+    if (!hasAccess(chatId)) return denyAccess(chatId);
+
     const filterUrl = `${BASE_URL}/filters?chat_id=${chatId}`;
     await bot.sendMessage(chatId,
       `🏠 *Welcome to HomeSeeker!*\n\nI'll send you real-time alerts when new listings appear on Dutch housing platforms that match your criteria.\n\nSet your filters to get started:`,
@@ -38,8 +134,9 @@ function createBot(useWebhook = false) {
   });
 
   bot.onText(/\/(stop|unsubscribe)/, async (msg) => {
-    console.log('[telegram] /stop from chat_id=%s', msg.chat.id);
     const chatId = String(msg.chat.id);
+    if (!hasAccess(chatId)) return denyAccess(chatId);
+    clearLetterState(chatId);
     setUserActive.run(0, chatId);
     await bot.sendMessage(chatId,
       '⏸ Your alerts have been paused. Send /start anytime to resume.\n\nTo fully cancel your subscription and stop billing, use /cancel.'
@@ -47,10 +144,11 @@ function createBot(useWebhook = false) {
   });
 
   bot.onText(/\/cancel/, async (msg) => {
-    console.log('[telegram] /cancel from chat_id=%s', msg.chat.id);
     const chatId = String(msg.chat.id);
-    const user = getUser.get(chatId);
+    if (!hasAccess(chatId)) return denyAccess(chatId);
+    clearLetterState(chatId);
 
+    const user = getUser.get(chatId);
     if (!user) {
       return bot.sendMessage(chatId, '❌ No account found. Send /start to set up your profile.');
     }
@@ -77,8 +175,8 @@ function createBot(useWebhook = false) {
   });
 
   bot.onText(/\/filters/, async (msg) => {
-    console.log('[telegram] /filters from chat_id=%s', msg.chat.id);
     const chatId = String(msg.chat.id);
+    if (!hasAccess(chatId)) return denyAccess(chatId);
     const filterUrl = `${BASE_URL}/filters?chat_id=${chatId}`;
     await bot.sendMessage(chatId, '⚙️ Update your filters here:', {
       reply_markup: { inline_keyboard: [[{ text: '⚙️ Open filter form', url: filterUrl }]] },
@@ -86,8 +184,9 @@ function createBot(useWebhook = false) {
   });
 
   bot.onText(/\/status/, async (msg) => {
-    console.log('[telegram] /status from chat_id=%s', msg.chat.id);
     const chatId = String(msg.chat.id);
+    if (!hasAccess(chatId)) return denyAccess(chatId);
+
     const user = getUser.get(chatId);
     if (!user) {
       return bot.sendMessage(chatId, '❌ No profile found. Send /start to set up your filters.');
@@ -106,14 +205,15 @@ function createBot(useWebhook = false) {
     );
   });
 
-  // Callback query handler
   bot.on('callback_query', async (query) => {
-    console.log('[telegram] callback_query data=%s chat_id=%s', query.data, query.message?.chat?.id);
     const chatId = String(query.message.chat.id);
     const data = query.data || '';
     await bot.answerCallbackQuery(query.id);
 
+    if (!hasAccess(chatId)) return denyAccess(chatId);
+
     if (data === 'unsubscribe') {
+      clearLetterState(chatId);
       setUserActive.run(0, chatId);
       await bot.sendMessage(chatId,
         '⏸ Alerts paused. Send /start to resume.\n\nTo fully cancel billing, use /cancel.'
@@ -132,6 +232,7 @@ function createBot(useWebhook = false) {
         }
       }
       cancelUserByChatId.run(chatId);
+      clearLetterState(chatId);
       await bot.sendMessage(chatId,
         '✅ Your subscription has been cancelled. You will not be charged again.\n\nWe\'re sorry to see you go! Send /start anytime to resubscribe.'
       );
@@ -143,77 +244,97 @@ function createBot(useWebhook = false) {
       return;
     }
 
+    if (data.startsWith('share:')) {
+      const id = data.slice(6);
+      const listing = getCachedListing(id);
+      await bot.sendMessage(chatId, listing?.url || 'Listing not found.');
+      return;
+    }
+
     if (data.startsWith('ai_letter:')) {
-      const listingUrl = data.replace('ai_letter:', '');
-      aiSessions.set(chatId, { step: 'naam', data: {}, listingUrl });
-      await bot.sendMessage(chatId,
-        '✉️ *Let\'s write your application letter!*\n\nI\'ll ask you 4 quick questions.\n\n*What is your full name?*',
-        { parse_mode: 'Markdown' }
-      );
+      const id = data.replace('ai_letter:', '');
+      const listing = getCachedListing(id);
+      if (!listing?.url) {
+        return bot.sendMessage(chatId, '❌ Listing expired. Tap AI Letter on a fresh alert.');
+      }
+      letterState.set(chatId, {
+        step: 'style',
+        listing,
+        style: null,
+        answers: [],
+        generatedLetter: null,
+      });
+      await sendStyleChoice(chatId, listing);
+      return;
+    }
+
+    if (data.startsWith('letter_style:')) {
+      const style = data.replace('letter_style:', '');
+      const state = letterState.get(chatId);
+      if (!state) return;
+
+      state.style = style;
+      state.step = 'q1';
+      state.answers = [];
+      await bot.sendMessage(chatId, LETTER_QUESTIONS[0], { parse_mode: 'Markdown' });
+      return;
+    }
+
+    if (data === 'letter_copy') {
+      const state = letterState.get(chatId);
+      if (!state?.generatedLetter) {
+        return bot.sendMessage(chatId, '❌ No letter found. Start again from a listing alert.');
+      }
+      await bot.sendMessage(chatId, state.generatedLetter);
+      clearLetterState(chatId);
       return;
     }
   });
 
-  // AI letter flow: 4-step conversation
   bot.on('message', async (msg) => {
     if (!msg.text || msg.text.startsWith('/')) return;
     const chatId = String(msg.chat.id);
-    const session = aiSessions.get(chatId);
-    if (!session) return;
+    const state = letterState.get(chatId);
+    if (!state) return;
 
-    console.log('[telegram] AI letter step=%s chat_id=%s', session.step, chatId);
-    const text = msg.text.trim();
-
-    const steps = {
-      naam: {
-        next: 'inkomen',
-        save: 'naam',
-        question: '💶 *What is your gross monthly income?* (e.g. €3.500)',
-      },
-      inkomen: {
-        next: 'verhuisdatum',
-        save: 'inkomen',
-        question: '📅 *When can you move in?* (e.g. "immediately", "1 June", "within 2 months")',
-      },
-      verhuisdatum: {
-        next: 'extra',
-        save: 'verhuisdatum',
-        question: '💬 *Any extra info for the landlord?*\n(e.g. no pets, stable job, etc. — or type *skip*)',
-      },
-      extra: {
-        next: 'done',
-        save: 'extra',
-        question: null,
-      },
-    };
-
-    const currentStep = steps[session.step];
-    if (!currentStep) return;
-
-    session.data[currentStep.save] = text === 'skip' ? '' : text;
-
-    if (currentStep.next === 'done') {
-      aiSessions.delete(chatId);
-      await bot.sendMessage(chatId, '✍️ Generating your application letter…');
-      try {
-        const listing = { url: session.listingUrl };
-        const letter = await generateLetter({ ...session.data, listing });
-        await bot.sendMessage(chatId,
-          `📄 *Your application letter:*\n\n${letter}\n\n_Copy and send this directly to the landlord/agent._`,
-          { parse_mode: 'Markdown' }
-        );
-        await bot.sendMessage(chatId,
-          '💡 *Tip:* Personalise the first line before sending!'
-        , { parse_mode: 'Markdown' });
-      } catch (err) {
-        console.error('[letter] Error:', err.message);
-        await bot.sendMessage(chatId, '❌ Something went wrong generating the letter. Please try again.');
-      }
-      return;
+    if (!hasAccess(chatId)) {
+      clearLetterState(chatId);
+      return denyAccess(chatId);
     }
 
-    session.step = currentStep.next;
-    await bot.sendMessage(chatId, currentStep.question, { parse_mode: 'Markdown' });
+    const text = msg.text.trim();
+    const qIndex = { q1: 0, q2: 1, q3: 2 }[state.step];
+    if (qIndex === undefined) return;
+
+    state.answers[qIndex] = text === 'skip' ? '' : text;
+
+    if (state.step === 'q1') {
+      state.step = 'q2';
+      return bot.sendMessage(chatId, LETTER_QUESTIONS[1]);
+    }
+    if (state.step === 'q2') {
+      state.step = 'q3';
+      return bot.sendMessage(chatId, LETTER_QUESTIONS[2], { parse_mode: 'Markdown' });
+    }
+    if (state.step === 'q3') {
+      state.step = 'done';
+      await bot.sendMessage(chatId, '✍️ Generating your application letter…');
+      try {
+        const user = getUser.get(chatId);
+        const letter = await generateLetter({
+          style: state.style,
+          listing: state.listing,
+          user,
+          answers: state.answers,
+        });
+        state.generatedLetter = letter;
+        await sendLetterOptions(chatId, state.listing, letter);
+      } catch (err) {
+        console.error('[letter] Error:', err.message);
+        clearLetterState(chatId);
+        await bot.sendMessage(chatId, '❌ Something went wrong generating the letter. Please try again.');
+      }
+    }
   });
 
   console.log('[telegram] Bot started (polling=%s)', !useWebhook);
@@ -225,16 +346,16 @@ function getBot() { return bot; }
 async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user = null) {
   if (!bot) return;
 
-  const priceStr = listing.price || (listing.priceNumber ? `€${listing.priceNumber.toLocaleString('nl-NL')}` : '—');
-  const cityDisplay = listing.city
-    ? listing.city.charAt(0).toUpperCase() + listing.city.slice(1)
-    : '';
+  clearLetterState(chatId);
 
-  const detailParts = [
-    listing.price || listing.priceNumber ? `💰 ${priceStr}${listing.transactionType === 'huur' ? '/month' : ''}` : null,
-    listing.area  ? `📐 ${listing.area}m²` : null,
-    listing.rooms ? `🛏 ${listing.rooms} room${listing.rooms !== 1 ? 's' : ''}` : null,
-  ].filter(Boolean).join(' | ');
+  const priceStr = listing.price || (listing.priceNumber
+    ? `€${listing.priceNumber.toLocaleString('nl-NL')}`
+    : '—');
+  const cityDisplay = formatCityDisplay(listing.city);
+  const badge = getPlatformBadge(listing.source);
+  const priceLine = listing.transactionType === 'huur'
+    ? `${priceStr}/month`
+    : priceStr;
 
   const filterLines = [];
   if (user) {
@@ -254,23 +375,30 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     : '';
 
   const text = [
-    `🏠 *New listing in ${cityDisplay}*`,
+    `🏠 *${listing.address || 'New listing'}*`,
+    `📍 ${cityDisplay || '—'}`,
+    `💶 ${priceLine}`,
+    badge,
     ``,
-    `📍 ${listing.address || 'Address unknown'}${cityDisplay ? `, ${cityDisplay}` : ''}`,
-    detailParts || null,
-    ``,
-    `━━━━━━━━━━━━━━━`,
-    `🎯 *Chance Score: ${label} (${score}%)*`,
-    `💎 *Deal Score: ${dLabel} (${dealScore}%)*`,
-    `━━━━━━━━━━━━━━━`,
+    `🎯 *Chance:* ${score}% — ${label}`,
+    `💎 *Deal:* ${dealScore}% — ${dLabel}`,
     filterSection || null,
   ].filter(s => s !== null).join('\n');
 
+  const cacheId = cacheListing(listing);
+  const shareData = `share:${cacheId}`;
+  const letterData = `ai_letter:${cacheId}`;
+
   const keyboard = {
     inline_keyboard: [
-      [{ text: '🔗 View Listing', url: listing.url }],
-      [{ text: '✉️ Generate Application Letter', callback_data: `ai_letter:${listing.url}` }],
-      [{ text: '❌ Unsubscribe', callback_data: 'unsubscribe' }],
+      [
+        { text: '🔗 View listing', url: listing.url },
+        { text: '✉️ AI Letter', callback_data: letterData },
+      ],
+      [
+        { text: '📤 Share', callback_data: shareData },
+        { text: '❌ Unsubscribe', callback_data: 'unsubscribe' },
+      ],
     ],
   };
 
@@ -289,4 +417,4 @@ function processWebhookUpdate(update) {
   if (bot) bot.processUpdate(update);
 }
 
-module.exports = { createBot, getBot, sendAlert, processWebhookUpdate };
+module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState };

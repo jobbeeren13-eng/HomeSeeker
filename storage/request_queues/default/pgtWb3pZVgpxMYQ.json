@@ -1,0 +1,9 @@
+{
+	"id": "pgtWb3pZVgpxMYQ",
+	"json": "{\"id\":\"pgtWb3pZVgpxMYQ\",\"url\":\"https://www.funda.nl/zoeken/huur/?selected_area=[\\\"delft\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/huur/?selected_area=[%22delft%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/huur?selected_area=%5B%22delft%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"delft\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T17:42:46.556Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://www.funda.nl/zoeken/huur?selected_area=%5B%22delft%22%5D",
+	"url": "https://www.funda.nl/zoeken/huur/?selected_area=[\"delft\"]"
+}

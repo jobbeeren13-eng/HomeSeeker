@@ -1,0 +1,9 @@
+{
+	"id": "HwtS8MDYgGQLwrg",
+	"json": "{\"id\":\"HwtS8MDYgGQLwrg\",\"url\":\"https://www.funda.nl/zoeken/koop/?selected_area=[\\\"utrecht\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/koop/?selected_area=[%22utrecht%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/koop?selected_area=%5B%22utrecht%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"utrecht\",\"transactionType\":\"koop\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T17:42:16.694Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://www.funda.nl/zoeken/koop?selected_area=%5B%22utrecht%22%5D",
+	"url": "https://www.funda.nl/zoeken/koop/?selected_area=[\"utrecht\"]"
+}

@@ -20,6 +20,9 @@
       --border: rgba(255,255,255,0.07);
       --text: #f0f0f0;
       --muted: #888;
+      --section-gap: 80px;
+      --content-max: 1100px;
+      --section-x: 24px;
     }
 
     html { scroll-behavior: smooth; }
@@ -76,10 +79,16 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 120px 24px 80px;
+      padding: 120px var(--section-x) var(--section-gap);
       background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,160,0.15) 0%, transparent 70%);
     }
-    .hero-inner { max-width: 760px; }
+    .hero-inner {
+      max-width: var(--content-max);
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 var(--section-x);
+    }
+    .hero-inner > * { max-width: 760px; margin-left: auto; margin-right: auto; }
     .badge {
       display: inline-flex;
       align-items: center;
@@ -158,12 +167,18 @@
     }
 
     /* STATS */
+    .stats-wrap {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      padding: 0 var(--section-x);
+    }
     .stats {
       display: flex;
       justify-content: center;
       gap: 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
       background: var(--bg2);
     }
     .stat {
@@ -184,8 +199,14 @@
     .stat-label { font-size: 13px; color: var(--muted); font-weight: 400; }
 
     /* SECTIONS */
-    section { padding: 100px 24px; }
-    .container { max-width: 1100px; margin: 0 auto; }
+    section {
+      padding: var(--section-gap) var(--section-x);
+    }
+    .container {
+      max-width: var(--content-max);
+      margin: 0 auto;
+      width: 100%;
+    }
     .section-tag {
       font-size: 11px;
       font-weight: 700;
@@ -337,6 +358,7 @@
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 16px;
       margin-top: 48px;
+      align-items: stretch;
     }
     .score-card {
       background: var(--bg2);
@@ -344,22 +366,47 @@
       border-radius: 12px;
       padding: 24px;
       text-align: center;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
+    .scores-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 48px;
+      align-items: stretch;
+    }
+    .score-panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .score-panel .score-grid { margin-top: auto; }
     .score-emoji { font-size: 28px; margin-bottom: 8px; }
     .score-range { font-family: 'Bebas Neue'; font-size: 28px; color: var(--green); margin-bottom: 6px; }
     .score-name { font-size: 14px; color: var(--muted); font-weight: 500; }
 
     /* PRICING */
     .pricing-section { text-align: center; }
+    .pricing-section .section-sub { margin-left: auto; margin-right: auto; }
+    .price-card-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 48px;
+    }
     .price-card {
-      display: inline-block;
       background: var(--bg2);
       border: 1px solid var(--green);
       border-radius: 16px;
       padding: 48px 56px;
-      max-width: 440px;
+      max-width: 480px;
       width: 100%;
-      margin-top: 48px;
       box-shadow: 0 0 60px rgba(0,229,160,0.1);
     }
     .price-amount {
@@ -456,11 +503,12 @@
     }
 
     @media (max-width: 768px) {
+      :root { --section-gap: 64px; --section-x: 20px; }
       nav { padding: 14px 20px; }
       .nav-links { display: none; }
       .stats { flex-wrap: wrap; }
       .stat { border-right: none; border-bottom: 1px solid var(--border); min-width: 50%; }
-      section { padding: 70px 20px; }
+      .scores-row { grid-template-columns: 1fr; }
       .price-card { padding: 36px 28px; }
     }
   </style>
@@ -495,6 +543,7 @@
 </section>
 
 <!-- STATS -->
+<div class="stats-wrap" style="margin-bottom: var(--section-gap)">
 <div class="stats">
   <div class="stat">
     <div class="stat-num">7</div>
@@ -512,6 +561,7 @@
     <div class="stat-num">24/7</div>
     <div class="stat-label">Always watching</div>
   </div>
+</div>
 </div>
 
 <!-- HOW IT WORKS -->
@@ -618,10 +668,10 @@
     <p class="section-sub">Each alert comes with two independent scores so you can instantly prioritise what to act on.</p>
 
     <!-- Score type tabs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px">
+    <div class="scores-row">
 
       <!-- Chance Score -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px">
+      <div class="score-panel">
         <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:14px">🎯 Chance Score</div>
         <h3 style="font-size:20px;font-weight:700;margin-bottom:10px">Can <em>you</em> get it?</h3>
         <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px">Personal to you. Calculated from your income ratio, application readiness, price fit, and timing.</p>
@@ -635,7 +685,7 @@
       </div>
 
       <!-- Deal Score -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px">
+      <div class="score-panel">
         <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6ab4ff;margin-bottom:14px">💎 Deal Score</div>
         <h3 style="font-size:20px;font-weight:700;margin-bottom:10px">Is it actually a <em>good deal</em>?</h3>
         <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px">Objective. Based on €/m² vs market average, price drop detection, WOZ proxy, and location value.</p>
@@ -661,6 +711,7 @@
     <h2>One flat price.<br />No surprises.</h2>
     <p class="section-sub" style="margin:0 auto 0">Start free, cancel anytime.</p>
 
+    <div class="price-card-wrap">
     <div class="price-card">
       <div class="price-amount">€11.99</div>
       <div class="price-period">per month</div>
@@ -677,6 +728,7 @@
         7-day free trial. After your trial, your subscription continues at €11.99/month.
         No refunds after the trial period ends. Cancel anytime before the trial ends via the link in your confirmation email.
       </p>
+    </div>
     </div>
   </div>
 </section>

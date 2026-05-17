@@ -58,15 +58,45 @@ db.exec(`
     first_name TEXT,
     registered_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS listings (
+    url TEXT PRIMARY KEY,
+    address TEXT,
+    city TEXT,
+    price TEXT,
+    price_number REAL,
+    transaction_type TEXT,
+    rooms INTEGER,
+    area REAL,
+    energy_label TEXT,
+    construction_year INTEGER,
+    property_type TEXT,
+    image TEXT,
+    listed_at TEXT,
+    source TEXT,
+    fingerprint TEXT,
+    scraped_at TEXT DEFAULT (datetime('now')),
+    sent INTEGER DEFAULT 0
+  );
 `);
 
 try {
-  const cols = db.prepare(`PRAGMA table_info(users)`).all().map(r => r.name);
-  if (cols.includes('document_readiness') && !cols.includes('application_readiness')) {
+  const userCols = db.prepare(`PRAGMA table_info(users)`).all().map(r => r.name);
+  if (userCols.includes('document_readiness') && !userCols.includes('application_readiness')) {
     db.exec(`ALTER TABLE users RENAME COLUMN document_readiness TO application_readiness`);
     console.log('[db] Migrated document_readiness → application_readiness');
   }
 } catch (e) {}
+
+try {
+  const listingCols = db.prepare(`PRAGMA table_info(listings)`).all().map(r => r.name);
+  if (listingCols.length > 0 && !listingCols.includes('fingerprint')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN fingerprint TEXT`);
+    console.log('[db] Added fingerprint column to listings');
+  }
+} catch (e) {}
+
+db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
 
 const getUser = db.prepare('SELECT * FROM users WHERE chat_id = ?');
 const getUserByEmail = db.prepare('SELECT * FROM users WHERE email = ?');
@@ -113,8 +143,27 @@ const upsertChat = db.prepare(`
   ON CONFLICT(chat_id) DO UPDATE SET username = excluded.username, first_name = excluded.first_name
 `);
 
+const listingExists = db.prepare('SELECT 1 FROM listings WHERE url = ?');
+const getListingByUrl = db.prepare('SELECT * FROM listings WHERE url = ?');
+const getSentListingByFingerprint = db.prepare(
+  'SELECT url, source FROM listings WHERE fingerprint = ? AND sent = 1 LIMIT 1'
+);
+const insertListing = db.prepare(`
+  INSERT OR IGNORE INTO listings (
+    url, address, city, price, price_number, transaction_type, rooms, area,
+    energy_label, construction_year, property_type, image, listed_at, source, fingerprint, sent
+  ) VALUES (
+    @url, @address, @city, @price, @priceNumber, @transactionType, @rooms, @area,
+    @energyLabel, @constructionYear, @propertyType, @image, @listedAt, @source, @fingerprint, @sent
+  )
+`);
+const getUnsentListings = db.prepare('SELECT * FROM listings WHERE sent = 0');
+const markListingGloballySent = db.prepare('UPDATE listings SET sent = 1 WHERE url = ?');
+
 module.exports = {
   db, getUser, getUserByEmail, getAllActiveUsers, upsertUser, setUserActive,
   setUserPaid, cancelUserByStripe, cancelUserByChatId, setUserChatId,
   isListingSent, markListingSent, getChat, upsertChat,
+  listingExists, getListingByUrl, getSentListingByFingerprint, insertListing,
+  getUnsentListings, markListingGloballySent,
 };

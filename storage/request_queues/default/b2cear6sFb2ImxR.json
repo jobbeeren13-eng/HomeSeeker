@@ -1,0 +1,9 @@
+{
+	"id": "b2cear6sFb2ImxR",
+	"json": "{\"id\":\"b2cear6sFb2ImxR\",\"url\":\"https://www.pararius.nl/huurwoningen/haarlem\",\"loadedUrl\":\"https://www.pararius.nl/huurwoningen/haarlem\",\"uniqueKey\":\"https://www.pararius.nl/huurwoningen/haarlem\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"pararius\",\"city\":\"haarlem\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T17:42:48.895Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://www.pararius.nl/huurwoningen/haarlem",
+	"url": "https://www.pararius.nl/huurwoningen/haarlem"
+}

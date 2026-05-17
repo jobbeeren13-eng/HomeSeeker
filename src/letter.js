@@ -2,46 +2,69 @@ const Anthropic = require('@anthropic-ai/sdk');
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function generateLetter({ naam, inkomen, verhuisdatum, extra, listing }) {
-  const listingInfo = [
-    listing.address && listing.city ? `Adres: ${listing.address}, ${listing.city}` : '',
-    listing.price ? `Huur: ${listing.price}` : '',
-    listing.rooms ? `Kamers: ${listing.rooms}` : '',
-    listing.area ? `Oppervlakte: ${listing.area} m²` : '',
-    listing.url ? `Link: ${listing.url}` : '',
-  ].filter(Boolean).join('\n');
+const STYLE_LABELS = {
+  professional: 'Professional — formele zakelijke brief, nadruk op inkomen en stabiliteit',
+  friendly: 'Friendly — warme persoonlijke toon met een kort verhaal over de huurder',
+  expat: 'Expat — Engelstalige brief met uitleg van de expat-situatie en 30% ruling indien van toepassing',
+};
 
-  const extraLine = extra && extra.trim()
-    ? `Extra informatie: ${extra}`
+function formatCity(city) {
+  if (!city) return '';
+  return city.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+async function generateLetter({ style, listing, user, answers }) {
+  const [situation, work, extra] = answers;
+  const tone = STYLE_LABELS[style] || STYLE_LABELS.professional;
+
+  const address = listing.address || 'onbekend adres';
+  const city = formatCity(listing.city);
+  const price = listing.price || (listing.priceNumber ? `€${listing.priceNumber}` : 'onbekend');
+  const source = listing.source || 'onbekend platform';
+
+  const naam = user?.naam || 'Huurder';
+  const profiel = user?.profiel_type || 'particulier';
+  const inkomen = user?.inkomen ? `€${user.inkomen}` : 'niet opgegeven';
+  const contract = user?.contract_type || 'niet opgegeven';
+  const expatNote = style === 'expat' && user?.expat_status
+    ? `Expat status: ${user.expat_status}`
     : '';
 
-  const prompt = `Schrijf een professionele en persoonlijke motivatiebrief in het Nederlands voor een huurder die reageert op een huurwoning.
+  const systemPrompt = `Je bent een expert in het schrijven van Nederlandse huurmotivatiebrieven.
+Schrijf een professionele, persoonlijke motivatiebrief voor een huurwoning.
 
-Gegevens van de huurder:
+Toon: ${tone}
+Woning: ${address}, ${city}, ${price}
+Platform: ${source}
+
+Gebruikersinfo:
 - Naam: ${naam}
-- Bruto maandinkomen: ${inkomen}
-- Beschikbaar per: ${verhuisdatum}
-${extraLine}
+- Profiel: ${profiel}
+- Inkomen: ${inkomen}/maand
+- Contract: ${contract}
+${expatNote ? `- ${expatNote}` : ''}
+- Situatie: ${situation || '—'}
+- Werk: ${work || '—'}
+- Extra: ${extra || '—'}
 
-Woning:
-${listingInfo || 'Details niet beschikbaar'}
-
-Instructies:
-- Schrijf een brief van 3–4 alinea's
-- Begin met "Geachte verhuurder/makelaar,"
-- Wees warm, professioneel en concreet
-- Noem het inkomen in verhouding tot de huur (vertrouwen wekken)
-- Vermeld de beschikbaarheid
-- Eindig met "Met vriendelijke groet," gevolgd door de naam
-- Voeg GEEN extra uitleg of headers toe buiten de brief zelf`;
+Regels:
+- Max 200 woorden
+- Geen clichés
+- Eindig met een concrete vraag om bezichtiging
+- Voor Expat stijl: schrijf in het Engels
+- Vermeld NOOIT dat de brief door AI is gegenereerd`;
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 900,
-    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 700,
+    system: systemPrompt,
+    messages: [{
+      role: 'user',
+      content: 'Schrijf de motivatiebrief. Geef alleen de brieftekst terug, zonder uitleg of metadata.',
+    }],
   });
 
   return message.content[0].text;
 }
 
-module.exports = { generateLetter };
+module.exports = { generateLetter, STYLE_LABELS };

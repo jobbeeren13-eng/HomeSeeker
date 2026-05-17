@@ -1,0 +1,9 @@
+{
+	"id": "9SoFzzi19niEYiS",
+	"json": "{\"id\":\"9SoFzzi19niEYiS\",\"url\":\"https://www.pararius.nl/huurwoningen/amsterdam\",\"loadedUrl\":\"https://www.pararius.nl/huurwoningen/amsterdam\",\"uniqueKey\":\"https://www.pararius.nl/huurwoningen/amsterdam\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"pararius\",\"city\":\"amsterdam\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T17:41:54.976Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://www.pararius.nl/huurwoningen/amsterdam",
+	"url": "https://www.pararius.nl/huurwoningen/amsterdam"
+}

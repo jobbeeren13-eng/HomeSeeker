@@ -4,7 +4,7 @@ const path = require('path');
 const cron = require('node-cron');
 
 const { upsertUser, getUserByEmail, setUserChatId, cancelUserByChatId, cancelUserByStripe } = require('./src/database');
-const { scrapeListings } = require('./src/scraper');
+const { scrapeListings, markListingsAsSent } = require('./src/scraper');
 const { findMatches } = require('./src/matcher');
 const { createBot, sendAlert, processWebhookUpdate } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
@@ -176,6 +176,9 @@ async function runScrapeAndAlert() {
       await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user);
       await new Promise(r => setTimeout(r, 200)); // gentle rate limiting
     }
+
+    markListingsAsSent(listings.map(l => l.url));
+    console.log(`[cron] Marked ${listings.length} listings as sent`);
   } catch (err) {
     console.error('[cron] Error:', err.message);
   }
@@ -202,6 +205,6 @@ app.listen(PORT, () => {
 
 // Start cron after a short delay so DB is fully ready
 setTimeout(() => {
-  cron.schedule('*/15 * * * *', runScrapeAndAlert);
-  console.log('[cron] Scrape job scheduled every 15 minutes');
+  cron.schedule('*/10 * * * *', runScrapeAndAlert);
+  console.log('[cron] Scrape job scheduled every 10 minutes');
 }, 5000);

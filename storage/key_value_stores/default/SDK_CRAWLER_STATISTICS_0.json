@@ -1,0 +1,43 @@
+{
+  "requestsFinished": 21,
+  "requestsFailed": 0,
+  "requestsRetries": 3,
+  "requestsFailedPerMinute": 0,
+  "requestsFinishedPerMinute": 6,
+  "requestMinDurationMillis": 5541,
+  "requestMaxDurationMillis": 47874,
+  "requestTotalFailedDurationMillis": 0,
+  "requestTotalFinishedDurationMillis": 337709,
+  "crawlerStartedAt": "2026-05-17T17:40:41.455Z",
+  "crawlerFinishedAt": "2026-05-17T17:44:02.803Z",
+  "statsPersistedAt": "2026-05-17T17:44:02.803Z",
+  "crawlerRuntimeMillis": 201742,
+  "crawlerLastStartTimestamp": 1779039641061,
+  "requestRetryHistogram": [
+    18,
+    2,
+    null,
+    1
+  ],
+  "statsId": 0,
+  "requestAvgFailedDurationMillis": null,
+  "requestAvgFinishedDurationMillis": 16081,
+  "requestTotalDurationMillis": 337709,
+  "requestsTotal": 21,
+  "requestsWithStatusCode": {
+    "200": 21,
+    "403": 5
+  },
+  "errors": {},
+  "retryErrors": {
+    "C:\\Users\\marcu\\OneDrive\\Desktop\\woningflash\\node_modules\\@crawlee\\basic\\internals\\basic-crawler.js:913:19": {
+      "missing error code": {
+        "Error": {
+          "Request blocked - received 403 status code.": {
+            "count": 5
+          }
+        }
+      }
+    }
+  }
+}

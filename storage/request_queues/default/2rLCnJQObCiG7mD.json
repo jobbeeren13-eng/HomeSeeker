@@ -1,0 +1,9 @@
+{
+	"id": "2rLCnJQObCiG7mD",
+	"json": "{\"id\":\"2rLCnJQObCiG7mD\",\"url\":\"https://www.pararius.nl/huurwoningen/delft\",\"loadedUrl\":\"https://www.pararius.nl/huurwoningen/delft\",\"uniqueKey\":\"https://www.pararius.nl/huurwoningen/delft\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"pararius\",\"city\":\"delft\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T17:43:16.051Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://www.pararius.nl/huurwoningen/delft",
+	"url": "https://www.pararius.nl/huurwoningen/delft"
+}

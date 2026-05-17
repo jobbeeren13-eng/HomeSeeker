@@ -5,10 +5,16 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "scraper:test": "node -e \"require('./src/scraper').scrapeListings().then(r => console.log(r.length, 'listings'))\"",
+    "scraper:test:huurwoningen": "node -e \"require('./src/scraper').scrapeHuurwoningen().then(r => console.log(r, 'huurwoningen listings'))\"",
+    "scraper:test:kamernet": "node -e \"require('./src/scraper').scrapeKamernet().then(r => console.log(r, 'kamernet listings'))\"",
+    "scraper:test:jaap": "node -e \"require('./src/scraper').scrapeJaap().then(r => console.log(r, 'jaap listings'))\"",
+    "scraper:test:all": "node -e \"require('./src/scraper').scrapeListings().then(r => console.log(r.length, 'total listings'))\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.52.0",
+    "@crawlee/playwright": "^3.16.0",
     "axios": "^1.7.9",
     "better-sqlite3": "^12.10.0",
     "dotenv": "^16.4.7",
@@ -16,6 +22,7 @@
     "node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.66.0",
     "nodemailer": "^6.9.16",
+    "playwright": "^1.60.0",
     "stripe": "^17.4.0"
   },
   "engines": {
