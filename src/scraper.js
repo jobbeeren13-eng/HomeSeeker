@@ -3,12 +3,11 @@ const axios = require('axios');
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 
 const FUNDA_ACTOR_ID = 'memo23~funda-scraper';
-const PARARIUS_ACTOR_ID = 'misceres~pararius-scraper'; // TODO: verify actor ID at https://apify.com/store?search=pararius
+const PARARIUS_ACTOR_ID = 'misceres~pararius-scraper';
 
 const POLL_INTERVAL_MS = 10_000;
 const MAX_WAIT_MS = 5 * 60_000;
 
-// ── Funda URLs (koop + huur, 7 cities) ─────────────────────────────────────
 const FUNDA_URLS = [
   { url: 'https://www.funda.nl/zoeken/koop/?selected_area=["amsterdam"]' },
   { url: 'https://www.funda.nl/zoeken/huur/?selected_area=["amsterdam"]' },
@@ -26,7 +25,6 @@ const FUNDA_URLS = [
   { url: 'https://www.funda.nl/zoeken/huur/?selected_area=["delft"]' },
 ];
 
-// ── Pararius URLs (huur only) ────────────────────────────────────────────────
 const PARARIUS_URLS = [
   { url: 'https://www.pararius.nl/huurwoningen/amsterdam' },
   { url: 'https://www.pararius.nl/huurwoningen/rotterdam' },
@@ -36,19 +34,6 @@ const PARARIUS_URLS = [
   { url: 'https://www.pararius.nl/huurwoningen/amstelveen' },
   { url: 'https://www.pararius.nl/huurwoningen/delft' },
 ];
-
-// TODO: Kamernet — no suitable Apify actor found.
-//   Manual option: use Playwright/Puppeteer scraper against https://kamernet.nl/en/for-rent/rooms-{city}
-//   API option: check if kamernet.nl has a public API or partner programme.
-
-// TODO: HousingAnywhere — no public Apify actor found.
-//   Endpoint to investigate: https://housinganywhere.com/s/Amsterdam--Netherlands/1/apartment
-//   They have a documented API for partners; contact partners@housinganywhere.com.
-
-// TODO: Directwonen — no Apify actor found.
-//   Renders server-side; scrape with Axios + Cheerio against:
-//   https://www.directwonen.nl/huurwoningen/{city}/
-//   Be mindful of their terms of service.
 
 function parsePrice(raw) {
   if (!raw) return null;
@@ -70,7 +55,7 @@ function normaliseListing(item, source = 'funda') {
   const isHuur = (item.transactionType || item.type || '').toLowerCase().includes('huur')
     || String(rawPrice).includes('/mnd')
     || String(rawPrice).includes('p/m')
-    || source === 'pararius'; // Pararius is huur-only
+    || source === 'pararius';
 
   return {
     url: item.url || item.listingUrl || '',
@@ -97,7 +82,7 @@ async function startRun(actorId, startUrls) {
     {
       startUrls,
       maxItems: 50,
-      proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
+      proxy: { useApifyProxy: true },
     },
     { timeout: 30_000 }
   );
@@ -153,7 +138,6 @@ async function scrapeListings() {
     return [];
   }
 
-  // Run Funda and Pararius in parallel
   const [fundaListings, parariusListings] = await Promise.all([
     scrapeSource(FUNDA_ACTOR_ID, FUNDA_URLS, 'funda'),
     scrapeSource(PARARIUS_ACTOR_ID, PARARIUS_URLS, 'pararius'),
@@ -161,7 +145,6 @@ async function scrapeListings() {
 
   const all = [...fundaListings, ...parariusListings];
 
-  // Deduplicate by URL
   const seen = new Set();
   const deduped = all.filter(l => {
     if (seen.has(l.url)) return false;
