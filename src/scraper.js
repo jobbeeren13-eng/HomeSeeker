@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 
-const FUNDA_ACTOR_ID = 'memo23~funda-scraper';
+const PARARIUS_ACTOR_ID = 'memorable_alphabet/pararius-rentals';
 const PARARIUS_ACTOR_ID = 'misceres~pararius-scraper';
 
 const POLL_INTERVAL_MS = 10_000;
