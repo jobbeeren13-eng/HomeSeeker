@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const DB_PATH = process.env.DATABASE_URL || './homeseeker.db';
+const DB_PATH = process.env.DATABASE_URL || '/tmp/homeseeker.db';
 const db = new Database(path.resolve(DB_PATH));
 
 db.exec(`PRAGMA journal_mode = WAL`);
