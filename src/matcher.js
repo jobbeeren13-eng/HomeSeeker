@@ -41,7 +41,7 @@ function findMatches(listings) {
   for (const listing of listings) {
     // Calculate deal score once per listing (not per user)
     const dScore = calculateDealScore(listing);
-    const dLabel = dealLabel(dScore);
+    const dLabel = dealLabel(dScore, listing);
 
     for (const user of users) {
       if (!user.chat_id) continue;
@@ -51,6 +51,9 @@ function findMatches(listings) {
       const score = calculateScore(listing, user);
       const kansMin = user.kans_min || 0;
       if (score < kansMin) continue;
+
+      const dealMin = user.deal_min || 0;
+      if (dealMin > 0 && (dScore === null || dScore < dealMin)) continue;
 
       markListingSent.run(listing.url, user.chat_id);
       matches.push({

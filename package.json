@@ -7,9 +7,6 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "scraper:test": "node -e \"require('./src/scraper').scrapeListings().then(r => console.log(r.length, 'listings'))\"",
-    "scraper:test:huurwoningen": "node -e \"require('./src/scraper').scrapeHuurwoningen().then(r => console.log(r, 'huurwoningen listings'))\"",
-    "scraper:test:kamernet": "node -e \"require('./src/scraper').scrapeKamernet().then(r => console.log(r, 'kamernet listings'))\"",
-    "scraper:test:jaap": "node -e \"require('./src/scraper').scrapeJaap().then(r => console.log(r, 'jaap listings'))\"",
     "scraper:test:all": "node -e \"require('./src/scraper').scrapeListings().then(r => console.log(r.length, 'total listings'))\""
   },
   "dependencies": {

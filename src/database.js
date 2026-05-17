@@ -36,6 +36,7 @@ db.exec(`
     gemeubileerd INTEGER DEFAULT 0,
     beschikbaar_per TEXT,
     kans_min INTEGER DEFAULT 0,
+    deal_min INTEGER DEFAULT 0,
     betaald INTEGER DEFAULT 0,
     stripe_customer_id TEXT,
     stripe_subscription_id TEXT,
@@ -96,6 +97,18 @@ try {
   }
 } catch (e) {}
 
+try {
+  const userCols = db.prepare(`PRAGMA table_info(users)`).all().map(r => r.name);
+  if (userCols.length > 0 && !userCols.includes('deal_min')) {
+    db.exec(`ALTER TABLE users ADD COLUMN deal_min INTEGER DEFAULT 0`);
+    console.log('[db] Added deal_min column to users');
+  }
+  if (userCols.length > 0 && !userCols.includes('kans_min')) {
+    db.exec(`ALTER TABLE users ADD COLUMN kans_min INTEGER DEFAULT 0`);
+    console.log('[db] Added kans_min column to users');
+  }
+} catch (e) {}
+
 db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
 
 const getUser = db.prepare('SELECT * FROM users WHERE chat_id = ?');
@@ -106,11 +119,11 @@ const upsertUser = db.prepare(`
   INSERT INTO users (chat_id, naam, email, profiel_type, expat_status, contract_type, inkomen,
     application_readiness, beschikbaarheid_timing, type, woningtype, locatie, prijs_min, prijs_max,
     opp_min, kamers_min, energielabel, bouwjaar_min, tuin, parkeren, delen_toegestaan, huisdieren,
-    gemeubileerd, beschikbaar_per, kans_min)
+    gemeubileerd, beschikbaar_per, kans_min, deal_min)
   VALUES (:chat_id, :naam, :email, :profiel_type, :expat_status, :contract_type, :inkomen,
     :application_readiness, :beschikbaarheid_timing, :type, :woningtype, :locatie, :prijs_min, :prijs_max,
     :opp_min, :kamers_min, :energielabel, :bouwjaar_min, :tuin, :parkeren, :delen_toegestaan, :huisdieren,
-    :gemeubileerd, :beschikbaar_per, :kans_min)
+    :gemeubileerd, :beschikbaar_per, :kans_min, :deal_min)
   ON CONFLICT(chat_id) DO UPDATE SET
     naam = excluded.naam, email = excluded.email, profiel_type = excluded.profiel_type,
     expat_status = excluded.expat_status, contract_type = excluded.contract_type,
@@ -121,7 +134,8 @@ const upsertUser = db.prepare(`
     energielabel = excluded.energielabel, bouwjaar_min = excluded.bouwjaar_min,
     tuin = excluded.tuin, parkeren = excluded.parkeren, delen_toegestaan = excluded.delen_toegestaan,
     huisdieren = excluded.huisdieren, gemeubileerd = excluded.gemeubileerd,
-    beschikbaar_per = excluded.beschikbaar_per, kans_min = excluded.kans_min
+    beschikbaar_per = excluded.beschikbaar_per, kans_min = excluded.kans_min,
+    deal_min = excluded.deal_min
 `);
 
 const setUserActive = db.prepare('UPDATE users SET actief = ? WHERE chat_id = ?');

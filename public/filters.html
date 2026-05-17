@@ -271,13 +271,13 @@
 <div class="form-wrap">
   <div class="disclaimer">
     <strong>Trial notice:</strong> By submitting this form you agree to the 7-day free trial terms.
-    After the trial, €11.99/month is charged automatically. No refunds after trial period ends.
+    After the trial, €12,50/month is charged. No refunds after trial. Cancel anytime before trial ends.
     Cancel anytime before day 7 via the link in your confirmation email.
   </div>
 
   <div class="form-intro">
     <h1>Set Your Filters</h1>
-    <p>Tell us what you're looking for. We'll alert you within minutes of a new match going live.</p>
+    <p>Tell us what you're looking for. We'll alert you within minutes of a new match going live. We currently monitor Funda — with Pararius, HousingAnywhere and more being added soon.</p>
   </div>
 
   <form id="filter-form" novalidate>
@@ -480,6 +480,20 @@
           <div class="toggle-btn"><input type="radio" name="kans_min" id="km_50" value="50" /><label for="km_50">50%+</label></div>
           <div class="toggle-btn"><input type="radio" name="kans_min" id="km_60" value="60" /><label for="km_60">60%+</label></div>
           <div class="toggle-btn"><input type="radio" name="kans_min" id="km_70" value="70" /><label for="km_70">70%+</label></div>
+          <div class="toggle-btn"><input type="radio" name="kans_min" id="km_80" value="80" /><label for="km_80">80%+</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          Minimum deal score
+          <i class="tip" data-tip="Only receive alerts when the listing is a fair deal or better compared to market average.">?</i>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="deal_min" id="dm_0" value="0" checked /><label for="dm_0">No preference</label></div>
+          <div class="toggle-btn"><input type="radio" name="deal_min" id="dm_40" value="40" /><label for="dm_40">Fair deal+</label></div>
+          <div class="toggle-btn"><input type="radio" name="deal_min" id="dm_60" value="60" /><label for="dm_60">Good deal+</label></div>
+          <div class="toggle-btn"><input type="radio" name="deal_min" id="dm_80" value="80" /><label for="dm_80">Great deal+</label></div>
         </div>
       </div>
     </div>
@@ -511,6 +525,12 @@
       </div>
     </div>
 
+    <div class="card" id="income-calc">
+      <div class="card-title">Affordability calculator</div>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px;line-height:1.6">Based on your gross monthly income, see what you can afford for rent or buy.</p>
+      <div id="afford-result" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:14px;line-height:1.7;color:#ccc;display:none"></div>
+    </div>
+
     <button type="submit" class="submit-btn" id="submit-btn">Save my filters &amp; start alerts →</button>
     <div id="error-msg"></div>
   </form>
@@ -527,6 +547,24 @@
   const params = new URLSearchParams(window.location.search);
   const chatId = params.get('chat_id') || '';
   document.getElementById('chat_id').value = chatId;
+
+  function updateAffordability() {
+    const income = parseFloat(document.querySelector('[name="inkomen"]')?.value) || 0;
+    const el = document.getElementById('afford-result');
+    if (!el) return;
+    if (income <= 0) {
+      el.style.display = 'none';
+      return;
+    }
+    const maxRent = Math.round(income / 3);
+    const maxMortgage = Math.round(income * 4.5);
+    const fmt = n => '€' + n.toLocaleString('nl-NL');
+    el.innerHTML = `Based on your income, you can afford up to <strong style="color:var(--green)">${fmt(maxRent)}/month</strong> rent or a <strong style="color:var(--green)">${fmt(maxMortgage)}</strong> mortgage.`;
+    el.style.display = 'block';
+  }
+
+  document.querySelector('[name="inkomen"]')?.addEventListener('input', updateAffordability);
+  updateAffordability();
 
   // Show expat field conditionally
   document.querySelectorAll('input[name="profiel_type"]').forEach(r => {

@@ -4,7 +4,7 @@ const path = require('path');
 const cron = require('node-cron');
 
 const { upsertUser, getUserByEmail, setUserChatId, cancelUserByChatId, cancelUserByStripe } = require('./src/database');
-const { scrapeListings, markListingsAsSent } = require('./src/scraper');
+const { scrapeListings, markListingsAsSent, normaliseCity } = require('./src/scraper');
 const { findMatches } = require('./src/matcher');
 const { createBot, sendAlert, processWebhookUpdate } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
@@ -76,7 +76,7 @@ app.post('/api/filters', async (req, res) => {
       beschikbaarheid_timing: b.beschikbaarheid_timing || 'flexibel',
       type: b.type || 'beide',
       woningtype: b.woningtype || 'alle',
-      locatie: (b.locatie || '').toLowerCase().trim(),
+      locatie: normaliseCity(b.locatie || ''),
       prijs_min: parseFloat(b.prijs_min) || 0,
       prijs_max: parseFloat(b.prijs_max) || null,
       opp_min: parseFloat(b.opp_min) || 0,
@@ -90,6 +90,7 @@ app.post('/api/filters', async (req, res) => {
       gemeubileerd: b.gemeubileerd === 'true' || b.gemeubileerd === true ? 1 : 0,
       beschikbaar_per: b.beschikbaar_per || null,
       kans_min: parseInt(b.kans_min) || 0,
+      deal_min: parseInt(b.deal_min) || 0,
     });
 
     // If email provided, try to link to existing paid user record
@@ -161,7 +162,7 @@ app.get('/how-scores-work', (req, res) => {
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 
-// ── Cron job: scrape every 15 minutes ───────────────────
+// ── Cron job: scrape every 10 minutes ───────────────────
 
 async function runScrapeAndAlert() {
   console.log(`[cron] Starting scrape cycle at ${new Date().toISOString()}`);

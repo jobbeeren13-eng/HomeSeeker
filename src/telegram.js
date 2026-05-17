@@ -381,7 +381,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     badge,
     ``,
     `🎯 *Chance:* ${score}% — ${label}`,
-    `💎 *Deal:* ${dealScore}% — ${dLabel}`,
+    `💎 *Deal:* ${dealScore !== null ? `${dealScore}% — ${dLabel}` : dLabel}`,
     filterSection || null,
   ].filter(s => s !== null).join('\n');
 
