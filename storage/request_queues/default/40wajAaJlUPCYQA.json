@@ -1,6 +1,6 @@
 {
 	"id": "40wajAaJlUPCYQA",
-	"json": "{\"id\":\"40wajAaJlUPCYQA\",\"url\":\"https://www.funda.nl/zoeken/huur/?selected_area=[\\\"amstelveen\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/huur/?selected_area=[%22amstelveen%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/huur?selected_area=%5B%22amstelveen%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"amstelveen\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T17:42:33.451Z\"}",
+	"json": "{\"id\":\"40wajAaJlUPCYQA\",\"url\":\"https://www.funda.nl/zoeken/huur/?selected_area=[\\\"amstelveen\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/huur/?selected_area=[%22amstelveen%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/huur?selected_area=%5B%22amstelveen%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"amstelveen\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:08:45.122Z\"}",
 	"method": "GET",
 	"orderNo": null,
 	"retryCount": 0,

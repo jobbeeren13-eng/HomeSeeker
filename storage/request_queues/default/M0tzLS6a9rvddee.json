@@ -1,0 +1,9 @@
+{
+	"id": "M0tzLS6a9rvddee",
+	"json": "{\"id\":\"M0tzLS6a9rvddee\",\"url\":\"https://www.huurwoningen.nl/huurwoningen/amsterdam/\",\"loadedUrl\":\"https://www.huurwoningen.nl/huurwoningen/amsterdam/\",\"uniqueKey\":\"https://www.huurwoningen.nl/huurwoningen/amsterdam\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"huurwoningen\",\"city\":\"amsterdam\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:09:02.630Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://www.huurwoningen.nl/huurwoningen/amsterdam",
+	"url": "https://www.huurwoningen.nl/huurwoningen/amsterdam/"
+}

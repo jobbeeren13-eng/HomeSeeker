@@ -1,0 +1,50 @@
+{
+  "requestsFinished": 0,
+  "requestsFailed": 7,
+  "requestsRetries": 7,
+  "requestsFailedPerMinute": 47,
+  "requestsFinishedPerMinute": 0,
+  "requestMinDurationMillis": null,
+  "requestMaxDurationMillis": 0,
+  "requestTotalFailedDurationMillis": 3146,
+  "requestTotalFinishedDurationMillis": 0,
+  "crawlerStartedAt": "2026-05-17T18:09:21.753Z",
+  "crawlerFinishedAt": "2026-05-17T18:09:30.264Z",
+  "statsPersistedAt": "2026-05-17T18:09:30.264Z",
+  "crawlerRuntimeMillis": 8812,
+  "crawlerLastStartTimestamp": 1779041361452,
+  "requestRetryHistogram": [
+    null,
+    null,
+    null,
+    7
+  ],
+  "statsId": 2,
+  "requestAvgFailedDurationMillis": 449,
+  "requestAvgFinishedDurationMillis": null,
+  "requestTotalDurationMillis": 3146,
+  "requestsTotal": 7,
+  "requestsWithStatusCode": {},
+  "errors": {
+    "C:\\Users\\marcu\\OneDrive\\Desktop\\woningflash\\node_modules\\@crawlee\\playwright\\internals\\utils\\playwright-utils.js:165:17": {
+      "missing error code": {
+        "Error": {
+          "page.goto: net::ERR_EMPTY_RESPONSE at _": {
+            "count": 7
+          }
+        }
+      }
+    }
+  },
+  "retryErrors": {
+    "C:\\Users\\marcu\\OneDrive\\Desktop\\woningflash\\node_modules\\@crawlee\\playwright\\internals\\utils\\playwright-utils.js:165:17": {
+      "missing error code": {
+        "Error": {
+          "page.goto: net::ERR_EMPTY_RESPONSE at _": {
+            "count": 21
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+	"id": "ZdrBKlPmNfQo3GE",
+	"json": "{\"id\":\"ZdrBKlPmNfQo3GE\",\"url\":\"https://www.huurwoningen.nl/huurwoningen/utrecht/\",\"loadedUrl\":\"https://www.huurwoningen.nl/huurwoningen/utrecht/\",\"uniqueKey\":\"https://www.huurwoningen.nl/huurwoningen/utrecht\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":1,\"errorMessages\":[\"Error: Request blocked - received 403 status code.\\n    at PlaywrightCrawler._throwOnBlockedRequest (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@crawlee\\\\basic\\\\internals\\\\basic-crawler.js:913:19)\\n    at PlaywrightCrawler._responseHandler (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@crawlee\\\\browser\\\\internals\\\\browser-crawler.js:383:22)\\n    at PlaywrightCrawler._runRequestHandler (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@crawlee\\\\browser\\\\internals\\\\browser-crawler.js:262:24)\\n    at async PlaywrightCrawler._runRequestHandler (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@crawlee\\\\playwright\\\\internals\\\\playwright-crawler.js:114:9)\\n    at async wrap (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@apify\\\\timeout\\\\cjs\\\\index.cjs:54:21)\"],\"headers\":{},\"userData\":{\"source\":\"huurwoningen\",\"city\":\"utrecht\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:09:16.574Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 1,
+	"uniqueKey": "https://www.huurwoningen.nl/huurwoningen/utrecht",
+	"url": "https://www.huurwoningen.nl/huurwoningen/utrecht/"
+}

@@ -1,9 +1,0 @@
-{
-	"id": "vT1RQOyYBol3pI7",
-	"json": "{\"id\":\"vT1RQOyYBol3pI7\",\"url\":\"https://www.pararius.nl/huurwoningen/den-haag\",\"loadedUrl\":\"https://www.pararius.nl/huurwoningen/den-haag\",\"uniqueKey\":\"https://www.pararius.nl/huurwoningen/den-haag\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"pararius\",\"city\":\"den-haag\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T17:42:19.667Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://www.pararius.nl/huurwoningen/den-haag",
-	"url": "https://www.pararius.nl/huurwoningen/den-haag"
-}

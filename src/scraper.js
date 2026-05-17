@@ -18,7 +18,7 @@ const CRAWLER_OPTS = {
   navigationTimeoutSecs: 45,
   maxRequestRetries: 3,
   requestHandlerTimeoutSecs: 90,
-  maxConcurrency: 2,
+  maxConcurrency: 5,
   launchContext: {
     launchOptions: {
       args: ['--disable-blink-features=AutomationControlled'],
@@ -156,7 +156,7 @@ async function dismissCookieBanner(page) {
 }
  
 async function randomDelay(page) {
-  await page.waitForTimeout(Math.random() * 2000 + 1000);
+  await page.waitForTimeout(Math.random() * 1000 + 500);
 }
  
 function buildFundaUrls() {
@@ -172,20 +172,6 @@ function buildFundaUrls() {
     });
   }
   return urls;
-}
- 
-function buildHuurwoningenUrls() {
-  return CITIES.map(city => ({
-    url: `https://www.huurwoningen.nl/huurwoningen/${city}/`,
-    userData: { source: 'huurwoningen', city, transactionType: 'huur' },
-  }));
-}
- 
-function buildJaapUrls() {
-  return CITIES.map(city => ({
-    url: `https://www.jaap.nl/huurhuizen/${city}/`,
-    userData: { source: 'jaap', city, transactionType: 'huur' },
-  }));
 }
  
 async function extractFundaListings(page, city, transactionType) {
@@ -227,80 +213,16 @@ async function extractFundaListings(page, city, transactionType) {
   }, { city, transactionType });
 }
  
-async function extractHuurwoningenListings(page, city) {
-  return extractGenericListings(page, {
-    city,
-    source: 'huurwoningen',
-    baseHost: 'www.huurwoningen.nl',
-    linkMatch: (href) => /\/huurwoningen\/[^/]+\/[^/]+/.test(href) || href.includes('/woning/'),
-  });
-}
- 
-async function extractJaapListings(page, city) {
-  return extractGenericListings(page, {
-    city,
-    source: 'jaap',
-    baseHost: 'www.jaap.nl',
-    linkMatch: (href) => href.includes('/huurhuizen/') && href.split('/').length > 4,
-  });
-}
- 
-async function extractGenericListings(page, opts) {
-  return page.evaluate((opts) => {
-    const { city, source, baseHost, linkMatch, propertyType } = opts;
-    const results = [];
-    const seen = new Set();
- 
-    const parseItem = (item, href) => {
-      const text = item.innerText || '';
-      const priceMatch = text.match(/€\s*([\d.]+(?:,\d+)?)/);
-      const areaMatch = text.match(/(\d+)\s*m[²2]/i);
-      const roomsMatch = text.match(/(\d+)\s*(?:kamer|room|slaapkamer)/i);
-      const img = item.querySelector('img');
-      const title = item.querySelector('h2, h3, h4, .title, a');
-      let fullUrl = href;
-      if (!href.startsWith('http')) {
-        fullUrl = `https://${baseHost}${href.startsWith('/') ? '' : '/'}${href}`;
-      }
-      fullUrl = fullUrl.split('?')[0];
-      if (seen.has(fullUrl)) return;
-      seen.add(fullUrl);
-      results.push({
-        url: fullUrl,
-        address: title?.textContent?.trim() || '',
-        city,
-        price: priceMatch ? `€ ${priceMatch[1]}` : '',
-        transactionType: 'huur',
-        rooms: roomsMatch ? parseInt(roomsMatch[1], 10) : 0,
-        area: areaMatch ? parseFloat(areaMatch[1]) : 0,
-        propertyType: propertyType || '',
-        image: img?.src || img?.getAttribute('data-src') || '',
-        listedAt: new Date().toISOString(),
-        source,
-      });
-    };
- 
-    document.querySelectorAll('a[href]').forEach(anchor => {
-      const href = anchor.getAttribute('href') || '';
-      if (!linkMatch(href)) return;
-      parseItem(anchor.closest('article, li, div, section') || anchor, href);
-    });
- 
-    return results;
-  }, opts);
-}
- 
-async function scrapePlatform(name, startUrls, extractFn) {
-  if (!startUrls.length) return 0;
- 
+async function scrapeFunda() {
   let newCount = 0;
+  const startUrls = buildFundaUrls();
  
   try {
     const crawler = new PlaywrightCrawler({
       ...CRAWLER_OPTS,
       async requestHandler({ page, request, log }) {
-        const { source, city, transactionType, propertyType } = request.userData;
-        log.info(`[${name}] ${source} — ${city}`);
+        const { source, city, transactionType } = request.userData;
+        log.info(`[funda] ${source} — ${city}`);
  
         await page.setExtraHTTPHeaders({
           'Accept-Language': 'nl-NL,nl;q=0.9,en;q=0.8',
@@ -312,56 +234,35 @@ async function scrapePlatform(name, startUrls, extractFn) {
  
         let raw = [];
         try {
-          raw = await extractFn(page, request.userData);
+          raw = await extractFundaListings(page, city, transactionType);
         } catch (err) {
           log.warning(`Extract failed on ${request.url}: ${err.message}`);
         }
  
         for (const item of raw) {
           const listing = normaliseListing(item, city, source, transactionType);
-          if (propertyType) listing.propertyType = propertyType;
           if (saveNewListing(listing)) newCount++;
         }
  
-        log.info(`[${name}] ${city}: ${raw.length} found`);
+        log.info(`[funda] ${city}: ${raw.length} found`);
       },
       failedRequestHandler({ request, log }, error) {
-        log.error(`[${name}] Failed ${request.url}: ${error.message}`);
+        log.error(`[funda] Failed ${request.url}: ${error.message}`);
       },
     });
  
-    console.log(`[scraper] Starting ${name} (${startUrls.length} URLs)…`);
+    console.log(`[scraper] Starting funda (${startUrls.length} URLs)…`);
     await crawler.run(startUrls);
-    console.log(`[scraper] ${name} done — ${newCount} new listings`);
+    console.log(`[scraper] funda done — ${newCount} new listings`);
     return newCount;
   } catch (err) {
-    console.error(`[scraper] ${name} failed: ${err.message}`);
+    console.error(`[scraper] funda failed: ${err.message}`);
     return 0;
   }
 }
  
-async function scrapeFunda() {
-  return scrapePlatform('funda', buildFundaUrls(), async (page, { city, transactionType }) =>
-    extractFundaListings(page, city, transactionType)
-  );
-}
- 
-async function scrapeHuurwoningen() {
-  return scrapePlatform('huurwoningen', buildHuurwoningenUrls(), async (page, { city }) =>
-    extractHuurwoningenListings(page, city)
-  );
-}
- 
-async function scrapeJaap() {
-  return scrapePlatform('jaap', buildJaapUrls(), async (page, { city }) =>
-    extractJaapListings(page, city)
-  );
-}
- 
 async function scrapeListings() {
   await scrapeFunda();
-  await scrapeHuurwoningen();
-  await scrapeJaap();
  
   const unsent = getUnsentListings.all().map(rowToListing);
   console.log(`[scraper] Total unsent listings: ${unsent.length}`);
@@ -377,8 +278,6 @@ function markListingsAsSent(urls) {
 module.exports = {
   scrapeListings,
   scrapeFunda,
-  scrapeHuurwoningen,
-  scrapeJaap,
   normaliseCity,
   makeFingerprint,
   markListingsAsSent,

@@ -1,0 +1,9 @@
+{
+	"id": "es3uXISzG9akCEK",
+	"json": "{\"id\":\"es3uXISzG9akCEK\",\"url\":\"https://www.huurwoningen.nl/huurwoningen/haarlem/\",\"loadedUrl\":\"https://www.huurwoningen.nl/huurwoningen/haarlem/\",\"uniqueKey\":\"https://www.huurwoningen.nl/huurwoningen/haarlem\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"huurwoningen\",\"city\":\"haarlem\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:09:09.940Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://www.huurwoningen.nl/huurwoningen/haarlem",
+	"url": "https://www.huurwoningen.nl/huurwoningen/haarlem/"
+}
