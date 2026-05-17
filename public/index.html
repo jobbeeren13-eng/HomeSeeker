@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeSeeker — Real-Time Dutch Housing Alerts</title>
+  <meta name="description" content="Get instant Telegram alerts for new Dutch housing listings. Be the first to respond — within minutes of a new listing going live." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00e5a0;
+      --green-dim: rgba(0,229,160,0.12);
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --bg3: #181818;
+      --border: rgba(255,255,255,0.07);
+      --text: #f0f0f0;
+      --muted: #888;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 2px;
+      color: var(--green);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--green);
+      color: #000 !important;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-weight: 600 !important;
+    }
+    .nav-cta:hover { opacity: .9; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,229,160,0.15) 0%, transparent 70%);
+    }
+    .hero-inner { max-width: 760px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-dim);
+      border: 1px solid rgba(0,229,160,0.3);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .4; transform: scale(1.4); }
+    }
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(56px, 10vw, 96px);
+      line-height: 1;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
+    h1 span { color: var(--green); }
+    .hero-sub {
+      font-size: clamp(17px, 2.5vw, 21px);
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      font-weight: 300;
+    }
+    .hero-cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-block;
+      background: var(--green);
+      color: #000;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 16px 36px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity .2s, transform .2s;
+    }
+    .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-block;
+      background: transparent;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 500;
+      padding: 16px 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      transition: border-color .2s;
+    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.25); }
+    .hero-note {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .hero-social {
+      margin-top: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* STATS */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .stat {
+      flex: 1;
+      max-width: 240px;
+      text-align: center;
+      padding: 40px 24px;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--muted); font-weight: 400; }
+
+    /* SECTIONS */
+    section { padding: 100px 24px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 14px;
+    }
+    h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 6vw, 60px);
+      line-height: 1.05;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 520px;
+      font-weight: 300;
+    }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2px;
+      margin-top: 64px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .step {
+      background: var(--bg2);
+      padding: 40px 32px;
+      position: relative;
+    }
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 56px;
+      color: var(--green-dim);
+      line-height: 1;
+      margin-bottom: 16px;
+      color: rgba(0,229,160,0.2);
+    }
+    .step h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+    .step p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    /* ALERT PREVIEW */
+    .preview-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      margin-top: 0;
+    }
+    @media (max-width: 768px) { .preview-grid { grid-template-columns: 1fr; } }
+    .phone-mock {
+      background: #1a1a1a;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 24px;
+      max-width: 360px;
+      margin: 0 auto;
+      box-shadow: 0 0 60px rgba(0,229,160,0.08);
+    }
+    .tg-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tg-avatar {
+      width: 36px; height: 36px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .tg-name { font-weight: 600; font-size: 14px; }
+    .tg-online { font-size: 11px; color: var(--green); }
+    .tg-bubble {
+      background: #2a2a2a;
+      border-radius: 4px 14px 14px 14px;
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .tg-bubble strong { color: var(--text); }
+    .tg-bubble .price { color: var(--green); font-weight: 600; }
+    .tg-bubble .score {
+      display: inline-block;
+      background: rgba(0,229,160,0.15);
+      color: var(--green);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-weight: 700;
+      margin: 6px 0;
+      font-size: 12px;
+    }
+    .tg-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tg-btn {
+      background: #333;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 12px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .preview-features { list-style: none; }
+    .preview-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+    }
+    .preview-features li:last-child { border-bottom: none; }
+    .feature-icon {
+      width: 36px; height: 36px;
+      background: var(--green-dim);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .feature-text strong { display: block; font-weight: 600; margin-bottom: 3px; }
+    .feature-text span { color: var(--muted); font-size: 13px; }
+
+    /* SCORE */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 48px;
+    }
+    .score-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+    .score-emoji { font-size: 28px; margin-bottom: 8px; }
+    .score-range { font-family: 'Bebas Neue'; font-size: 28px; color: var(--green); margin-bottom: 6px; }
+    .score-name { font-size: 14px; color: var(--muted); font-weight: 500; }
+
+    /* PRICING */
+    .pricing-section { text-align: center; }
+    .price-card {
+      display: inline-block;
+      background: var(--bg2);
+      border: 1px solid var(--green);
+      border-radius: 16px;
+      padding: 48px 56px;
+      max-width: 440px;
+      width: 100%;
+      margin-top: 48px;
+      box-shadow: 0 0 60px rgba(0,229,160,0.1);
+    }
+    .price-amount {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 72px;
+      color: var(--green);
+      line-height: 1;
+    }
+    .price-period { color: var(--muted); font-size: 16px; margin-bottom: 32px; margin-top: 4px; }
+    .price-features { list-style: none; text-align: left; margin-bottom: 36px; }
+    .price-features li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .price-features li:last-child { border-bottom: none; }
+    .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; }
+    .price-cta {
+      display: block;
+      background: var(--green);
+      color: #000;
+      font-weight: 700;
+      font-size: 17px;
+      padding: 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity .2s;
+    }
+    .price-cta:hover { opacity: .9; }
+    .price-disclaimer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* FAQ */
+    .faq-list { margin-top: 48px; max-width: 680px; }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+    }
+    .faq-q {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-q::after { content: '+'; color: var(--green); font-size: 20px; }
+    .faq-a { color: var(--muted); font-size: 15px; line-height: 1.7; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg2);
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 2px;
+      color: var(--green);
+      margin-bottom: 16px;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .footer-links a { color: var(--muted); font-size: 13px; text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { color: var(--muted); font-size: 12px; }
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .calc-row span:last-child {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      .stats { flex-wrap: wrap; }
+      .stat { border-right: none; border-bottom: 1px solid var(--border); min-width: 50%; }
+      section { padding: 70px 20px; }
+      .price-card { padding: 36px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="/">HOMESEEKER</a>
+  <div class="nav-links">
+    <a href="#how-it-works">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="/subscribe" class="nav-cta">Start free trial</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="badge"><span class="badge-dot"></span> Live alerts — be first in line</div>
+    <h1>Be First to<br /><span>New Dutch</span><br />Listings</h1>
+    <p class="hero-sub">
+      Get instant Telegram alerts within minutes before other renters even see them.
+    </p>
+    <div class="hero-cta-group">
+      <a href="/subscribe" class="btn-primary">Start 7-day free trial</a>
+      <a href="#how-it-works" class="btn-secondary">See how it works</a>
+    </div>
+    <p class="hero-note">⚡ Average alert time: under 5 minutes &nbsp;·&nbsp; ✓ Cancel anytime &nbsp;·&nbsp; ✓ Instant AI application letters</p>
+    <p class="hero-social">⭐ Trusted by renters in Amsterdam, Utrecht, Rotterdam &amp; Haarlem</p>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">7</div>
+    <div class="stat-label">Cities monitored</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">&lt;5<span style="font-size:28px">min</span></div>
+    <div class="stat-label">Average alert time</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">14</div>
+    <div class="stat-label">Search URLs scraped</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">24/7</div>
+    <div class="stat-label">Always watching</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works">
+  <div class="container">
+    <div class="section-tag">How it works</div>
+    <h2>Simple.<br />Fast. Effective.</h2>
+    <p class="section-sub">From sign-up to your first alert in under 5 minutes.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Subscribe</h3>
+        <p>Start your 7-day free trial. No payment charged until the trial ends. Cancel anytime.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Connect Telegram</h3>
+        <p>Open the HomeSeeker bot on Telegram and send /start. You'll receive a personal setup link instantly.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Set your filters</h3>
+        <p>City, type, price range, rooms, income — we use your profile to calculate a personal chance score for each listing.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h3>Get alerts</h3>
+        <p>Within minutes of a new listing going live, you get a Telegram message with all the details and a one-click AI letter.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALERT PREVIEW -->
+<section class="preview-section">
+  <div class="container">
+    <div class="preview-grid">
+      <div>
+        <div class="section-tag">What you receive</div>
+        <h2>Your alert,<br />in seconds.</h2>
+        <p class="section-sub" style="margin-bottom:40px">Every alert is personalised with your chance score and all the key details you need to decide in seconds.</p>
+        <ul class="preview-features">
+          <li>
+            <div class="feature-icon">📍</div>
+            <div class="feature-text">
+              <strong>Address & city</strong>
+              <span>Exact location plus link to view on the platform.</span>
+            </div>
+          </li>
+          <li>
+            <div class="feature-icon">🎯</div>
+            <div class="feature-text">
+              <strong>Personal chance score</strong>
+              <span>0–100 based on your income, documents, and price fit.</span>
+            </div>
+          </li>
+          <li>
+            <div class="feature-icon">✉️</div>
+            <div class="feature-text">
+              <strong>One-click AI letter</strong>
+              <span>Generate a Dutch motivation letter for that listing in seconds.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <div class="phone-mock">
+          <div class="tg-header">
+            <div class="tg-avatar">🏠</div>
+            <div>
+              <div class="tg-name">HomeSeeker</div>
+              <div class="tg-online">● online</div>
+            </div>
+          </div>
+          <div class="tg-bubble">
+            🏠 <strong>New listing in Amsterdam</strong><br /><br />
+            📍 Keizersgracht 124, Amsterdam<br />
+            💰 <span class="price">€1,850/month</span> | 📐 78m² | 🛏 3 rooms<br /><br />
+            ━━━━━━━━━━━━━━━<br />
+            🎯 <strong>Chance Score: <span class="score">Good (74%)</span></strong><br />
+            💎 <strong>Deal Score: <span class="score" style="background:rgba(100,180,255,0.12);color:#6ab4ff">Strong Value (68%)</span></strong><br />
+            ━━━━━━━━━━━━━━━<br /><br />
+            ✅ Matches your filters:<br />
+            - Max price: ✓ within budget<br />
+            - Min rooms: ✓<br />
+            - Location: ✓
+          </div>
+          <div class="tg-buttons">
+            <div class="tg-btn">🔗 View Listing</div>
+            <div class="tg-btn">✉️ Generate Application Letter</div>
+            <div class="tg-btn">❌ Unsubscribe</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TWO SCORES -->
+<section>
+  <div class="container">
+    <div class="section-tag">Two scores per alert</div>
+    <h2>Know your odds <em style="font-style:normal;color:var(--green)">and</em><br />the value of every listing.</h2>
+    <p class="section-sub">Each alert comes with two independent scores so you can instantly prioritise what to act on.</p>
+
+    <!-- Score type tabs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px">
+
+      <!-- Chance Score -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:14px">🎯 Chance Score</div>
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:10px">Can <em>you</em> get it?</h3>
+        <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px">Personal to you. Calculated from your income ratio, application readiness, price fit, and timing.</p>
+        <div class="score-grid" style="grid-template-columns:repeat(3,1fr);gap:10px">
+          <div class="score-card" style="padding:16px"><div class="score-emoji">✅</div><div class="score-range" style="font-size:20px">85–100</div><div class="score-name">Excellent</div></div>
+          <div class="score-card" style="padding:16px"><div class="score-emoji">🟢</div><div class="score-range" style="font-size:20px">70–84</div><div class="score-name">Good</div></div>
+          <div class="score-card" style="padding:16px"><div class="score-emoji">🟡</div><div class="score-range" style="font-size:20px">55–69</div><div class="score-name">Fair</div></div>
+          <div class="score-card" style="padding:16px"><div class="score-emoji">🟠</div><div class="score-range" style="font-size:20px">40–54</div><div class="score-name">Low</div></div>
+          <div class="score-card" style="padding:16px"><div class="score-emoji">🔴</div><div class="score-range" style="font-size:20px">0–39</div><div class="score-name">Very Low</div></div>
+        </div>
+      </div>
+
+      <!-- Deal Score -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6ab4ff;margin-bottom:14px">💎 Deal Score</div>
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:10px">Is it actually a <em>good deal</em>?</h3>
+        <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px">Objective. Based on €/m² vs market average, price drop detection, WOZ proxy, and location value.</p>
+        <div class="score-grid" style="grid-template-columns:repeat(2,1fr);gap:10px">
+          <div class="score-card" style="padding:16px"><div class="score-emoji">💎</div><div class="score-range" style="font-size:20px">80–100</div><div class="score-name">Hidden gem</div></div>
+          <div class="score-card" style="padding:16px"><div class="score-emoji">🟢</div><div class="score-range" style="font-size:20px">60–79</div><div class="score-name">Strong value</div></div>
+          <div class="score-card" style="padding:16px"><div class="score-emoji">🟡</div><div class="score-range" style="font-size:20px">40–59</div><div class="score-name">Fair deal</div></div>
+          <div class="score-card" style="padding:16px"><div class="score-emoji">🔴</div><div class="score-range" style="font-size:20px">0–39</div><div class="score-name">Bad deal</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:28px">
+      <a href="/how-scores-work" style="color:var(--green);font-size:14px;text-decoration:none;font-weight:500">See exactly how both scores are calculated →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="pricing-section">
+  <div class="container">
+    <div class="section-tag">Pricing</div>
+    <h2>One flat price.<br />No surprises.</h2>
+    <p class="section-sub" style="margin:0 auto 0">Start free, cancel anytime.</p>
+
+    <div class="price-card">
+      <div class="price-amount">€11.99</div>
+      <div class="price-period">per month</div>
+      <ul class="price-features">
+        <li>Real-time alerts via Telegram</li>
+        <li>We monitor all relevant Dutch housing platforms — you won't miss a thing</li>
+        <li>Chance Score + Deal Score on every alert</li>
+        <li>One-click AI motivation letter</li>
+        <li>7 cities: Amsterdam, Rotterdam, The Hague, Utrecht, Haarlem, Amstelveen, Delft</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <a href="/subscribe" class="price-cta">Start 7-day free trial →</a>
+      <p class="price-disclaimer">
+        7-day free trial. After your trial, your subscription continues at €11.99/month.
+        No refunds after the trial period ends. Cancel anytime before the trial ends via the link in your confirmation email.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- COSTS CALCULATOR -->
+<section id="cost-calculator">
+  <div class="container">
+    <div class="section-tag">Real cost breakdown</div>
+    <h2>What will you<br />really pay?</h2>
+    <p class="section-sub">Rent is just the start. See your realistic monthly total before you sign.</p>
+
+    <div style="max-width:560px;margin:48px auto 0">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:32px">
+        <div style="margin-bottom:24px">
+          <label style="display:block;font-size:13px;font-weight:600;color:#ccc;margin-bottom:8px">Monthly rent (€)</label>
+          <input
+            type="number"
+            id="calc-rent"
+            placeholder="1500"
+            min="0"
+            oninput="calcCosts()"
+            style="width:100%;background:#161616;border:1px solid var(--border);border-radius:8px;color:#f0f0f0;font-family:'Outfit',sans-serif;font-size:18px;font-weight:600;padding:14px 16px;outline:none;transition:border-color .2s"
+            onfocus="this.style.borderColor='rgba(0,229,160,0.5)'"
+            onblur="this.style.borderColor='rgba(255,255,255,0.07)'"
+          />
+        </div>
+
+        <div id="calc-results" style="display:none">
+          <div style="border-top:1px solid var(--border);padding-top:20px">
+            <div class="calc-row" id="row-rent">
+              <span>🏠 Base rent</span>
+              <span id="out-rent">—</span>
+            </div>
+            <div class="calc-row">
+              <span>🔧 Service costs <small style="color:var(--muted)">(est.)</small></span>
+              <span id="out-service">—</span>
+            </div>
+            <div class="calc-row">
+              <span>⚡ Gas, water &amp; electricity <small style="color:var(--muted)">(est.)</small></span>
+              <span id="out-utilities">—</span>
+            </div>
+            <div class="calc-row">
+              <span>🏛 Municipal taxes <small style="color:var(--muted)">(est.)</small></span>
+              <span id="out-taxes">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 0 4px;border-top:1px solid var(--border);margin-top:8px">
+              <span style="font-weight:700;font-size:16px">Total per month</span>
+              <span id="out-total" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green)">—</span>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6">Estimates based on average Dutch rental market figures. Actual costs vary by property, city, and landlord. Always verify before signing.</p>
+          </div>
+        </div>
+
+        <div id="calc-placeholder" style="text-align:center;padding:24px 0;color:var(--muted);font-size:14px">
+          Enter your expected rent above to see the full picture.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" style="background:var(--bg2)">
+  <div class="container">
+    <div class="section-tag">FAQ</div>
+    <h2>Common questions.</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">Which platforms are monitored?</div>
+        <div class="faq-a">We scrape all major Dutch housing platforms continuously. You get one alert, regardless of where the listing appeared.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How fast do I get notified?</div>
+        <div class="faq-a">Within minutes of a new listing going live. We check for new listings every 15 minutes around the clock.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What is the chance score?</div>
+        <div class="faq-a">A personal 0–100 score calculated from your gross income (compared to the rent or mortgage), your document readiness, and how the listing price compares to your maximum. It helps you prioritise which listings to respond to first.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Can I filter by city and type?</div>
+        <div class="faq-a">Yes. You can set your preferred city, koop or huur (or both), price range, number of rooms, minimum area, energy label, and more. You can also set a minimum chance score so you only receive alerts above your threshold.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What is the AI motivation letter?</div>
+        <div class="faq-a">When you tap "Generate Application Letter" in Telegram, the bot asks 4 quick questions (name, income, move-in date, extra info) and generates a professional Dutch motivation letter addressed to that specific landlord or agent. Copy and send it directly — you do the sending, so you can personalise it first.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How do I cancel?</div>
+        <div class="faq-a">You can cancel anytime before the trial ends via the link in your confirmation email, or by sending /stop to the HomeSeeker bot on Telegram. You will not be charged if you cancel before day 7.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BOTTOM -->
+<section style="text-align:center;background:radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,229,160,0.1) 0%, transparent 70%)">
+  <div class="container">
+    <h2>Ready to find your home?</h2>
+    <p class="section-sub" style="margin: 16px auto 40px">Start your free trial today and be first to respond to every new listing that matches your profile.</p>
+    <a href="/subscribe" class="btn-primary" style="font-size:18px;padding:18px 48px">Start 7-day free trial →</a>
+    <p class="hero-note" style="margin-top:16px">€11.99/month after trial &nbsp;·&nbsp; Cancel anytime</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">HOMESEEKER</div>
+  <div class="footer-links">
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/how-scores-work">How Scores Work</a>
+    <a href="/cancel">Cancel Subscription</a>
+    <a href="mailto:homeseeker@gmail.com">homeseeker@gmail.com</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <p class="footer-copy">© 2025 HomeSeeker. All rights reserved.</p>
+</footer>
+
+<script>
+  function calcCosts() {
+    const rent = parseFloat(document.getElementById('calc-rent').value) || 0;
+    const results = document.getElementById('calc-results');
+    const placeholder = document.getElementById('calc-placeholder');
+
+    if (rent <= 0) {
+      results.style.display = 'none';
+      placeholder.style.display = 'block';
+      return;
+    }
+
+    // Service costs: €50–150 (landlord admin/maintenance levy)
+    const service = Math.round(Math.max(50, Math.min(150, rent * 0.05)));
+    // Gas, water, electricity: €100–200 (scales with property size proxy)
+    const utilities = Math.round(Math.max(100, Math.min(200, rent * 0.09)));
+    // Municipal taxes (gemeentelijke heffingen): €30–60 per month
+    const taxes = Math.round(Math.max(30, Math.min(60, rent * 0.025)));
+    const total = rent + service + utilities + taxes;
+
+    const fmt = n => '€' + Math.round(n).toLocaleString('nl-NL');
+
+    document.getElementById('out-rent').textContent = fmt(rent);
+    document.getElementById('out-service').textContent = fmt(service);
+    document.getElementById('out-utilities').textContent = fmt(utilities);
+    document.getElementById('out-taxes').textContent = fmt(taxes);
+    document.getElementById('out-total').textContent = fmt(total);
+
+    placeholder.style.display = 'none';
+    results.style.display = 'block';
+  }
+</script>
+
+</body>
+</html>

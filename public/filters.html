@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeSeeker — Set Your Filters</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0;
+      --green-dim: rgba(0,229,160,0.12);
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --bg3: #1a1a1a;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f0f0;
+      --muted: #888;
+      --input-bg: #161616;
+    }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 80px;
+    }
+    .header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      color: var(--green);
+      text-decoration: none;
+    }
+    .header-title {
+      font-size: 14px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
+    .disclaimer {
+      background: rgba(0,229,160,0.07);
+      border: 1px solid rgba(0,229,160,0.2);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 24px auto;
+      max-width: 680px;
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.6;
+    }
+    .disclaimer strong { color: var(--green); }
+
+    .form-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .form-intro {
+      padding: 32px 0 8px;
+    }
+    .form-intro h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .form-intro p { color: var(--muted); font-size: 15px; }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      margin-top: 20px;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 20px;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 7px;
+      color: #ccc;
+    }
+    .field-label .req { color: var(--green); }
+    .tip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      background: #222;
+      border-radius: 50%;
+      font-size: 10px;
+      color: var(--muted);
+      cursor: default;
+      font-style: normal;
+    }
+    .tip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2a2a2a;
+      color: #ddd;
+      font-size: 12px;
+      font-weight: 400;
+      padding: 8px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+      max-width: 240px;
+      white-space: normal;
+      text-align: left;
+      line-height: 1.5;
+      width: 200px;
+      border: 1px solid var(--border);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s;
+      z-index: 10;
+    }
+    .tip:hover::after { opacity: 1; }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"],
+    select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      padding: 11px 14px;
+      outline: none;
+      transition: border-color .2s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: rgba(0,229,160,0.5);
+    }
+    select option { background: #1a1a1a; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 500px) { .row { grid-template-columns: 1fr; } }
+
+    .toggle-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .toggle-btn {
+      position: relative;
+    }
+    .toggle-btn input[type="radio"],
+    .toggle-btn input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+    .toggle-btn label {
+      display: block;
+      padding: 9px 18px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--muted);
+      background: var(--input-bg);
+      transition: all .15s;
+      user-select: none;
+    }
+    .toggle-btn input:checked + label {
+      background: var(--green-dim);
+      border-color: var(--green);
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .checkbox-field input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: var(--green);
+      color: #000;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 17px;
+      padding: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 28px;
+      transition: opacity .2s;
+    }
+    .submit-btn:hover { opacity: .9; }
+    .submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    #success-msg {
+      display: none;
+      background: rgba(0,229,160,0.1);
+      border: 1px solid var(--green);
+      border-radius: 10px;
+      padding: 24px;
+      margin-top: 24px;
+      text-align: center;
+    }
+    #success-msg h3 { color: var(--green); font-size: 20px; margin-bottom: 8px; }
+    #success-msg p { color: var(--muted); font-size: 14px; }
+
+    #error-msg {
+      display: none;
+      background: rgba(255,80,80,0.1);
+      border: 1px solid rgba(255,80,80,0.4);
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 12px;
+      color: #ff8080;
+      font-size: 14px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="logo" href="/">HOMESEEKER</a>
+  <span class="header-title">/ Filter Setup</span>
+</div>
+
+<div class="form-wrap">
+  <div class="disclaimer">
+    <strong>Trial notice:</strong> By submitting this form you agree to the 7-day free trial terms.
+    After the trial, €11.99/month is charged automatically. No refunds after trial period ends.
+    Cancel anytime before day 7 via the link in your confirmation email.
+  </div>
+
+  <div class="form-intro">
+    <h1>Set Your Filters</h1>
+    <p>Tell us what you're looking for. We'll alert you within minutes of a new match going live.</p>
+  </div>
+
+  <form id="filter-form" novalidate>
+    <input type="hidden" id="chat_id" name="chat_id" />
+
+    <!-- Personal info -->
+    <div class="card">
+      <div class="card-title">Your profile</div>
+      <div class="row">
+        <div class="field">
+          <div class="field-label">First name <span class="req">*</span></div>
+          <input type="text" name="naam" required placeholder="Emma" />
+        </div>
+        <div class="field">
+          <div class="field-label">Email address <span class="req">*</span></div>
+          <input type="email" name="email" required placeholder="emma@example.com" />
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          Profile type
+          <i class="tip" data-tip="Helps us tailor your chance score and relevant filters.">?</i>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="profiel_type" id="pt_starter" value="starter" /><label for="pt_starter">Starter</label></div>
+          <div class="toggle-btn"><input type="radio" name="profiel_type" id="pt_expat" value="expat" /><label for="pt_expat">Expat</label></div>
+          <div class="toggle-btn"><input type="radio" name="profiel_type" id="pt_door" value="doorstromer" /><label for="pt_door">Mover</label></div>
+          <div class="toggle-btn"><input type="radio" name="profiel_type" id="pt_other" value="anders" checked /><label for="pt_other">Other</label></div>
+        </div>
+      </div>
+
+      <div class="field" id="expat-field" style="display:none">
+        <div class="field-label">
+          Expat status
+          <i class="tip" data-tip="Affects document requirements for some landlords.">?</i>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="expat_status" id="es_eu" value="EU" /><label for="es_eu">EU citizen</label></div>
+          <div class="toggle-btn"><input type="radio" name="expat_status" id="es_noneu" value="non-EU" /><label for="es_noneu">Non-EU</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          Contract type
+          <i class="tip" data-tip="Your employment situation. Affects eligibility for some rentals/mortgages.">?</i>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="contract_type" id="ct_vast" value="vast" checked /><label for="ct_vast">Permanent</label></div>
+          <div class="toggle-btn"><input type="radio" name="contract_type" id="ct_temp" value="tijdelijk" /><label for="ct_temp">Temporary</label></div>
+          <div class="toggle-btn"><input type="radio" name="contract_type" id="ct_zzp" value="zzp" /><label for="ct_zzp">Freelance</label></div>
+          <div class="toggle-btn"><input type="radio" name="contract_type" id="ct_student" value="student" /><label for="ct_student">Student</label></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="field-label">
+            Gross monthly income (€) <span class="req">*</span>
+            <i class="tip" data-tip="Used to calculate your chance score. For huur: you need 3× the rent. For koop: income × 4.5 = max mortgage.">?</i>
+          </div>
+          <input type="number" name="inkomen" min="0" placeholder="3500" required />
+        </div>
+        <div class="field">
+          <div class="field-label">
+            Application readiness
+            <i class="tip" data-tip="How ready are your application documents? (pay slips, employer statement, IDs, bank statements, etc.)">?</i>
+          </div>
+          <select name="application_readiness">
+            <option value="klaar">Ready to submit</option>
+            <option value="bijna">Almost ready</option>
+            <option value="bezig" selected>In progress</option>
+            <option value="niet">Not started</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          Availability
+          <i class="tip" data-tip="When can you move in?">?</i>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="beschikbaarheid_timing" id="bt_direct" value="direct" checked /><label for="bt_direct">Immediately</label></div>
+          <div class="toggle-btn"><input type="radio" name="beschikbaarheid_timing" id="bt_1m" value="1maand" /><label for="bt_1m">Within 1 month</label></div>
+          <div class="toggle-btn"><input type="radio" name="beschikbaarheid_timing" id="bt_3m" value="3maanden" /><label for="bt_3m">Within 3 months</label></div>
+          <div class="toggle-btn"><input type="radio" name="beschikbaarheid_timing" id="bt_flex" value="flexibel" /><label for="bt_flex">Flexible</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location & type -->
+    <div class="card">
+      <div class="card-title">Location & listing type</div>
+
+      <div class="field">
+        <div class="field-label">City <span class="req">*</span></div>
+        <select name="locatie" required>
+          <option value="">Select a city</option>
+          <option value="amsterdam">Amsterdam</option>
+          <option value="rotterdam">Rotterdam</option>
+          <option value="den-haag">The Hague</option>
+          <option value="utrecht">Utrecht</option>
+          <option value="haarlem">Haarlem</option>
+          <option value="amstelveen">Amstelveen</option>
+          <option value="delft">Delft</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Looking for</div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="type" id="type_huur" value="huur" /><label for="type_huur">Huur (rent)</label></div>
+          <div class="toggle-btn"><input type="radio" name="type" id="type_koop" value="koop" /><label for="type_koop">Koop (buy)</label></div>
+          <div class="toggle-btn"><input type="radio" name="type" id="type_beide" value="beide" checked /><label for="type_beide">Both</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Property type</div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="woningtype" id="wt_alle" value="alle" checked /><label for="wt_alle">All</label></div>
+          <div class="toggle-btn"><input type="radio" name="woningtype" id="wt_huis" value="huis" /><label for="wt_huis">House</label></div>
+          <div class="toggle-btn"><input type="radio" name="woningtype" id="wt_app" value="appartement" /><label for="wt_app">Apartment</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Price & size -->
+    <div class="card">
+      <div class="card-title">Price & size</div>
+      <div class="row">
+        <div class="field">
+          <div class="field-label">Min price (€)</div>
+          <input type="number" name="prijs_min" min="0" placeholder="0" />
+        </div>
+        <div class="field">
+          <div class="field-label">Max price (€) <span class="req">*</span></div>
+          <input type="number" name="prijs_max" min="0" placeholder="2000" required />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <div class="field-label">
+            Min area (m²)
+            <i class="tip" data-tip="Only receive listings with at least this living area.">?</i>
+          </div>
+          <input type="number" name="opp_min" min="0" placeholder="40" />
+        </div>
+        <div class="field">
+          <div class="field-label">
+            Min rooms
+            <i class="tip" data-tip="Minimum number of rooms (bedrooms + living room).">?</i>
+          </div>
+          <input type="number" name="kamers_min" min="1" max="10" placeholder="2" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced filters -->
+    <div class="card">
+      <div class="card-title">Advanced filters</div>
+
+      <div class="field">
+        <div class="field-label">
+          Energy label (minimum)
+          <i class="tip" data-tip="A is best, G is worst. Only receive listings with at least this label.">?</i>
+        </div>
+        <select name="energielabel">
+          <option value="geen">No preference</option>
+          <option value="A">A or better</option>
+          <option value="B">B or better</option>
+          <option value="C">C or better</option>
+          <option value="D">D or better</option>
+          <option value="E">E or better</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          Min construction year
+          <i class="tip" data-tip="Only receive listings built in or after this year.">?</i>
+        </div>
+        <input type="number" name="bouwjaar_min" min="1800" max="2025" placeholder="1990" />
+      </div>
+
+      <div class="field">
+        <div class="field-label">Available from</div>
+        <input type="date" name="beschikbaar_per" />
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          Minimum chance score
+          <i class="tip" data-tip="Only receive alerts when your personal chance score is above this threshold. Reduces noise.">?</i>
+        </div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="kans_min" id="km_0" value="0" checked /><label for="km_0">No preference</label></div>
+          <div class="toggle-btn"><input type="radio" name="kans_min" id="km_50" value="50" /><label for="km_50">50%+</label></div>
+          <div class="toggle-btn"><input type="radio" name="kans_min" id="km_60" value="60" /><label for="km_60">60%+</label></div>
+          <div class="toggle-btn"><input type="radio" name="kans_min" id="km_70" value="70" /><label for="km_70">70%+</label></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preferences (huur only) -->
+    <div class="card" id="huur-prefs">
+      <div class="card-title">Rental preferences</div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <label class="checkbox-field">
+          <input type="checkbox" name="tuin" value="true" />
+          Garden or outdoor space
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" name="parkeren" value="true" />
+          Parking included
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" name="huisdieren" value="true" />
+          Pets allowed
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" name="gemeubileerd" value="true" />
+          Furnished
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" name="delen_toegestaan" value="true" />
+          <span>Sharing allowed <span style="color:var(--muted);font-size:12px">(for group living)</span></span>
+        </label>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submit-btn">Save my filters &amp; start alerts →</button>
+    <div id="error-msg"></div>
+  </form>
+
+  <div id="success-msg">
+    <h3>🎉 You're all set!</h3>
+    <p>Your filters have been saved. You'll start receiving alerts on Telegram within minutes of a new matching listing going live.</p>
+    <p style="margin-top:12px">Go back to Telegram and wait for your first alert!</p>
+  </div>
+</div>
+
+<script>
+  // Pre-fill chat_id from URL
+  const params = new URLSearchParams(window.location.search);
+  const chatId = params.get('chat_id') || '';
+  document.getElementById('chat_id').value = chatId;
+
+  // Show expat field conditionally
+  document.querySelectorAll('input[name="profiel_type"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.getElementById('expat-field').style.display =
+        r.value === 'expat' && r.checked ? 'block' : 'none';
+    });
+  });
+
+  // Form submit
+  document.getElementById('filter-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const errEl = document.getElementById('error-msg');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const form = e.target;
+    const fd = new FormData(form);
+    const data = {};
+
+    // radio/text fields
+    for (const [k, v] of fd.entries()) {
+      data[k] = v;
+    }
+
+    // checkboxes (unchecked = false)
+    ['tuin','parkeren','huisdieren','gemeubileerd','delen_toegestaan'].forEach(k => {
+      data[k] = form.querySelector(`[name="${k}"]`).checked ? 'true' : 'false';
+    });
+
+    if (!data.chat_id) {
+      errEl.textContent = 'Error: missing Telegram chat ID. Please open this link from the HomeSeeker bot.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Save my filters & start alerts →';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/filters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Unknown error');
+      form.style.display = 'none';
+      document.getElementById('success-msg').style.display = 'block';
+    } catch (err) {
+      errEl.textContent = `Error: ${err.message}`;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Save my filters & start alerts →';
+    }
+  });
+</script>
+</body>
+</html>

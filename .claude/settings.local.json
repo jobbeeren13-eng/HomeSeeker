@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(fuser -k 3000/tcp)",
+      "Bash(npm start *)",
+      "Bash(kill -9 2168)",
+      "PowerShell(netstat *)"
+    ]
+  }
+}
