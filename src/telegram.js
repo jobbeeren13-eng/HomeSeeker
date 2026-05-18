@@ -124,12 +124,11 @@ function createBot(useWebhook = false) {
     console.error('[telegram] Polling error:', err.message);
   });
  
+  // /start is open for everyone — no access check
   bot.onText(/\/start/, async (msg) => {
     const chatId = String(msg.chat.id);
     clearLetterState(chatId);
     upsertChat.run(chatId, msg.from?.username || '', msg.from?.first_name || '');
- 
-    if (!hasAccess(chatId)) return denyAccess(chatId);
  
     const filterUrl = `${BASE_URL}/filters?chat_id=${chatId}`;
     await bot.sendMessage(chatId,
@@ -365,12 +364,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const isHuur = listing.transactionType === 'huur';
   const priceLine = isHuur ? `${priceStr}/mnd` : priceStr;
  
-  // Maandlasten schatting alleen voor huurwoningen
   const monthlyCostLine = (isHuur && listing.priceNumber)
     ? `📊 Est. monthly costs: ~€${estimateMonthlyCost(listing.priceNumber).toLocaleString('nl-NL')}/mnd`
     : null;
  
-  // Hoe lang geleden geplaatst
   let listedAgoStr = '';
   if (listing.listedAt) {
     const mins = Math.round((Date.now() - new Date(listing.listedAt).getTime()) / 60000);
