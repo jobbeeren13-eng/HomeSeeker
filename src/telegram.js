@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { getUser, getListingByUrl, getUserByCustomerId, linkChatToCustomer, upsertChat, setUserActive, cancelUserByChatId } = require('./database');
 const { generateLetter } = require('./letter');
 const { rowToListing } = require('./scraper');
+const { getImprovementTips } = require('./score');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
@@ -468,6 +469,18 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     roomsArea || null,
     listedAgoStr || null,
   ].filter(s => s !== null && s !== undefined);
+
+  // Add improvement tips if score is below 85
+  if (score < 85 && user) {
+    const { tips, potentialScore } = getImprovementTips(listing, user, score);
+    if (tips.length > 0) {
+      lines.push('');
+      lines.push(`📈 *Boost to ${potentialScore}% by:`);
+      tips.forEach(t => {
+        lines.push(`• ${t.tip} (+${t.boost}%)`);
+      });
+    }
+  }
 
   const text = lines.join('\n');
   const cacheId = cacheListing(listing);

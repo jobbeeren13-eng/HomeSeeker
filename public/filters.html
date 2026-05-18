@@ -550,20 +550,29 @@
 
   function updateAffordability() {
     const income = parseFloat(document.querySelector('[name="inkomen"]')?.value) || 0;
+    const partnerIncome = parseFloat(document.querySelector('[name="partner_inkomen"]')?.value) || 0;
+    const totalIncome = income + partnerIncome;
     const el = document.getElementById('afford-result');
     if (!el) return;
-    if (income <= 0) {
-      el.style.display = 'none';
-      return;
-    }
-    const maxRent = Math.round(income / 3);
-    const maxMortgage = Math.round(income * 4.5);
+    if (income <= 0) { el.style.display = 'none'; return; }
+    const maxRent = Math.round(totalIncome / 3);
+    const maxMortgage = Math.round(totalIncome * 4.5);
     const fmt = n => '€' + n.toLocaleString('nl-NL');
-    el.innerHTML = `Based on your income, you can afford up to <strong style="color:var(--green)">${fmt(maxRent)}/month</strong> rent or a <strong style="color:var(--green)">${fmt(maxMortgage)}</strong> mortgage.`;
+    const partnerNote = partnerIncome > 0 ? ' <span style="color:var(--muted);font-size:12px">(combined income)</span>' : '';
+    el.innerHTML = `Based on your income, you can afford up to <strong style="color:var(--green)">${fmt(maxRent)}/month</strong> rent or a <strong style="color:var(--green)">${fmt(maxMortgage)}</strong> mortgage.${partnerNote}`;
     el.style.display = 'block';
   }
 
   document.querySelector('[name="inkomen"]')?.addEventListener('input', updateAffordability);
+  document.querySelector('[name="partner_inkomen"]')?.addEventListener('input', updateAffordability);
+
+  document.querySelectorAll('input[name="met_partner"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.getElementById('partner-income-field').style.display =
+        r.value === 'ja' && r.checked ? 'block' : 'none';
+      updateAffordability();
+    });
+  });
   updateAffordability();
 
   // Show expat field conditionally
@@ -593,6 +602,9 @@
     }
 
     // checkboxes (unchecked = false)
+    data['met_partner'] = form.querySelector('[name="met_partner"]:checked')?.value || 'nee';
+    data['heeft_borg'] = form.querySelector('[name="heeft_borg"]:checked')?.value || 'nee';
+
     ['tuin','parkeren','huisdieren','gemeubileerd','delen_toegestaan'].forEach(k => {
       data[k] = form.querySelector(`[name="${k}"]`).checked ? 'true' : 'false';
     });

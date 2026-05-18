@@ -85,6 +85,9 @@ app.post('/api/filters', async (req, res) => {
       beschikbaar_per: b.beschikbaar_per || null,
       kans_min: parseInt(b.kans_min) || 0,
       deal_min: parseInt(b.deal_min) || 0,
+      met_partner: b.met_partner || 'nee',
+      partner_inkomen: parseFloat(b.partner_inkomen) || 0,
+      heeft_borg: b.heeft_borg || 'nee',
     });
 
     if (b.email) {

@@ -37,6 +37,9 @@ db.exec(`
     beschikbaar_per TEXT,
     kans_min INTEGER DEFAULT 0,
     deal_min INTEGER DEFAULT 0,
+    met_partner TEXT DEFAULT 'nee',
+    partner_inkomen REAL DEFAULT 0,
+    heeft_borg TEXT DEFAULT 'nee',
     betaald INTEGER DEFAULT 0,
     stripe_customer_id TEXT,
     stripe_subscription_id TEXT,
@@ -120,11 +123,11 @@ const upsertUser = db.prepare(`
   INSERT INTO users (chat_id, naam, email, profiel_type, expat_status, contract_type, inkomen,
     application_readiness, beschikbaarheid_timing, type, woningtype, locatie, prijs_min, prijs_max,
     opp_min, kamers_min, energielabel, bouwjaar_min, tuin, parkeren, delen_toegestaan, huisdieren,
-    gemeubileerd, beschikbaar_per, kans_min, deal_min)
+    gemeubileerd, beschikbaar_per, kans_min, deal_min, met_partner, partner_inkomen, heeft_borg)
   VALUES (:chat_id, :naam, :email, :profiel_type, :expat_status, :contract_type, :inkomen,
     :application_readiness, :beschikbaarheid_timing, :type, :woningtype, :locatie, :prijs_min, :prijs_max,
     :opp_min, :kamers_min, :energielabel, :bouwjaar_min, :tuin, :parkeren, :delen_toegestaan, :huisdieren,
-    :gemeubileerd, :beschikbaar_per, :kans_min, :deal_min)
+    :gemeubileerd, :beschikbaar_per, :kans_min, :deal_min, :met_partner, :partner_inkomen, :heeft_borg)
   ON CONFLICT(chat_id) DO UPDATE SET
     naam = excluded.naam, email = excluded.email, profiel_type = excluded.profiel_type,
     expat_status = excluded.expat_status, contract_type = excluded.contract_type,
@@ -136,7 +139,7 @@ const upsertUser = db.prepare(`
     tuin = excluded.tuin, parkeren = excluded.parkeren, delen_toegestaan = excluded.delen_toegestaan,
     huisdieren = excluded.huisdieren, gemeubileerd = excluded.gemeubileerd,
     beschikbaar_per = excluded.beschikbaar_per, kans_min = excluded.kans_min,
-    deal_min = excluded.deal_min
+    deal_min = excluded.deal_min, met_partner = excluded.met_partner, partner_inkomen = excluded.partner_inkomen, heeft_borg = excluded.heeft_borg
 `);
 
 const setUserActive = db.prepare('UPDATE users SET actief = ? WHERE chat_id = ?');
