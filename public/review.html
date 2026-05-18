@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeSeeker — Leave a Review</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --green: #00e5a0; --bg: #0a0a0a; --bg2: #111; --border: rgba(255,255,255,0.08); --text: #f0f0f0; --muted: #888; --input-bg: #161616; }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 0 0 80px; }
+    .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 20px 24px; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--green); text-decoration: none; }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 40px 24px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-size: 36px; margin-bottom: 8px; }
+    .sub { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+    .field { margin-bottom: 20px; }
+    .field label { display: block; font-size: 13px; font-weight: 600; color: #ccc; margin-bottom: 7px; }
+    input, textarea { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 15px; padding: 11px 14px; outline: none; }
+    input:focus, textarea:focus { border-color: rgba(0,229,160,0.5); }
+    textarea { min-height: 100px; resize: vertical; }
+    .stars { display: flex; gap: 8px; font-size: 32px; cursor: pointer; margin-bottom: 4px; }
+    .star { color: #333; transition: color .15s; }
+    .star.active { color: #ffd700; }
+    .btn { width: 100%; background: var(--green); color: #000; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; padding: 16px; border: none; border-radius: 8px; cursor: pointer; margin-top: 8px; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    #success { display: none; text-align: center; padding: 40px 0; }
+    #success h2 { color: var(--green); font-size: 24px; margin-bottom: 8px; }
+    #success p { color: var(--muted); }
+    #error { display: none; color: #ff8080; font-size: 14px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+<div class="header"><a class="logo" href="/">HOMESEEKER</a></div>
+<div class="wrap">
+  <h1>Leave a Review</h1>
+  <p class="sub">Found your place? Let others know how HomeSeeker helped you.</p>
+  <div class="card" id="form-card">
+    <div class="field">
+      <label>Your name</label>
+      <input type="text" id="name" placeholder="Emma" />
+    </div>
+    <div class="field">
+      <label>Rating</label>
+      <div class="stars" id="stars">
+        <span class="star" data-val="1">★</span>
+        <span class="star" data-val="2">★</span>
+        <span class="star" data-val="3">★</span>
+        <span class="star" data-val="4">★</span>
+        <span class="star" data-val="5">★</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Your review</label>
+      <textarea id="review" placeholder="I found my apartment within 2 weeks thanks to HomeSeeker..."></textarea>
+    </div>
+    <button class="btn" id="submit-btn">Submit Review</button>
+    <div id="error"></div>
+  </div>
+  <div id="success">
+    <h2>🎉 Thank you!</h2>
+    <p>Your review has been submitted and will appear after approval.</p>
+  </div>
+</div>
+<script>
+  let rating = 0;
+  document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('mouseenter', () => {
+      document.querySelectorAll('.star').forEach(s => s.classList.toggle('active', s.dataset.val <= star.dataset.val));
+    });
+    star.addEventListener('mouseleave', () => {
+      document.querySelectorAll('.star').forEach(s => s.classList.toggle('active', s.dataset.val <= rating));
+    });
+    star.addEventListener('click', () => {
+      rating = parseInt(star.dataset.val);
+      document.querySelectorAll('.star').forEach(s => s.classList.toggle('active', s.dataset.val <= rating));
+    });
+  });
+
+  document.getElementById('submit-btn').addEventListener('click', async () => {
+    const name = document.getElementById('name').value.trim();
+    const review = document.getElementById('review').value.trim();
+    const errEl = document.getElementById('error');
+    errEl.style.display = 'none';
+    if (!name || !rating || !review) {
+      errEl.textContent = 'Please fill in all fields and select a rating.';
+      errEl.style.display = 'block';
+      return;
+    }
+    document.getElementById('submit-btn').disabled = true;
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, rating, review_text: review }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      document.getElementById('form-card').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
+    } catch {
+      errEl.textContent = 'Something went wrong. Please try again.';
+      errEl.style.display = 'block';
+      document.getElementById('submit-btn').disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

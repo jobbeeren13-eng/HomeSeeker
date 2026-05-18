@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 const cron = require('node-cron');
 
-const { upsertUser, getUserByEmail, setUserChatId, cancelUserByChatId, cancelUserByStripe } = require('./src/database');
+const { upsertUser, getUserByEmail, setUserChatId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
 const { scrapeListings, markListingsAsSent, normaliseCity } = require('./src/scraper');
 const { findMatches } = require('./src/matcher');
 const { createBot, sendAlert, processWebhookUpdate } = require('./src/telegram');

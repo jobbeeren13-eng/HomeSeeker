@@ -121,4 +121,7 @@ function getImprovementTips(listing, user, currentScore) {
   return { tips: top, potentialScore };
 }
 
-module.exports = { calculateScore, scoreLabel, getImprovementTips };
+// Alias for consistent naming
+const strengthLabel = scoreLabel;
+
+module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips };

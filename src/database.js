@@ -112,6 +112,16 @@ try {
   }
 } catch (e) {}
 
+
+  CREATE TABLE IF NOT EXISTS reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+    review_text TEXT NOT NULL,
+    approved INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
 db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
 
 const getUser = db.prepare('SELECT * FROM users WHERE chat_id = ?');
@@ -189,6 +199,11 @@ const insertListing = db.prepare(`
 const getUnsentListings = db.prepare('SELECT * FROM listings WHERE sent = 0');
 const markListingGloballySent = db.prepare('UPDATE listings SET sent = 1 WHERE url = ?');
 
+
+const insertReview = db.prepare('INSERT INTO reviews (name, rating, review_text) VALUES (?, ?, ?)');
+const getApprovedReviews = db.prepare('SELECT id, name, rating, review_text, created_at FROM reviews WHERE approved = 1 ORDER BY created_at DESC');
+const approveReview = db.prepare('UPDATE reviews SET approved = 1 WHERE id = ?');
+
 module.exports = {
   db, getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
   setUserPaid, setUserPaidByCustomerId, createUserByCustomerId, linkChatToCustomer,
@@ -196,4 +211,5 @@ module.exports = {
   isListingSent, markListingSent, getChat, upsertChat,
   listingExists, getListingByUrl, getSentListingByFingerprint, insertListing,
   getUnsentListings, markListingGloballySent,
+  insertReview, getApprovedReviews, approveReview,
 };
