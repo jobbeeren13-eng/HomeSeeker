@@ -14,13 +14,10 @@ const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
-// Raw body for Stripe webhook verification
 app.use('/webhook/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-// ── Routes ──────────────────────────────────────────────
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -34,12 +31,10 @@ app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
 
-// Stripe Checkout redirect
+// Stripe Checkout — NO bypass, always requires Stripe
 app.get('/subscribe', async (req, res) => {
-  // DEV bypass: skip Stripe and go straight to the success page
-  if (process.env.DEV_BYPASS_STRIPE === 'true' || !process.env.STRIPE_PRICE_ID) {
-    console.log('[stripe] DEV bypass active — skipping checkout, redirecting to /success');
-    return res.redirect(303, '/success?bypass=1');
+  if (!process.env.STRIPE_PRICE_ID || !process.env.STRIPE_SECRET_KEY) {
+    return res.status(500).send('Stripe is not configured. Contact support.');
   }
   try {
     const session = await createCheckoutSession(
@@ -49,7 +44,7 @@ app.get('/subscribe', async (req, res) => {
     res.redirect(303, session.url);
   } catch (err) {
     console.error('[stripe] Checkout error:', err.message);
-    res.status(500).send('Error creating checkout session');
+    res.status(500).send('Error creating checkout session. Please try again.');
   }
 });
 
@@ -57,7 +52,6 @@ app.get('/success', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'success.html'));
 });
 
-// Filter form submission
 app.post('/api/filters', async (req, res) => {
   try {
     const b = req.body;
@@ -93,7 +87,6 @@ app.post('/api/filters', async (req, res) => {
       deal_min: parseInt(b.deal_min) || 0,
     });
 
-    // If email provided, try to link to existing paid user record
     if (b.email) {
       setUserChatId.run(chatId, b.email);
     }
@@ -105,13 +98,11 @@ app.post('/api/filters', async (req, res) => {
   }
 });
 
-// Telegram webhook
 app.post('/webhook/telegram', (req, res) => {
   processWebhookUpdate(req.body);
   res.sendStatus(200);
 });
 
-// Stripe webhook
 app.post('/webhook/stripe', async (req, res) => {
   const sig = req.headers['stripe-signature'];
   try {
@@ -124,12 +115,10 @@ app.post('/webhook/stripe', async (req, res) => {
   }
 });
 
-// Cancel subscription page
 app.get('/cancel', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
 });
 
-// Cancel subscription API
 app.post('/api/cancel', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -146,7 +135,6 @@ app.post('/api/cancel', async (req, res) => {
     } else {
       cancelUserByStripe.run(user.stripe_customer_id || '');
     }
-    console.log(`[cancel] Cancelled subscription for ${email}`);
     res.json({ success: true });
   } catch (err) {
     console.error('[cancel] Error:', err.message);
@@ -154,15 +142,11 @@ app.post('/api/cancel', async (req, res) => {
   }
 });
 
-// How scores work page
 app.get('/how-scores-work', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'how-scores-work.html'));
 });
 
-// Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
-
-// ── Cron job: scrape every 10 minutes ───────────────────
 
 async function runScrapeAndAlert() {
   console.log(`[cron] Starting scrape cycle at ${new Date().toISOString()}`);
@@ -175,23 +159,19 @@ async function runScrapeAndAlert() {
 
     for (const { listing, user, score, label, dealScore, dealLabel } of matches) {
       await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user);
-      await new Promise(r => setTimeout(r, 200)); // gentle rate limiting
+      await new Promise(r => setTimeout(r, 200));
     }
 
     markListingsAsSent(listings.map(l => l.url));
-    console.log(`[cron] Marked ${listings.length} listings as sent`);
   } catch (err) {
     console.error('[cron] Error:', err.message);
   }
 }
 
-// ── Boot ─────────────────────────────────────────────────
-
 const useWebhook = IS_PRODUCTION && !!process.env.TELEGRAM_BOT_TOKEN;
 createBot(useWebhook);
 
 if (useWebhook) {
-  // Register webhook with Telegram on startup
   const TelegramBot = require('node-telegram-bot-api');
   const tmpBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
   tmpBot.setWebHook(`${BASE_URL}/webhook/telegram`).then(() => {
@@ -204,7 +184,6 @@ app.listen(PORT, () => {
   console.log(`[server] Base URL: ${BASE_URL}`);
 });
 
-// Start cron after a short delay so DB is fully ready
 setTimeout(() => {
   cron.schedule('*/10 * * * *', runScrapeAndAlert);
   console.log('[cron] Scrape job scheduled every 10 minutes');
