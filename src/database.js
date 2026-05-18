@@ -113,6 +113,7 @@ db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
 
 const getUser = db.prepare('SELECT * FROM users WHERE chat_id = ?');
 const getUserByEmail = db.prepare('SELECT * FROM users WHERE email = ?');
+const getUserByCustomerId = db.prepare('SELECT * FROM users WHERE stripe_customer_id = ?');
 const getAllActiveUsers = db.prepare('SELECT * FROM users WHERE actief = 1 AND betaald = 1');
 
 const upsertUser = db.prepare(`
@@ -142,6 +143,17 @@ const setUserActive = db.prepare('UPDATE users SET actief = ? WHERE chat_id = ?'
 const setUserPaid = db.prepare(`
   UPDATE users SET betaald = 1, stripe_customer_id = ?, stripe_subscription_id = ?, trial_start_date = datetime('now')
   WHERE email = ?
+`);
+const setUserPaidByCustomerId = db.prepare(`
+  UPDATE users SET betaald = 1, stripe_subscription_id = ?, trial_start_date = datetime('now')
+  WHERE stripe_customer_id = ?
+`);
+const createUserByCustomerId = db.prepare(`
+  INSERT OR IGNORE INTO users (chat_id, email, stripe_customer_id, stripe_subscription_id, betaald, actief, trial_start_date)
+  VALUES (?, ?, ?, ?, 1, 1, datetime('now'))
+`);
+const linkChatToCustomer = db.prepare(`
+  UPDATE users SET chat_id = ? WHERE stripe_customer_id = ?
 `);
 const cancelUserByStripe = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE stripe_customer_id = ?');
 const cancelUserByChatId = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE chat_id = ?');
@@ -175,8 +187,9 @@ const getUnsentListings = db.prepare('SELECT * FROM listings WHERE sent = 0');
 const markListingGloballySent = db.prepare('UPDATE listings SET sent = 1 WHERE url = ?');
 
 module.exports = {
-  db, getUser, getUserByEmail, getAllActiveUsers, upsertUser, setUserActive,
-  setUserPaid, cancelUserByStripe, cancelUserByChatId, setUserChatId,
+  db, getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
+  setUserPaid, setUserPaidByCustomerId, createUserByCustomerId, linkChatToCustomer,
+  cancelUserByStripe, cancelUserByChatId, setUserChatId,
   isListingSent, markListingSent, getChat, upsertChat,
   listingExists, getListingByUrl, getSentListingByFingerprint, insertListing,
   getUnsentListings, markListingGloballySent,

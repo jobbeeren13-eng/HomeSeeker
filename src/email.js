@@ -15,25 +15,36 @@ function getTransporter() {
   return transporter;
 }
 
-async function sendWelcomeEmail(email, naam) {
+async function sendWelcomeEmail(email, naam, customerId) {
   const t = getTransporter();
   if (!t) return;
   const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'HomeSeekerBot';
+
+  // Import here to avoid circular dependency
+  const { generateStartPayload } = require('./telegram');
+  const signedPayload = generateStartPayload(customerId);
+  const telegramLink = `https://t.me/${botUsername}?start=${signedPayload}`;
+
   await t.sendMail({
     from: process.env.FROM_EMAIL || 'HomeSeeker <homeseeker@gmail.com>',
     to: email,
-    subject: 'Welcome to HomeSeeker — Set up your alerts',
+    subject: 'Welcome to HomeSeeker — Activate your Telegram alerts',
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#111">
         <h2 style="color:#00e5a0">Hi ${naam || 'there'} 👋</h2>
-        <p>Your HomeSeeker subscription is active. Here's how to start receiving alerts:</p>
+        <p>Your 7-day HomeSeeker trial is active. Click the button below to activate your personal Telegram alerts:</p>
+        <div style="text-align:center;margin:32px 0">
+          <a href="${telegramLink}" style="background:#00e5a0;color:#000;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
+            📱 Activate Telegram Alerts
+          </a>
+        </div>
+        <p><strong>This link is personal</strong> — it securely connects your payment to your Telegram account. Do not share it.</p>
         <ol>
-          <li>Open Telegram on your phone</li>
-          <li>Search for <strong>@${botUsername}</strong></li>
-          <li>Tap <strong>Start</strong> and send the command <code>/start</code></li>
-          <li>The bot will send you a personal link to set your filters</li>
+          <li>Click the button above</li>
+          <li>Telegram opens the HomeSeeker bot</li>
+          <li>Press <strong>Start</strong></li>
+          <li>Set your filters and receive real-time alerts</li>
         </ol>
-        <p>Once your filters are saved, you'll receive real-time alerts for new listings that match your criteria.</p>
         <p style="color:#666;font-size:13px">Questions? Email us at homeseeker@gmail.com</p>
         <p>Good luck with your search! 🏠</p>
         <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>

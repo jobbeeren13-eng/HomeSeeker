@@ -1,123 +1,96 @@
 const Stripe = require('stripe');
-const { setUserPaid, cancelUserByStripe, getUserByEmail } = require('./database');
+const { createUserByCustomerId, setUserPaidByCustomerId, cancelUserByStripe } = require('./database');
 const { sendWelcomeEmail } = require('./email');
 
 let _stripe = null;
-
 function getStripe() {
   if (!_stripe) {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('STRIPE_SECRET_KEY not configured');
-    }
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2024-06-20',
-    });
+    if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY not configured');
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-06-20' });
   }
   return _stripe;
 }
 
 async function createCheckoutSession(successUrl, cancelUrl) {
   const stripe = getStripe();
-
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     payment_method_types: ['card'],
-    line_items: [
-      {
-        price: process.env.STRIPE_PRICE_ID,
-        quantity: 1,
-      },
-    ],
+    payment_method_collection: 'always',
+    line_items: [{
+      price: process.env.STRIPE_PRICE_ID,
+      quantity: 1,
+    }],
     subscription_data: {
       trial_period_days: 7,
     },
     allow_promotion_codes: true,
     success_url: successUrl,
     cancel_url: cancelUrl,
-    // email wordt door Stripe Checkout zelf ingevuld indien mogelijk
-    customer_email: undefined,
   });
-
   return session;
 }
+
+// Idempotency: track processed event IDs in memory (resets on restart, good enough)
+const processedEvents = new Set();
 
 async function handleWebhook(payload, sig) {
   const stripe = getStripe();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
   let event;
-
   try {
     event = stripe.webhooks.constructEvent(payload, sig, webhookSecret);
   } catch (err) {
-    throw new Error(`HomeSeeker Stripe webhook signature failed: ${err.message}`);
+    throw new Error(`Webhook signature verification failed: ${err.message}`);
   }
 
-  // HomeSeeker: access direct on checkout completion (including trial)
+  // Idempotency check
+  if (processedEvents.has(event.id)) {
+    console.log(`[stripe] Skipping duplicate event ${event.id}`);
+    return event.type;
+  }
+  processedEvents.add(event.id);
+  // Keep set from growing unbounded
+  if (processedEvents.size > 1000) {
+    const first = processedEvents.values().next().value;
+    processedEvents.delete(first);
+  }
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-
-    const email =
-      session.customer_email || session.customer_details?.email;
-
+    const email = session.customer_email || session.customer_details?.email;
     const customerId = session.customer;
     const subscriptionId = session.subscription;
 
-    if (email) {
-      setUserPaid.run(customerId, subscriptionId, email);
-
-      const user = getUserByEmail.get(email);
-
-      if (user) {
-        sendWelcomeEmail(email, user.naam).catch(console.error);
-      }
-
-      console.log(`[HomeSeeker] Trial started for ${email} — access granted`);
-    }
-  }
-
-  // Fallback: subscription created
-  if (event.type === 'customer.subscription.created') {
-    const subscription = event.data.object;
-
-    const customerId = subscription.customer;
-    const subscriptionId = subscription.id;
-
-    try {
-      const customer = await stripe.customers.retrieve(customerId);
-      const email = customer.email;
-
+    if (customerId) {
+      createUserByCustomerId.run('', email || '', customerId, subscriptionId);
+      console.log(`[stripe] Trial started for customer ${customerId} (${email})`);
       if (email) {
-        setUserPaid.run(customerId, subscriptionId, email);
-        console.log(
-          `[HomeSeeker] Subscription created for ${email} — access granted`
-        );
+        sendWelcomeEmail(email, '', customerId).catch(console.error);
       }
-    } catch (err) {
-      console.error(
-        `[HomeSeeker] Could not retrieve customer: ${err.message}`
-      );
     }
   }
 
-  // Cancellation
-  if (event.type === 'customer.subscription.deleted') {
+  if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
     const subscription = event.data.object;
-
-    cancelUserByStripe.run(subscription.customer);
-
-    console.log(
-      `[HomeSeeker] Subscription cancelled for customer ${subscription.customer}`
-    );
+    const isActive = ['active', 'trialing'].includes(subscription.status);
+    if (isActive) {
+      setUserPaidByCustomerId.run(subscription.id, subscription.customer);
+      console.log(`[stripe] Subscription ${subscription.status} for ${subscription.customer}`);
+    } else {
+      // Status changed to something inactive (paused, incomplete_expired, etc.)
+      cancelUserByStripe.run(subscription.customer);
+      console.log(`[stripe] Subscription ${subscription.status} — access revoked for ${subscription.customer}`);
+    }
   }
 
-  // Payment failure logging
-  if (event.type === 'invoice.payment_failed') {
-    const invoice = event.data.object;
+  if (event.type === 'customer.subscription.deleted') {
+    cancelUserByStripe.run(event.data.object.customer);
+    console.log(`[stripe] Subscription deleted for ${event.data.object.customer}`);
+  }
 
-    console.warn(
-      `[HomeSeeker] Payment failed for customer ${invoice.customer}`
-    );
+  if (event.type === 'invoice.payment_failed') {
+    console.warn(`[stripe] Payment failed for customer ${event.data.object.customer}`);
   }
 
   return event.type;
@@ -128,9 +101,4 @@ async function cancelSubscription(subscriptionId) {
   await stripe.subscriptions.cancel(subscriptionId);
 }
 
-module.exports = {
-  getStripe,
-  createCheckoutSession,
-  handleWebhook,
-  cancelSubscription,
-};
+module.exports = { getStripe, createCheckoutSession, handleWebhook, cancelSubscription };
