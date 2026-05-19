@@ -8,8 +8,9 @@ const {
 } = require('./database');
  
 const CITIES = [
-  'amsterdam', 'rotterdam', 'den-haag', 'utrecht',
-  'haarlem', 'amstelveen', 'delft',
+  'amsterdam', 'rotterdam', 'utrecht', 'den-haag',
+  'eindhoven', 'delft', 'haarlem', 'leiden',
+  'groningen', 'amstelveen',
 ];
  
 const CRAWLER_OPTS = {
