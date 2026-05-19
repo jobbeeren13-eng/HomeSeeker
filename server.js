@@ -4,7 +4,7 @@ const path = require('path');
 const cron = require('node-cron');
  
 const { upsertUser, getUserByEmail, setUserChatId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
-const { scrapeListings, markListingsAsSent, normaliseCity, getScraperHealth } = require('./src/scraper');
+const { scrapeListings, markListingsAsSent, normaliseCity } = require('./src/scraper');
 const { findMatches } = require('./src/matcher');
 const { createBot, sendAlert, processWebhookUpdate } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
@@ -19,13 +19,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
  
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/filters', (req, res) => res.sendFile(path.join(__dirname, 'public', 'filters.html')));
-app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy.html')));
-app.get('/cancel', (req, res) => res.sendFile(path.join(__dirname, 'public', 'cancel.html')));
-app.get('/how-scores-work', (req, res) => res.sendFile(path.join(__dirname, 'public', 'how-scores-work.html')));
-app.get('/reviews', (req, res) => res.sendFile(path.join(__dirname, 'public', 'review.html')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
  
+app.get('/filters', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'filters.html'));
+});
+ 
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
+ 
+// Stripe Checkout — NO bypass, always requires Stripe
 app.get('/subscribe', async (req, res) => {
   if (!process.env.STRIPE_PRICE_ID || !process.env.STRIPE_SECRET_KEY) {
     return res.status(500).send('Stripe is not configured. Contact support.');
@@ -42,7 +48,9 @@ app.get('/subscribe', async (req, res) => {
   }
 });
  
-app.get('/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 'success.html')));
+app.get('/success', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'success.html'));
+});
  
 app.post('/api/filters', async (req, res) => {
   try {
@@ -82,7 +90,10 @@ app.post('/api/filters', async (req, res) => {
       heeft_borg: b.heeft_borg || 'nee',
     });
  
-    if (b.email) setUserChatId.run(chatId, b.email);
+    if (b.email) {
+      setUserChatId.run(chatId, b.email);
+    }
+ 
     res.json({ success: true, message: 'Filters saved! You will start receiving alerts.' });
   } catch (err) {
     console.error('[api/filters] Error:', err.message);
@@ -107,15 +118,26 @@ app.post('/webhook/stripe', async (req, res) => {
   }
 });
  
+app.get('/cancel', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
+});
+ 
 app.post('/api/cancel', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email is required' });
+ 
   const user = getUserByEmail.get(email.trim().toLowerCase());
   if (!user) return res.status(404).json({ error: 'No account found with that email address' });
+ 
   try {
-    if (user.stripe_subscription_id) await cancelSubscription(user.stripe_subscription_id);
-    if (user.chat_id) cancelUserByChatId.run(user.chat_id);
-    else cancelUserByStripe.run(user.stripe_customer_id || '');
+    if (user.stripe_subscription_id) {
+      await cancelSubscription(user.stripe_subscription_id);
+    }
+    if (user.chat_id) {
+      cancelUserByChatId.run(user.chat_id);
+    } else {
+      cancelUserByStripe.run(user.stripe_customer_id || '');
+    }
     res.json({ success: true });
   } catch (err) {
     console.error('[cancel] Error:', err.message);
@@ -123,9 +145,19 @@ app.post('/api/cancel', async (req, res) => {
   }
 });
  
+app.get('/how-scores-work', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'how-scores-work.html'));
+});
+ 
+ 
 // Reviews
+app.get('/reviews', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'review.html'));
+});
+ 
 app.get('/api/reviews', (req, res) => {
-  res.json(getApprovedReviews.all());
+  const reviews = getApprovedReviews.all();
+  res.json(reviews);
 });
  
 app.post('/api/reviews', (req, res) => {
@@ -143,32 +175,13 @@ app.post('/api/reviews/:id/approve', (req, res) => {
   res.json({ success: true });
 });
  
-// Health + watchdog endpoint
-app.get('/health', (req, res) => {
-  const scraper = getScraperHealth();
-  const status = scraper.consecutiveZeroRuns >= 3 ? 'degraded' : 'ok';
-  res.json({
-    status,
-    ts: new Date().toISOString(),
-    scraper: {
-      lastRunAt: scraper.lastRunAt,
-      lastRunListings: scraper.lastRunListings,
-      consecutiveZeroRuns: scraper.consecutiveZeroRuns,
-      totalRuns: scraper.totalRuns,
-      lastError: scraper.lastError,
-    }
-  });
-});
+app.get('/health', (req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
  
-// ── Cron ────────────────────────────────────
 async function runScrapeAndAlert() {
   console.log(`[cron] Starting scrape cycle at ${new Date().toISOString()}`);
   try {
     const listings = await scrapeListings();
-    if (!listings.length) {
-      console.log('[cron] No new listings this cycle');
-      return;
-    }
+    if (!listings.length) return;
  
     const matches = findMatches(listings);
     console.log(`[cron] Found ${matches.length} matches to alert`);
@@ -179,13 +192,11 @@ async function runScrapeAndAlert() {
     }
  
     markListingsAsSent(listings.map(l => l.url));
-    console.log(`[cron] Cycle complete — ${matches.length} alerts sent`);
   } catch (err) {
     console.error('[cron] Error:', err.message);
   }
 }
  
-// ── Boot ─────────────────────────────────────
 const useWebhook = IS_PRODUCTION && !!process.env.TELEGRAM_BOT_TOKEN;
 createBot(useWebhook);
  
