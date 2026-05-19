@@ -1,64 +1,144 @@
-function calculateScore(listing, user) {
-  let score = 20;
+// ─────────────────────────────────────────────
+// APPLICATION STRENGTH — 5 weighted pillars
+// ─────────────────────────────────────────────
 
+function calcFinancialFit(listing, user) {
   const price = listing.priceNumber || 0;
   const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
   const isHuur = listing.transactionType === 'huur';
+  if (!inkomen || !price) return { score: 0, label: 'Unknown', detail: 'No income data' };
 
-  // Income ratio — max 35 pts (now uses combined income)
-  if (inkomen > 0 && price > 0) {
-    if (isHuur) {
-      const maxHuur = inkomen / 3;
-      if (price <= maxHuur) {
-        const headroom = (maxHuur - price) / maxHuur;
-        if (headroom >= 0.25) score += 35;
-        else if (headroom >= 0.15) score += 28;
-        else if (headroom >= 0.08) score += 20;
-        else if (headroom >= 0.03) score += 10;
-        else score += 4;
-      }
-    } else {
-      const maxHypo = inkomen * 12 * 4.5;
-      if (price <= maxHypo) {
-        const headroom = (maxHypo - price) / maxHypo;
-        if (headroom >= 0.2) score += 35;
-        else if (headroom >= 0.12) score += 28;
-        else if (headroom >= 0.06) score += 18;
-        else if (headroom >= 0.02) score += 8;
-        else score += 4;
-      }
-    }
-  }
+  let score = 0;
+  let detail = '';
 
-  // Guarantor bonus
-  if (user.heeft_borg === 'ja') score += 10;
-
-  // Partner bonus
-  if (user.met_partner === 'ja') score += 8;
-
-  const docPoints = { klaar: 20, bijna: 12, bezig: 6, niet: 0 };
-  score += docPoints[user.application_readiness] || 0;
-
-  if (user.prijs_max && price > 0) {
-    const headroom = (user.prijs_max - price) / user.prijs_max;
-    if (headroom >= 0.2) score += 20;
-    else if (headroom >= 0.1) score += 14;
-    else if (headroom >= 0.05) score += 8;
-    else if (headroom >= 0) score += 4;
-  }
-
-  // Timing — max 5 pts
-  if (listing.listedAt) {
-    const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
-    if (ageMins <= 10) score += 5;
-    else if (ageMins <= 30) score += 4;
-    else if (ageMins <= 60) score += 2;
-    else score += 1;
+  if (isHuur) {
+    const maxHuur = inkomen / 3;
+    const ratio = price / maxHuur;
+    if (ratio <= 0.75) { score = 100; detail = 'Strong income-to-rent ratio'; }
+    else if (ratio <= 0.85) { score = 80; detail = 'Good income-to-rent ratio'; }
+    else if (ratio <= 0.95) { score = 55; detail = 'Tight income-to-rent ratio'; }
+    else if (ratio <= 1.0) { score = 30; detail = 'At the limit of typical acceptance'; }
+    else { score = 10; detail = 'Income below typical requirement for this rent'; }
   } else {
-    score += 3;
+    const maxHypo = inkomen * 12 * 4.5;
+    const ratio = price / maxHypo;
+    if (ratio <= 0.7) { score = 100; detail = 'Strong affordability for purchase'; }
+    else if (ratio <= 0.85) { score = 75; detail = 'Good affordability'; }
+    else if (ratio <= 0.95) { score = 50; detail = 'Moderate affordability'; }
+    else if (ratio <= 1.0) { score = 25; detail = 'At the limit of mortgage eligibility'; }
+    else { score = 5; detail = 'Price likely exceeds mortgage eligibility'; }
   }
 
-  return Math.min(100, Math.max(0, score));
+  // Contract type modifier
+  if (user.contract_type === 'vast') score = Math.min(100, score + 5);
+  else if (user.contract_type === 'tijdelijk') score = Math.max(0, score - 10);
+  else if (user.contract_type === 'zzp') score = Math.max(0, score - 15);
+  else if (user.contract_type === 'student') score = Math.max(0, score - 20);
+
+  // Guarantor boost
+  if (user.heeft_borg === 'ja') score = Math.min(100, score + 10);
+  // Partner boost
+  if (user.met_partner === 'ja') score = Math.min(100, score + 8);
+
+  return { score, label: tierLabel(score), detail };
+}
+
+function calcProfileStrength(user) {
+  let score = 50;
+  let detail = '';
+
+  if (user.contract_type === 'vast') { score += 25; detail = 'Permanent contract'; }
+  else if (user.contract_type === 'tijdelijk') { score += 10; detail = 'Temporary contract'; }
+  else if (user.contract_type === 'zzp') { score += 5; detail = 'Self-employed — may require extra docs'; }
+  else if (user.contract_type === 'student') { score -= 10; detail = 'Student profile'; }
+
+  if (user.expat_status === 'EU') { score += 10; detail += ' · EU citizen'; }
+  else if (user.expat_status === 'non-EU') { score += 0; detail += ' · Non-EU (extra docs may apply)'; }
+
+  if (user.profiel_type === 'expat') score += 5;
+  if (user.met_partner === 'ja') score += 5;
+
+  return { score: Math.min(100, Math.max(0, score)), label: tierLabel(score), detail: detail.trim() || 'Standard profile' };
+}
+
+function calcDocumentReadiness(user) {
+  const points = { klaar: 100, bijna: 65, bezig: 35, niet: 5 };
+  const score = points[user.application_readiness] || 5;
+  const details = {
+    klaar: 'All documents ready to submit',
+    bijna: 'Almost ready — minor documents missing',
+    bezig: 'Documents in progress — significant gap',
+    niet: 'No documents prepared — high risk',
+  };
+  return { score, label: tierLabel(score), detail: details[user.application_readiness] || 'Unknown' };
+}
+
+function calcTimingAdvantage(listing) {
+  if (!listing.listedAt) return { score: 60, label: 'Unknown', detail: 'Listing age unknown' };
+  const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
+  let score, detail;
+  if (ageMins <= 15) { score = 100; detail = 'Listed just now — apply immediately'; }
+  else if (ageMins <= 60) { score = 80; detail = `Listed ${Math.round(ageMins)} min ago — still early`; }
+  else if (ageMins <= 240) { score = 55; detail = `Listed ${Math.round(ageMins / 60)}h ago — moderate competition`; }
+  else if (ageMins <= 1440) { score = 30; detail = 'Listed today — high competition likely'; }
+  else { score = 10; detail = 'Listing is older — very competitive'; }
+  return { score, label: tierLabel(score), detail };
+}
+
+function calcCompetitionPressure(listing) {
+  const price = listing.priceNumber || 0;
+  const city = (listing.city || '').toLowerCase();
+  let score = 60;
+  let detail = 'Average competition';
+
+  // High demand cities
+  const hotCities = ['amsterdam', 'utrecht', 'haarlem', 'leiden'];
+  const mediumCities = ['rotterdam', 'den-haag', 'eindhoven', 'delft'];
+  if (hotCities.includes(city)) { score -= 20; detail = 'High-demand city — expect many applications'; }
+  else if (mediumCities.includes(city)) { score -= 5; detail = 'Moderate competition in this city'; }
+
+  // Price attractiveness (lower price = more competition)
+  if (listing.transactionType === 'huur') {
+    if (price < 1000) { score -= 20; detail += ' · Very attractive price point'; }
+    else if (price < 1400) { score -= 10; detail += ' · Competitive price range'; }
+    else if (price > 2000) { score += 15; detail += ' · Higher price = less competition'; }
+  }
+
+  return { score: Math.min(100, Math.max(0, score)), label: tierLabel(score), detail };
+}
+
+function tierLabel(score) {
+  if (score >= 85) return 'Strong';
+  if (score >= 65) return 'Good';
+  if (score >= 45) return 'Moderate';
+  if (score >= 25) return 'Weak';
+  return 'Very Weak';
+}
+
+// Weights per pillar
+const WEIGHTS = {
+  financial: 0.35,
+  profile: 0.20,
+  documents: 0.20,
+  timing: 0.15,
+  competition: 0.10,
+};
+
+function calculateScore(listing, user) {
+  const financial = calcFinancialFit(listing, user);
+  const profile = calcProfileStrength(user);
+  const documents = calcDocumentReadiness(user);
+  const timing = calcTimingAdvantage(listing);
+  const competition = calcCompetitionPressure(listing);
+
+  const weighted =
+    financial.score * WEIGHTS.financial +
+    profile.score * WEIGHTS.profile +
+    documents.score * WEIGHTS.documents +
+    timing.score * WEIGHTS.timing +
+    competition.score * WEIGHTS.competition;
+
+  return Math.min(100, Math.max(0, Math.round(weighted)));
 }
 
 function scoreLabel(score) {
@@ -69,59 +149,93 @@ function scoreLabel(score) {
   return '🔴 Very Low';
 }
 
+const strengthLabel = scoreLabel;
+
+// ─────────────────────────────────────────────
+// SMART SUGGESTIONS — factor-driven
+// ─────────────────────────────────────────────
+
 function getImprovementTips(listing, user, currentScore) {
   const tips = [];
   const price = listing.priceNumber || 0;
   const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
-  const hasGuarantor = user.heeft_borg === 'ja';
-  const hasPartner = user.met_partner === 'ja';
 
-  // Documents not ready
-  if (user.application_readiness === 'niet') {
-    tips.push({ tip: 'Prepare your documents upfront', boost: 20 });
-  } else if (user.application_readiness === 'bezig') {
-    tips.push({ tip: 'Finish preparing your documents', boost: 14 });
-  } else if (user.application_readiness === 'bijna') {
-    tips.push({ tip: 'Complete your document preparation', boost: 8 });
-  }
+  const financial = calcFinancialFit(listing, user);
+  const documents = calcDocumentReadiness(user);
+  const timing = calcTimingAdvantage(listing);
+  const competition = calcCompetitionPressure(listing);
 
-  // No guarantor
-  if (!hasGuarantor) {
-    const maxHuur = inkomen / 3;
-    const ratio = price / (maxHuur || 1);
-    if (ratio > 0.8) {
-      tips.push({ tip: 'Add a guarantor to strengthen your application', boost: 12 });
-    } else {
-      tips.push({ tip: 'Having a guarantor available can help in competitive situations', boost: 6 });
+  // Financial tips
+  if (financial.score < 50) {
+    if (!user.heeft_borg || user.heeft_borg === 'nee') {
+      tips.push({ tip: 'Add a guarantor — it significantly improves acceptance for borderline income ratios', boost: 12 });
+    }
+    if (!user.met_partner || user.met_partner === 'nee') {
+      tips.push({ tip: 'Apply with a partner to combine income and strengthen your financial profile', boost: 10 });
+    }
+    if (price > 0 && inkomen > 0) {
+      const maxHuur = inkomen / 3;
+      if (price > maxHuur) {
+        const suggested = Math.round(maxHuur * 0.9);
+        tips.push({ tip: `Target listings under €${suggested}/mo to stay within the standard income-to-rent ratio`, boost: 8 });
+      }
     }
   }
 
-  // No partner
-  if (!hasPartner) {
-    tips.push({ tip: 'Apply with a partner for dual income verification', boost: 10 });
+  // Document tips
+  if (documents.score < 65) {
+    if (user.application_readiness === 'niet') {
+      tips.push({ tip: 'Prepare income proof and employer letter before applying — missing documents are the #1 reason applications fail', boost: 20 });
+    } else if (user.application_readiness === 'bezig') {
+      tips.push({ tip: 'Finish preparing your documents — landlords in the Netherlands decide fast', boost: 14 });
+    } else if (user.application_readiness === 'bijna') {
+      tips.push({ tip: 'Complete your document pack to maximise your chances', boost: 8 });
+    }
   }
 
-  // Contract type
-  if (user.contract_type === 'zzp' || user.contract_type === 'tijdelijk') {
-    tips.push({ tip: 'Include your employment contract or recent tax returns', boost: 6 });
+  // Timing tips
+  if (timing.score < 60) {
+    tips.push({ tip: 'Applications in the first hour have significantly higher success rates — enable instant alerts', boost: 9 });
+  } else if (timing.score >= 80) {
+    tips.push({ tip: 'You\'re early — apply now to stay ahead of the competition', boost: 5 });
   }
 
-  // Timing tip — always relevant
-  tips.push({ tip: 'Apply within 15 minutes of receiving this alert', boost: 9 });
+  // Competition tips
+  if (competition.score < 40) {
+    tips.push({ tip: 'This listing is highly competitive — send a personalised introduction to stand out', boost: 7 });
+    tips.push({ tip: 'Apply within the first hour — early applications are reviewed first', boost: 9 });
+  }
 
-  // Personalized intro
-  tips.push({ tip: 'Send a personalized introduction letter', boost: 5 });
+  // Contract type tips
+  if (user.contract_type === 'zzp') {
+    tips.push({ tip: 'As a freelancer, include your last 3 years of tax returns and a recent client contract', boost: 6 });
+  } else if (user.contract_type === 'tijdelijk') {
+    tips.push({ tip: 'Include an employer statement confirming contract renewal expectations', boost: 6 });
+  }
 
-  // Sort by boost descending, take top 3
+  // Always relevant
+  tips.push({ tip: 'Send a short, personal introduction message with your application', boost: 5 });
+
+  // Sort by boost, take top 3
   tips.sort((a, b) => b.boost - a.boost);
   const top = tips.slice(0, 3);
-
   const potentialScore = Math.min(100, currentScore + top.reduce((sum, t) => sum + t.boost, 0));
 
   return { tips: top, potentialScore };
 }
 
-// Alias for consistent naming
-const strengthLabel = scoreLabel;
+// ─────────────────────────────────────────────
+// PILLAR BREAKDOWN (for detailed Telegram alert)
+// ─────────────────────────────────────────────
 
-module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips };
+function getPillarBreakdown(listing, user) {
+  return {
+    financial: calcFinancialFit(listing, user),
+    profile: calcProfileStrength(user),
+    documents: calcDocumentReadiness(user),
+    timing: calcTimingAdvantage(listing),
+    competition: calcCompetitionPressure(listing),
+  };
+}
+
+module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getPillarBreakdown };
