@@ -57,10 +57,10 @@
     .tg-btn { background: #252d38; border-radius: 7px; padding: 8px 10px; font-size: 11.5px; text-align: center; color: var(--text); font-weight: 500; }
     .stats-wrap { max-width: var(--content-max); margin: 0 auto; padding: 0 var(--section-x); }
     .stats { display: flex; justify-content: center; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg2); }
-    .stat { flex: 1; text-align: center; padding: 36px 24px; border-right: 1px solid var(--border); }
+    .stat { flex: 1; text-align: center; padding: 16px 12px; border-right: 1px solid var(--border); }
     .stat:last-child { border-right: none; }
-    .stat-num { font-size: 42px; font-weight: 800; color: var(--green); line-height: 1; margin-bottom: 6px; }
-    .stat-label { font-size: 13px; color: var(--muted); }
+    .stat-num { font-size: 22px; font-weight: 800; color: var(--green); line-height: 1; margin-bottom: 3px; }
+    .stat-label { font-size: 12px; color: var(--muted); }
     section { padding: var(--section-gap) var(--section-x); }
     .container { max-width: var(--content-max); margin: 0 auto; width: 100%; }
     .section-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
@@ -134,7 +134,7 @@
       nav { padding: 14px 20px; }
       .nav-links { display: none; }
       .stats { flex-wrap: wrap; }
-      .stat { min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+      .stat { min-width: 33%; border-right: none; border-bottom: 1px solid var(--border); }
       .sticky-cta { display: block; position: fixed; bottom: 0; left: 0; right: 0; background: var(--green); padding: 13px 24px; text-align: center; z-index: 200; }
       .sticky-cta a { color: #000; font-weight: 700; text-decoration: none; font-size: 15px; display: block; }
       .sticky-cta p { color: rgba(0,0,0,0.6); font-size: 11px; margin-top: 2px; }
@@ -159,9 +159,9 @@
 <section class="hero">
   <div class="hero-grid">
     <div class="hero-left">
-      <div class="badge"><span class="badge-dot"></span> Checking new listings every </div>
+      <div class="badge"><span class="badge-dot"></span> Monitoring 10 cities — 24/7</div>
       <h1>Get ahead in the<br /><em>Dutch housing market.</em></h1>
-      <p class="hero-sub">The Dutch housing market is brutally fast — most listings get dozens of responses within hours. HomeSeeker sends you an instant alert the moment a new match appears, so you're always first in line.</p>
+      <p class="hero-sub">Built for expats, international students and professionals relocating to the Netherlands. The Dutch housing market is extremely competitive — responding early can make all the difference.</p>
       <div class="hero-cta-group">
         <a href="/subscribe" class="btn-primary">Start 7-day free trial</a>
         <a href="#how-it-works" class="btn-secondary">See how it works</a>
@@ -208,7 +208,7 @@
 <section>
   <div class="container">
     <div class="section-tag">Who it's for</div>
-    <h2>Built for people who take<br />their housing search seriously.</h2>
+    <h2>Built for internationals<br />competing in the Dutch housing market.</h2>
     <p class="section-sub">The Dutch market moves fast. Speed is everything.</p>
     <div class="audience-grid">
       <div class="audience-card">
@@ -244,7 +244,7 @@
       <div class="step">
         <div class="step-num">02</div>
         <h3 id="filters-anchor">Set your filters</h3>
-        <p>City, listing type, price range, rooms, income. We use this to calculate your personal application strength.</p>
+        <p>City, listing type, price range, rooms, income. We use this to calculate your personal application score.</p>
       </div>
       <div class="step">
         <div class="step-num">03</div>
@@ -269,7 +269,7 @@
           </li>
           <li>
             <div class="feature-icon">🎯</div>
-            <div class="feature-text"><strong>Personal application strength</strong><span>0–100 based on your income, documents, and price fit.</span></div>
+            <div class="feature-text"><strong>Personal application score</strong><span>0–100 based on your income, documents, and price fit.</span></div>
           </li>
           <li>
             <div class="feature-icon">💎</div>
@@ -315,7 +315,7 @@
     <p class="section-sub">Two scores per alert so you instantly know what to act on.</p>
     <div class="scores-row">
       <div class="score-panel">
-        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:10px">🎯 Application Strength</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:10px">🎯 Application Score</div>
         <h3 style="font-size:17px;font-weight:700;margin-bottom:6px">How strong is your application?</h3>
         <p style="color:var(--muted);font-size:13px;line-height:1.6">Personal to you. Based on your income vs the listing price, documents, and timing.</p>
         <div class="score-grid">
@@ -382,7 +382,7 @@
         <ul class="price-features">
           <li>Real-time alerts via Telegram</li>
           <li>We monitor Funda — where the vast majority of Dutch listings appear. Pararius, HousingAnywhere and more coming soon.</li>
-          <li>🎯 Application Strength + 💎 Value Score per alert</li>
+          <li>🎯 Application Score + 💎 Value Score per alert</li>
           <li>Application Letters — Professional, Friendly, Expat (English)</li>
           <li>Both rental and purchase listings</li>
           <li>7 cities: Amsterdam, Rotterdam, The Hague, Utrecht, Haarlem, Amstelveen, Delft</li>
@@ -407,14 +407,14 @@
       </div>
       <div class="faq-item">
         <div class="faq-q">How fast do I get notified?</div>
-        <div class="faq-a">New listings are checked continuously, 24/7. We send an instant alert once we have a match.</div>
+        <div class="faq-a">Monitoring every new listing across 10 Dutch cities — 24/7, without interruption.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q">Does it work for both rentals and purchases?</div>
         <div class="faq-a">Yes. Filter by rental, purchase, or both. Scores adapt accordingly.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">What is the application strength?</div>
+        <div class="faq-q">What is the application score?</div>
         <div class="faq-a">A personal 0–100 score based on your income vs the price, document readiness, and price fit. Helps you prioritise which listings to respond to first.</div>
       </div>
       <div class="faq-item">
@@ -456,7 +456,7 @@
 
 
   <!-- Reviews -->
-  <section style="padding: 80px var(--section-x); background: var(--bg2);">
+  <section style="padding: 56px var(--section-x); background: var(--bg2);">
     <div style="max-width: var(--content-max); margin: 0 auto;">
       <div class="section-tag">What users say</div>
       <h2 style="font-size: clamp(28px, 3.5vw, 42px); font-weight: 800; margin-bottom: 12px;">Real results from real users</h2>
