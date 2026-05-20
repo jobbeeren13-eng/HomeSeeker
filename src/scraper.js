@@ -6,13 +6,17 @@ const {
   markListingGloballySent,
   getSentListingByFingerprint,
 } = require('./database');
-
+ 
+// Disable Crawlee memory monitoring (fixes spawn ps ENOENT on Railway)
+process.env.CRAWLEE_MEMORY_MBYTES = '0';
+process.env.CRAWLEE_SYSTEM_INFO_V2 = '0';
+ 
 const CITIES = [
   'amsterdam', 'rotterdam', 'utrecht', 'den-haag',
   'eindhoven', 'delft', 'haarlem', 'leiden',
   'groningen', 'amstelveen',
 ];
-
+ 
 const CRAWLER_OPTS = {
   headless: true,
   browserPoolOptions: { useFingerprints: true },
@@ -20,13 +24,16 @@ const CRAWLER_OPTS = {
   maxRequestRetries: 2,
   requestHandlerTimeoutSecs: 60,
   maxConcurrency: 3,
+  systemInfoOptions: {
+    maxUsedCpuRatio: 0.95,
+  },
   launchContext: {
     launchOptions: {
       args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-setuid-sandbox'],
     },
   },
 };
-
+ 
 // ── Watchdog state ───────────────────────────
 let scraperStats = {
   lastRunAt: null,
@@ -41,11 +48,11 @@ let scraperStats = {
   averageRuntime: 0,
   runtimes: [],
 };
-
+ 
 // Admin Telegram alert (sends to ADMIN_CHAT_ID if set)
 let _adminBot = null;
 function setAdminBot(bot) { _adminBot = bot; }
-
+ 
 async function sendAdminAlert(msg) {
   const chatId = process.env.ADMIN_CHAT_ID;
   if (!chatId || !_adminBot) return;
@@ -55,31 +62,31 @@ async function sendAdminAlert(msg) {
     console.error('[watchdog] Failed to send admin alert:', e.message);
   }
 }
-
+ 
 function getScraperHealth() {
   const staleCutoff = 6 * 60 * 60 * 1000; // 6 hours
   const isStale = scraperStats.lastSuccessfulRunAt
     ? Date.now() - new Date(scraperStats.lastSuccessfulRunAt).getTime() > staleCutoff
     : false;
-
+ 
   let status = 'ok';
   if (scraperStats.consecutiveZeroRuns >= 3) status = 'degraded';
   if (isStale) status = 'stale';
-
+ 
   return { ...scraperStats, status, isStale };
 }
-
+ 
 function recordScraperRun(count, runtime, error = null) {
   scraperStats.lastRunAt = new Date().toISOString();
   scraperStats.lastRunListings = count;
   scraperStats.totalRuns++;
   scraperStats.lastError = error;
-
+ 
   // Track runtime average
   scraperStats.runtimes.push(runtime);
   if (scraperStats.runtimes.length > 10) scraperStats.runtimes.shift();
   scraperStats.averageRuntime = Math.round(scraperStats.runtimes.reduce((a, b) => a + b, 0) / scraperStats.runtimes.length);
-
+ 
   if (count > 0) {
     scraperStats.lastSuccessfulRunAt = new Date().toISOString();
     scraperStats.totalListingsFound += count;
@@ -88,12 +95,12 @@ function recordScraperRun(count, runtime, error = null) {
   } else {
     scraperStats.consecutiveZeroRuns++;
     if (error) scraperStats.lastFailureReason = error;
-
+ 
     if (scraperStats.consecutiveZeroRuns === 3) {
       sendAdminAlert(`⚠️ 3 consecutive scraper runs with 0 listings.\nLast error: ${error || 'none'}\nCheck Railway logs.`);
     }
   }
-
+ 
   // Suspiciously low detection
   if (scraperStats.averageListingsPerRun > 0 && count > 0) {
     const threshold = scraperStats.averageListingsPerRun * 0.2;
@@ -103,7 +110,7 @@ function recordScraperRun(count, runtime, error = null) {
     }
   }
 }
-
+ 
 // ── Helpers ──────────────────────────────────
 function parsePrice(raw) {
   if (!raw) return null;
@@ -111,7 +118,7 @@ function parsePrice(raw) {
   const match = cleaned.match(/(\d+(?:\.\d+)?)/);
   return match ? parseFloat(match[1]) : null;
 }
-
+ 
 function normaliseCity(raw) {
   if (!raw) return '';
   return raw.toLowerCase()
@@ -119,14 +126,14 @@ function normaliseCity(raw) {
     .replace(/'/g, '')
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
-
+ 
 function makeFingerprint(listing) {
   const address = (listing.address || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const priceRange = Math.round((listing.priceNumber || 0) / 50) * 50;
   const city = (listing.city || '').toLowerCase().replace(/[^a-z]/g, '');
   return `${city}__${address}__${priceRange}`;
 }
-
+ 
 function rowToListing(row) {
   return {
     url: row.url,
@@ -146,7 +153,7 @@ function rowToListing(row) {
     fingerprint: row.fingerprint,
   };
 }
-
+ 
 // ── Data validation ───────────────────────────
 function isValidListing(listing) {
   if (!listing.url || !listing.url.startsWith('http')) return false;
@@ -154,15 +161,15 @@ function isValidListing(listing) {
   if (!listing.city) return false;
   return true;
 }
-
+ 
 function saveNewListing(listing) {
   if (!isValidListing(listing)) return false;
-
+ 
   const fingerprint = makeFingerprint(listing);
   listing.fingerprint = fingerprint;
-
+ 
   if (listingExists.get(listing.url)) return false;
-
+ 
   const existing = getSentListingByFingerprint.get(fingerprint);
   if (existing) {
     insertListing.run({
@@ -185,7 +192,7 @@ function saveNewListing(listing) {
     });
     return false;
   }
-
+ 
   insertListing.run({
     url: listing.url,
     address: listing.address || '',
@@ -206,7 +213,7 @@ function saveNewListing(listing) {
   });
   return true;
 }
-
+ 
 function normaliseListing(item, city, source, transactionType = 'huur') {
   return {
     ...item,
@@ -217,7 +224,7 @@ function normaliseListing(item, city, source, transactionType = 'huur') {
     source,
   };
 }
-
+ 
 async function dismissCookieBanner(page) {
   const selectors = [
     'button:has-text("Alles accepteren")',
@@ -238,11 +245,11 @@ async function dismissCookieBanner(page) {
     } catch (_) {}
   }
 }
-
+ 
 async function randomDelay(page) {
   await page.waitForTimeout(Math.random() * 1000 + 500);
 }
-
+ 
 // ── Selector health check ─────────────────────
 async function checkSelectorHealth(page) {
   try {
@@ -262,7 +269,7 @@ async function checkSelectorHealth(page) {
     return false;
   }
 }
-
+ 
 function buildFundaUrls() {
   const urls = [];
   for (const city of CITIES) {
@@ -277,12 +284,12 @@ function buildFundaUrls() {
   }
   return urls;
 }
-
+ 
 async function extractFundaListings(page, city, transactionType) {
   return page.evaluate(({ city, transactionType }) => {
     const results = [];
     const seen = new Set();
-
+ 
     const parseFromCard = (card, href) => {
       const text = card.innerText || '';
       const priceMatch = text.match(/€\s*([\d.]+(?:,\d+)?)/);
@@ -306,17 +313,17 @@ async function extractFundaListings(page, city, transactionType) {
         source: 'funda',
       });
     };
-
+ 
     document.querySelectorAll('a[href*="/detail/"]').forEach(anchor => {
       const href = anchor.getAttribute('href') || '';
       if (!href.includes('/detail/')) return;
       parseFromCard(anchor.closest('article, li, div') || anchor, href);
     });
-
+ 
     return results;
   }, { city, transactionType });
 }
-
+ 
 // ── Global timeout wrapper ────────────────────
 function withTimeout(promise, ms, label) {
   return Promise.race([
@@ -326,35 +333,35 @@ function withTimeout(promise, ms, label) {
     ),
   ]);
 }
-
+ 
 // ── Core scraper with timeout ─────────────────
 async function scrapeFundaOnce() {
   let newCount = 0;
   const startUrls = buildFundaUrls();
-
+ 
   const crawler = new PlaywrightCrawler({
     ...CRAWLER_OPTS,
     async requestHandler({ page, request, log }) {
       const { source, city, transactionType } = request.userData;
-
+ 
       await page.setExtraHTTPHeaders({ 'Accept-Language': 'nl-NL,nl;q=0.9,en;q=0.8' });
-
+ 
       await withTimeout(
         page.goto(request.url, { waitUntil: 'domcontentloaded', timeout: 30000 }),
         35000,
         `goto ${city}`
       );
-
+ 
       await dismissCookieBanner(page);
       await randomDelay(page);
-
+ 
       // Selector health check
       const healthy = await checkSelectorHealth(page);
       if (!healthy) {
         log.warning(`[funda] Selector issue on ${city} — skipping`);
         return;
       }
-
+ 
       let raw = [];
       try {
         raw = await withTimeout(
@@ -365,28 +372,28 @@ async function scrapeFundaOnce() {
       } catch (err) {
         log.warning(`Extract failed on ${request.url}: ${err.message}`);
       }
-
+ 
       for (const item of raw) {
         const listing = normaliseListing(item, city, source, transactionType);
         if (saveNewListing(listing)) newCount++;
       }
-
+ 
       log.info(`[funda] ${city} (${transactionType}): ${raw.length} found`);
     },
     failedRequestHandler({ request, log }, error) {
       log.error(`[funda] Failed ${request.url}: ${error.message}`);
     },
   });
-
+ 
   await withTimeout(crawler.run(startUrls), 5 * 60 * 1000, 'full crawler run');
   return newCount;
 }
-
+ 
 // ── Scraper with retry ────────────────────────
 async function scrapeFunda(retries = 2) {
   const startTime = Date.now();
   console.log(`[scraper] Starting funda (${CITIES.length * 2} URLs)…`);
-
+ 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const count = await scrapeFundaOnce();
@@ -409,18 +416,18 @@ async function scrapeFunda(retries = 2) {
   }
   return 0;
 }
-
+ 
 async function scrapeListings() {
   await scrapeFunda();
   const unsent = getUnsentListings.all().map(rowToListing);
   console.log(`[scraper] Total unsent listings: ${unsent.length}`);
   return unsent;
 }
-
+ 
 function markListingsAsSent(urls) {
   for (const url of urls) markListingGloballySent.run(url);
 }
-
+ 
 module.exports = {
   scrapeListings,
   scrapeFunda,
@@ -431,3 +438,4 @@ module.exports = {
   getScraperHealth,
   setAdminBot,
 };
+ 
