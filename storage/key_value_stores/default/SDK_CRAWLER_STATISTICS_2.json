@@ -1,50 +1,25 @@
 {
   "requestsFinished": 0,
-  "requestsFailed": 7,
-  "requestsRetries": 7,
-  "requestsFailedPerMinute": 47,
+  "requestsFailed": 0,
+  "requestsRetries": 0,
+  "requestsFailedPerMinute": 0,
   "requestsFinishedPerMinute": 0,
   "requestMinDurationMillis": null,
   "requestMaxDurationMillis": 0,
-  "requestTotalFailedDurationMillis": 3146,
+  "requestTotalFailedDurationMillis": 0,
   "requestTotalFinishedDurationMillis": 0,
-  "crawlerStartedAt": "2026-05-17T18:09:21.753Z",
-  "crawlerFinishedAt": "2026-05-17T18:09:30.264Z",
-  "statsPersistedAt": "2026-05-17T18:09:30.264Z",
-  "crawlerRuntimeMillis": 8812,
-  "crawlerLastStartTimestamp": 1779041361452,
-  "requestRetryHistogram": [
-    null,
-    null,
-    null,
-    7
-  ],
+  "crawlerStartedAt": "2026-05-19T23:30:00.616Z",
+  "crawlerFinishedAt": "2026-05-19T23:30:01.935Z",
+  "statsPersistedAt": "2026-05-19T23:30:01.935Z",
+  "crawlerRuntimeMillis": 1639,
+  "crawlerLastStartTimestamp": 1779233400296,
+  "requestRetryHistogram": [],
   "statsId": 2,
-  "requestAvgFailedDurationMillis": 449,
+  "requestAvgFailedDurationMillis": null,
   "requestAvgFinishedDurationMillis": null,
-  "requestTotalDurationMillis": 3146,
-  "requestsTotal": 7,
+  "requestTotalDurationMillis": 0,
+  "requestsTotal": 0,
   "requestsWithStatusCode": {},
-  "errors": {
-    "C:\\Users\\marcu\\OneDrive\\Desktop\\woningflash\\node_modules\\@crawlee\\playwright\\internals\\utils\\playwright-utils.js:165:17": {
-      "missing error code": {
-        "Error": {
-          "page.goto: net::ERR_EMPTY_RESPONSE at _": {
-            "count": 7
-          }
-        }
-      }
-    }
-  },
-  "retryErrors": {
-    "C:\\Users\\marcu\\OneDrive\\Desktop\\woningflash\\node_modules\\@crawlee\\playwright\\internals\\utils\\playwright-utils.js:165:17": {
-      "missing error code": {
-        "Error": {
-          "page.goto: net::ERR_EMPTY_RESPONSE at _": {
-            "count": 21
-          }
-        }
-      }
-    }
-  }
+  "errors": {},
+  "retryErrors": {}
 }

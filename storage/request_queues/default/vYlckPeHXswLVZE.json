@@ -1,6 +1,6 @@
 {
 	"id": "vYlckPeHXswLVZE",
-	"json": "{\"id\":\"vYlckPeHXswLVZE\",\"url\":\"https://www.funda.nl/zoeken/huur/?selected_area=[\\\"utrecht\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/huur/?selected_area=[%22utrecht%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/huur?selected_area=%5B%22utrecht%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"utrecht\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:08:32.655Z\"}",
+	"json": "{\"id\":\"vYlckPeHXswLVZE\",\"url\":\"https://www.funda.nl/zoeken/huur/?selected_area=[\\\"utrecht\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/huur/?selected_area=[%22utrecht%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/huur?selected_area=%5B%22utrecht%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"utrecht\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-19T23:10:33.402Z\"}",
 	"method": "GET",
 	"orderNo": null,
 	"retryCount": 0,

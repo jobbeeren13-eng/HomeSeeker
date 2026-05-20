@@ -1,9 +1,0 @@
-{
-	"id": "O37lH21Sh4FYTlu",
-	"json": "{\"id\":\"O37lH21Sh4FYTlu\",\"url\":\"https://www.huurwoningen.nl/huurwoningen/rotterdam/\",\"loadedUrl\":\"https://www.huurwoningen.nl/huurwoningen/rotterdam/\",\"uniqueKey\":\"https://www.huurwoningen.nl/huurwoningen/rotterdam\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"huurwoningen\",\"city\":\"rotterdam\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:09:02.571Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://www.huurwoningen.nl/huurwoningen/rotterdam",
-	"url": "https://www.huurwoningen.nl/huurwoningen/rotterdam/"
-}

@@ -1,42 +1,25 @@
 {
-  "requestsFinished": 7,
+  "requestsFinished": 0,
   "requestsFailed": 0,
-  "requestsRetries": 3,
+  "requestsRetries": 0,
   "requestsFailedPerMinute": 0,
-  "requestsFinishedPerMinute": 15,
-  "requestMinDurationMillis": 4047,
-  "requestMaxDurationMillis": 7040,
+  "requestsFinishedPerMinute": 0,
+  "requestMinDurationMillis": null,
+  "requestMaxDurationMillis": 0,
   "requestTotalFailedDurationMillis": 0,
-  "requestTotalFinishedDurationMillis": 44385,
-  "crawlerStartedAt": "2026-05-17T18:08:53.826Z",
-  "crawlerFinishedAt": "2026-05-17T18:09:21.443Z",
-  "statsPersistedAt": "2026-05-17T18:09:21.443Z",
-  "crawlerRuntimeMillis": 27977,
-  "crawlerLastStartTimestamp": 1779041333466,
-  "requestRetryHistogram": [
-    4,
-    2,
-    1
-  ],
+  "requestTotalFinishedDurationMillis": 0,
+  "crawlerStartedAt": "2026-05-19T23:20:00.751Z",
+  "crawlerFinishedAt": "2026-05-19T23:20:02.757Z",
+  "statsPersistedAt": "2026-05-19T23:20:02.757Z",
+  "crawlerRuntimeMillis": 2507,
+  "crawlerLastStartTimestamp": 1779232800250,
+  "requestRetryHistogram": [],
   "statsId": 1,
   "requestAvgFailedDurationMillis": null,
-  "requestAvgFinishedDurationMillis": 6341,
-  "requestTotalDurationMillis": 44385,
-  "requestsTotal": 7,
-  "requestsWithStatusCode": {
-    "403": 4,
-    "404": 7
-  },
+  "requestAvgFinishedDurationMillis": null,
+  "requestTotalDurationMillis": 0,
+  "requestsTotal": 0,
+  "requestsWithStatusCode": {},
   "errors": {},
-  "retryErrors": {
-    "C:\\Users\\marcu\\OneDrive\\Desktop\\woningflash\\node_modules\\@crawlee\\basic\\internals\\basic-crawler.js:913:19": {
-      "missing error code": {
-        "Error": {
-          "Request blocked - received 403 status code.": {
-            "count": 4
-          }
-        }
-      }
-    }
-  }
+  "retryErrors": {}
 }

@@ -1,6 +1,6 @@
 {
 	"id": "BI5NyX6Hkactkn9",
-	"json": "{\"id\":\"BI5NyX6Hkactkn9\",\"url\":\"https://www.funda.nl/zoeken/huur/?selected_area=[\\\"haarlem\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/huur/?selected_area=[%22haarlem%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/huur?selected_area=%5B%22haarlem%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"haarlem\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:08:38.059Z\"}",
+	"json": "{\"id\":\"BI5NyX6Hkactkn9\",\"url\":\"https://www.funda.nl/zoeken/huur/?selected_area=[\\\"haarlem\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/huur/?selected_area=[%22haarlem%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/huur?selected_area=%5B%22haarlem%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"haarlem\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-19T23:10:53.352Z\"}",
 	"method": "GET",
 	"orderNo": null,
 	"retryCount": 0,

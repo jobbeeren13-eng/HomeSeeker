@@ -1,9 +1,0 @@
-{
-	"id": "WVaeVgfxEZtQoMq",
-	"json": "{\"id\":\"WVaeVgfxEZtQoMq\",\"url\":\"https://www.huurwoningen.nl/huurwoningen/den-haag/\",\"loadedUrl\":\"https://www.huurwoningen.nl/huurwoningen/den-haag/\",\"uniqueKey\":\"https://www.huurwoningen.nl/huurwoningen/den-haag\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":1,\"errorMessages\":[\"Error: Request blocked - received 403 status code.\\n    at PlaywrightCrawler._throwOnBlockedRequest (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@crawlee\\\\basic\\\\internals\\\\basic-crawler.js:913:19)\\n    at PlaywrightCrawler._responseHandler (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@crawlee\\\\browser\\\\internals\\\\browser-crawler.js:383:22)\\n    at PlaywrightCrawler._runRequestHandler (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@crawlee\\\\browser\\\\internals\\\\browser-crawler.js:262:24)\\n    at runNextTicks (node:internal/process/task_queues:65:5)\\n    at process.processImmediate (node:internal/timers:472:9)\\n    at async PlaywrightCrawler._runRequestHandler (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@crawlee\\\\playwright\\\\internals\\\\playwright-crawler.js:114:9)\\n    at async wrap (C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\node_modules\\\\@apify\\\\timeout\\\\cjs\\\\index.cjs:54:21)\"],\"headers\":{},\"userData\":{\"source\":\"huurwoningen\",\"city\":\"den-haag\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:09:16.914Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 1,
-	"uniqueKey": "https://www.huurwoningen.nl/huurwoningen/den-haag",
-	"url": "https://www.huurwoningen.nl/huurwoningen/den-haag/"
-}

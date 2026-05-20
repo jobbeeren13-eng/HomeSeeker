@@ -1,6 +1,6 @@
 {
 	"id": "m26p5KqdBYhy2Wn",
-	"json": "{\"id\":\"m26p5KqdBYhy2Wn\",\"url\":\"https://www.funda.nl/zoeken/koop/?selected_area=[\\\"amsterdam\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/koop/?selected_area=[%22amsterdam%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/koop?selected_area=%5B%22amsterdam%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"amsterdam\",\"transactionType\":\"koop\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:08:13.128Z\"}",
+	"json": "{\"id\":\"m26p5KqdBYhy2Wn\",\"url\":\"https://www.funda.nl/zoeken/koop/?selected_area=[\\\"amsterdam\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/koop/?selected_area=[%22amsterdam%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/koop?selected_area=%5B%22amsterdam%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"amsterdam\",\"transactionType\":\"koop\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-19T23:10:22.268Z\"}",
 	"method": "GET",
 	"orderNo": null,
 	"retryCount": 0,

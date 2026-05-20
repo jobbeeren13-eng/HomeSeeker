@@ -1,9 +1,0 @@
-{
-	"id": "z7KqqkbeYXpeVix",
-	"json": "{\"id\":\"z7KqqkbeYXpeVix\",\"url\":\"https://www.huurwoningen.nl/huurwoningen/amstelveen/\",\"loadedUrl\":\"https://www.huurwoningen.nl/huurwoningen/amstelveen/\",\"uniqueKey\":\"https://www.huurwoningen.nl/huurwoningen/amstelveen\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"huurwoningen\",\"city\":\"amstelveen\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-17T18:09:09.307Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://www.huurwoningen.nl/huurwoningen/amstelveen",
-	"url": "https://www.huurwoningen.nl/huurwoningen/amstelveen/"
-}
