@@ -2,36 +2,30 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cron = require('node-cron');
- 
+
 const { upsertUser, getUserByEmail, setUserChatId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
-const { scrapeListings, markListingsAsSent, normaliseCity } = require('./src/scraper');
+const { scrapeListings, markListingsAsSent, normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { findMatches } = require('./src/matcher');
 const { createBot, sendAlert, processWebhookUpdate } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
- 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
- 
+
 app.use('/webhook/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
- 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
- 
-app.get('/filters', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'filters.html'));
-});
- 
-app.get('/privacy', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
-});
- 
-// Stripe Checkout — NO bypass, always requires Stripe
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/filters', (req, res) => res.sendFile(path.join(__dirname, 'public', 'filters.html')));
+app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy.html')));
+app.get('/cancel', (req, res) => res.sendFile(path.join(__dirname, 'public', 'cancel.html')));
+app.get('/how-scores-work', (req, res) => res.sendFile(path.join(__dirname, 'public', 'how-scores-work.html')));
+app.get('/reviews', (req, res) => res.sendFile(path.join(__dirname, 'public', 'review.html')));
+
 app.get('/subscribe', async (req, res) => {
   if (!process.env.STRIPE_PRICE_ID || !process.env.STRIPE_SECRET_KEY) {
     return res.status(500).send('Stripe is not configured. Contact support.');
@@ -47,17 +41,15 @@ app.get('/subscribe', async (req, res) => {
     res.status(500).send('Error creating checkout session. Please try again.');
   }
 });
- 
-app.get('/success', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'success.html'));
-});
- 
+
+app.get('/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 'success.html')));
+
 app.post('/api/filters', async (req, res) => {
   try {
     const b = req.body;
     const chatId = String(b.chat_id || '').trim();
     if (!chatId) return res.status(400).json({ error: 'chat_id is required' });
- 
+
     upsertUser.run({
       chat_id: chatId,
       naam: b.naam || '',
@@ -89,23 +81,20 @@ app.post('/api/filters', async (req, res) => {
       partner_inkomen: parseFloat(b.partner_inkomen) || 0,
       heeft_borg: b.heeft_borg || 'nee',
     });
- 
-    if (b.email) {
-      setUserChatId.run(chatId, b.email);
-    }
- 
+
+    if (b.email) setUserChatId.run(chatId, b.email);
     res.json({ success: true, message: 'Filters saved! You will start receiving alerts.' });
   } catch (err) {
     console.error('[api/filters] Error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
- 
+
 app.post('/webhook/telegram', (req, res) => {
   processWebhookUpdate(req.body);
   res.sendStatus(200);
 });
- 
+
 app.post('/webhook/stripe', async (req, res) => {
   const sig = req.headers['stripe-signature'];
   try {
@@ -117,49 +106,28 @@ app.post('/webhook/stripe', async (req, res) => {
     res.status(400).send(`Webhook Error: ${err.message}`);
   }
 });
- 
-app.get('/cancel', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'cancel.html'));
-});
- 
+
 app.post('/api/cancel', async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email is required' });
- 
   const user = getUserByEmail.get(email.trim().toLowerCase());
   if (!user) return res.status(404).json({ error: 'No account found with that email address' });
- 
   try {
-    if (user.stripe_subscription_id) {
-      await cancelSubscription(user.stripe_subscription_id);
-    }
-    if (user.chat_id) {
-      cancelUserByChatId.run(user.chat_id);
-    } else {
-      cancelUserByStripe.run(user.stripe_customer_id || '');
-    }
+    if (user.stripe_subscription_id) await cancelSubscription(user.stripe_subscription_id);
+    if (user.chat_id) cancelUserByChatId.run(user.chat_id);
+    else cancelUserByStripe.run(user.stripe_customer_id || '');
     res.json({ success: true });
   } catch (err) {
     console.error('[cancel] Error:', err.message);
     res.status(500).json({ error: 'Failed to cancel subscription. Please contact homeseeker@gmail.com' });
   }
 });
- 
-app.get('/how-scores-work', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'how-scores-work.html'));
-});
- 
- 
+
 // Reviews
-app.get('/reviews', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'review.html'));
-});
- 
 app.get('/api/reviews', (req, res) => {
-  const reviews = getApprovedReviews.all();
-  res.json(reviews);
+  res.json(getApprovedReviews.all());
 });
- 
+
 app.post('/api/reviews', (req, res) => {
   const { name, rating, review_text } = req.body;
   if (!name || !rating || !review_text) return res.status(400).json({ error: 'Missing fields' });
@@ -167,39 +135,54 @@ app.post('/api/reviews', (req, res) => {
   insertReview.run(name, parseInt(rating), review_text);
   res.json({ success: true });
 });
- 
+
 app.post('/api/reviews/:id/approve', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
   approveReview.run(req.params.id);
   res.json({ success: true });
 });
- 
-app.get('/health', (req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
- 
+
+// Health + watchdog endpoint
+app.get('/health', (req, res) => {
+  const scraper = getScraperHealth();
+  res.json({
+    status: scraper.status,
+    ts: new Date().toISOString(),
+    scraper,
+  });
+});
+
+// ── Cron ────────────────────────────────────
 async function runScrapeAndAlert() {
   console.log(`[cron] Starting scrape cycle at ${new Date().toISOString()}`);
   try {
     const listings = await scrapeListings();
-    if (!listings.length) return;
- 
+    if (!listings.length) {
+      console.log('[cron] No new listings this cycle');
+      return;
+    }
+
     const matches = findMatches(listings);
     console.log(`[cron] Found ${matches.length} matches to alert`);
- 
+
     for (const { listing, user, score, label, dealScore, dealLabel } of matches) {
       await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user);
       await new Promise(r => setTimeout(r, 200));
     }
- 
+
     markListingsAsSent(listings.map(l => l.url));
+    console.log(`[cron] Cycle complete — ${matches.length} alerts sent`);
   } catch (err) {
     console.error('[cron] Error:', err.message);
   }
 }
- 
+
+// ── Boot ─────────────────────────────────────
 const useWebhook = IS_PRODUCTION && !!process.env.TELEGRAM_BOT_TOKEN;
-createBot(useWebhook);
- 
+const bot = createBot(useWebhook);
+if (bot) setAdminBot(bot);
+
 if (useWebhook) {
   const TelegramBot = require('node-telegram-bot-api');
   const tmpBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
@@ -207,14 +190,13 @@ if (useWebhook) {
     console.log(`[telegram] Webhook set to ${BASE_URL}/webhook/telegram`);
   }).catch(console.error);
 }
- 
+
 app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);
   console.log(`[server] Base URL: ${BASE_URL}`);
 });
- 
+
 setTimeout(() => {
   cron.schedule('*/10 * * * *', runScrapeAndAlert);
   console.log('[cron] Scrape job scheduled every 10 minutes');
 }, 5000);
- 
