@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim
+FROM node:20.18-bookworm-slim
 
 RUN apt-get update && apt-get install -y \
     procps \
@@ -28,12 +28,10 @@ RUN apt-get update && apt-get install -y \
 
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
-ENV npm_config_build_from_source=false
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --prefer-offline || npm install --ignore-scripts && \
-    npm rebuild better-sqlite3
+RUN npm install --build-from-source
 
 COPY . .
 
