@@ -16,17 +16,19 @@ const CITIES = [
 // Use system Chromium if available (Railway/Docker)
 const CHROMIUM_PATH = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined;
 
+process.env.CRAWLEE_MEMORY_MBYTES = '400';
+
 const CRAWLER_OPTS = {
   headless: true,
   browserPoolOptions: { useFingerprints: true },
   navigationTimeoutSecs: 30,
   maxRequestRetries: 2,
   requestHandlerTimeoutSecs: 60,
-  maxConcurrency: 3,
+  maxConcurrency: 1,
   launchContext: {
     launchOptions: {
       executablePath: CHROMIUM_PATH,
-      args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+      args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--single-process', '--no-zygote', '--renderer-process-limit=1'],,
     },
   },
 };
