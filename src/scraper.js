@@ -13,6 +13,9 @@ const CITIES = [
   'groningen', 'amstelveen',
 ];
 
+// Use system Chromium if available (Railway/Docker)
+const CHROMIUM_PATH = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined;
+
 const CRAWLER_OPTS = {
   headless: true,
   browserPoolOptions: { useFingerprints: true },
@@ -22,7 +25,8 @@ const CRAWLER_OPTS = {
   maxConcurrency: 3,
   launchContext: {
     launchOptions: {
-      args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: CHROMIUM_PATH,
+      args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
     },
   },
 };

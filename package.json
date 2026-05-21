@@ -6,7 +6,6 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "postinstall": "npx playwright install chromium",
     "scraper:test": "node -e \"require('./src/scraper').scrapeListings().then(r => console.log(r.length, 'listings'))\"",
     "scraper:test:all": "node -e \"require('./src/scraper').scrapeListings().then(r => console.log(r.length, 'total listings'))\""
   },
