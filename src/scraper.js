@@ -16,7 +16,7 @@ const CITIES = [
 // Use system Chromium if available (Railway/Docker)
 const CHROMIUM_PATH = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined;
 
-process.env.CRAWLEE_MEMORY_MBYTES = '400';
+process.env.CRAWLEE_MEMORY_MBYTES = process.env.CRAWLEE_MEMORY_MBYTES || '2000';
 
 const CRAWLER_OPTS = {
   headless: true,
