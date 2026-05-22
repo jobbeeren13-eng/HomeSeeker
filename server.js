@@ -1,11 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const cron = require('node-cron');
 
-const { upsertUser, getUserByEmail, setUserChatId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
-const { scrapeListings, markListingsAsSent, normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
-const { findMatches } = require('./src/matcher');
+const { upsertUser, getUserByEmail, getAllActiveUsers, setUserChatId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
+const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, sendAlert, processWebhookUpdate } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 
@@ -143,6 +141,21 @@ app.post('/api/reviews/:id/approve', (req, res) => {
   res.json({ success: true });
 });
 
+// API endpoint for Hetzner matcher to fetch active users
+app.get('/api/users', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  try {
+    const users = getAllActiveUsers.all();
+    res.json(users);
+  } catch (err) {
+    console.error('[api/users] Error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Health + watchdog endpoint
 app.get('/health', (req, res) => {
   const scraper = getScraperHealth();
@@ -152,31 +165,6 @@ app.get('/health', (req, res) => {
     scraper,
   });
 });
-
-// ── Cron ────────────────────────────────────
-async function runScrapeAndAlert() {
-  console.log(`[cron] Starting scrape cycle at ${new Date().toISOString()}`);
-  try {
-    const listings = await scrapeListings();
-    if (!listings.length) {
-      console.log('[cron] No new listings this cycle');
-      return;
-    }
-
-    const matches = findMatches(listings);
-    console.log(`[cron] Found ${matches.length} matches to alert`);
-
-    for (const { listing, user, score, label, dealScore, dealLabel } of matches) {
-      await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user);
-      await new Promise(r => setTimeout(r, 200));
-    }
-
-    markListingsAsSent(listings.map(l => l.url));
-    console.log(`[cron] Cycle complete — ${matches.length} alerts sent`);
-  } catch (err) {
-    console.error('[cron] Error:', err.message);
-  }
-}
 
 // ── Boot ─────────────────────────────────────
 const useWebhook = IS_PRODUCTION && !!process.env.TELEGRAM_BOT_TOKEN;
@@ -195,8 +183,3 @@ app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);
   console.log(`[server] Base URL: ${BASE_URL}`);
 });
-
-setTimeout(() => {
-  cron.schedule('*/10 * * * *', runScrapeAndAlert);
-  console.log('[cron] Scrape job scheduled every 10 minutes');
-}, 5000);
