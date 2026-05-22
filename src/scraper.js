@@ -28,7 +28,7 @@ const CRAWLER_OPTS = {
   launchContext: {
     launchOptions: {
       executablePath: CHROMIUM_PATH,
-      args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--single-process', '--no-zygote', '--renderer-process-limit=1'],,
+      args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--single-process', '--no-zygote', '--renderer-process-limit=1'],
     },
   },
 };
