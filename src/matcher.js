@@ -1,9 +1,26 @@
-const { getAllActiveUsers, isListingSent, markListingSent } = require('./database');
+const { isListingSent, markListingSent } = require('./database');
 const { calculateScore, scoreLabel } = require('./score');
 const { calculateDealScore, dealLabel } = require('./deal_score');
 const { normaliseCity } = require('./scraper');
 
 const ENERGY_ORDER = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
+const ADMIN_KEY = process.env.ADMIN_KEY;
+
+async function getActiveUsers() {
+  try {
+    const res = await fetch(`${RAILWAY_URL}/api/users`, {
+      headers: { 'x-admin-key': ADMIN_KEY },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const users = await res.json();
+    console.log(`[matcher] Fetched ${users.length} active users from Railway`);
+    return users;
+  } catch (err) {
+    console.error('[matcher] Failed to fetch users from Railway:', err.message);
+    return [];
+  }
+}
 
 function matchesUser(listing, user) {
   const userCity = normaliseCity(user.locatie || '');
@@ -34,8 +51,12 @@ function matchesUser(listing, user) {
   return true;
 }
 
-function findMatches(listings) {
-  const users = getAllActiveUsers.all();
+async function findMatches(listings) {
+  const users = await getActiveUsers();
+  if (!users.length) {
+    console.log('[matcher] No active users found, skipping match cycle');
+    return [];
+  }
   const matches = [];
 
   for (const listing of listings) {

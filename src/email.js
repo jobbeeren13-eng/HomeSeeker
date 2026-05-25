@@ -1,32 +1,24 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-let transporter = null;
+let resend = null;
 
-function getTransporter() {
-  if (!process.env.SMTP_HOST) return null;
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_PORT === '465',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    });
-  }
-  return transporter;
+function getResend() {
+  if (!process.env.RESEND_API_KEY) return null;
+  if (!resend) resend = new Resend(process.env.RESEND_API_KEY);
+  return resend;
 }
 
 async function sendWelcomeEmail(email, naam, customerId) {
-  const t = getTransporter();
-  if (!t) return;
+  const r = getResend();
+  if (!r) return;
   const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'HomeSeekerBot';
 
-  // Import here to avoid circular dependency
   const { generateStartPayload } = require('./telegram');
   const signedPayload = generateStartPayload(customerId);
   const telegramLink = `https://t.me/${botUsername}?start=${signedPayload}`;
 
-  await t.sendMail({
-    from: process.env.FROM_EMAIL || 'HomeSeeker <homeseeker@gmail.com>',
+  await r.emails.send({
+    from: 'HomeSeeker <support@homeseeker.dev>',
     to: email,
     subject: 'Welcome to HomeSeeker — Activate your Telegram alerts',
     html: `
@@ -45,7 +37,7 @@ async function sendWelcomeEmail(email, naam, customerId) {
           <li>Press <strong>Start</strong></li>
           <li>Set your filters and receive real-time alerts</li>
         </ol>
-        <p style="color:#666;font-size:13px">Questions? Email us at homeseeker@gmail.com</p>
+        <p style="color:#666;font-size:13px">Questions? Email us at support@homeseeker.dev</p>
         <p>Good luck with your search! 🏠</p>
         <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>
         <p style="color:#999;font-size:12px">
