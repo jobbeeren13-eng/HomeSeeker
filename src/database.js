@@ -2,8 +2,8 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
  
-const DB_PATH = process.env.DATABASE_URL || '/tmp/homeseeker.db';
-if (!fs.existsSync('/tmp')) fs.mkdirSync('/tmp', { recursive: true });
+const DB_PATH = process.env.DATABASE_URL || '/app/data/homeseeker.db';
+if (!fs.existsSync('/app/data')) fs.mkdirSync('/app/data', { recursive: true });
 const db = new Database(DB_PATH);
  
 db.exec(`PRAGMA journal_mode = WAL`);
