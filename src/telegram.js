@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
-const { getUser, getListingByUrl, getUserByCustomerId, linkChatToCustomer, upsertChat, setUserActive, cancelUserByChatId } = require('./database');
+const { getUser, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, upsertChat, setUserActive, cancelUserByChatId } = require('./database');
 const { generateLetter } = require('./letter');
 const { rowToListing } = require('./scraper');
 const { getImprovementTips, getPillarBreakdown } = require('./score');
@@ -184,6 +184,7 @@ function createBot(useWebhook = false) {
       }
  
       // Link chat_id to customer
+      clearChatIdFromOthers.run(chatId, customerId);
       linkChatToCustomer.run(chatId, customerId);
       const filterUrl = `${BASE_URL}/filters?chat_id=${chatId}`;
       await bot.sendMessage(chatId,

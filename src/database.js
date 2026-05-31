@@ -168,8 +168,13 @@ const createUserByCustomerId = db.prepare(`
   INSERT OR IGNORE INTO users (chat_id, email, stripe_customer_id, stripe_subscription_id, betaald, actief, trial_start_date)
   VALUES (?, ?, ?, ?, 1, 1, datetime('now'))
 `);
+const clearOldChatId = db.prepare('UPDATE users SET chat_id = NULL WHERE chat_id = ? AND stripe_customer_id != ?');
 const linkChatToCustomer = db.prepare(`
   UPDATE users SET chat_id = ? WHERE stripe_customer_id = ?
+`);
+// Clear chat_id from any other user that already has this chat_id
+const clearChatIdFromOthers = db.prepare(`
+  UPDATE users SET chat_id = NULL WHERE chat_id = ? AND stripe_customer_id != ?
 `);
 const cancelUserByStripe = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE stripe_customer_id = ?');
 const cancelUserByChatId = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE chat_id = ?');
@@ -209,7 +214,7 @@ const approveReview = db.prepare('UPDATE reviews SET approved = 1 WHERE id = ?')
 module.exports = {
   db, getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
   setUserPaid, setUserPaidByCustomerId, createUserByCustomerId, linkChatToCustomer,
-  cancelUserByStripe, cancelUserByChatId, setUserChatId,
+  cancelUserByStripe, cancelUserByChatId, setUserChatId, clearChatIdFromOthers,
   isListingSent, markListingSent, getChat, upsertChat,
   listingExists, getListingByUrl, getSentListingByFingerprint, insertListing,
   getUnsentListings, markListingGloballySent,
