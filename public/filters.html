@@ -553,7 +553,7 @@
     if (!el) return;
     if (income <= 0) { el.style.display = 'none'; return; }
     const maxRent = Math.round(totalIncome / 3);
-    const maxMortgage = Math.round(totalIncome * 4.5);
+    const maxMortgage = Math.round(totalIncome * 12 * 4.5);
     const fmt = n => '€' + n.toLocaleString('nl-NL');
     const partnerNote = partnerIncome > 0 ? ' <span style="color:var(--muted);font-size:12px">(combined income)</span>' : '';
     el.innerHTML = `Based on your income, you can afford up to <strong style="color:var(--green)">${fmt(maxRent)}/month</strong> rent or a <strong style="color:var(--green)">${fmt(maxMortgage)}</strong> mortgage.${partnerNote}`;
