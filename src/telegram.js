@@ -437,8 +437,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     const total = 12;
     const filled = Math.round((pct / 100) * total);
     const dot = pct >= 70 ? '🟩' : pct >= 40 ? '🟨' : '🟥';
-    const empty = '⬜';
-    return dot.repeat(filled) + empty.repeat(total - filled) + `  *${pct}%*`;
+    return dot.repeat(filled) + '⬜'.repeat(total - filled) + `  ${pct}%`;
   }
 
   const priceStr = listing.priceNumber
@@ -467,16 +466,55 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     lines.push(progressBar(dealScore));
   }
 
-  // Improvement tips — short and actionable
+  // Smart boost tips
   if (user && score < 85) {
-    const { tips, potentialScore } = getImprovementTips(listing, user, score);
-    if (tips.length > 0) {
+    const price = listing.priceNumber || 0;
+    const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
+    const maxHuur = inkomen / 3;
+    const ageMins = listing.listedAt
+      ? Math.round((Date.now() - new Date(listing.listedAt).getTime()) / 60000)
+      : null;
+
+    const highImpact = [];
+    const propertySpecific = [];
+    const general = [];
+
+    if (!user.heeft_borg || user.heeft_borg === 'nee') highImpact.push(`Add a guarantor (+14%)`);
+    if (!user.met_partner || user.met_partner === 'nee') highImpact.push(`Apply with a partner (+9%)`);
+    if (user.application_readiness === 'niet') highImpact.push(`Prepare your documents (+20%)`);
+    else if (user.application_readiness === 'bezig') highImpact.push(`Finish your documents (+14%)`);
+
+    if (price > maxHuur && inkomen > 0) {
+      const ratio = (price / maxHuur).toFixed(1);
+      propertySpecific.push(`Income is ${ratio}× rent — target 3× (+8%)`);
+    }
+    if (user.contract_type === 'zzp') propertySpecific.push(`Add 3 years of tax returns (+6%)`);
+    else if (user.contract_type === 'tijdelijk') propertySpecific.push(`Add employer renewal letter (+6%)`);
+    if (ageMins !== null && ageMins > 60) {
+      propertySpecific.push(`Listed ${ageMins < 1440 ? Math.round(ageMins/60) + 'h' : Math.round(ageMins/1440) + 'd'} ago — respond fast (+5%)`);
+    }
+
+    if (ageMins !== null && ageMins <= 60) general.push(`Apply now — you're early`);
+    general.push(`Send a personal intro message`);
+
+    const potentialBoost = (highImpact.length > 0 ? 14 : 0) + (highImpact.length > 1 ? 9 : 0) + (propertySpecific.length > 0 ? 6 : 0);
+    const potentialScore = Math.min(100, score + potentialBoost);
+
+    if (highImpact.length > 0 || propertySpecific.length > 0) {
       lines.push('');
-      lines.push(`*Boost to ${potentialScore}% — here's how:*`);
-      tips.slice(0, 3).forEach(t => {
-        const short = t.tip.split('—')[0].trim().replace(/ it$/, '').replace(/ —.*/, '');
-        lines.push(`· ${short}`);
-      });
+      lines.push(`*Boost to ${potentialScore}%*`);
+      if (highImpact.length > 0) {
+        lines.push(`🔥 Highest impact`);
+        highImpact.slice(0, 2).forEach(t => lines.push(`· ${t}`));
+      }
+      if (propertySpecific.length > 0) {
+        lines.push(`🏠 For this property`);
+        propertySpecific.slice(0, 2).forEach(t => lines.push(`· ${t}`));
+      }
+      if (general.length > 0) {
+        lines.push(`⚡ General`);
+        general.slice(0, 2).forEach(t => lines.push(`· ${t}`));
+      }
     }
   }
 
@@ -511,7 +549,6 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
       });
     }
   } catch (err) {
-    console.error(`[telegram] Failed to send alert to ${chatId}:`, err.message);
     try {
       await _bot.sendMessage(chatId, text, {
         parse_mode: 'Markdown',
@@ -519,7 +556,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
         disable_web_page_preview: false,
       });
     } catch (e) {
-      console.error(`[telegram] Fallback also failed:`, e.message);
+      console.error(`[telegram] Failed to send alert to ${chatId}:`, e.message);
     }
   }
 }
