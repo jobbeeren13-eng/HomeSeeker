@@ -427,8 +427,9 @@ function createBot(useWebhook = false) {
  
 function getBot() { return bot; }
  
-async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user = null) {
-  if (!bot) return;
+async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user = null, botOverride = null) {
+  const _bot = botOverride || bot;
+  if (!_bot) return;
  
   clearLetterState(chatId);
  
@@ -510,7 +511,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   };
  
   try {
-    await bot.sendMessage(chatId, text, {
+    await _bot.sendMessage(chatId, text, {
       parse_mode: 'Markdown',
       reply_markup: keyboard,
       disable_web_page_preview: true,
