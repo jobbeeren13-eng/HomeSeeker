@@ -433,65 +433,55 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
  
   clearLetterState(chatId);
  
-  const priceStr = listing.price || (listing.priceNumber
+  const priceStr = listing.priceNumber
     ? `€${listing.priceNumber.toLocaleString('nl-NL')}`
-    : '—');
+    : (listing.price || '—');
   const cityDisplay = formatCityDisplay(listing.city);
-  const badge = getPlatformBadge(listing.source);
- 
   const isHuur = listing.transactionType === 'huur';
-  const priceLine = isHuur ? `${priceStr}/mnd` : priceStr;
- 
-  const monthlyCostLine = (isHuur && listing.priceNumber)
-    ? `📊 Est. monthly costs: ~€${estimateMonthlyCost(listing.priceNumber).toLocaleString('nl-NL')}/mnd`
+  const monthlyCost = (isHuur && listing.priceNumber)
+    ? estimateMonthlyCost(listing.priceNumber)
     : null;
  
-  let listedAgoStr = '';
-  if (listing.listedAt) {
-    const mins = Math.round((Date.now() - new Date(listing.listedAt).getTime()) / 60000);
-    listedAgoStr = mins < 60
-      ? `⚡ Listed ${mins} min ago`
-      : `⚡ Listed ${Math.round(mins / 60)}h ago`;
-  }
+  const lines = [];
  
-  const roomsArea = [
-    listing.rooms ? `🛏 ${listing.rooms} rooms` : null,
-    listing.area ? `${listing.area}m²` : null,
-  ].filter(Boolean).join(' • ');
+  // Header
+  lines.push(`📍 *${listing.address || 'Nieuwe woning'}* — ${cityDisplay || listing.city}`);
+  lines.push(`${priceStr}${isHuur ? ' / maand' : ''}${listing.area ? ` • ${listing.area}m²` : ''}`);
+  if (monthlyCost) lines.push(`Geschatte woonlasten: ± €${monthlyCost.toLocaleString('nl-NL')} / maand`);
  
-  const lines = [
-    `🏠 *${listing.address || 'New listing'}*`,
-    `📍 ${cityDisplay || '—'}`,
-    `💶 Rent: ${priceLine}`,
-    monthlyCostLine,
-    badge,
-    ``,
-    `🎯 *Chance:* ${score}% — ${label}`,
-    `💎 *Deal:* ${dealScore !== null ? `${dealScore}% — ${dLabel}` : dLabel}`,
-    roomsArea || null,
-    listedAgoStr || null,
-  ].filter(s => s !== null && s !== undefined);
+  // Scores
+  lines.push('');
+  lines.push(`Application Score: *${score}%* — ${label}`);
+  if (dealScore !== null) lines.push(`Value Score: *${dealScore}%* — ${dLabel}`);
  
-  // Add pillar breakdown + improvement tips
+  // Woningdetails
+  lines.push('');
+  lines.push('*Woningdetails*');
+  if (listing.priceNumber) lines.push(`• Huurprijs: €${listing.priceNumber.toLocaleString('nl-NL')}`);
+  if (listing.area) lines.push(`• Oppervlakte: ${listing.area}m²`);
+  if (listing.rooms) lines.push(`• Kamers: ${listing.rooms}`);
+  if (listing.propertyType) lines.push(`• Type: ${listing.propertyType}`);
+  lines.push(`• Locatie: ${cityDisplay || listing.city}`);
+ 
+  // Improvement tips + score breakdown
   if (user) {
     const pillars = getPillarBreakdown(listing, user);
-    lines.push('');
-    lines.push('📊 *Breakdown:*');
-    lines.push(`• Financial Fit: ${pillars.financial.label}`);
-    lines.push(`• Documents: ${pillars.documents.label}`);
-    lines.push(`• Timing: ${pillars.timing.label}`);
-    lines.push(`• Competition: ${pillars.competition.label}`);
  
     if (score < 85) {
       const { tips, potentialScore } = getImprovementTips(listing, user, score);
       if (tips.length > 0) {
         lines.push('');
-        lines.push(`📈 *Boost to ${potentialScore}%:*`);
-        tips.forEach(t => {
-          lines.push(`• ${t.tip}`);
-        });
+        lines.push(`*Verhoog je kans naar ${potentialScore}%*`);
+        tips.forEach(t => lines.push(`• ${t.tip}`));
       }
     }
+ 
+    lines.push('');
+    lines.push('*Waarom deze score?*');
+    lines.push(`• Financial Fit: ${pillars.financial.label}`);
+    lines.push(`• Documents: ${pillars.documents.label}`);
+    lines.push(`• Timing: ${pillars.timing.label}`);
+    lines.push(`• Competition: ${pillars.competition.label}`);
   }
  
   const text = lines.join('\n');
@@ -500,24 +490,41 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const keyboard = {
     inline_keyboard: [
       [
-        { text: '🔗 View listing', url: listing.url },
-        { text: '✉️ AI Letter', callback_data: `ai_letter:${cacheId}` },
+        { text: 'Funda bekijken', url: listing.url },
+        { text: 'AI Sollicitatiebrief', callback_data: `ai_letter:${cacheId}` },
       ],
       [
-        { text: '📤 Share', callback_data: `share:${cacheId}` },
-        { text: '❌ Unsubscribe', callback_data: 'unsubscribe' },
+        { text: 'Delen', callback_data: `share:${cacheId}` },
+        { text: 'Uitschrijven', callback_data: 'unsubscribe' },
       ],
     ],
   };
  
   try {
-    await _bot.sendMessage(chatId, text, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard,
-      disable_web_page_preview: true,
-    });
+    if (listing.image) {
+      await _bot.sendPhoto(chatId, listing.image, {
+        caption: text,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    } else {
+      await _bot.sendMessage(chatId, text, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+        disable_web_page_preview: false,
+      });
+    }
   } catch (err) {
     console.error(`[telegram] Failed to send alert to ${chatId}:`, err.message);
+    try {
+      await _bot.sendMessage(chatId, text, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+        disable_web_page_preview: false,
+      });
+    } catch (e) {
+      console.error(`[telegram] Fallback also failed:`, e.message);
+    }
   }
 }
  
