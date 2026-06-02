@@ -430,9 +430,15 @@ function getBot() { return bot; }
 async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user = null, botOverride = null) {
   const _bot = botOverride || bot;
   if (!_bot) return;
- 
+
   clearLetterState(chatId);
- 
+
+  function progressBar(pct) {
+    const total = 10;
+    const filled = Math.round((pct / 100) * total);
+    return '█'.repeat(filled) + '░'.repeat(total - filled) + ` ${pct}%`;
+  }
+
   const priceStr = listing.priceNumber
     ? `€${listing.priceNumber.toLocaleString('nl-NL')}`
     : (listing.price || '—');
@@ -441,65 +447,50 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const monthlyCost = (isHuur && listing.priceNumber)
     ? estimateMonthlyCost(listing.priceNumber)
     : null;
- 
+
   const lines = [];
- 
+
   // Header
-  lines.push(`📍 *${listing.address || 'Nieuwe woning'}* — ${cityDisplay || listing.city}`);
-  lines.push(`${priceStr}${isHuur ? ' / maand' : ''}${listing.area ? ` • ${listing.area}m²` : ''}`);
-  if (monthlyCost) lines.push(`Geschatte woonlasten: ± €${monthlyCost.toLocaleString('nl-NL')} / maand`);
- 
+  lines.push(`*${listing.address || 'New listing'}*`);
+  lines.push(`${cityDisplay || listing.city}${listing.area ? ` · ${listing.area}m²` : ''}${listing.rooms ? ` · ${listing.rooms} rooms` : ''}`);
+  lines.push(`${priceStr}${isHuur ? '/mo' : ''}`);
+  if (monthlyCost) lines.push(`Est. total costs: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+
   // Scores
   lines.push('');
-  lines.push(`Application Score: *${score}%* — ${label}`);
-  if (dealScore !== null) lines.push(`Value Score: *${dealScore}%* — ${dLabel}`);
- 
-  // Woningdetails
-  lines.push('');
-  lines.push('*Woningdetails*');
-  if (listing.priceNumber) lines.push(`• Huurprijs: €${listing.priceNumber.toLocaleString('nl-NL')}`);
-  if (listing.area) lines.push(`• Oppervlakte: ${listing.area}m²`);
-  if (listing.rooms) lines.push(`• Kamers: ${listing.rooms}`);
-  if (listing.propertyType) lines.push(`• Type: ${listing.propertyType}`);
-  lines.push(`• Locatie: ${cityDisplay || listing.city}`);
- 
-  // Improvement tips + score breakdown
-  if (user) {
-    const pillars = getPillarBreakdown(listing, user);
- 
-    if (score < 85) {
-      const { tips, potentialScore } = getImprovementTips(listing, user, score);
-      if (tips.length > 0) {
-        lines.push('');
-        lines.push(`*Verhoog je kans naar ${potentialScore}%*`);
-        tips.forEach(t => lines.push(`• ${t.tip}`));
-      }
-    }
- 
-    lines.push('');
-    lines.push('*Waarom deze score?*');
-    lines.push(`• Financial Fit: ${pillars.financial.label}`);
-    lines.push(`• Documents: ${pillars.documents.label}`);
-    lines.push(`• Timing: ${pillars.timing.label}`);
-    lines.push(`• Competition: ${pillars.competition.label}`);
+  lines.push(`*Application Score*`);
+  lines.push(`\`${progressBar(score)}\``);
+  if (dealScore !== null) {
+    lines.push(`*Value Score*`);
+    lines.push(`\`${progressBar(dealScore)}\``);
   }
- 
+
+  // Improvement tips
+  if (user && score < 85) {
+    const { tips, potentialScore } = getImprovementTips(listing, user, score);
+    if (tips.length > 0) {
+      lines.push('');
+      lines.push(`*Boost your score to ${potentialScore}%*`);
+      tips.forEach(t => lines.push(`· ${t.tip}`));
+    }
+  }
+
   const text = lines.join('\n');
   const cacheId = cacheListing(listing);
- 
+
   const keyboard = {
     inline_keyboard: [
       [
-        { text: 'Funda bekijken', url: listing.url },
-        { text: 'AI Sollicitatiebrief', callback_data: `ai_letter:${cacheId}` },
+        { text: 'View listing', url: listing.url },
+        { text: 'AI Cover Letter', callback_data: `ai_letter:${cacheId}` },
       ],
       [
-        { text: 'Delen', callback_data: `share:${cacheId}` },
-        { text: 'Uitschrijven', callback_data: 'unsubscribe' },
+        { text: 'Share', callback_data: `share:${cacheId}` },
+        { text: 'Unsubscribe', callback_data: 'unsubscribe' },
       ],
     ],
   };
- 
+
   try {
     if (listing.image) {
       await _bot.sendPhoto(chatId, listing.image, {
