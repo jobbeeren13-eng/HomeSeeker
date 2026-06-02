@@ -434,9 +434,11 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   clearLetterState(chatId);
 
   function progressBar(pct) {
-    const total = 10;
+    const total = 12;
     const filled = Math.round((pct / 100) * total);
-    return '█'.repeat(filled) + '░'.repeat(total - filled) + ` ${pct}%`;
+    const dot = pct >= 70 ? '🟩' : pct >= 40 ? '🟨' : '🟥';
+    const empty = '⬜';
+    return dot.repeat(filled) + empty.repeat(total - filled) + `  *${pct}%*`;
   }
 
   const priceStr = listing.priceNumber
@@ -458,20 +460,23 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   // Scores
   lines.push('');
-  lines.push(`*Application Score*`);
-  lines.push(`\`${progressBar(score)}\``);
+  lines.push(`Application Score`);
+  lines.push(progressBar(score));
   if (dealScore !== null) {
-    lines.push(`*Value Score*`);
-    lines.push(`\`${progressBar(dealScore)}\``);
+    lines.push(`Value Score`);
+    lines.push(progressBar(dealScore));
   }
 
-  // Improvement tips
+  // Improvement tips — short and actionable
   if (user && score < 85) {
     const { tips, potentialScore } = getImprovementTips(listing, user, score);
     if (tips.length > 0) {
       lines.push('');
-      lines.push(`*Boost your score to ${potentialScore}%*`);
-      tips.forEach(t => lines.push(`· ${t.tip}`));
+      lines.push(`*Boost to ${potentialScore}% — here's how:*`);
+      tips.slice(0, 3).forEach(t => {
+        const short = t.tip.split('—')[0].trim().replace(/ it$/, '').replace(/ —.*/, '');
+        lines.push(`· ${short}`);
+      });
     }
   }
 
