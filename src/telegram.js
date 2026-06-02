@@ -453,7 +453,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   // Header
   lines.push(`*${listing.address || 'New listing'}*`);
-  lines.push(`${cityDisplay || listing.city}${listing.area ? ` · ${listing.area}m²` : ''}${listing.rooms ? ` · ${listing.rooms} rooms` : ''}`);
+  lines.push(`📍 ${cityDisplay || listing.city}${listing.area ? ` · ${listing.area}m²` : ''}${listing.rooms ? ` · ${listing.rooms} rooms` : ''}`);
   lines.push(`${priceStr}${isHuur ? '/mo' : ''}`);
   if (monthlyCost) lines.push(`Est. total costs: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
 
@@ -479,19 +479,19 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     const propertySpecific = [];
     const general = [];
 
-    if (!user.heeft_borg || user.heeft_borg === 'nee') highImpact.push(`Add a guarantor (+14%)`);
-    if (!user.met_partner || user.met_partner === 'nee') highImpact.push(`Apply with a partner (+9%)`);
-    if (user.application_readiness === 'niet') highImpact.push(`Prepare your documents (+20%)`);
-    else if (user.application_readiness === 'bezig') highImpact.push(`Finish your documents (+14%)`);
+    if (!user.heeft_borg || user.heeft_borg === 'nee') highImpact.push(`Add a guarantor`);
+    if (!user.met_partner || user.met_partner === 'nee') highImpact.push(`Apply with a partner`);
+    if (user.application_readiness === 'niet') highImpact.push(`Prepare your documents`);
+    else if (user.application_readiness === 'bezig') highImpact.push(`Finish your documents`);
 
     if (price > maxHuur && inkomen > 0) {
       const ratio = (price / maxHuur).toFixed(1);
-      propertySpecific.push(`Income is ${ratio}× rent — target 3× (+8%)`);
+      propertySpecific.push(`Income is ${ratio}× rent — target 3× or lower`);
     }
-    if (user.contract_type === 'zzp') propertySpecific.push(`Add 3 years of tax returns (+6%)`);
-    else if (user.contract_type === 'tijdelijk') propertySpecific.push(`Add employer renewal letter (+6%)`);
+    if (user.contract_type === 'zzp') propertySpecific.push(`Add 3 years of tax returns`);
+    else if (user.contract_type === 'tijdelijk') propertySpecific.push(`Add employer renewal letter`);
     if (ageMins !== null && ageMins > 60) {
-      propertySpecific.push(`Listed ${ageMins < 1440 ? Math.round(ageMins/60) + 'h' : Math.round(ageMins/1440) + 'd'} ago — respond fast (+5%)`);
+      propertySpecific.push(`Listed ${ageMins < 1440 ? Math.round(ageMins/60) + 'h' : Math.round(ageMins/1440) + 'd'} ago — respond fast`);
     }
 
     if (ageMins !== null && ageMins <= 60) general.push(`Apply now — you're early`);
@@ -500,21 +500,20 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     const potentialBoost = (highImpact.length > 0 ? 14 : 0) + (highImpact.length > 1 ? 9 : 0) + (propertySpecific.length > 0 ? 6 : 0);
     const potentialScore = Math.min(100, score + potentialBoost);
 
-    if (highImpact.length > 0 || propertySpecific.length > 0) {
-      lines.push('');
-      lines.push(`*Boost to ${potentialScore}%*`);
-      if (highImpact.length > 0) {
-        lines.push(`🔥 Highest impact`);
-        highImpact.slice(0, 2).forEach(t => lines.push(`· ${t}`));
-      }
-      if (propertySpecific.length > 0) {
-        lines.push(`🏠 For this property`);
-        propertySpecific.slice(0, 2).forEach(t => lines.push(`· ${t}`));
-      }
-      if (general.length > 0) {
-        lines.push(`⚡ General`);
-        general.slice(0, 2).forEach(t => lines.push(`· ${t}`));
-      }
+    lines.push('');
+    lines.push(`*Boost to ${potentialScore}%*`);
+
+    if (highImpact.length > 0) {
+      lines.push(`Highest impact`);
+      highImpact.slice(0, 2).forEach(t => lines.push(`· ${t}`));
+    }
+    if (propertySpecific.length > 0) {
+      lines.push(`For this property`);
+      propertySpecific.slice(0, 2).forEach(t => lines.push(`· ${t}`));
+    }
+    if (general.length > 0) {
+      lines.push(`General`);
+      general.slice(0, 2).forEach(t => lines.push(`· ${t}`));
     }
   }
 
