@@ -445,17 +445,25 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     : (listing.price || '—');
   const cityDisplay = formatCityDisplay(listing.city);
   const isHuur = listing.transactionType === 'huur';
+  const JUNK = ['blikvanger', 'nieuw', 'verhuurd', 'verkocht', 'onder bod'];
+  let address = listing.address || '';
+  if (JUNK.some(j => address.toLowerCase().trim() === j)) {
+    const m = listing.url?.match(/\/([^/]+)\/\d+\/?$/);
+    if (m) address = m[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+ 
   const monthlyCost = (isHuur && listing.priceNumber)
     ? estimateMonthlyCost(listing.priceNumber)
     : null;
+  const typeLabel = isHuur ? 'Rental' : 'For sale';
  
   const lines = [];
  
   // Header
-  lines.push(`*${listing.address || 'New listing'}*`);
+  lines.push(`*${address}*`);
   lines.push(`📍 ${cityDisplay || listing.city}${listing.area ? ` · ${listing.area}m²` : ''}${listing.rooms ? ` · ${listing.rooms} rooms` : ''}`);
-  lines.push(`${priceStr}${isHuur ? '/mo' : ''}`);
-  if (monthlyCost) lines.push(`Est. total costs: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+  lines.push(`${typeLabel} · ${priceStr}${isHuur ? '/mo' : ''}`);
+  if (monthlyCost) lines.push(`Est. monthly costs: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
  
   // Scores
   lines.push('');
@@ -466,55 +474,42 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     lines.push(progressBar(dealScore));
   }
  
-  // Smart boost tips
+  // Smart boost tips — max 3, no categories
   if (user && score < 85) {
     const price = listing.priceNumber || 0;
     const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
     const maxHuur = inkomen / 3;
-    const ageMins = listing.listedAt
-      ? Math.round((Date.now() - new Date(listing.listedAt).getTime()) / 60000)
-      : null;
  
-    const highImpact = [];
-    const propertySpecific = [];
-    const general = [];
- 
-    if (!user.heeft_borg || user.heeft_borg === 'nee') highImpact.push(`Add a guarantor`);
-    if (!user.met_partner || user.met_partner === 'nee') highImpact.push(`Apply with a partner`);
-    if (user.application_readiness === 'niet') highImpact.push(`Prepare your documents`);
-    else if (user.application_readiness === 'bezig') highImpact.push(`Finish your documents`);
+    const tips = [];
  
     if (price > maxHuur && inkomen > 0) {
-      const ratio = (price / maxHuur).toFixed(1);
-      propertySpecific.push(`Income is ${ratio}× rent — target 3× or lower`);
+      const ratio = Math.round((price / (inkomen / 3)) * 10) / 10;
+      tips.push({ tip: `Your income covers ${ratio}× this rent — landlords require 3×. A guarantor or co-applicant can close this gap.`, p: 3 });
+    } else if (!user.heeft_borg || user.heeft_borg === 'nee') {
+      tips.push({ tip: `Add a guarantor to strengthen your application in a competitive market like ${cityDisplay}.`, p: 2 });
     }
-    if (user.contract_type === 'zzp') propertySpecific.push(`Add 3 years of tax returns`);
-    else if (user.contract_type === 'tijdelijk') propertySpecific.push(`Add employer renewal letter`);
-    if (ageMins !== null && ageMins > 60) {
-      propertySpecific.push(`Listed ${ageMins < 1440 ? Math.round(ageMins/60) + 'h' : Math.round(ageMins/1440) + 'd'} ago — respond fast`);
+    if (!user.met_partner || user.met_partner === 'nee') {
+      tips.push({ tip: `Applying with a partner combines income and significantly improves approval rates.`, p: 2 });
     }
+    if (user.application_readiness === 'niet') {
+      tips.push({ tip: `Prepare your documents first — income proof and ID are required by most Dutch landlords.`, p: 3 });
+    } else if (user.application_readiness === 'bezig') {
+      tips.push({ tip: `Finish your documents — incomplete applications are often rejected immediately.`, p: 2 });
+    }
+    if (user.contract_type === 'zzp') {
+      tips.push({ tip: `Include 3 years of tax returns and an active client contract as a freelancer.`, p: 2 });
+    } else if (user.contract_type === 'tijdelijk') {
+      tips.push({ tip: `Add an employer renewal statement to reassure landlords about income continuity.`, p: 1 });
+    }
+    tips.push({ tip: `Send a short personal introduction — it sets you apart from anonymous applicants.`, p: 1 });
  
-    if (ageMins !== null && ageMins <= 60) general.push(`Apply now — you're early`);
-    general.push(`Send a personal intro message`);
- 
-    const potentialBoost = (highImpact.length > 0 ? 14 : 0) + (highImpact.length > 1 ? 9 : 0) + (propertySpecific.length > 0 ? 6 : 0);
-    const potentialScore = Math.min(100, score + potentialBoost);
+    tips.sort((a, b) => b.p - a.p);
+    const top = tips.slice(0, 3);
+    const potentialScore = Math.min(100, score + top.reduce((s, t) => s + t.p * 4, 0));
  
     lines.push('');
     lines.push(`*Boost to ${potentialScore}%*`);
- 
-    if (highImpact.length > 0) {
-      lines.push(`Highest impact`);
-      highImpact.slice(0, 2).forEach(t => lines.push(`· ${t}`));
-    }
-    if (propertySpecific.length > 0) {
-      lines.push(`For this property`);
-      propertySpecific.slice(0, 2).forEach(t => lines.push(`· ${t}`));
-    }
-    if (general.length > 0) {
-      lines.push(`General`);
-      general.slice(0, 2).forEach(t => lines.push(`· ${t}`));
-    }
+    top.forEach(t => lines.push(`· ${t.tip}`));
   }
  
   const text = lines.join('\n');
