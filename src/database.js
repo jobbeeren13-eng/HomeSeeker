@@ -169,12 +169,11 @@ const createUserByCustomerId = db.prepare(`
   VALUES (?, ?, ?, ?, 1, 1, datetime('now'))
 `);
 const clearOldChatId = db.prepare('UPDATE users SET chat_id = NULL WHERE chat_id = ? AND stripe_customer_id != ?');
-const linkChatToCustomer = db.prepare(`
-  UPDATE users SET chat_id = ? WHERE stripe_customer_id = ?
-`);
-// Clear chat_id from any other user that already has this chat_id
 const clearChatIdFromOthers = db.prepare(`
   UPDATE users SET chat_id = NULL WHERE chat_id = ? AND stripe_customer_id != ?
+`);
+const linkChatToCustomer = db.prepare(`
+  UPDATE users SET chat_id = ? WHERE stripe_customer_id = ?
 `);
 const cancelUserByStripe = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE stripe_customer_id = ?');
 const cancelUserByChatId = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE chat_id = ?');
