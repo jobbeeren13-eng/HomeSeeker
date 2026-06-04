@@ -7,23 +7,25 @@ const {
   markListingGloballySent,
   getSentListingByFingerprint,
 } = require('./database');
-
+ 
 const CITIES = [
   'amsterdam', 'rotterdam', 'utrecht', 'den-haag',
   'eindhoven', 'delft', 'haarlem', 'leiden',
-  'groningen', 'amstelveen',
+  'groningen', 'amstelveen', 'tilburg', 'almere',
+  'breda', 'nijmegen', 'apeldoorn', 'arnhem',
+  'maastricht', 'zwolle', 'enschede',
 ];
-
+ 
 let scraperStats = {
   lastRunAt: null, lastSuccessfulRunAt: null, lastRunListings: 0,
   consecutiveZeroRuns: 0, totalRuns: 0, totalListingsFound: 0,
   averageListingsPerRun: 0, lastError: null, lastFailureReason: null,
   averageRuntime: 0, runtimes: [],
 };
-
+ 
 let _adminBot = null;
 function setAdminBot(bot) { _adminBot = bot; }
-
+ 
 async function sendAdminAlert(msg) {
   const chatId = process.env.ADMIN_CHAT_ID;
   if (!chatId || !_adminBot) return;
@@ -31,7 +33,7 @@ async function sendAdminAlert(msg) {
     await _adminBot.sendMessage(chatId, `🚨 *HomeSeeker Alert*\n\n${msg}`, { parse_mode: 'Markdown' });
   } catch (e) { console.error('[watchdog] Failed to send admin alert:', e.message); }
 }
-
+ 
 function getScraperHealth() {
   const staleCutoff = 6 * 60 * 60 * 1000;
   const isStale = scraperStats.lastSuccessfulRunAt
@@ -41,7 +43,7 @@ function getScraperHealth() {
   if (isStale) status = 'stale';
   return { ...scraperStats, status, isStale };
 }
-
+ 
 function recordScraperRun(count, runtime, error = null) {
   scraperStats.lastRunAt = new Date().toISOString();
   scraperStats.lastRunListings = count;
@@ -61,26 +63,26 @@ function recordScraperRun(count, runtime, error = null) {
     if (scraperStats.consecutiveZeroRuns === 3) sendAdminAlert(`⚠️ 3 consecutive scraper runs with 0 listings.\nLast error: ${error || 'none'}`);
   }
 }
-
+ 
 function parsePrice(raw) {
   if (!raw) return null;
   const cleaned = String(raw).replace(/[€\s.]/g, '').replace(',', '.');
   const match = cleaned.match(/(\d+(?:\.\d+)?)/);
   return match ? parseFloat(match[1]) : null;
 }
-
+ 
 function normaliseCity(raw) {
   if (!raw) return '';
   return raw.toLowerCase().replace(/\s+/g, '-').replace(/'/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
-
+ 
 function makeFingerprint(listing) {
   const address = (listing.address || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const priceRange = Math.round((listing.priceNumber || 0) / 50) * 50;
   const city = (listing.city || '').toLowerCase().replace(/[^a-z]/g, '');
   return `${city}__${address}__${priceRange}`;
 }
-
+ 
 function rowToListing(row) {
   return {
     url: row.url, address: row.address, price: row.price, city: row.city,
@@ -90,14 +92,14 @@ function rowToListing(row) {
     image: row.image, listedAt: row.listed_at, source: row.source, fingerprint: row.fingerprint,
   };
 }
-
+ 
 function isValidListing(listing) {
   if (!listing.url || !listing.url.startsWith('http')) return false;
   if (!listing.priceNumber || listing.priceNumber < 100 || listing.priceNumber > 50000) return false;
   if (!listing.city) return false;
   return true;
 }
-
+ 
 function saveNewListing(listing) {
   if (!isValidListing(listing)) return false;
   const fingerprint = makeFingerprint(listing);
@@ -117,7 +119,7 @@ function saveNewListing(listing) {
   insertListing.run({ ...base, sent: 0 });
   return true;
 }
-
+ 
 function fetchRSS(url) {
   return new Promise((resolve, reject) => {
     const req = https.get(url, {
@@ -136,41 +138,41 @@ function fetchRSS(url) {
     req.on('timeout', () => { req.destroy(); reject(new Error('RSS fetch timeout')); });
   });
 }
-
+ 
 function extractImageFromDescription(desc) {
   if (!desc) return '';
   const match = desc.match(/src="([^"]+)"/);
   return match ? match[1] : '';
 }
-
+ 
 function extractRoomsFromTitle(title) {
   const match = (title || '').match(/(\d+)\s*(?:kamer|slaapkamer|room)/i);
   return match ? parseInt(match[1]) : 0;
 }
-
+ 
 function extractAreaFromTitle(title) {
   const match = (title || '').match(/(\d+)\s*m[²2]/i);
   return match ? parseFloat(match[1]) : 0;
 }
-
+ 
 async function fetchFundaRSS(city, transactionType) {
   const type = transactionType === 'huur' ? 'huur' : 'koop';
   const url = `https://www.funda.nl/zoeken/${type}?selected_area=[%22${encodeURIComponent(city)}%22]&rss=1`;
-
+ 
   try {
     const xml = await fetchRSS(url);
     const cleanXml = xml.replace(/&(?![a-zA-Z#][a-zA-Z0-9]*;)/g, '&amp;');
     const parsed = await parseStringPromise(cleanXml, { explicitArray: false, strict: false });
     const items = parsed?.rss?.channel?.item;
     if (!items) return [];
-
+ 
     const list = Array.isArray(items) ? items : [items];
     return list.map(item => {
       const title = item.title || '';
       const link = (item.link || '').split('?')[0];
       const price = (title.match(/€\s*[\d.,]+/) || [])[0] || '';
       const image = extractImageFromDescription(item.description || '');
-
+ 
       return {
         url: link,
         address: title.split('€')[0].trim().replace(/^[^a-zA-Z0-9]+/, ''),
@@ -193,12 +195,12 @@ async function fetchFundaRSS(city, transactionType) {
     return [];
   }
 }
-
+ 
 async function scrapeFunda() {
   const startTime = Date.now();
   let newCount = 0;
   console.log(`[scraper] Starting funda RSS (${CITIES.length * 2} feeds)…`);
-
+ 
   for (const city of CITIES) {
     for (const type of ['huur', 'koop']) {
       const listings = await fetchFundaRSS(city, type);
@@ -208,24 +210,24 @@ async function scrapeFunda() {
       await new Promise(r => setTimeout(r, 500));
     }
   }
-
+ 
   const runtime = Date.now() - startTime;
   console.log(`[scraper] funda RSS done — ${newCount} new listings in ${Math.round(runtime / 1000)}s`);
   recordScraperRun(newCount, runtime);
   return newCount;
 }
-
+ 
 async function scrapeListings() {
   await scrapeFunda();
   const unsent = getUnsentListings.all().map(rowToListing);
   console.log(`[scraper] Total unsent listings: ${unsent.length}`);
   return unsent;
 }
-
+ 
 function markListingsAsSent(urls) {
   for (const url of urls) markListingGloballySent.run(url);
 }
-
+ 
 module.exports = {
   scrapeListings,
   scrapeFunda,

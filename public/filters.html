@@ -369,29 +369,29 @@
       <div class="card-title">Location & listing type</div>
 
       <div class="field">
-        <div class="field-label">City <span class="req">*</span></div>
-        <select name="locatie" required>
-          <option value="">Select a city</option>
-          <option value="amsterdam">Amsterdam</option>
-          <option value="rotterdam">Rotterdam</option>
-          <option value="utrecht">Utrecht</option>
-          <option value="den-haag">The Hague</option>
-          <option value="eindhoven">Eindhoven</option>
-          <option value="delft">Delft</option>
-          <option value="haarlem">Haarlem</option>
-          <option value="leiden">Leiden</option>
-          <option value="groningen">Groningen</option>
-          <option value="amstelveen">Amstelveen</option>
-          <option value="tilburg">Tilburg</option>
-          <option value="almere">Almere</option>
-          <option value="breda">Breda</option>
-          <option value="nijmegen">Nijmegen</option>
-          <option value="apeldoorn">Apeldoorn</option>
-          <option value="arnhem">Arnhem</option>
-          <option value="maastricht">Maastricht</option>
-          <option value="zwolle">Zwolle</option>
-          <option value="enschede">Enschede</option>
-        </select>
+        <div class="field-label">City <span class="req">*</span> <span style="color:var(--muted);font-size:12px;font-weight:400">— select one or more</span></div>
+        <div class="toggle-group" id="city-group" style="flex-wrap:wrap">
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_ams" value="amsterdam" /><label for="c_ams">Amsterdam</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_rot" value="rotterdam" /><label for="c_rot">Rotterdam</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_utr" value="utrecht" /><label for="c_utr">Utrecht</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_hag" value="den-haag" /><label for="c_hag">The Hague</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_ein" value="eindhoven" /><label for="c_ein">Eindhoven</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_haa" value="haarlem" /><label for="c_haa">Haarlem</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_lei" value="leiden" /><label for="c_lei">Leiden</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_del" value="delft" /><label for="c_del">Delft</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_gro" value="groningen" /><label for="c_gro">Groningen</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_ams2" value="amstelveen" /><label for="c_ams2">Amstelveen</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_til" value="tilburg" /><label for="c_til">Tilburg</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_alm" value="almere" /><label for="c_alm">Almere</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_bre" value="breda" /><label for="c_bre">Breda</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_nij" value="nijmegen" /><label for="c_nij">Nijmegen</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_ape" value="apeldoorn" /><label for="c_ape">Apeldoorn</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_arn" value="arnhem" /><label for="c_arn">Arnhem</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_maa" value="maastricht" /><label for="c_maa">Maastricht</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_zwo" value="zwolle" /><label for="c_zwo">Zwolle</label></div>
+          <div class="toggle-btn"><input type="checkbox" name="locatie_cities" id="c_ens" value="enschede" /><label for="c_ens">Enschede</label></div>
+        </div>
+        <div id="city-error" style="color:#ff8080;font-size:13px;margin-top:8px;display:none">Please select at least one city.</div>
       </div>
 
       <div class="field">
@@ -616,6 +616,17 @@
     for (const [k, v] of fd.entries()) {
       data[k] = v;
     }
+
+    // Multi-city: collect all checked cities as comma-separated string
+    const selectedCities = [...form.querySelectorAll('[name="locatie_cities"]:checked')].map(el => el.value);
+    if (selectedCities.length === 0) {
+      document.getElementById('city-error').style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Save my filters & start alerts →';
+      return;
+    }
+    document.getElementById('city-error').style.display = 'none';
+    data['locatie'] = selectedCities.join(',');
 
     // checkboxes (unchecked = false)
     data['met_partner'] = form.querySelector('[name="met_partner"]:checked')?.value || 'nee';

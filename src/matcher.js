@@ -23,8 +23,9 @@ async function getActiveUsers() {
 }
 
 function matchesUser(listing, user) {
-  const userCity = normaliseCity(user.locatie || '');
-  if (userCity && listing.city !== userCity) return false;
+  // Support multiple cities stored as comma-separated string
+  const userCities = (user.locatie || '').split(',').map(c => normaliseCity(c.trim())).filter(Boolean);
+  if (userCities.length > 0 && !userCities.includes(listing.city)) return false;
 
   if (user.type !== 'beide' && listing.transactionType !== user.type) return false;
 
