@@ -237,15 +237,16 @@
 
     #success-msg {
       display: none;
-      background: rgba(0,229,160,0.1);
-      border: 1px solid var(--green);
-      border-radius: 10px;
-      padding: 24px;
-      margin-top: 24px;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
       text-align: center;
+      padding: 24px;
     }
-    #success-msg h3 { color: var(--green); font-size: 20px; margin-bottom: 8px; }
-    #success-msg p { color: var(--muted); font-size: 14px; }
+    #success-msg.visible { display: flex; }
 
     #error-msg {
       display: none;
@@ -556,17 +557,12 @@
   </form>
 
   <div id="success-msg">
-    <div style="font-size:48px;margin-bottom:16px">🏠</div>
-    <h3>You're all set!</h3>
-    <p>Your filters have been saved successfully.</p>
-    <p style="margin-top:10px">You'll receive your first Telegram alert within minutes of a matching listing going live.</p>
-    <div style="margin-top:20px;padding:16px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);text-align:left">
-      <div style="font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">What happens next</div>
-      <div style="font-size:14px;color:#ccc;line-height:2">
-        ✓ &nbsp;New listings are checked every 10 minutes<br>
-        ✓ &nbsp;You'll get an instant Telegram alert on match<br>
-        ✓ &nbsp;Each alert includes your application score<br>
-        ✓ &nbsp;Update filters anytime via /filters in the bot
+    <div style="max-width:420px;width:100%;text-align:center">
+      <div style="width:72px;height:72px;background:var(--green-dim);border:1px solid var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 28px">✓</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:1px;color:var(--text);margin-bottom:12px">Filters saved</h2>
+      <p style="color:var(--muted);font-size:16px;line-height:1.7;margin-bottom:32px">You're all set. The moment a matching listing goes live, you'll get an instant alert on Telegram with your application score and personalised tips.</p>
+      <div style="background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:16px;font-size:14px;color:var(--green)">
+        Go back to Telegram and wait for your first alert
       </div>
     </div>
   </div>
@@ -706,7 +702,7 @@
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Unknown error');
       form.style.display = 'none';
-      document.getElementById('success-msg').style.display = 'block';
+      document.getElementById('success-msg').classList.add('visible');
     } catch (err) {
       errEl.textContent = `Error: ${err.message}`;
       errEl.style.display = 'block';
