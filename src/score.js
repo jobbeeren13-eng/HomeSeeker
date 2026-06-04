@@ -238,4 +238,83 @@ function getPillarBreakdown(listing, user) {
   };
 }
 
-module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getPillarBreakdown };
+
+// ─────────────────────────────────────────────
+// LANDLORD INTENT DETECTION — NLP on description
+// ─────────────────────────────────────────────
+
+const LANDLORD_SIGNALS = {
+  professional: {
+    patterns: [/professional/i, /werkende/i, /working professional/i, /professional couple/i, /professional tenant/i],
+    label: 'Professional tenant preferred',
+    tip: 'Emphasize your professional employment and stable income',
+    boost: 8,
+  },
+  longterm: {
+    patterns: [/long.term/i, /langdurig/i, /for several years/i, /meerdere jaren/i, /stable tenant/i, /vaste huurder/i],
+    label: 'Long-term tenant preferred',
+    tip: 'Mention your intention to stay for 2+ years',
+    boost: 10,
+  },
+  expat: {
+    patterns: [/expat/i, /international/i, /relocation/i, /expats welcome/i, /internationals/i],
+    label: 'Expat-friendly landlord',
+    tip: 'Mention your relocation or international employment',
+    boost: 6,
+  },
+  quiet: {
+    patterns: [/quiet/i, /rustig/i, /respectful/i, /well-maintained/i, /no noise/i, /geen overlast/i],
+    label: 'Values quiet, responsible tenants',
+    tip: 'Highlight your quiet lifestyle and responsible character',
+    boost: 5,
+  },
+  family: {
+    patterns: [/family/i, /gezin/i, /near schools/i, /near school/i, /family home/i, /gezinswoning/i],
+    label: 'Family-friendly property',
+    tip: 'Highlight family stability in your application',
+    boost: 5,
+  },
+  corporate: {
+    patterns: [/corporate lease/i, /company lease/i, /zakelijke huur/i, /employer/i],
+    label: 'Corporate lease possible',
+    tip: 'Consider applying through your employer if available',
+    boost: 7,
+  },
+  nopets: {
+    patterns: [/no pets/i, /geen huisdieren/i, /no animals/i, /geen dieren/i],
+    label: 'No pets allowed',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+  nosharing: {
+    patterns: [/no sharing/i, /no roommates/i, /niet delen/i, /single occupant/i, /one person/i],
+    label: 'No house sharing',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+};
+
+function detectLandlordIntent(description) {
+  if (!description) return { signals: [], tips: [], warnings: [] };
+  const signals = [];
+  const tips = [];
+  const warnings = [];
+
+  for (const [key, signal] of Object.entries(LANDLORD_SIGNALS)) {
+    const matched = signal.patterns.some(p => p.test(description));
+    if (matched) {
+      signals.push({ key, label: signal.label, boost: signal.boost });
+      if (signal.warning) {
+        warnings.push(signal.label);
+      } else if (signal.tip) {
+        tips.push({ tip: signal.tip, boost: signal.boost, source: 'landlord' });
+      }
+    }
+  }
+
+  return { signals, tips, warnings };
+}
+
+module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getPillarBreakdown, detectLandlordIntent };

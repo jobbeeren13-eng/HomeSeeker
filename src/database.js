@@ -79,6 +79,7 @@ db.exec(`
     listed_at TEXT,
     source TEXT,
     fingerprint TEXT,
+    description TEXT DEFAULT '',
     scraped_at TEXT DEFAULT (datetime('now')),
     sent INTEGER DEFAULT 0
   );
@@ -106,6 +107,10 @@ try {
   if (listingCols.length > 0 && !listingCols.includes('fingerprint')) {
     db.exec(`ALTER TABLE listings ADD COLUMN fingerprint TEXT`);
     console.log('[db] Added fingerprint column to listings');
+  }
+  if (listingCols.length > 0 && !listingCols.includes('description')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN description TEXT DEFAULT ''`);
+    console.log('[db] Added description column to listings');
   }
 } catch (e) {}
  
@@ -197,10 +202,10 @@ const getSentListingByFingerprint = db.prepare(
 const insertListing = db.prepare(`
   INSERT OR IGNORE INTO listings (
     url, address, city, price, price_number, transaction_type, rooms, area,
-    energy_label, construction_year, property_type, image, listed_at, source, fingerprint, sent
+    energy_label, construction_year, property_type, image, listed_at, source, fingerprint, description, sent
   ) VALUES (
     @url, @address, @city, @price, @priceNumber, @transactionType, @rooms, @area,
-    @energyLabel, @constructionYear, @propertyType, @image, @listedAt, @source, @fingerprint, @sent
+    @energyLabel, @constructionYear, @propertyType, @image, @listedAt, @source, @fingerprint, @description, @sent
   )
 `);
 const getUnsentListings = db.prepare('SELECT * FROM listings WHERE sent = 0');

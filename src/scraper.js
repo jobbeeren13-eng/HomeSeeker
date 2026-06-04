@@ -90,6 +90,7 @@ function rowToListing(row) {
     rooms: row.rooms, area: row.area, energyLabel: row.energy_label,
     constructionYear: row.construction_year, propertyType: row.property_type,
     image: row.image, listedAt: row.listed_at, source: row.source, fingerprint: row.fingerprint,
+    description: row.description || '',
   };
 }
  
@@ -113,7 +114,7 @@ function saveNewListing(listing) {
     area: listing.area || 0, energyLabel: listing.energyLabel || '',
     constructionYear: listing.constructionYear || null, propertyType: listing.propertyType || '',
     image: listing.image || '', listedAt: listing.listedAt || new Date().toISOString(),
-    source: listing.source, fingerprint,
+    source: listing.source, fingerprint, description: listing.description || '',
   };
   if (existing) { insertListing.run({ ...base, sent: 1 }); return false; }
   insertListing.run({ ...base, sent: 0 });
@@ -136,6 +137,35 @@ function fetchRSS(url) {
     });
     req.on('error', reject);
     req.on('timeout', () => { req.destroy(); reject(new Error('RSS fetch timeout')); });
+  });
+}
+ 
+async function fetchFundaDescription(url) {
+  return new Promise((resolve) => {
+    const req = https.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'nl-NL,nl;q=0.9',
+      },
+      timeout: 10000,
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          // Extract description from og:description or main description block
+          const ogMatch = data.match(/<meta[^>]+property="og:description"[^>]+content="([^"]+)"/i);
+          if (ogMatch) return resolve(ogMatch[1].replace(/&#\d+;/g, ' ').trim());
+          // Fallback: extract from description div
+          const descMatch = data.match(/class="[^"]*object-description[^"]*"[^>]*>([\s\S]{20,800}?)<\/div>/i);
+          if (descMatch) return resolve(descMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 600));
+          resolve('');
+        } catch (e) { resolve(''); }
+      });
+    });
+    req.on('error', () => resolve(''));
+    req.on('timeout', () => { req.destroy(); resolve(''); });
   });
 }
  
@@ -188,6 +218,7 @@ async function fetchFundaRSS(city, transactionType) {
         image,
         listedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
         source: 'funda',
+        description: '',
       };
     }).filter(l => l.url && l.url.startsWith('http'));
   } catch (err) {
@@ -205,6 +236,13 @@ async function scrapeFunda() {
     for (const type of ['huur', 'koop']) {
       const listings = await fetchFundaRSS(city, type);
       for (const listing of listings) {
+        if (!listingExists.get(listing.url)) {
+          // Fetch description for new listings only
+          try {
+            listing.description = await fetchFundaDescription(listing.url);
+          } catch (e) { listing.description = ''; }
+          await new Promise(r => setTimeout(r, 300));
+        }
         if (saveNewListing(listing)) newCount++;
       }
       await new Promise(r => setTimeout(r, 500));

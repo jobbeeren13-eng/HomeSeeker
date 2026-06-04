@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { getUser, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, upsertChat, setUserActive, cancelUserByChatId } = require('./database');
 const { generateLetter } = require('./letter');
 const { rowToListing } = require('./scraper');
-const { getImprovementTips, getPillarBreakdown } = require('./score');
+const { getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
  
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
@@ -490,10 +490,11 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     lines.push(bar(dealScore));
   }
  
-  // Boost tips
+  // Boost tips — profile gaps + landlord intent from description
   if (user && score < 85) {
     const tips = [];
- 
+
+    // Profile-based tips
     if (price > maxHuur && inkomen > 0) {
       tips.push({ line: `Income ${incomeRatio}× / 3.0× required  →  Add guarantor  +14%`, p: 3 });
     } else if (!user.heeft_borg || user.heeft_borg === 'nee') {
@@ -503,22 +504,38 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
       tips.push({ line: `Apply with a partner  +9%`, p: 2 });
     }
     if (user.application_readiness === 'niet') {
-      tips.push({ line: `Documents = not ready  →  Prepare income proof & ID  +20%`, p: 3 });
+      tips.push({ line: `Prepare income proof & ID  +20%`, p: 3 });
     } else if (user.application_readiness === 'bezig') {
-      tips.push({ line: `Documents = in progress  →  Complete your documents  +14%`, p: 2 });
+      tips.push({ line: `Complete your documents  +14%`, p: 2 });
     }
     if (user.contract_type === 'zzp') {
       tips.push({ line: `Add 3 years of tax returns  +6%`, p: 2 });
     }
+
+    // Landlord intent tips — from description NLP
+    const intent = detectLandlordIntent(listing.description || '');
+    for (const t of intent.tips) {
+      tips.push({ line: `${t.tip}  +${t.boost}%`, p: t.boost >= 8 ? 3 : 2 });
+    }
+
     tips.push({ line: `Send a personal introduction  +3%`, p: 1 });
- 
-    tips.sort((a, b) => b.p - a.p);
-    const top = tips.slice(0, 3);
+
+    // Deduplicate + sort by priority
+    const seen = new Set();
+    const unique = tips.filter(t => { if (seen.has(t.line)) return false; seen.add(t.line); return true; });
+    unique.sort((a, b) => b.p - a.p);
+    const top = unique.slice(0, 3);
     const potentialScore = Math.min(100, score + top.reduce((s, t) => s + parseInt(t.line.match(/\+(\d+)%/)?.[1] || 0), 0));
- 
+
     lines.push('');
     lines.push(`*Boost to ${potentialScore}% 🚀*`);
     top.forEach(t => lines.push(`• ${t.line}`));
+
+    // Warnings from description (no pets, no sharing, etc.)
+    if (intent.warnings.length > 0) {
+      lines.push('');
+      intent.warnings.forEach(w => lines.push(`⚠️ ${w}`));
+    }
   }
  
   // Verdict
