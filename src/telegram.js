@@ -495,7 +495,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     const tips = [];
  
     if (price > maxHuur && inkomen > 0) {
-      tips.push({ line: `Income = ${incomeRatio}× rent (3.0× required)  →  Add a guarantor  +14%`, p: 3 });
+      tips.push({ line: `Income ${incomeRatio}× / 3.0× required  →  Add guarantor  +14%`, p: 3 });
     } else if (!user.heeft_borg || user.heeft_borg === 'nee') {
       tips.push({ line: `Add a guarantor  +10%`, p: 2 });
     }

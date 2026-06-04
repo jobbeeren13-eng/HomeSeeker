@@ -332,7 +332,7 @@
         <div class="field">
           <div class="field-label">
             Gross monthly income (€) <span class="req">*</span>
-            <i class="tip" data-tip="Used to calculate your application strength. For huur: you need 3× the rent. For koop: income × 4.5 = max mortgage.">?</i>
+            <i class="tip" data-tip="Used to calculate your application strength. For rental: you need 3× the monthly rent. Used to calculate your application strength.">?</i>
           </div>
           <input type="number" name="inkomen" min="0" placeholder="3500" required />
         </div>
@@ -382,17 +382,19 @@
           <option value="leiden">Leiden</option>
           <option value="groningen">Groningen</option>
           <option value="amstelveen">Amstelveen</option>
+          <option value="tilburg">Tilburg</option>
+          <option value="almere">Almere</option>
+          <option value="breda">Breda</option>
+          <option value="nijmegen">Nijmegen</option>
+          <option value="apeldoorn">Apeldoorn</option>
+          <option value="arnhem">Arnhem</option>
+          <option value="maastricht">Maastricht</option>
+          <option value="zwolle">Zwolle</option>
+          <option value="enschede">Enschede</option>
         </select>
       </div>
 
-      <div class="field">
-        <div class="field-label">Looking for</div>
-        <div class="toggle-group">
-          <div class="toggle-btn"><input type="radio" name="type" id="type_huur" value="huur" /><label for="type_huur">Huur (rent)</label></div>
-          <div class="toggle-btn"><input type="radio" name="type" id="type_koop" value="koop" /><label for="type_koop">Koop (buy)</label></div>
-          <div class="toggle-btn"><input type="radio" name="type" id="type_beide" value="beide" checked /><label for="type_beide">Both</label></div>
-        </div>
-      </div>
+      <input type="hidden" name="type" value="huur" />
 
       <div class="field">
         <div class="field-label">Property type</div>
@@ -524,7 +526,7 @@
 
     <div class="card" id="income-calc">
       <div class="card-title">Affordability calculator</div>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:16px;line-height:1.6">Based on your gross monthly income, see what you can afford for rent or buy.</p>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px;line-height:1.6">Based on the income you entered above. Landlords in the Netherlands typically require 3× the monthly rent.</p>
       <div id="afford-result" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:14px;line-height:1.7;color:#ccc;display:none"></div>
     </div>
 
@@ -533,9 +535,19 @@
   </form>
 
   <div id="success-msg">
-    <h3>🎉 You're all set!</h3>
-    <p>Your filters have been saved. You'll start receiving alerts on Telegram within minutes of a new matching listing going live.</p>
-    <p style="margin-top:12px">Go back to Telegram and wait for your first alert!</p>
+    <div style="font-size:48px;margin-bottom:16px">🏠</div>
+    <h3>You're all set!</h3>
+    <p>Your filters have been saved successfully.</p>
+    <p style="margin-top:10px">You'll receive your first Telegram alert within minutes of a matching listing going live.</p>
+    <div style="margin-top:20px;padding:16px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);text-align:left">
+      <div style="font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">What happens next</div>
+      <div style="font-size:14px;color:#ccc;line-height:2">
+        ✓ &nbsp;New listings are checked every 10 minutes<br>
+        ✓ &nbsp;You'll get an instant Telegram alert on match<br>
+        ✓ &nbsp;Each alert includes your application score<br>
+        ✓ &nbsp;Update filters anytime via /filters in the bot
+      </div>
+    </div>
   </div>
 </div>
 
