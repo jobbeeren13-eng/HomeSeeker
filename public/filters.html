@@ -394,7 +394,14 @@
         </select>
       </div>
 
-      <input type="hidden" name="type" value="huur" />
+      <div class="field">
+        <div class="field-label">Looking for</div>
+        <div class="toggle-group">
+          <div class="toggle-btn"><input type="radio" name="type" id="type_huur" value="huur" /><label for="type_huur">Rental</label></div>
+          <div class="toggle-btn"><input type="radio" name="type" id="type_koop" value="koop" /><label for="type_koop">Buy</label></div>
+          <div class="toggle-btn"><input type="radio" name="type" id="type_beide" value="beide" checked /><label for="type_beide">Both</label></div>
+        </div>
+      </div>
 
       <div class="field">
         <div class="field-label">Property type</div>
