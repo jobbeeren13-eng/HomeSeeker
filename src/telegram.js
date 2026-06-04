@@ -430,16 +430,16 @@ function getBot() { return bot; }
 async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user = null, botOverride = null) {
   const _bot = botOverride || bot;
   if (!_bot) return;
-
+ 
   clearLetterState(chatId);
-
+ 
   function bar(pct) {
     const total = 10;
     const filled = Math.round((pct / 100) * total);
     const dot = pct >= 70 ? '🟩' : pct >= 40 ? '🟨' : '🟥';
     return dot.repeat(filled) + '⬜'.repeat(total - filled) + `  ${pct}%`;
   }
-
+ 
   function appLabel(pct) {
     if (pct >= 85) return 'Excellent';
     if (pct >= 70) return 'Strong';
@@ -447,20 +447,20 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     if (pct >= 30) return 'Fair';
     return 'Weak';
   }
-
+ 
   function valueLabel(pct) {
     if (pct >= 60) return 'Good deal';
     if (pct >= 40) return 'Fair price';
     return 'Expensive';
   }
-
+ 
   const JUNK = ['blikvanger', 'nieuw', 'verhuurd', 'verkocht', 'onder bod'];
   let address = listing.address || '';
   if (JUNK.some(j => address.toLowerCase().trim() === j || address.toLowerCase().trim().startsWith(j + ' '))) {
     const m = listing.url?.match(/\/([^/]+)\/\d+\/?$/);
     if (m) address = m[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
-
+ 
   const priceStr = listing.priceNumber
     ? `€${listing.priceNumber.toLocaleString('nl-NL')}`
     : (listing.price || '—');
@@ -471,16 +471,16 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const maxHuur = inkomen / 3;
   const price = listing.priceNumber || 0;
   const incomeRatio = (inkomen > 0 && price > 0) ? Math.round((price / maxHuur) * 10) / 10 : null;
-
+ 
   const lines = [];
-
+ 
   // Header
   lines.push(`📍 *${address}*`);
-  lines.push(`${cityDisplay || listing.city}${listing.area ? `  ·  ${listing.area}m²` : ''}`);
+  if (listing.area) lines.push(`• ${listing.area}m²`);
   lines.push(`Rental = ${priceStr}${isHuur ? '/mo' : ''}`);
   if (monthlyCost) lines.push(`Est. total = €${monthlyCost.toLocaleString('nl-NL')}/mo`);
-
-  // Scores with = signs
+ 
+  // Scores
   lines.push('');
   lines.push(`Application Score = ${appLabel(score)}`);
   lines.push(bar(score));
@@ -489,13 +489,13 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     lines.push(`Market Value = ${valueLabel(dealScore)}`);
     lines.push(bar(dealScore));
   }
-
-  // Boost tips — income issue shown as context for the tip
+ 
+  // Boost tips
   if (user && score < 85) {
     const tips = [];
-
+ 
     if (price > maxHuur && inkomen > 0) {
-      tips.push({ context: `Income = ${incomeRatio}× rent  (3.0× required)`, tip: `Add a guarantor`, boost: 14, p: 3 });
+      tips.push({ context: `Income = ${incomeRatio}× rent (3.0× required)`, tip: `Add a guarantor`, boost: 14, p: 3 });
     } else if (!user.heeft_borg || user.heeft_borg === 'nee') {
       tips.push({ context: null, tip: `Add a guarantor`, boost: 10, p: 2 });
     }
@@ -511,23 +511,22 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
       tips.push({ context: null, tip: `Add 3 years of tax returns`, boost: 6, p: 2 });
     }
     tips.push({ context: null, tip: `Send a personal introduction`, boost: 3, p: 1 });
-
+ 
     tips.sort((a, b) => b.p - a.p);
     const top = tips.slice(0, 3);
     const potentialScore = Math.min(100, score + top.reduce((s, t) => s + t.boost, 0));
-
+ 
     lines.push('');
-    lines.push(`*Boost to ${potentialScore}%*`);
+    lines.push(`🚀 *Boost to ${potentialScore}%*`);
     top.forEach(t => {
-      const icon = t.p >= 2 ? '🔥' : '📄';
       if (t.context) {
-        lines.push(`${t.context}  →  ${t.tip}  +${t.boost}%`);
+        lines.push(`• ${t.context}  →  ${t.tip}  +${t.boost}%`);
       } else {
-        lines.push(`${icon} ${t.tip}  +${t.boost}%`);
+        lines.push(`• ${t.tip}  +${t.boost}%`);
       }
     });
   }
-
+ 
   // Verdict
   if (user) {
     let verdict = '';
@@ -543,10 +542,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     lines.push('');
     lines.push(verdict);
   }
-
+ 
   const text = lines.join('\n');
   const cacheId = cacheListing(listing);
-
+ 
   const keyboard = {
     inline_keyboard: [
       [
@@ -559,7 +558,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
       ],
     ],
   };
-
+ 
   try {
     if (listing.image) {
       try {
@@ -600,3 +599,4 @@ function processWebhookUpdate(update) {
 }
  
 module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState, generateStartPayload };
+ 
