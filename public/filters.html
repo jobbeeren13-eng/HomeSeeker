@@ -416,14 +416,28 @@
     <!-- Price & size -->
     <div class="card">
       <div class="card-title">Price & size</div>
-      <div class="row">
+
+      <!-- Rental price (shown for Rental + Both) -->
+      <div id="price-huur" class="row">
         <div class="field">
-          <div class="field-label">Min price (€)</div>
-          <input type="number" name="prijs_min" min="0" placeholder="0" />
+          <div class="field-label">Min rent (€/mo)</div>
+          <input type="number" name="prijs_min" min="0" placeholder="Optional" />
         </div>
         <div class="field">
-          <div class="field-label">Max price (€) <span class="req">*</span></div>
-          <input type="number" name="prijs_max" min="0" placeholder="2000" required />
+          <div class="field-label">Max rent (€/mo) <span class="req">*</span></div>
+          <input type="number" name="prijs_max" min="0" placeholder="e.g. 2000" id="prijs_max_huur" />
+        </div>
+      </div>
+
+      <!-- Buy price (shown for Buy + Both) -->
+      <div id="price-koop" style="display:none" class="row">
+        <div class="field">
+          <div class="field-label">Min buy price (€)</div>
+          <input type="number" name="prijs_koop_min" min="0" placeholder="Optional" />
+        </div>
+        <div class="field">
+          <div class="field-label">Max buy price (€) <span class="req">*</span></div>
+          <input type="number" name="prijs_koop_max" min="0" placeholder="e.g. 400000" id="prijs_max_koop" />
         </div>
       </div>
       <div class="row">
@@ -432,14 +446,14 @@
             Min area (m²)
             <i class="tip" data-tip="Only receive listings with at least this living area.">?</i>
           </div>
-          <input type="number" name="opp_min" min="0" placeholder="40" />
+          <input type="number" name="opp_min" min="0" placeholder="Optional" />
         </div>
         <div class="field">
           <div class="field-label">
             Min rooms
             <i class="tip" data-tip="Minimum number of rooms (bedrooms + living room).">?</i>
           </div>
-          <input type="number" name="kamers_min" min="1" max="10" placeholder="2" />
+          <input type="number" name="kamers_min" min="1" max="10" placeholder="Optional" />
         </div>
       </div>
     </div>
@@ -468,7 +482,7 @@
           Min construction year
           <i class="tip" data-tip="Only receive listings built in or after this year.">?</i>
         </div>
-        <input type="number" name="bouwjaar_min" min="1800" max="2025" placeholder="1990" />
+        <input type="number" name="bouwjaar_min" min="1800" max="2025" placeholder="Optional" />
       </div>
 
       <div class="field">
@@ -591,6 +605,33 @@
   });
   updateAffordability();
 
+  // Show/hide price sections based on type
+  function updatePriceFields() {
+    const type = document.querySelector('[name="type"]:checked')?.value || 'beide';
+    const huurSection = document.getElementById('price-huur');
+    const koopSection = document.getElementById('price-koop');
+    const huurMax = document.getElementById('prijs_max_huur');
+    const koopMax = document.getElementById('prijs_max_koop');
+    if (type === 'huur') {
+      huurSection.style.display = 'grid';
+      koopSection.style.display = 'none';
+      huurMax.required = true;
+      koopMax.required = false;
+    } else if (type === 'koop') {
+      huurSection.style.display = 'none';
+      koopSection.style.display = 'grid';
+      huurMax.required = false;
+      koopMax.required = true;
+    } else {
+      huurSection.style.display = 'grid';
+      koopSection.style.display = 'grid';
+      huurMax.required = true;
+      koopMax.required = true;
+    }
+  }
+  document.querySelectorAll('[name="type"]').forEach(r => r.addEventListener('change', updatePriceFields));
+  updatePriceFields();
+
   // Show expat field conditionally
   document.querySelectorAll('input[name="profiel_type"]').forEach(r => {
     r.addEventListener('change', () => {
@@ -616,6 +657,18 @@
     for (const [k, v] of fd.entries()) {
       data[k] = v;
     }
+
+    // Handle price based on type
+    const selectedType = form.querySelector('[name="type"]:checked')?.value || 'beide';
+    if (selectedType === 'koop') {
+      data['prijs_min'] = data['prijs_koop_min'] || 0;
+      data['prijs_max'] = data['prijs_koop_max'] || null;
+    } else if (selectedType === 'beide') {
+      // For both: use rental max as primary filter, koop max stored separately
+      // prijs_min/max already set from huur fields
+    }
+    delete data['prijs_koop_min'];
+    delete data['prijs_koop_max'];
 
     // Multi-city: collect all checked cities as comma-separated string
     const selectedCities = [...form.querySelectorAll('[name="locatie_cities"]:checked')].map(el => el.value);
