@@ -476,9 +476,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
  
   // Header
   lines.push(`📍 *${address}*`);
-  if (listing.area) lines.push(`• ${listing.area}m²`);
-  lines.push(`Rental = ${priceStr}${isHuur ? '/mo' : ''}`);
-  if (monthlyCost) lines.push(`Est. total = €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+  lines.push(`• ${cityDisplay || listing.city}${listing.area ? `  ·  ${listing.area}m²` : ''}`);
+  lines.push(`• Rental = ${priceStr}${isHuur ? '/mo' : ''}`);
+  if (monthlyCost) lines.push(`• Est. total = €${monthlyCost.toLocaleString('nl-NL')}/mo`);
  
   // Scores
   lines.push('');
@@ -495,36 +495,30 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     const tips = [];
  
     if (price > maxHuur && inkomen > 0) {
-      tips.push({ context: `Income = ${incomeRatio}× rent (3.0× required)`, tip: `Add a guarantor`, boost: 14, p: 3 });
+      tips.push({ line: `Income = ${incomeRatio}× rent (3.0× required)  →  Add a guarantor  +14%`, p: 3 });
     } else if (!user.heeft_borg || user.heeft_borg === 'nee') {
-      tips.push({ context: null, tip: `Add a guarantor`, boost: 10, p: 2 });
+      tips.push({ line: `Add a guarantor  +10%`, p: 2 });
     }
     if (!user.met_partner || user.met_partner === 'nee') {
-      tips.push({ context: null, tip: `Apply with a partner`, boost: 9, p: 2 });
+      tips.push({ line: `Apply with a partner  +9%`, p: 2 });
     }
     if (user.application_readiness === 'niet') {
-      tips.push({ context: `Documents = not ready`, tip: `Prepare income proof & ID`, boost: 20, p: 3 });
+      tips.push({ line: `Documents = not ready  →  Prepare income proof & ID  +20%`, p: 3 });
     } else if (user.application_readiness === 'bezig') {
-      tips.push({ context: `Documents = in progress`, tip: `Complete your documents`, boost: 14, p: 2 });
+      tips.push({ line: `Documents = in progress  →  Complete your documents  +14%`, p: 2 });
     }
     if (user.contract_type === 'zzp') {
-      tips.push({ context: null, tip: `Add 3 years of tax returns`, boost: 6, p: 2 });
+      tips.push({ line: `Add 3 years of tax returns  +6%`, p: 2 });
     }
-    tips.push({ context: null, tip: `Send a personal introduction`, boost: 3, p: 1 });
+    tips.push({ line: `Send a personal introduction  +3%`, p: 1 });
  
     tips.sort((a, b) => b.p - a.p);
     const top = tips.slice(0, 3);
-    const potentialScore = Math.min(100, score + top.reduce((s, t) => s + t.boost, 0));
+    const potentialScore = Math.min(100, score + top.reduce((s, t) => s + parseInt(t.line.match(/\+(\d+)%/)?.[1] || 0), 0));
  
     lines.push('');
-    lines.push(`🚀 *Boost to ${potentialScore}%*`);
-    top.forEach(t => {
-      if (t.context) {
-        lines.push(`• ${t.context}  →  ${t.tip}  +${t.boost}%`);
-      } else {
-        lines.push(`• ${t.tip}  +${t.boost}%`);
-      }
-    });
+    lines.push(`*Boost to ${potentialScore}% 🚀*`);
+    top.forEach(t => lines.push(`• ${t.line}`));
   }
  
   // Verdict
