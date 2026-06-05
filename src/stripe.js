@@ -26,6 +26,11 @@ async function createCheckoutSession(successUrl, cancelUrl) {
       trial_period_days: 7,
     },
     allow_promotion_codes: true,
+    custom_text: {
+      submit: {
+        message: 'Cancel anytime before day 7 and you won\'t be charged. After the free trial, €9.99/month is billed automatically until cancelled. HomeSeeker is not affiliated with Funda or any housing platform.',
+      },
+    },
     success_url: successUrl,
     cancel_url: cancelUrl,
   });
