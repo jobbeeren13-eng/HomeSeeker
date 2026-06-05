@@ -9,11 +9,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --green: #00e5a0; --bg: #0a0a0a; --bg2: #111; --border: rgba(255,255,255,0.07); --muted: #888; }
+    :root {
+      --green: #00e5a0;
+      --green-dim: rgba(0,229,160,0.12);
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --bg3: #1a1a1a;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f0f0;
+      --muted: #888;
+    }
     body {
       font-family: 'Outfit', sans-serif;
       background: var(--bg);
-      color: #f0f0f0;
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -21,7 +30,6 @@
       justify-content: center;
       padding: 40px 24px;
       text-align: center;
-      background: radial-gradient(ellipse 70% 50% at 50% 40%, rgba(0,229,160,0.12) 0%, transparent 70%);
     }
     .logo {
       font-family: 'Bebas Neue', sans-serif;
@@ -33,7 +41,7 @@
     }
     .check {
       width: 72px; height: 72px;
-      background: rgba(0,229,160,0.15);
+      background: var(--green-dim);
       border: 2px solid var(--green);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
@@ -45,7 +53,7 @@
       font-size: 52px;
       letter-spacing: 1px;
       margin-bottom: 16px;
-      color: var(--green);
+      color: var(--text);
     }
     .sub {
       font-size: 17px;
@@ -56,7 +64,7 @@
       line-height: 1.7;
     }
     .steps-card {
-      background: #111;
+      background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 32px 36px;
@@ -80,7 +88,7 @@
     .step:last-child { margin-bottom: 0; }
     .step-n {
       width: 28px; height: 28px;
-      background: rgba(0,229,160,0.15);
+      background: var(--green-dim);
       border: 1px solid rgba(0,229,160,0.3);
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
@@ -90,18 +98,36 @@
       flex-shrink: 0;
       margin-top: 2px;
     }
-    .step-text strong { display: block; font-size: 15px; margin-bottom: 3px; }
+    .step-text strong { display: block; font-size: 15px; margin-bottom: 3px; color: var(--text); }
     .step-text span { color: var(--muted); font-size: 13px; }
     code {
-      background: #1a1a1a;
+      background: var(--bg3);
       border: 1px solid var(--border);
       border-radius: 4px;
       padding: 1px 6px;
       font-size: 13px;
       color: var(--green);
     }
+
+    /* Disclaimer — matches filters.html style */
+    .disclaimer {
+      background: rgba(0,229,160,0.07);
+      border: 1px solid rgba(0,229,160,0.2);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-top: 20px;
+      max-width: 480px;
+      width: 100%;
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.65;
+      text-align: left;
+    }
+    .disclaimer strong { color: var(--green); }
+    .disclaimer a { color: #aaa; text-decoration: underline; }
+
     .back {
-      margin-top: 36px;
+      margin-top: 24px;
       color: var(--muted);
       font-size: 13px;
     }
@@ -144,6 +170,11 @@
         <span>Within minutes of a new listing going live that matches your profile, you'll get a Telegram message.</span>
       </div>
     </div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Trial notice:</strong> Your free trial lasts <strong>7 days</strong> — no payment today. After the trial, €9.99/month is charged automatically unless you cancel beforehand. Cancel anytime via the link in your confirmation email. By starting a trial you agree to our <a href="/privacy">Privacy Policy</a>.<br><br>
+    HomeSeeker is an independent alert service and is not affiliated with Funda or any housing platform. We do not guarantee housing placement.
   </div>
 
   <p class="back">Questions? <a href="mailto:homeseeker@gmail.com">homeseeker@gmail.com</a></p>
