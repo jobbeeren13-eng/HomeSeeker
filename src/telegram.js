@@ -493,7 +493,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   // Boost tips — profile gaps + landlord intent from description
   if (user && score < 85) {
     const tips = [];
-
+ 
     // Profile-based tips
     if (price > maxHuur && inkomen > 0) {
       tips.push({ line: `Income ${incomeRatio}× / 3.0× required  →  Add guarantor  +14%`, p: 3 });
@@ -511,26 +511,26 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     if (user.contract_type === 'zzp') {
       tips.push({ line: `Add 3 years of tax returns  +6%`, p: 2 });
     }
-
+ 
     // Landlord intent tips — from description NLP
     const intent = detectLandlordIntent(listing.description || '');
     for (const t of intent.tips) {
       tips.push({ line: `${t.tip}  +${t.boost}%`, p: t.boost >= 8 ? 3 : 2 });
     }
-
+ 
     tips.push({ line: `Send a personal introduction  +3%`, p: 1 });
-
+ 
     // Deduplicate + sort by priority
     const seen = new Set();
     const unique = tips.filter(t => { if (seen.has(t.line)) return false; seen.add(t.line); return true; });
     unique.sort((a, b) => b.p - a.p);
     const top = unique.slice(0, 3);
     const potentialScore = Math.min(100, score + top.reduce((s, t) => s + parseInt(t.line.match(/\+(\d+)%/)?.[1] || 0), 0));
-
+ 
     lines.push('');
-    lines.push(`*Boost to ${potentialScore}% 🚀*`);
+    lines.push(`*How to boost your score to ${potentialScore}%*`);
     top.forEach(t => lines.push(`• ${t.line}`));
-
+ 
     // Warnings from description (no pets, no sharing, etc.)
     if (intent.warnings.length > 0) {
       lines.push('');
