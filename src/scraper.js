@@ -362,9 +362,107 @@ async function scrapeKamernet() {
   return newCount;
 }
 
+// HousingAnywhere — plain HTML scraping, listings visible without auth
+function toHACitySlug(city) {
+  return city.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-');
+}
+
+function parseHousingAnywhereCards(html) {
+  const seen = new Set();
+  const urlRe = /href="(https:\/\/housinganywhere\.com\/room\/[^"]+)"/g;
+  const roomLinks = [];
+  let m;
+  while ((m = urlRe.exec(html)) !== null) {
+    if (!seen.has(m[1])) { seen.add(m[1]); roomLinks.push({ url: m[1], idx: m.index }); }
+  }
+  const listings = [];
+  for (let i = 0; i < roomLinks.length; i++) {
+    const { url, idx } = roomLinks[i];
+    const nextIdx = roomLinks[i + 1]?.idx ?? idx + 5000;
+    const chunk = html.slice(idx, nextIdx);
+    const tMatch = chunk.match(/title="([^"]*for rent[^"]*)"/i);
+    if (!tMatch) continue;
+    const tp = tMatch[1].match(/([\w ]+) for rent for €([\d,]+) per month in ([^,]+), (.+)/i);
+    if (!tp) continue;
+    const [, propType, priceStr, city, , ] = tp;
+    const priceNumber = parseInt(priceStr.replace(/,/g, ''));
+    if (!priceNumber) continue;
+    const imgM = chunk.match(/src="(https:\/\/housinganywhere\.imgix\.net\/unit_type\/[^"?]+)/);
+    const image = imgM ? `${imgM[1]}?fit=crop&auto=format&w=400` : '';
+    const streetSlug = url.split('/').pop();
+    const address = streetSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const cityName = tp[3];
+    listings.push({
+      url,
+      address,
+      city: normaliseCity(cityName),
+      price: `€ ${priceStr}`,
+      priceNumber,
+      transactionType: 'huur',
+      rooms: 0,
+      area: 0,
+      energyLabel: '',
+      constructionYear: null,
+      propertyType: propType.trim().toLowerCase(),
+      image,
+      listedAt: new Date().toISOString(),
+      source: 'housinganywhere',
+      description: '',
+    });
+  }
+  return listings;
+}
+
+function fetchHousingAnywhereCity(city) {
+  const slug = toHACitySlug(city);
+  return new Promise((resolve) => {
+    const req = https.request({
+      hostname: 'housinganywhere.com',
+      path: `/${slug}--Netherlands`,
+      method: 'GET',
+      headers: {
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'accept-language': 'en-US,en;q=0.9',
+        'accept-encoding': 'gzip',
+      },
+      timeout: 15000,
+    }, (res) => {
+      if (res.statusCode !== 200) { resolve([]); return; }
+      const chunks = [];
+      const stream = res.headers['content-encoding'] === 'gzip'
+        ? res.pipe(zlib.createGunzip()) : res;
+      stream.on('data', c => chunks.push(c));
+      stream.on('end', () => {
+        try { resolve(parseHousingAnywhereCards(Buffer.concat(chunks).toString('utf8'))); }
+        catch (e) { console.error(`[housinganywhere] Parse error ${city}: ${e.message}`); resolve([]); }
+      });
+      stream.on('error', () => resolve([]));
+    });
+    req.on('error', () => resolve([]));
+    req.on('timeout', () => { req.destroy(); resolve([]); });
+    req.end();
+  });
+}
+
+async function scrapeHousingAnywhere() {
+  let newCount = 0;
+  console.log('[scraper] Starting HousingAnywhere scrape…');
+  for (const city of CITIES) {
+    const listings = await fetchHousingAnywhereCity(city);
+    for (const listing of listings) {
+      if (saveNewListing(listing)) newCount++;
+    }
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  console.log(`[scraper] HousingAnywhere done — ${newCount} new listings`);
+  return newCount;
+}
+
 async function scrapeListings() {
   await scrapeFunda();
   await scrapeKamernet();
+  await scrapeHousingAnywhere();
   const unsent = getUnsentListings.all().map(rowToListing);
   console.log(`[scraper] Total unsent listings: ${unsent.length}`);
   return unsent;
@@ -378,6 +476,7 @@ module.exports = {
   scrapeListings,
   scrapeFunda,
   scrapeKamernet,
+  scrapeHousingAnywhere,
   normaliseCity,
   makeFingerprint,
   markListingsAsSent,

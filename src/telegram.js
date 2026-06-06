@@ -13,6 +13,7 @@ const SOURCE_BADGES = {
   funda: '🔵 Funda',
   pararius: '🟣 Pararius',
   kamernet: '🟠 Kamernet',
+  housinganywhere: '🏠 HousingAnywhere',
   huurwoningen: '🟢 Huurwoningen',
   jaap: '🟡 Jaap',
 };
