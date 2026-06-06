@@ -27,7 +27,9 @@ function matchesUser(listing, user) {
   const userCities = (user.locatie || '').split(',').map(c => normaliseCity(c.trim())).filter(Boolean);
   if (userCities.length > 0 && !userCities.includes(listing.city)) return false;
 
-  if (user.type !== 'beide' && listing.transactionType !== user.type) return false;
+  const userType = (user.type || '').toLowerCase();
+  const listingType = (listing.transactionType || '').toLowerCase();
+  if (userType !== 'beide' && listingType !== userType) return false;
 
   if (user.prijs_max && listing.priceNumber > user.prijs_max) return false;
   if (user.prijs_min && listing.priceNumber < user.prijs_min) return false;

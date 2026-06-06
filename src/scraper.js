@@ -277,8 +277,94 @@ async function scrapeFunda() {
   return newCount;
 }
 
+// Kamernet listing type slug map (1=room, 2=apartment, 3=studio)
+const KAMERNET_TYPE = { 1: 'room', 2: 'apartment', 3: 'studio' };
+
+function parseKamernetListings(listings) {
+  return listings.map(l => {
+    const typeSlug = KAMERNET_TYPE[l.listingType] || 'room';
+    const url = `https://kamernet.nl/en/for-rent/${typeSlug}-${l.citySlug}/${l.streetSlug}/${typeSlug}-${l.listingId}`;
+    return {
+      url,
+      address: l.street || '',
+      city: normaliseCity(l.city || l.citySlug || ''),
+      price: l.totalRentalPrice ? `€ ${l.totalRentalPrice}` : '',
+      priceNumber: l.totalRentalPrice || null,
+      transactionType: 'huur',
+      rooms: 1,
+      area: l.surfaceArea || 0,
+      energyLabel: '',
+      constructionYear: null,
+      propertyType: typeSlug,
+      image: l.resizedFullPreviewImageUrl || l.thumbnailUrl || '',
+      listedAt: l.availabilityStartDate || new Date().toISOString(),
+      source: 'kamernet',
+      description: '',
+    };
+  }).filter(l => l.url && l.priceNumber && l.priceNumber > 0);
+}
+
+function fetchKamernetPage(citySlug) {
+  return new Promise((resolve) => {
+    const path = citySlug ? `/en/for-rent/rooms-${citySlug}` : '/en/for-rent/rooms-netherlands';
+    const req = https.request({
+      hostname: 'kamernet.nl',
+      path,
+      method: 'GET',
+      headers: {
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'accept-language': 'en-US,en;q=0.9',
+        'accept-encoding': 'gzip',
+      },
+      timeout: 15000,
+    }, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302) {
+        resolve([]);
+        return;
+      }
+      const chunks = [];
+      const stream = res.headers['content-encoding'] === 'gzip'
+        ? res.pipe(zlib.createGunzip()) : res;
+      stream.on('data', c => chunks.push(c));
+      stream.on('end', () => {
+        try {
+          const html = Buffer.concat(chunks).toString('utf8');
+          const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+          if (!m) { resolve([]); return; }
+          const data = JSON.parse(m[1]);
+          const raw = data.props?.pageProps?.targetPageProps?.findListingsResponse?.listings || [];
+          resolve(parseKamernetListings(raw));
+        } catch (e) {
+          console.error(`[kamernet] Parse error ${citySlug}: ${e.message}`);
+          resolve([]);
+        }
+      });
+      stream.on('error', () => resolve([]));
+    });
+    req.on('error', () => resolve([]));
+    req.on('timeout', () => { req.destroy(); resolve([]); });
+    req.end();
+  });
+}
+
+async function scrapeKamernet() {
+  let newCount = 0;
+  console.log('[scraper] Starting Kamernet scrape…');
+  for (const city of CITIES) {
+    const listings = await fetchKamernetPage(city);
+    for (const listing of listings) {
+      if (saveNewListing(listing)) newCount++;
+    }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  console.log(`[scraper] Kamernet done — ${newCount} new listings`);
+  return newCount;
+}
+
 async function scrapeListings() {
   await scrapeFunda();
+  await scrapeKamernet();
   const unsent = getUnsentListings.all().map(rowToListing);
   console.log(`[scraper] Total unsent listings: ${unsent.length}`);
   return unsent;
@@ -291,6 +377,7 @@ function markListingsAsSent(urls) {
 module.exports = {
   scrapeListings,
   scrapeFunda,
+  scrapeKamernet,
   normaliseCity,
   makeFingerprint,
   markListingsAsSent,
