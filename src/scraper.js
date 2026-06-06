@@ -209,6 +209,13 @@ function parseHits(hits, city, transactionType) {
     const path = s.object_detail_page_relative_url || '';
     const url = path ? `https://www.funda.nl${path}` : null;
 
+    // thumbnail_id is a 9-digit integer; CDN path is three 3-digit segments
+    // e.g. 230146512 → https://cloud.funda.nl/valentina_media/230/146/512.jpg
+    const thumbInt = Array.isArray(s.thumbnail_id) ? s.thumbnail_id[0] : null;
+    const image = thumbInt
+      ? `https://cloud.funda.nl/valentina_media/${String(thumbInt).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1/$2/$3')}.jpg`
+      : '';
+
     const description = (s.blikvanger && typeof s.blikvanger.text === 'string')
       ? s.blikvanger.text : '';
 
@@ -224,7 +231,7 @@ function parseHits(hits, city, transactionType) {
       energyLabel: s.energy_label || '',
       constructionYear: null,
       propertyType: s.object_type || '',
-      image: '',
+      image,
       listedAt: s.publish_date || new Date().toISOString(),
       source: 'funda',
       description,
