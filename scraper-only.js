@@ -34,7 +34,7 @@ async function runScrapeAndAlert() {
 
 (async () => {
   await new Promise(r => setTimeout(r, 2000));
-  cron.schedule('*/10 * * * *', runScrapeAndAlert);
-  console.log('[cron] Scraper running every 10 minutes');
+  cron.schedule('*/30 * * * *', runScrapeAndAlert);
+  console.log('[cron] Scraper running every 30 minutes');
   await runScrapeAndAlert();
 })();
