@@ -1,12 +1,18 @@
 const https = require('https');
 const zlib = require('zlib');
 const {
+  db,
   listingExists,
   insertListing,
   getUnsentListings,
   markListingGloballySent,
   getSentListingByFingerprint,
 } = require('./database');
+
+// Prepared once at module load — used for near-duplicate detection
+const getNearDuplicateAddresses = db.prepare(
+  `SELECT address FROM listings WHERE city = ? AND price_number BETWEEN ? AND ? LIMIT 50`
+);
 
 const SEARCH_HOST = 'listing-search-wonen.funda.io';
 const SEARCH_INDEX = 'listings-wonen-searcher-alias-prod';
@@ -74,11 +80,53 @@ function normaliseCity(raw) {
   return raw.toLowerCase().replace(/\s+/g, '-').replace(/'/g, '').normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+// Strip all non-alphanumeric characters and lowercase — used in both fingerprint and similarity
+function normalizeAddr(raw) {
+  return (raw || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+}
+
 function makeFingerprint(listing) {
-  const address = (listing.address || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const priceRange = Math.round((listing.priceNumber || 0) / 50) * 50;
-  const city = (listing.city || '').toLowerCase().replace(/[^a-z]/g, '');
+  const address = normalizeAddr(listing.address);
+  const priceRange = Math.round((listing.priceNumber || 0) / 100) * 100;
+  const city = normalizeAddr(listing.city).replace(/\d/g, ''); // city: letters only
   return `${city}__${address}__${priceRange}`;
+}
+
+// Bigram Dice coefficient on normalized address strings.
+// Treats house numbers as a hard discriminator: two different non-empty numbers → 0.
+function addressSimilarity(a, b) {
+  const na = normalizeAddr(a);
+  const nb = normalizeAddr(b);
+  if (na === nb) return 1;
+  if (!na || !nb) return 0;
+  const numA = (na.match(/\d+/) || [''])[0];
+  const numB = (nb.match(/\d+/) || [''])[0];
+  if (numA && numB && numA !== numB) return 0;
+  const streetA = na.replace(/\d+/g, '');
+  const streetB = nb.replace(/\d+/g, '');
+  if (!streetA || !streetB) return 0;
+  const bigrams = s => {
+    const set = new Set();
+    for (let i = 0; i < s.length - 1; i++) set.add(s[i] + s[i + 1]);
+    return set;
+  };
+  const ba = bigrams(streetA);
+  const bb = bigrams(streetB);
+  if (!ba.size || !bb.size) return streetA === streetB ? 1 : 0;
+  let shared = 0;
+  for (const bg of ba) if (bb.has(bg)) shared++;
+  return (2 * shared) / (ba.size + bb.size);
+}
+
+function isNearDuplicate(listing) {
+  if (!listing.priceNumber || !listing.city || !listing.address) return false;
+  const city = normaliseCity(listing.city);
+  const price = listing.priceNumber;
+  const rows = getNearDuplicateAddresses.all(city, price - 100, price + 100);
+  for (const row of rows) {
+    if (addressSimilarity(listing.address, row.address) >= 0.8) return true;
+  }
+  return false;
 }
 
 function rowToListing(row) {
@@ -105,6 +153,10 @@ function saveNewListing(listing) {
   listing.fingerprint = fingerprint;
   if (listingExists.get(listing.url)) return false;
   const existing = getSentListingByFingerprint.get(fingerprint);
+  if (!existing && isNearDuplicate(listing)) {
+    console.log(`[scraper] skipped near-duplicate: ${listing.address} (${listing.source})`);
+    return false;
+  }
   const base = {
     url: listing.url, address: listing.address || '', city: normaliseCity(listing.city),
     price: listing.price || '', priceNumber: listing.priceNumber,
