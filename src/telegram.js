@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
-const { getUser, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, upsertChat, setUserActive, cancelUserByChatId } = require('./database');
+const { getUser, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings } = require('./database');
 const { generateLetter, generateLetterDirect } = require('./letter');
 const { rowToListing } = require('./scraper');
 const { getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
@@ -60,7 +60,9 @@ const CACHE_TTL_MS = 48 * 60 * 60 * 1000;
 
 function cacheListing(listing) {
   const id = String(++listingCacheId);
-  listingCache.set(id, { listing, expiresAt: Date.now() + CACHE_TTL_MS });
+  const expiresAt = Date.now() + CACHE_TTL_MS;
+  listingCache.set(id, { listing, expiresAt });
+  try { persistCacheListing.run(id, JSON.stringify(listing), expiresAt); } catch (_) {}
   if (listingCache.size > 1000) {
     const now = Date.now();
     for (const [k, v] of listingCache) {
@@ -76,13 +78,26 @@ function cacheListing(listing) {
 
 function getCachedListing(id) {
   const entry = listingCache.get(id);
-  if (!entry) return null;
-  if (entry.expiresAt < Date.now()) { listingCache.delete(id); return null; }
-  return entry.listing;
+  if (entry) {
+    if (entry.expiresAt < Date.now()) { listingCache.delete(id); }
+    else return entry.listing;
+  }
+  // Fall back to persistent DB cache (survives restarts)
+  try {
+    const row = getPersistedCacheListing.get(String(id), Date.now());
+    if (row) {
+      const listing = JSON.parse(row.listing_json);
+      listingCache.set(id, { listing, expiresAt: Date.now() + CACHE_TTL_MS });
+      return listing;
+    }
+  } catch (_) {}
+  return null;
 }
 
 function injectCachedListing(id, listing) {
-  listingCache.set(String(id), { listing, expiresAt: Date.now() + CACHE_TTL_MS });
+  const expiresAt = Date.now() + CACHE_TTL_MS;
+  listingCache.set(String(id), { listing, expiresAt });
+  try { persistCacheListing.run(String(id), JSON.stringify(listing), expiresAt); } catch (_) {}
 }
  
 // Server-side access check — always hits DB, never trusts cached state

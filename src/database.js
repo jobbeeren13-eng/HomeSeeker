@@ -92,6 +92,12 @@ db.exec(`
     approved INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS listing_cache (
+    cache_id TEXT PRIMARY KEY,
+    listing_json TEXT NOT NULL,
+    expires_at INTEGER NOT NULL
+  );
 `);
  
 try {
@@ -130,6 +136,7 @@ try {
 } catch (e) {}
  
 db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_listing_cache_expires ON listing_cache(expires_at)`);
  
 const getUser = db.prepare('SELECT * FROM users WHERE chat_id = ?');
 const getUserByEmail = db.prepare('SELECT * FROM users WHERE email = ?');
@@ -214,7 +221,15 @@ const markListingGloballySent = db.prepare('UPDATE listings SET sent = 1 WHERE u
 const insertReview = db.prepare('INSERT INTO reviews (name, rating, review_text) VALUES (?, ?, ?)');
 const getApprovedReviews = db.prepare('SELECT id, name, rating, review_text, created_at FROM reviews WHERE approved = 1 ORDER BY created_at DESC');
 const approveReview = db.prepare('UPDATE reviews SET approved = 1 WHERE id = ?');
- 
+
+const persistCacheListing = db.prepare(
+  'INSERT OR REPLACE INTO listing_cache (cache_id, listing_json, expires_at) VALUES (?, ?, ?)'
+);
+const getPersistedCacheListing = db.prepare(
+  'SELECT listing_json FROM listing_cache WHERE cache_id = ? AND expires_at > ?'
+);
+const purgeExpiredCacheListings = db.prepare('DELETE FROM listing_cache WHERE expires_at <= ?');
+
 module.exports = {
   db, getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
   setUserPaid, setUserPaidByCustomerId, createUserByCustomerId, linkChatToCustomer,
@@ -223,5 +238,6 @@ module.exports = {
   listingExists, getListingByUrl, getSentListingByFingerprint, insertListing,
   getUnsentListings, markListingGloballySent,
   insertReview, getApprovedReviews, approveReview,
+  persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings,
 };
  

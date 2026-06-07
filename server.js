@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
-const { upsertUser, getUserByEmail, getAllActiveUsers, setUserChatId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
+const { upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
+const { sendWelcomeEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, sendAlert, processWebhookUpdate, injectCachedListing } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
@@ -139,6 +140,65 @@ app.post('/api/reviews/:id/approve', (req, res) => {
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
   approveReview.run(req.params.id);
   res.json({ success: true });
+});
+
+// Admin: manually link a Telegram chat_id to a user by email or Stripe customer ID
+app.post('/api/admin/link-chat', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { email, customer_id, chat_id } = req.body;
+  if (!chat_id) return res.status(400).json({ error: 'chat_id is required' });
+  if (!email && !customer_id) return res.status(400).json({ error: 'email or customer_id is required' });
+
+  let user = null;
+  if (customer_id) {
+    user = getUserByCustomerId.get(customer_id.trim());
+  } else {
+    user = getUserByEmail.get(email.trim().toLowerCase());
+  }
+
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const chatIdStr = String(chat_id).trim();
+  clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
+  if (user.stripe_customer_id) {
+    linkChatToCustomer.run(chatIdStr, user.stripe_customer_id);
+  } else {
+    setUserChatId.run(chatIdStr, user.email);
+  }
+
+  const updated = getUserByEmail.get(user.email);
+  console.log(`[admin] Linked chat_id=${chatIdStr} to user email=${user.email} customer=${user.stripe_customer_id}`);
+  res.json({ success: true, user: { email: updated.email, chat_id: updated.chat_id, betaald: updated.betaald, actief: updated.actief } });
+});
+
+// Admin: resend activation email with Telegram link
+app.post('/api/admin/resend-activation', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { email, customer_id } = req.body;
+  if (!email && !customer_id) return res.status(400).json({ error: 'email or customer_id is required' });
+
+  let user = null;
+  if (customer_id) {
+    user = getUserByCustomerId.get(customer_id.trim());
+  } else {
+    user = getUserByEmail.get(email.trim().toLowerCase());
+  }
+
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  if (!user.stripe_customer_id) return res.status(400).json({ error: 'User has no Stripe customer ID — cannot generate activation link' });
+
+  try {
+    await sendWelcomeEmail(user.email, user.naam || '', user.stripe_customer_id);
+    console.log(`[admin] Resent activation email to ${user.email}`);
+    res.json({ success: true, email: user.email });
+  } catch (err) {
+    console.error('[admin] Resend activation error:', err.message);
+    res.status(500).json({ error: 'Failed to send email: ' + err.message });
+  }
 });
 
 // Listing cache endpoint — scraper POSTs listings here so Railway's bot can serve AI Letter callbacks
