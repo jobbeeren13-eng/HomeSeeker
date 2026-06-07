@@ -566,9 +566,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   let boostSection = '';
   let warningSection = '';
   if (user && score < 85) {
-    const { tips, potentialScore } = getImprovementTips(listing, user, score);
+    const { tips } = getImprovementTips(listing, user, score);
     if (tips.length > 0) {
-      boostSection = '\n\n*Boost to ' + potentialScore + '%*\n' + tips.map(t => t.tip).join('\n');
+      boostSection = '\n\n*💡 Boost your application:*\n' + tips.map(t => `• ${t.tip}`).join('\n');
     }
     const intent = detectLandlordIntent(listing.description || '');
     if (intent.warnings.length > 0) {
