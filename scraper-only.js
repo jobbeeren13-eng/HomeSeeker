@@ -5,13 +5,30 @@ const { scrapeListings, markListingsAsSent } = require('./src/scraper');
 const { findMatches } = require('./src/matcher');
 const { sendAlert } = require('./src/telegram');
 
+const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
+const missing = REQUIRED_VARS.filter(v => !process.env[v]);
+if (missing.length) {
+  console.error(`[startup] Missing required environment variables: ${missing.join(', ')}`);
+  process.exit(1);
+}
+
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
 
+let isRunning = false;
+
 async function runScrapeAndAlert() {
+  if (isRunning) {
+    console.warn('[cron] Previous cycle still running — skipping this tick');
+    return;
+  }
+  isRunning = true;
   console.log(`[cron] Starting scrape cycle at ${new Date().toISOString()}`);
   try {
     const listings = await scrapeListings();
-    if (!listings.length) return console.log('[cron] No new listings');
+    if (!listings.length) {
+      console.log('[cron] No new listings');
+      return;
+    }
     const matches = await findMatches(listings);
     console.log(`[cron] Found ${matches.length} matches`);
     if (!matches.length) return;
@@ -29,6 +46,8 @@ async function runScrapeAndAlert() {
     console.log(`[cron] Sent ${sentUrls.length} alerts`);
   } catch (err) {
     console.error('[cron] Error:', err.message);
+  } finally {
+    isRunning = false;
   }
 }
 

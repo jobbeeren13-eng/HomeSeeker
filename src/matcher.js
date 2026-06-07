@@ -9,9 +9,13 @@ const ADMIN_KEY = process.env.ADMIN_KEY;
 
 async function getActiveUsers() {
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     const res = await fetch(`${RAILWAY_URL}/api/users`, {
       headers: { 'x-admin-key': ADMIN_KEY },
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const users = await res.json();
     console.log(`[matcher] Fetched ${users.length} active users from Railway`);

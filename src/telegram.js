@@ -179,7 +179,7 @@ function createBot(useWebhook = false) {
       // Single-use binding: if already linked to a different chat_id, block
       if (stripeUser.chat_id && stripeUser.chat_id !== '' && stripeUser.chat_id !== chatId) {
         await bot.sendMessage(chatId,
-          `⚠️ This activation link has already been used on another account.\n\nContact support at homeseeker@gmail.com`
+          `⚠️ This activation link has already been used on another account.\n\nContact support at support@homeseeker.dev`
         );
         return;
       }
@@ -494,24 +494,21 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push(`*Market Value — ${dealDisplay}*`);
   if (dealScore !== null) lines.push(bar(dealScore));
  
-  // Boost tips — smart context-aware tips
+  // Optional sections built separately so they can be dropped if message exceeds Telegram's limit
+  let boostSection = '';
+  let warningSection = '';
   if (user && score < 85) {
     const { tips, potentialScore } = getImprovementTips(listing, user, score);
     if (tips.length > 0) {
-      lines.push('');
-      lines.push(`*Boost to ${potentialScore}%*`);
-      tips.forEach(t => lines.push(`• ${t.tip}`));
+      boostSection = '\n\n*Boost to ' + potentialScore + '%*\n' + tips.map(t => `• ${t.tip}`).join('\n');
     }
-
-    // Warnings from description (no pets, no sharing, etc.)
     const intent = detectLandlordIntent(listing.description || '');
     if (intent.warnings.length > 0) {
-      lines.push('');
-      intent.warnings.forEach(w => lines.push(`⚠️ ${w}`));
+      warningSection = '\n\n' + intent.warnings.map(w => `⚠️ ${w}`).join('\n');
     }
   }
- 
-  // Verdict
+
+  let verdictSection = '';
   if (user) {
     let verdict = '';
     if (score >= 70) {
@@ -523,11 +520,20 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     } else {
       verdict = 'Challenging — strengthen your profile before applying.';
     }
-    lines.push('');
-    lines.push(verdict);
+    verdictSection = '\n\n' + verdict;
   }
- 
-  const text = lines.join('\n');
+
+  const coreText = lines.join('\n');
+  let text = coreText + boostSection + warningSection + verdictSection;
+  if (text.length > 4000) {
+    text = coreText + warningSection + verdictSection;
+  }
+  if (text.length > 4000) {
+    text = coreText + verdictSection;
+  }
+  if (text.length > 4000) {
+    text = text.slice(0, 3997) + '…';
+  }
   const cacheId = cacheListing(listing);
  
   const keyboard = {

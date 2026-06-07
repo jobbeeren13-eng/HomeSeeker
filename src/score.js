@@ -75,7 +75,9 @@ function calcDocumentReadiness(user) {
 
 function calcTimingAdvantage(listing) {
   if (!listing.listedAt) return { score: 60, label: 'Unknown', detail: 'Listing age unknown' };
-  const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
+  const ageMs = Date.now() - new Date(listing.listedAt).getTime();
+  if (isNaN(ageMs)) return { score: 60, label: 'Unknown', detail: 'Listing age unknown' };
+  const ageMins = ageMs / 60000;
   let score, detail;
   if (ageMins <= 15) { score = 100; detail = 'Listed just now — apply immediately'; }
   else if (ageMins <= 60) { score = 80; detail = `Listed ${Math.round(ageMins)} min ago — still early`; }
@@ -138,7 +140,8 @@ function calculateScore(listing, user) {
     timing.score * WEIGHTS.timing +
     competition.score * WEIGHTS.competition;
 
-  return Math.min(100, Math.max(0, Math.round(weighted)));
+  const result = Math.round(weighted);
+  return isNaN(result) ? 0 : Math.min(100, Math.max(0, result));
 }
 
 function scoreLabel(score) {

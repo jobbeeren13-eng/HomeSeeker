@@ -108,7 +108,7 @@ function saveNewListing(listing) {
   const base = {
     url: listing.url, address: listing.address || '', city: normaliseCity(listing.city),
     price: listing.price || '', priceNumber: listing.priceNumber,
-    transactionType: listing.transactionType || 'huur', rooms: listing.rooms || 0,
+    transactionType: listing.transactionType || null, rooms: listing.rooms || 0,
     area: listing.area || 0, energyLabel: listing.energyLabel || '',
     constructionYear: listing.constructionYear || null, propertyType: listing.propertyType || '',
     image: listing.image || '', listedAt: listing.listedAt || new Date().toISOString(),
@@ -296,7 +296,7 @@ function parseKamernetListings(listings) {
       energyLabel: '',
       constructionYear: null,
       propertyType: typeSlug,
-      image: l.resizedFullPreviewImageUrl || l.thumbnailUrl || '',
+      image: (() => { const img = l.resizedFullPreviewImageUrl || l.thumbnailUrl || ''; return img.startsWith('https://') ? img : ''; })(),
       listedAt: l.availabilityStartDate || new Date().toISOString(),
       source: 'kamernet',
       description: '',

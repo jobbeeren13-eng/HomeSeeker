@@ -117,7 +117,7 @@ app.post('/api/cancel', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('[cancel] Error:', err.message);
-    res.status(500).json({ error: 'Failed to cancel subscription. Please contact homeseeker@gmail.com' });
+    res.status(500).json({ error: 'Failed to cancel subscription. Please contact support@homeseeker.dev' });
   }
 });
 
