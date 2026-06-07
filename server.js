@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
-const { upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
+const { upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
 const { sendWelcomeEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, sendAlert, processWebhookUpdate, injectCachedListing } = require('./src/telegram');
@@ -173,28 +173,40 @@ app.post('/api/admin/link-chat', (req, res) => {
   res.json({ success: true, user: { email: updated.email, chat_id: updated.chat_id, betaald: updated.betaald, actief: updated.actief } });
 });
 
-// Admin: directly set chat_id for a user by email (quick fix endpoint)
+// Admin: upsert a user by email and link their chat_id (creates row if missing)
 app.post('/api/admin/fix-user', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { email, chat_id } = req.body;
+  const { email, chat_id, stripe_customer_id, stripe_subscription_id } = req.body;
   if (!email || !chat_id) return res.status(400).json({ error: 'email and chat_id are required' });
 
-  const user = getUserByEmail.get(email.trim().toLowerCase());
-  if (!user) return res.status(404).json({ error: 'User not found' });
-
+  const emailNorm = email.trim().toLowerCase();
   const chatIdStr = String(chat_id).trim();
-  clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
-  if (user.stripe_customer_id) {
-    linkChatToCustomer.run(chatIdStr, user.stripe_customer_id);
+
+  let user = getUserByEmail.get(emailNorm)
+          || (stripe_customer_id ? getUserByCustomerId.get(stripe_customer_id.trim()) : null);
+
+  if (!user) {
+    // Create the user row from scratch
+    const custId = (stripe_customer_id || '').trim();
+    const subId  = (stripe_subscription_id || '').trim();
+    createUserByCustomerId.run(chatIdStr, emailNorm, custId, subId);
+    user = getUserByEmail.get(emailNorm) || getUserByCustomerId.get(custId);
+    console.log(`[admin] fix-user: created user email=${emailNorm} chat_id=${chatIdStr}`);
   } else {
-    setUserChatId.run(chatIdStr, user.email);
+    // User exists — link the chat_id
+    clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
+    if (user.stripe_customer_id) {
+      linkChatToCustomer.run(chatIdStr, user.stripe_customer_id);
+    } else {
+      setUserChatId.run(chatIdStr, emailNorm);
+    }
+    console.log(`[admin] fix-user: linked chat_id=${chatIdStr} to email=${emailNorm}`);
   }
 
-  const updated = getUserByEmail.get(user.email);
-  console.log(`[admin] fix-user: linked chat_id=${chatIdStr} to email=${user.email}`);
-  res.json({ success: true, user: { email: updated.email, chat_id: updated.chat_id, betaald: updated.betaald, actief: updated.actief } });
+  const updated = getUserByEmail.get(emailNorm) || getUserByCustomerId.get((stripe_customer_id || '').trim());
+  res.json({ success: true, created: !user, user: { email: updated?.email, chat_id: updated?.chat_id, betaald: updated?.betaald, actief: updated?.actief } });
 });
 
 // Admin: resend activation email with Telegram link
