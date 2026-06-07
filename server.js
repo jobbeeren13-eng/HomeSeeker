@@ -173,6 +173,30 @@ app.post('/api/admin/link-chat', (req, res) => {
   res.json({ success: true, user: { email: updated.email, chat_id: updated.chat_id, betaald: updated.betaald, actief: updated.actief } });
 });
 
+// Admin: directly set chat_id for a user by email (quick fix endpoint)
+app.post('/api/admin/fix-user', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { email, chat_id } = req.body;
+  if (!email || !chat_id) return res.status(400).json({ error: 'email and chat_id are required' });
+
+  const user = getUserByEmail.get(email.trim().toLowerCase());
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const chatIdStr = String(chat_id).trim();
+  clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
+  if (user.stripe_customer_id) {
+    linkChatToCustomer.run(chatIdStr, user.stripe_customer_id);
+  } else {
+    setUserChatId.run(chatIdStr, user.email);
+  }
+
+  const updated = getUserByEmail.get(user.email);
+  console.log(`[admin] fix-user: linked chat_id=${chatIdStr} to email=${user.email}`);
+  res.json({ success: true, user: { email: updated.email, chat_id: updated.chat_id, betaald: updated.betaald, actief: updated.actief } });
+});
+
 // Admin: resend activation email with Telegram link
 app.post('/api/admin/resend-activation', async (req, res) => {
   const adminKey = req.headers['x-admin-key'];

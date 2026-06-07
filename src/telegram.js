@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
-const { getUser, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings } = require('./database');
+const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings } = require('./database');
 const { generateLetter, generateLetterDirect } = require('./letter');
 const { rowToListing } = require('./scraper');
 const { getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
@@ -26,6 +26,7 @@ const LETTER_QUESTIONS = [
  
 let bot = null;
 const letterState = new Map();
+const pendingLinkState = new Map(); // chatId -> true, waiting for email input
 const listingCache = new Map();
 let listingCacheId = 0;
  
@@ -241,11 +242,12 @@ function createBot(useWebhook = false) {
       return;
     }
  
-    // Not paid, no payload
+    // Not linked — prompt for email to self-serve reconnect, or subscribe
+    pendingLinkState.set(chatId, true);
     await bot.sendMessage(chatId,
       `👋 Hi! HomeSeeker sends real-time Telegram alerts for Dutch housing listings.\n\n` +
-      `Start your 7-day free trial:\n👉 https://homeseeker.dev\n\n` +
-      `After subscribing, click the activation link in your confirmation email to connect your account here.`
+      `🔗 Start your 7-day free trial:\n👉 https://homeseeker.dev\n\n` +
+      `Already subscribed? Reply with the email address you used when signing up and we'll connect your account instantly.`
     );
   });
  
@@ -410,15 +412,51 @@ function createBot(useWebhook = false) {
   bot.on('message', async (msg) => {
     if (!msg.text || msg.text.startsWith('/')) return;
     const chatId = String(msg.chat.id);
+    const text = msg.text.trim();
+
+    // Email-based account recovery after bare /start
+    if (pendingLinkState.has(chatId)) {
+      pendingLinkState.delete(chatId);
+      const email = text.toLowerCase();
+      const user = getUserByEmail.get(email);
+      if (!user || user.betaald !== 1) {
+        await bot.sendMessage(chatId,
+          `❌ No active subscription found for ${email}.\n\nStart a trial at:\n👉 https://homeseeker.dev`
+        );
+        return;
+      }
+      if (user.chat_id && user.chat_id !== '' && user.chat_id !== chatId) {
+        await bot.sendMessage(chatId,
+          `⚠️ This account is already linked to another Telegram account.\n\nContact support at support@homeseeker.dev if you need help.`
+        );
+        return;
+      }
+      clearChatIdFromOthers.run(chatId, user.stripe_customer_id || '');
+      if (user.stripe_customer_id) {
+        linkChatToCustomer.run(chatId, user.stripe_customer_id);
+      } else {
+        setUserChatId.run(chatId, email);
+      }
+      const filterUrl = `${BASE_URL}/filters?chat_id=${chatId}`;
+      console.log(`[telegram] Self-serve linked chat_id=${chatId} to email=${email}`);
+      await bot.sendMessage(chatId,
+        `✅ *Account connected!* Your subscription is active.\n\nSet your filters to start receiving alerts:`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: { inline_keyboard: [[{ text: '⚙️ Set my filters', url: filterUrl }]] },
+        }
+      );
+      return;
+    }
+
     const state = letterState.get(chatId);
     if (!state) return;
- 
+
     if (!hasAccess(chatId)) {
       clearLetterState(chatId);
       return denyAccess(chatId);
     }
- 
-    const text = msg.text.trim();
+
     const qIndex = { q1: 0, q2: 1, q3: 2 }[state.step];
     if (qIndex === undefined) return;
  
