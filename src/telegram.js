@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
 const { getUser, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, upsertChat, setUserActive, cancelUserByChatId } = require('./database');
-const { generateLetter } = require('./letter');
+const { generateLetter, generateLetterDirect } = require('./letter');
 const { rowToListing } = require('./scraper');
 const { getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
  
@@ -10,12 +10,12 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const LINK_SECRET = process.env.LINK_SECRET || 'changeme_set_in_env';
  
 const SOURCE_BADGES = {
-  funda: '🔵 Funda',
-  pararius: '🟣 Pararius',
-  kamernet: '🟠 Kamernet',
-  housinganywhere: '🏠 HousingAnywhere',
-  huurwoningen: '🟢 Huurwoningen',
-  jaap: '🟡 Jaap',
+  funda: '🏠 Funda',
+  kamernet: '🚪 Kamernet',
+  housinganywhere: '🌍 HousingAnywhere',
+  pararius: '🔑 Pararius',
+  huurwoningen: '🏠 Huurwoningen',
+  jaap: '🏠 Jaap',
 };
  
 const LETTER_QUESTIONS = [
@@ -87,7 +87,7 @@ function clearLetterState(chatId) {
 }
  
 function getPlatformBadge(source) {
-  return SOURCE_BADGES[source] || `📋 ${source || 'Listing'}`;
+  return SOURCE_BADGES[source] || `🏠 ${source || 'Listing'}`;
 }
  
 function formatCityDisplay(city) {
@@ -343,14 +343,15 @@ function createBot(useWebhook = false) {
       if (!listing?.url) {
         return bot.sendMessage(chatId, '❌ Listing expired. Tap AI Letter on a fresh alert.');
       }
-      letterState.set(chatId, {
-        step: 'style',
-        listing,
-        style: null,
-        answers: [],
-        generatedLetter: null,
-      });
-      await sendStyleChoice(chatId);
+      const user = getUser.get(chatId);
+      await bot.sendMessage(chatId, '✍️ Generating your motivation letter…');
+      try {
+        const letter = await generateLetterDirect({ listing, user });
+        await bot.sendMessage(chatId, letter);
+      } catch (err) {
+        console.error('[letter] Direct generation error:', err.message);
+        await bot.sendMessage(chatId, 'Sorry, kon geen brief genereren. Probeer het later opnieuw.');
+      }
       return;
     }
  
@@ -474,7 +475,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const incomeRatio = (inkomen > 0 && price > 0) ? Math.round((price / maxHuur) * 10) / 10 : null;
  
   const lines = [];
- 
+
+  // Source badge — first line
+  lines.push(getPlatformBadge(listing.source));
+
   // Header
   lines.push(`📍 *${address}*`);
   lines.push(`• ${cityDisplay || listing.city}${listing.area ? `  ·  ${listing.area}m²` : ''}`);
@@ -490,48 +494,17 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push(`*Market Value — ${dealDisplay}*`);
   if (dealScore !== null) lines.push(bar(dealScore));
  
-  // Boost tips — profile gaps + landlord intent from description
+  // Boost tips — smart context-aware tips
   if (user && score < 85) {
-    const tips = [];
- 
-    // Profile-based tips (line = display text, boost = numeric gain for potential score)
-    if (price > maxHuur && inkomen > 0) {
-      tips.push({ line: `Income ${incomeRatio}× / 3.0× required — add a guarantor`, boost: 14, p: 3 });
-    } else if (!user.heeft_borg || user.heeft_borg === 'nee') {
-      tips.push({ line: `Add a guarantor`, boost: 10, p: 2 });
+    const { tips, potentialScore } = getImprovementTips(listing, user, score);
+    if (tips.length > 0) {
+      lines.push('');
+      lines.push(`*Boost to ${potentialScore}%*`);
+      tips.forEach(t => lines.push(`• ${t.tip}`));
     }
-    if (!user.met_partner || user.met_partner === 'nee') {
-      tips.push({ line: `Apply with a partner`, boost: 9, p: 2 });
-    }
-    if (user.application_readiness === 'niet') {
-      tips.push({ line: `Prepare income proof & ID`, boost: 20, p: 3 });
-    } else if (user.application_readiness === 'bezig') {
-      tips.push({ line: `Complete your documents`, boost: 14, p: 2 });
-    }
-    if (user.contract_type === 'zzp') {
-      tips.push({ line: `Add 3 years of tax returns`, boost: 6, p: 2 });
-    }
- 
-    // Landlord intent tips — from description NLP
-    const intent = detectLandlordIntent(listing.description || '');
-    for (const t of intent.tips) {
-      tips.push({ line: t.tip, boost: t.boost, p: t.boost >= 8 ? 3 : 2 });
-    }
- 
-    tips.push({ line: `Send a personal introduction`, boost: 3, p: 1 });
- 
-    // Deduplicate + sort by priority
-    const seen = new Set();
-    const unique = tips.filter(t => { if (seen.has(t.line)) return false; seen.add(t.line); return true; });
-    unique.sort((a, b) => b.p - a.p);
-    const top = unique.slice(0, 3);
-    const potentialScore = Math.min(100, score + top.reduce((s, t) => s + (t.boost || 0), 0));
- 
-    lines.push('');
-    lines.push(`*Boost to ${potentialScore}%*`);
-    top.forEach(t => lines.push(`• ${t.line}`));
- 
+
     // Warnings from description (no pets, no sharing, etc.)
+    const intent = detectLandlordIntent(listing.description || '');
     if (intent.warnings.length > 0) {
       lines.push('');
       intent.warnings.forEach(w => lines.push(`⚠️ ${w}`));
@@ -561,7 +534,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     inline_keyboard: [
       [
         { text: 'View listing', url: listing.url },
-        { text: 'AI Cover Letter', callback_data: `ai_letter:${cacheId}` },
+        { text: 'AI Letter', callback_data: `ai_letter:${cacheId}` },
       ],
       [
         { text: 'Share', callback_data: `share:${cacheId}` },

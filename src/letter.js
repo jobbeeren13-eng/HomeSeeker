@@ -67,4 +67,28 @@ Regels:
   return message.content[0].text;
 }
 
-module.exports = { generateLetter, STYLE_LABELS };
+async function generateLetterDirect({ listing, user }) {
+  const naam = user?.naam || 'Huurder';
+  const inkomen = user?.inkomen || 'onbekend';
+  const contract_type = user?.contract_type || 'onbekend';
+  const profiel_type = user?.profiel_type || 'particulier';
+  const address = listing.address || 'onbekend adres';
+  const city = formatCity(listing.city);
+  const price = listing.priceNumber || listing.price || 'onbekend';
+  const description = (listing.description || '').slice(0, 300);
+
+  const systemPrompt = `Je bent een expert in Nederlandse huurmarkt sollicitatiebrieven. Schrijf een professionele, persoonlijke motivatiebrief van max 200 woorden voor een huurder die reageert op een woning. Gebruik een warme maar professionele toon. Begin direct met de brief, geen aanhef als 'Geachte'.`;
+
+  const userPrompt = `Schrijf een motivatiebrief voor ${naam} die solliciteert op ${address} in ${city} voor €${price}/maand. Profiel: ${contract_type} contract, inkomen €${inkomen}/maand, ${profiel_type}.${description ? ` ${description}` : ''}`;
+
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 800,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  });
+
+  return message.content[0].text;
+}
+
+module.exports = { generateLetter, generateLetterDirect, STYLE_LABELS };

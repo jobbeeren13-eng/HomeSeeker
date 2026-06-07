@@ -156,69 +156,97 @@ const strengthLabel = scoreLabel;
 // ─────────────────────────────────────────────
 
 function getImprovementTips(listing, user, currentScore) {
-  const tips = [];
   const price = listing.priceNumber || 0;
   const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
+  const city = (listing.city || '').toLowerCase().replace(/-/g, ' ');
+  const description = listing.description || '';
 
   const financial = calcFinancialFit(listing, user);
   const documents = calcDocumentReadiness(user);
-  const timing = calcTimingAdvantage(listing);
-  const competition = calcCompetitionPressure(listing);
 
-  // Financial tips
-  if (financial.score < 50) {
-    if (!user.heeft_borg || user.heeft_borg === 'nee') {
-      tips.push({ tip: 'Add a guarantor — it significantly improves acceptance for borderline income ratios', boost: 12 });
+  const seen = new Set();
+  const landlordTips = [];
+  const otherTips = [];
+
+  function addLandlord(tip, boost) {
+    if (!seen.has(tip)) { seen.add(tip); landlordTips.push({ tip, boost }); }
+  }
+  function addOther(tip, boost) {
+    if (!seen.has(tip)) { seen.add(tip); otherTips.push({ tip, boost }); }
+  }
+
+  // Landlord intent tips — come first when description is available
+  if (description.length > 50) {
+    if (/professional|werkende|working professional/i.test(description)) {
+      addLandlord('This landlord specifically mentions professional tenants — lead with your job title and employer name', 8);
     }
-    if (!user.met_partner || user.met_partner === 'nee') {
-      tips.push({ tip: 'Apply with a partner to combine income and strengthen your financial profile', boost: 10 });
+    if (/expat|international|relocation/i.test(description)) {
+      addLandlord('Expats are welcome here — mention your international background and employer relocation support if applicable', 6);
     }
-    if (price > 0 && inkomen > 0) {
-      const maxHuur = inkomen / 3;
-      if (price > maxHuur) {
-        const suggested = Math.round(maxHuur * 0.9);
-        tips.push({ tip: `Target listings under €${suggested}/mo to stay within the standard income-to-rent ratio`, boost: 8 });
-      }
+    if (/langdurig|long-term|meerdere jaren/i.test(description)) {
+      addLandlord('Long-term tenancy is a priority — state clearly that you plan to stay for 2+ years', 10);
+    }
+    if (/rustig|quiet|geen overlast/i.test(description)) {
+      addLandlord('The landlord values a quiet environment — mention your lifestyle and that you work regular hours', 5);
+    }
+    if (/gezin|family/i.test(description)) {
+      addLandlord('This is a family-friendly property — if you have a stable family situation, highlight it', 5);
     }
   }
 
-  // Document tips
-  if (documents.score < 65) {
+  // Financial tips (only if financial score < 60)
+  if (financial.score < 60) {
+    const maxHuur = inkomen > 0 ? inkomen / 3 : 0;
+    const incomeRatio = (maxHuur > 0 && price > 0) ? price / maxHuur : 0;
+    if (incomeRatio > 1.0) {
+      addOther('Your income is below the standard 3x rent requirement — a guarantor or co-applicant will significantly strengthen your application', 14);
+    } else if (incomeRatio >= 0.85) {
+      addOther('Your income is close to the limit — mention your savings or stable employment history to reassure the landlord', 8);
+    }
+    if (user.contract_type === 'zzp') {
+      addOther('As a freelancer, prepare 3 years of tax returns and your latest client contract — this is what Dutch landlords ask for', 6);
+    }
+    if (user.contract_type === 'tijdelijk') {
+      addOther('Include an employer statement confirming your contract is likely to be renewed — this reduces perceived risk for the landlord', 6);
+    }
+  }
+
+  // Document tips (only if document score < 70)
+  if (documents.score < 70) {
     if (user.application_readiness === 'niet') {
-      tips.push({ tip: 'Prepare income proof and employer letter before applying — missing documents are the #1 reason applications fail', boost: 20 });
+      addOther('Prepare your ID, income proof, employer letter, and last 3 payslips before applying — missing documents are the #1 reason applications fail in the Netherlands', 20);
     } else if (user.application_readiness === 'bezig') {
-      tips.push({ tip: 'Finish preparing your documents — landlords in the Netherlands decide fast', boost: 14 });
+      addOther('Finish your document pack this week — in Amsterdam and Rotterdam, landlords decide within 24-48 hours', 14);
     } else if (user.application_readiness === 'bijna') {
-      tips.push({ tip: 'Complete your document pack to maximise your chances', boost: 8 });
+      addOther('Double-check you have: ID, DigiD, last 3 payslips, employer statement, and bank statements', 8);
     }
   }
 
-  // Timing tips
-  if (timing.score < 60) {
-    tips.push({ tip: 'Applications in the first hour have significantly higher success rates — enable instant alerts', boost: 9 });
-  } else if (timing.score >= 80) {
-    tips.push({ tip: 'You\'re early — apply now to stay ahead of the competition', boost: 5 });
+  // Timing tip (only if listing is < 2 hours old)
+  if (listing.listedAt) {
+    const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
+    if (ageMins < 120) {
+      addOther('This listing is fresh — apply within the next hour to be in the first wave of applicants', 9);
+    }
   }
 
-  // Competition tips
-  if (competition.score < 40) {
-    tips.push({ tip: 'This listing is highly competitive — send a personalised introduction to stand out', boost: 7 });
-    tips.push({ tip: 'Apply within the first hour — early applications are reviewed first', boost: 9 });
+  // Competition tips (only if city is Amsterdam, Utrecht, or Haarlem)
+  const hotCities = ['amsterdam', 'utrecht', 'haarlem'];
+  const matchedCity = hotCities.find(c => city.includes(c));
+  if (matchedCity) {
+    const displayCity = matchedCity.charAt(0).toUpperCase() + matchedCity.slice(1);
+    addOther(`In ${displayCity}, landlords receive 50+ applications — a personal introduction message doubles your chances of being invited`, 7);
   }
 
-  // Contract type tips
-  if (user.contract_type === 'zzp') {
-    tips.push({ tip: 'As a freelancer, include your last 3 years of tax returns and a recent client contract', boost: 6 });
-  } else if (user.contract_type === 'tijdelijk') {
-    tips.push({ tip: 'Include an employer statement confirming contract renewal expectations', boost: 6 });
+  // Fallback if nothing else applies
+  if (landlordTips.length === 0 && otherTips.length === 0) {
+    addOther('Send a short personal introduction with your application — landlords in the Netherlands prefer tenants they feel they know', 5);
   }
 
-  // Always relevant
-  tips.push({ tip: 'Send a short, personal introduction message with your application', boost: 5 });
-
-  // Sort by boost, take top 3
-  tips.sort((a, b) => b.boost - a.boost);
-  const top = tips.slice(0, 3);
+  // Landlord tips first, then others sorted by boost, max 3
+  landlordTips.sort((a, b) => b.boost - a.boost);
+  otherTips.sort((a, b) => b.boost - a.boost);
+  const top = [...landlordTips, ...otherTips].slice(0, 3);
   const potentialScore = Math.min(100, currentScore + top.reduce((sum, t) => sum + t.boost, 0));
 
   return { tips: top, potentialScore };
