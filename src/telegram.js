@@ -12,7 +12,7 @@ const LINK_SECRET = process.env.LINK_SECRET || 'changeme_set_in_env';
 const SOURCE_BADGES = {
   funda: '🏠 Funda',
   kamernet: '🚪 Kamernet',
-  housinganywhere: '🌍 HousingAnywhere',
+  housinganywhere: '🏠 HousingAnywhere',
   pararius: '🔑 Pararius',
   huurwoningen: '🏠 Huurwoningen',
   jaap: '🏠 Jaap',
@@ -56,18 +56,33 @@ function verifyStartPayload(payload) {
   return customerId;
 }
  
+const CACHE_TTL_MS = 48 * 60 * 60 * 1000;
+
 function cacheListing(listing) {
   const id = String(++listingCacheId);
-  listingCache.set(id, listing);
-  if (listingCache.size > 500) {
-    const oldest = listingCache.keys().next().value;
-    listingCache.delete(oldest);
+  listingCache.set(id, { listing, expiresAt: Date.now() + CACHE_TTL_MS });
+  if (listingCache.size > 1000) {
+    const now = Date.now();
+    for (const [k, v] of listingCache) {
+      if (v.expiresAt < now) listingCache.delete(k);
+    }
+    if (listingCache.size > 500) {
+      const oldest = listingCache.keys().next().value;
+      listingCache.delete(oldest);
+    }
   }
   return id;
 }
- 
+
 function getCachedListing(id) {
-  return listingCache.get(id) || null;
+  const entry = listingCache.get(id);
+  if (!entry) return null;
+  if (entry.expiresAt < Date.now()) { listingCache.delete(id); return null; }
+  return entry.listing;
+}
+
+function injectCachedListing(id, listing) {
+  listingCache.set(String(id), { listing, expiresAt: Date.now() + CACHE_TTL_MS });
 }
  
 // Server-side access check — always hits DB, never trusts cached state
@@ -481,18 +496,18 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   // Header
   lines.push(`📍 *${address}*`);
-  lines.push(`• ${cityDisplay || listing.city}${listing.area ? `  ·  ${listing.area}m²` : ''}`);
-  lines.push(`• Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
-  if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+  lines.push(`${cityDisplay || listing.city}${listing.area ? `  ·  ${listing.area}m²` : ''}`);
+  lines.push(`Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
+  if (monthlyCost) lines.push(`Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
  
   // Scores
   lines.push('');
   lines.push(`*Application Score — ${appLabel(score)}*`);
   lines.push(bar(score));
   lines.push('');
-  const dealDisplay = dealScore !== null ? valueLabel(dealScore) : 'N/A';
+  const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'N/A';
   lines.push(`*Market Value — ${dealDisplay}*`);
-  if (dealScore !== null) lines.push(bar(dealScore));
+  if (dealScore != null) lines.push(bar(dealScore));
  
   // Optional sections built separately so they can be dropped if message exceeds Telegram's limit
   let boostSection = '';
@@ -500,7 +515,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user && score < 85) {
     const { tips, potentialScore } = getImprovementTips(listing, user, score);
     if (tips.length > 0) {
-      boostSection = '\n\n*Boost to ' + potentialScore + '%*\n' + tips.map(t => `• ${t.tip}`).join('\n');
+      boostSection = '\n\n*Boost to ' + potentialScore + '%*\n' + tips.map(t => t.tip).join('\n');
     }
     const intent = detectLandlordIntent(listing.description || '');
     if (intent.warnings.length > 0) {
@@ -582,11 +597,12 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
       console.error(`[telegram] Failed to send alert to ${chatId}:`, e.message);
     }
   }
+  return cacheId;
 }
- 
+
 function processWebhookUpdate(update) {
   if (bot) bot.processUpdate(update);
 }
  
-module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState, generateStartPayload };
+module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState, generateStartPayload, injectCachedListing };
  

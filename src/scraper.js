@@ -192,7 +192,8 @@ function parseHits(hits, city, transactionType) {
     const priceObj = s.price || {};
 
     const street = addr.street_name || '';
-    const num = addr.house_number != null ? String(addr.house_number) : '';
+    const rawNum = addr.house_number;
+    const num = Array.isArray(rawNum) ? (rawNum[0] != null ? String(rawNum[0]) : '') : (rawNum != null ? String(rawNum) : '');
     const suffix = addr.house_number_suffix || '';
     const numStr = num + (suffix ? (suffix.match(/^\d/) ? '-' + suffix : suffix) : '');
     const address = `${street} ${numStr}`.trim();

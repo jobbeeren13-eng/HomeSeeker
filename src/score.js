@@ -241,9 +241,15 @@ function getImprovementTips(listing, user, currentScore) {
     addOther(`In ${displayCity}, landlords receive 50+ applications — a personal introduction message doubles your chances of being invited`, 7);
   }
 
-  // Fallback if nothing else applies
-  if (landlordTips.length === 0 && otherTips.length === 0) {
-    addOther('Send a short personal introduction with your application — landlords in the Netherlands prefer tenants they feel they know', 5);
+  // Fallback tips — fill up to 3 total
+  const FALLBACKS = [
+    { tip: 'Send a short personal introduction — landlords prefer tenants they feel they know', boost: 5 },
+    { tip: 'Respond within the first hour — early applicants are reviewed first', boost: 4 },
+    { tip: 'Make sure your documents are ready to send immediately after viewing', boost: 3 },
+  ];
+  for (const fb of FALLBACKS) {
+    if (landlordTips.length + otherTips.length >= 3) break;
+    if (!seen.has(fb.tip)) { seen.add(fb.tip); otherTips.push(fb); }
   }
 
   // Landlord tips first, then others sorted by boost, max 3

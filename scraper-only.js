@@ -5,6 +5,7 @@ const { scrapeListings, markListingsAsSent } = require('./src/scraper');
 const { findMatches } = require('./src/matcher');
 const { sendAlert } = require('./src/telegram');
 
+const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
 const missing = REQUIRED_VARS.filter(v => !process.env[v]);
 if (missing.length) {
@@ -35,8 +36,15 @@ async function runScrapeAndAlert() {
     const sentUrls = [];
     for (const { listing, user, score, label, dealScore, dealLabel } of matches) {
       try {
-        await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user, bot);
+        const cacheId = await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user, bot);
         sentUrls.push(listing.url);
+        if (cacheId) {
+          fetch(`${RAILWAY_URL}/api/cache-listing`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-key': process.env.ADMIN_KEY },
+            body: JSON.stringify({ id: cacheId, listing }),
+          }).catch(err => console.warn('[cron] Failed to cache listing on Railway:', err.message));
+        }
         await new Promise(r => setTimeout(r, 300));
       } catch (err) {
         console.error('[cron] Failed to send alert:', err.message);

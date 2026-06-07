@@ -4,7 +4,7 @@ const path = require('path');
 
 const { upsertUser, getUserByEmail, getAllActiveUsers, setUserChatId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
-const { createBot, sendAlert, processWebhookUpdate } = require('./src/telegram');
+const { createBot, sendAlert, processWebhookUpdate, injectCachedListing } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 
 const app = express();
@@ -139,6 +139,16 @@ app.post('/api/reviews/:id/approve', (req, res) => {
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
   approveReview.run(req.params.id);
   res.json({ success: true });
+});
+
+// Listing cache endpoint — scraper POSTs listings here so Railway's bot can serve AI Letter callbacks
+app.post('/api/cache-listing', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { id, listing } = req.body;
+  if (!id || !listing) return res.status(400).json({ error: 'Missing id or listing' });
+  injectCachedListing(id, listing);
+  res.json({ ok: true });
 });
 
 // API endpoint for Hetzner matcher to fetch active users
