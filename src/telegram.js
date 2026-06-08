@@ -547,19 +547,20 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   // Source badge — first line
   lines.push(getPlatformBadge(listing.source));
 
-  // Header
-  lines.push(`📍 *${address}*`);
-  lines.push(`${cityDisplay || listing.city}${listing.area ? `  ·  ${listing.area}m²` : ''}`);
-  lines.push(`Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
-  if (monthlyCost) lines.push(`Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
- 
+  // Header: address + city on one line
+  const cityStr = cityDisplay || listing.city || '';
+  lines.push(`📍 *${address}${cityStr ? `, ${cityStr}` : ''}*`);
+  if (listing.area) lines.push(`• ${listing.area}m²`);
+  lines.push(`• Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
+  if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+
   // Scores
   lines.push('');
-  lines.push(`*Application Score — ${appLabel(score)}*`);
+  lines.push(`*Application Score: ${appLabel(score)}*`);
   lines.push(bar(score));
   lines.push('');
   const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'N/A';
-  lines.push(`*Market Value — ${dealDisplay}*`);
+  lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore));
  
   // Optional sections built separately so they can be dropped if message exceeds Telegram's limit
@@ -568,7 +569,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score);
     if (tips.length > 0) {
-      boostSection = '\n\n*💡 Boost your application:*\n' + tips.map(t => t.tip).join('\n');
+      boostSection = '\n\n' + tips.map(t => `• ${t.tip}`).join('\n');
     }
     const intent = detectLandlordIntent(listing.description || '');
     if (intent.warnings.length > 0) {
@@ -580,13 +581,13 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user) {
     let verdict = '';
     if (score >= 70) {
-      verdict = 'Strong match — apply now.';
+      verdict = 'Strong match: apply now.';
     } else if (price > maxHuur && incomeRatio !== null) {
       verdict = 'Worth applying with a guarantor or co-applicant.';
     } else if (score >= 50) {
-      verdict = 'Decent match — respond quickly.';
+      verdict = 'Decent match: respond quickly.';
     } else {
-      verdict = 'Challenging — strengthen your profile before applying.';
+      verdict = 'Challenging: strengthen your profile before applying.';
     }
     verdictSection = '\n\n' + verdict;
   }
