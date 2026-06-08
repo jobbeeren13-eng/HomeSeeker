@@ -95,4 +95,33 @@ async function findMatches(listings) {
   return matches;
 }
 
-module.exports = { findMatches };
+// Match all recent listings against one specific user (for immediate post-filter alerts).
+// Uses per-user sent_listings dedup — does NOT touch the global listings.sent flag.
+async function findMatchesForUser(listings, chatId) {
+  const users = await getActiveUsers();
+  const user = users.find(u => String(u.chat_id) === String(chatId));
+  if (!user) {
+    console.log(`[matcher] chat_id=${chatId} not found in active users`);
+    return [];
+  }
+
+  const matches = [];
+  for (const listing of listings) {
+    if (isListingSent.get(listing.url, user.chat_id)) continue;
+    if (!matchesUser(listing, user)) continue;
+
+    const score = calculateScore(listing, user);
+    if (score < (user.kans_min || 0)) continue;
+
+    const dScore = calculateDealScore(listing);
+    const dLabel = dealLabel(dScore, listing);
+    if ((user.deal_min || 0) > 0 && (dScore === null || dScore < user.deal_min)) continue;
+
+    markListingSent.run(listing.url, user.chat_id);
+    matches.push({ listing, user, score, label: scoreLabel(score), dealScore: dScore, dealLabel: dLabel });
+  }
+
+  return matches;
+}
+
+module.exports = { findMatches, findMatchesForUser };

@@ -82,6 +82,17 @@ app.post('/api/filters', async (req, res) => {
     });
 
     if (b.email) setUserChatId.run(chatId, b.email);
+
+    // Notify Hetzner scraper to immediately match this user against recent listings
+    const hetznerUrl = process.env.HETZNER_URL;
+    if (hetznerUrl && chatId) {
+      fetch(`${hetznerUrl}/api/match-now`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': process.env.ADMIN_KEY },
+        body: JSON.stringify({ chat_id: chatId }),
+      }).catch(err => console.warn('[filters] match-now notify failed:', err.message));
+    }
+
     res.json({ success: true, message: 'Filters saved! You will start receiving alerts.' });
   } catch (err) {
     console.error('[api/filters] Error:', err.message);

@@ -217,6 +217,9 @@ const insertListing = db.prepare(`
 `);
 const getUnsentListings = db.prepare('SELECT * FROM listings WHERE sent = 0');
 const markListingGloballySent = db.prepare('UPDATE listings SET sent = 1 WHERE url = ?');
+const getRecentListings = db.prepare(
+  "SELECT * FROM listings WHERE scraped_at > datetime('now', '-7 days') ORDER BY scraped_at DESC"
+);
  
 const insertReview = db.prepare('INSERT INTO reviews (name, rating, review_text) VALUES (?, ?, ?)');
 const getApprovedReviews = db.prepare('SELECT id, name, rating, review_text, created_at FROM reviews WHERE approved = 1 ORDER BY created_at DESC');
@@ -239,5 +242,6 @@ module.exports = {
   getUnsentListings, markListingGloballySent,
   insertReview, getApprovedReviews, approveReview,
   persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings,
+  getRecentListings,
 };
  
