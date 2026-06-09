@@ -375,6 +375,52 @@ const LANDLORD_SIGNALS = {
     boost: 0,
     warning: true,
   },
+  no_students: {
+    patterns: [/geen studenten/i, /no students/i, /niet voor studenten/i, /studenten niet/i, /not for students/i],
+    label: 'No students — listing explicitly excludes students',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+  no_couples: {
+    patterns: [/geen koppel/i, /geen koppels/i, /no couples/i, /geen stel\b/i, /geen stellen/i],
+    label: 'No couples — landlord prefers single occupant',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+  family_only: {
+    patterns: [/uitsluitend.*gezin/i, /alleen.*gezin/i, /enkel.*gezin/i, /family only/i, /voor gezinnen\b/i, /alleen voor gezinnen/i],
+    label: 'Families only — landlord targets families with children',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+  working_only: {
+    patterns: [/geen uitkeringsgerechtigden/i, /werkende woningdelers/i, /only working professionals/i, /working professionals only/i],
+    label: 'Working professionals only',
+    tip: 'This landlord specifically targets working professionals — lead with your job title and employer',
+    boost: 10,
+  },
+  expat_with_family: {
+    patterns: [/expats met gezin/i, /expats \(met een gezin\)/i, /expats with family/i],
+    label: 'Expats with families preferred',
+    tip: 'Expats with families are the target group — if applicable, mention your family situation and relocation',
+    boost: 8,
+  },
+  income_requirement: {
+    patterns: [/\dx\s*(de\s*)?(maand)?huur/i, /\d\s*times.*rent/i, /inkomenseis\b/i, /inkomensnorm\b/i],
+    label: 'Income requirement mentioned',
+    computeTip: (description) => {
+      const m = description.match(/(\d+)[xX]\s*(?:de\s*)?(?:maand)?huur/i)
+             || description.match(/(\d+)\s*times.*rent/i);
+      const mult = m ? parseInt(m[1]) : null;
+      return mult
+        ? `Landlord requires ${mult}x monthly rent — confirm your income meets this before applying`
+        : 'Income requirement mentioned — confirm your income meets it before applying';
+    },
+    boost: 8,
+  },
 };
 
 function detectLandlordIntent(description) {
@@ -388,7 +434,10 @@ function detectLandlordIntent(description) {
     if (matched) {
       signals.push({ key, label: signal.label, boost: signal.boost });
       if (signal.warning) {
-        warnings.push(signal.label);
+        warnings.push({ key, label: signal.label });
+      } else if (signal.computeTip) {
+        const tip = signal.computeTip(description);
+        if (tip) tips.push({ tip, boost: signal.boost, source: 'landlord' });
       } else if (signal.tip) {
         tips.push({ tip: signal.tip, boost: signal.boost, source: 'landlord' });
       }

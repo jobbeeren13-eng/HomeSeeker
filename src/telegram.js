@@ -573,6 +573,21 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push(`• Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
   if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
 
+  // Landlord warnings & profile mismatch — always, regardless of score
+  const intent = detectLandlordIntent(listing.description || '');
+  const warningKeys = intent.warnings.map(w => w.key);
+  const conflicts = [];
+  if (user) {
+    if (warningKeys.includes('no_students') && user.profiel_type === 'student') conflicts.push('no_students');
+    if (warningKeys.includes('no_couples') && user.met_partner === 'ja') conflicts.push('no_couples');
+    if (warningKeys.includes('family_only') && user.met_partner !== 'ja') conflicts.push('family_only');
+    if (warningKeys.includes('working_only') && user.contract_type === 'student') conflicts.push('working_only');
+  }
+  if (conflicts.length > 0) {
+    lines.push('');
+    lines.push('⛔ *Possible mismatch — read landlord requirements carefully*');
+  }
+
   // Scores
   lines.push('');
   lines.push(`*Application: ${appLabel(score)}*`);
@@ -581,18 +596,17 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
   lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore));
- 
-  // Optional sections built separately so they can be dropped if message exceeds Telegram's limit
-  let boostSection = '';
+
+  // Sections: warnings first (deal-breakers), then boost tips, then verdict
   let warningSection = '';
+  let boostSection = '';
+  if (intent.warnings.length > 0) {
+    warningSection = '\n\n' + intent.warnings.map(w => `⚠️ ${w.label}`).join('\n');
+  }
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score);
     if (tips.length > 0) {
       boostSection = '\n\n' + tips.map(t => `• ${t.tip}`).join('\n');
-    }
-    const intent = detectLandlordIntent(listing.description || '');
-    if (intent.warnings.length > 0) {
-      warningSection = '\n\n' + intent.warnings.map(w => `⚠️ ${w}`).join('\n');
     }
   }
 
@@ -612,7 +626,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
 
   const coreText = lines.join('\n');
-  let text = coreText + boostSection + warningSection + verdictSection;
+  let text = coreText + warningSection + boostSection + verdictSection;
   if (text.length > 4000) {
     text = coreText + warningSection + verdictSection;
   }

@@ -269,8 +269,9 @@ function parseHits(hits, city, transactionType) {
       ? `https://cloud.funda.nl/valentina_media/${String(thumbInt).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1/$2/$3')}.jpg`
       : '';
 
-    const description = (s.blikvanger && typeof s.blikvanger.text === 'string')
-      ? s.blikvanger.text : '';
+    const descFull  = (typeof s.description === 'string') ? s.description.trim() : '';
+    const descBlurb = (s.blikvanger && typeof s.blikvanger.text === 'string') ? s.blikvanger.text.trim() : '';
+    const description = descFull || descBlurb;
 
     return {
       url,
