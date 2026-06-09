@@ -1,11 +1,15 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.warn('[letter] ANTHROPIC_API_KEY not set — letter generation will fail');
+}
+
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const STYLE_LABELS = {
-  professional: 'Professional — formele zakelijke brief, nadruk op inkomen en stabiliteit',
-  friendly: 'Friendly — warme persoonlijke toon met een kort verhaal over de huurder',
-  expat: 'Expat — Engelstalige brief met uitleg van de expat-situatie en 30% ruling indien van toepassing',
+  professional: 'Professional — formal business letter, emphasis on income and stability',
+  friendly: 'Friendly — warm personal tone with a short story about the tenant',
+  expat: 'Expat — English letter explaining the expat situation and 30% ruling if applicable',
 };
 
 function formatCity(city) {
@@ -13,54 +17,66 @@ function formatCity(city) {
   return city.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+// Try primary model, fall back to previous generation if model unavailable
+async function callClaude(params) {
+  try {
+    return await client.messages.create({ ...params, model: 'claude-sonnet-4-6' });
+  } catch (err) {
+    const status = err.status || err.statusCode;
+    if (status === 404 || status === 400) {
+      console.warn('[letter] claude-sonnet-4-6 unavailable (status=%s), retrying with claude-sonnet-4-5', status);
+      return await client.messages.create({ ...params, model: 'claude-sonnet-4-5' });
+    }
+    throw err;
+  }
+}
+
 async function generateLetter({ style, listing, user, answers }) {
   const [situation, work, extra] = answers;
   const tone = STYLE_LABELS[style] || STYLE_LABELS.professional;
 
-  const address = listing.address || 'onbekend adres';
+  const address = listing.address || 'the property';
   const city = formatCity(listing.city);
-  const price = listing.price || (listing.priceNumber ? `€${listing.priceNumber}` : 'onbekend');
-  const source = listing.source || 'onbekend platform';
+  const price = listing.price || (listing.priceNumber ? `€${listing.priceNumber}` : 'unknown');
+  const source = listing.source || 'unknown platform';
 
-  const naam = user?.naam || 'Huurder';
-  const profiel = user?.profiel_type || 'particulier';
-  const inkomen = user?.inkomen ? `€${user.inkomen}` : 'niet opgegeven';
-  const contract = user?.contract_type || 'niet opgegeven';
+  const naam = user?.naam || 'Applicant';
+  const profiel = user?.profiel_type || 'individual';
+  const inkomen = user?.inkomen ? `€${user.inkomen}` : 'not provided';
+  const contract = user?.contract_type || 'not provided';
   const expatNote = style === 'expat' && user?.expat_status
     ? `Expat status: ${user.expat_status}`
     : '';
 
-  const systemPrompt = `Je bent een expert in het schrijven van Nederlandse huurmotivatiebrieven.
-Schrijf een professionele, persoonlijke motivatiebrief voor een huurwoning.
+  const systemPrompt = `You are an expert at writing English rental motivation letters.
+Write a professional, personal motivation letter for a rental property.
 
-Toon: ${tone}
-Woning: ${address}, ${city}, ${price}
+Style: ${tone}
+Property: ${address}, ${city}, ${price}
 Platform: ${source}
 
-Gebruikersinfo:
-- Naam: ${naam}
-- Profiel: ${profiel}
-- Inkomen: ${inkomen}/maand
+Applicant info:
+- Name: ${naam}
+- Profile: ${profiel}
+- Income: ${inkomen}/month
 - Contract: ${contract}
 ${expatNote ? `- ${expatNote}` : ''}
-- Situatie: ${situation || '—'}
-- Werk: ${work || '—'}
+- Situation: ${situation || '—'}
+- Work: ${work || '—'}
 - Extra: ${extra || '—'}
 
-Regels:
-- Max 200 woorden
-- Geen clichés
-- Eindig met een concrete vraag om bezichtiging
-- Voor Expat stijl: schrijf in het Engels
-- Vermeld NOOIT dat de brief door AI is gegenereerd`;
+Rules:
+- Max 200 words
+- No clichés
+- End with a concrete request for a viewing
+- Never mention the letter was AI-generated`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+  const message = await callClaude({
     max_tokens: 700,
     system: systemPrompt,
     messages: [{
       role: 'user',
-      content: 'Schrijf de motivatiebrief. Geef alleen de brieftekst terug, zonder uitleg of metadata.',
+      content: 'Write the motivation letter. Return only the letter text, no explanation or metadata.',
     }],
   });
 
@@ -68,21 +84,20 @@ Regels:
 }
 
 async function generateLetterDirect({ listing, user }) {
-  const naam = user?.naam || 'Huurder';
-  const inkomen = user?.inkomen || 'onbekend';
-  const contract_type = user?.contract_type || 'onbekend';
-  const profiel_type = user?.profiel_type || 'particulier';
-  const address = listing.address || 'onbekend adres';
+  const naam = user?.naam || 'Applicant';
+  const inkomen = user?.inkomen || 'unknown';
+  const contract_type = user?.contract_type || 'unknown';
+  const profiel_type = user?.profiel_type || 'individual';
+  const address = listing.address || 'the property';
   const city = formatCity(listing.city);
-  const price = listing.priceNumber || listing.price || 'onbekend';
+  const price = listing.priceNumber || listing.price || 'unknown';
   const description = (listing.description || '').slice(0, 300);
 
-  const systemPrompt = `Je bent een expert in Nederlandse huurmarkt sollicitatiebrieven. Schrijf een professionele, persoonlijke motivatiebrief van max 200 woorden voor een huurder die reageert op een woning. Gebruik een warme maar professionele toon. Begin direct met de brief, geen aanhef als 'Geachte'.`;
+  const systemPrompt = `You are an expert at writing English rental motivation letters. Write a professional, personal motivation letter of max 200 words for a tenant applying for a rental property. Use a warm but professional tone. Start directly with the letter body — no "Dear Sir/Madam" salutation.`;
 
-  const userPrompt = `Schrijf een motivatiebrief voor ${naam} die solliciteert op ${address} in ${city} voor €${price}/maand. Profiel: ${contract_type} contract, inkomen €${inkomen}/maand, ${profiel_type}.${description ? ` ${description}` : ''}`;
+  const userPrompt = `Write a motivation letter for ${naam} applying for ${address}${city ? ` in ${city}` : ''} at €${price}/month. Profile: ${contract_type} contract, income €${inkomen}/month, ${profiel_type}.${description ? ` Property description: ${description}` : ''}`;
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+  const message = await callClaude({
     max_tokens: 800,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],

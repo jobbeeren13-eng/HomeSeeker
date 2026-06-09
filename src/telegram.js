@@ -381,8 +381,8 @@ function createBot(useWebhook = false) {
         const letter = await generateLetterDirect({ listing, user });
         await bot.sendMessage(chatId, letter);
       } catch (err) {
-        console.error('[letter] Direct generation error:', err.message);
-        await bot.sendMessage(chatId, 'Sorry, kon geen brief genereren. Probeer het later opnieuw.');
+        console.error('[letter] Direct generation error:', err);
+        await bot.sendMessage(chatId, 'Sorry, could not generate your letter. Please try again later.');
       }
       return;
     }
@@ -484,7 +484,7 @@ function createBot(useWebhook = false) {
         state.generatedLetter = letter;
         await sendLetterOptions(chatId, state.listing, letter);
       } catch (err) {
-        console.error('[letter] Error:', err.message);
+        console.error('[letter] Error:', err);
         clearLetterState(chatId);
         await bot.sendMessage(chatId, '❌ Something went wrong generating the letter. Please try again.');
       }

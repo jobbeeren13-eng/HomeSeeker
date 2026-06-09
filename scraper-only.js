@@ -32,7 +32,9 @@ async function dispatchAlerts(matches) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
           body: JSON.stringify({ id: cacheId, listing }),
-        }).catch(err => console.warn('[dispatch] cache-listing failed:', err.message));
+        }).then(r => {
+          if (!r.ok) console.warn(`[dispatch] cache-listing HTTP ${r.status} for cacheId=${cacheId} url=${RAILWAY_URL}`);
+        }).catch(err => console.warn('[dispatch] cache-listing network error:', err.message));
       }
       await new Promise(r => setTimeout(r, 300));
     } catch (err) {
