@@ -17,6 +17,11 @@ function formatCity(city) {
   return city.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+// Telegram renders **text** as literal asterisks — strip bold markers before sending
+function stripMarkdown(text) {
+  return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').trim();
+}
+
 // Try primary model, fall back to previous generation if model unavailable
 async function callClaude(params) {
   try {
@@ -80,30 +85,35 @@ Rules:
     }],
   });
 
-  return message.content[0].text;
+  return stripMarkdown(message.content[0].text);
 }
 
 async function generateLetterDirect({ listing, user }) {
   const naam = user?.naam || 'Applicant';
+  const firstName = naam.split(' ')[0];
   const inkomen = user?.inkomen || 'unknown';
   const contract_type = user?.contract_type || 'unknown';
-  const profiel_type = user?.profiel_type || 'individual';
   const address = listing.address || 'the property';
   const city = formatCity(listing.city);
   const price = listing.priceNumber || listing.price || 'unknown';
-  const description = (listing.description || '').slice(0, 300);
+  const description = (listing.description || '').slice(0, 200).trim();
 
-  const systemPrompt = `You are an expert at writing English rental motivation letters. Write a professional, personal motivation letter of max 200 words for a tenant applying for a rental property. Use a warm but professional tone. Start directly with the letter body — no "Dear Sir/Madam" salutation.`;
+  const systemPrompt = `You write short, human rental motivation letters for the Dutch market. Rules: max 150 words, no clichés ('reliable tenant', 'delighted', 'pride myself'), one mention of income only, specific reason why this exact property/location, natural conversational tone. Never sound like a template.`;
 
-  const userPrompt = `Write a motivation letter for ${naam} applying for ${address}${city ? ` in ${city}` : ''} at €${price}/month. Profile: ${contract_type} contract, income €${inkomen}/month, ${profiel_type}.${description ? ` Property description: ${description}` : ''}`;
+  const descPart = description ? ` Key property detail: ${description}.` : '';
+  const userPrompt = `Write a rental motivation letter for ${naam}, ${contract_type} employee earning €${inkomen}/month, looking for long-term housing. Property: ${address} in ${city}, €${price}/month.${descPart}
+
+Include: stable employment, long-term intention, why this specific location.
+Avoid: generic phrases, repeating income, formal corporate language.
+Max 150 words. Sign off with just the first name: ${firstName}.`;
 
   const message = await callClaude({
-    max_tokens: 800,
+    max_tokens: 600,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
   });
 
-  return message.content[0].text;
+  return stripMarkdown(message.content[0].text);
 }
 
 module.exports = { generateLetter, generateLetterDirect, STYLE_LABELS };
