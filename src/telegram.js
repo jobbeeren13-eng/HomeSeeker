@@ -378,7 +378,26 @@ function createBot(useWebhook = false) {
       const user = getUser.get(chatId);
       await bot.sendMessage(chatId, '✍️ Generating your motivation letter…');
       try {
-        const letter = await generateLetterDirect({ listing, user });
+        let letter;
+        const hetznerUrl = process.env.HETZNER_URL;
+        const adminKey   = process.env.ADMIN_KEY;
+        if (hetznerUrl && adminKey) {
+          // Proxy to Hetzner — ANTHROPIC_API_KEY lives there, no need to duplicate it to Railway
+          const resp = await fetch(`${hetznerUrl}/api/generate-letter`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+            body: JSON.stringify({ listing, user }),
+          });
+          if (!resp.ok) {
+            const body = await resp.text().catch(() => '');
+            throw new Error(`Letter proxy HTTP ${resp.status}: ${body}`);
+          }
+          const respJson = await resp.json();
+          letter = respJson.letter;
+        } else {
+          // Direct fallback — requires ANTHROPIC_API_KEY on this server
+          letter = await generateLetterDirect({ listing, user });
+        }
         await bot.sendMessage(chatId, letter);
       } catch (err) {
         console.error('[letter] Direct generation error:', err);

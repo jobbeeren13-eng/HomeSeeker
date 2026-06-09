@@ -9,6 +9,7 @@ const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const ADMIN_KEY   = process.env.ADMIN_KEY;
+const { generateLetterDirect } = require('./src/letter');
 const PORT        = parseInt(process.env.MATCH_NOW_PORT || '3001', 10);
 
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
@@ -106,6 +107,21 @@ app.post('/api/match-now', (req, res) => {
       console.error(`[match-now] Error for chat_id=${chat_id}:`, err.message);
     }
   });
+});
+
+// Letter generation proxy — Railway calls this so ANTHROPIC_API_KEY only needs to be on Hetzner
+app.post('/api/generate-letter', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { listing, user } = req.body;
+  if (!listing) return res.status(400).json({ error: 'listing required' });
+  try {
+    const letter = await generateLetterDirect({ listing, user: user || {} });
+    res.json({ letter });
+  } catch (err) {
+    console.error('[generate-letter] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(PORT, () => console.log(`[match-now] Listening on port ${PORT}`));
