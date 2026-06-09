@@ -1,0 +1,17 @@
+[build]
+  builder = "DOCKERFILE"
+  dockerfilePath = "Dockerfile"
+
+[deploy]
+  startCommand = "node server.js"
+  healthcheckPath = "/health"
+  healthcheckTimeout = 30
+  restartPolicyType = "ON_FAILURE"
+  restartPolicyMaxRetries = 5
+
+# REQUIRED: a persistent volume must be mounted at /app/data in the Railway dashboard.
+# Without it the SQLite database resets on every deploy and all chat_id links are lost.
+# Steps:
+#   1. Railway dashboard → your service → Volumes tab
+#   2. Create volume, set mount path to /app/data
+#   3. Set DATABASE_URL=/app/data/homeseeker.db in the service's Variables tab

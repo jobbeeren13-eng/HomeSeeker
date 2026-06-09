@@ -3,7 +3,8 @@ const path = require('path');
 const fs = require('fs');
  
 const DB_PATH = process.env.DATABASE_URL || '/app/data/homeseeker.db';
-if (!fs.existsSync('/app/data')) fs.mkdirSync('/app/data', { recursive: true });
+const DB_DIR = path.dirname(DB_PATH);
+if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
 const db = new Database(DB_PATH);
  
 db.exec(`PRAGMA journal_mode = WAL`);
@@ -137,6 +138,16 @@ try {
  
 db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_listing_cache_expires ON listing_cache(expires_at)`);
+
+// Startup health check — log path and user count so resets are immediately visible in logs
+{
+  const userCount = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
+  const linkedCount = db.prepare("SELECT COUNT(*) as c FROM users WHERE chat_id IS NOT NULL AND chat_id != ''").get().c;
+  console.log(`[db] path=${DB_PATH} | users=${userCount} | linked=${linkedCount}`);
+  if (userCount === 0) {
+    console.warn('[db] WARNING: no users found — if this is unexpected, the Railway volume at /app/data may not be mounted');
+  }
+}
  
 const getUser = db.prepare('SELECT * FROM users WHERE chat_id = ?');
 const getUserByEmail = db.prepare('SELECT * FROM users WHERE email = ?');
