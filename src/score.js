@@ -409,11 +409,12 @@ const LANDLORD_SIGNALS = {
     boost: 8,
   },
   income_requirement: {
-    patterns: [/\dx\s*(de\s*)?(maand)?huur/i, /\d\s*times.*rent/i, /inkomenseis\b/i, /inkomensnorm\b/i],
+    patterns: [/\d+x\s*(de\s*)?(maand)?huur/i, /\d+\s*times.*rent/i, /\d+x\s*(?:monthly\s*)?rent/i, /inkomenseis\b/i, /inkomensnorm\b/i],
     label: 'Income requirement mentioned',
     computeTip: (description) => {
       const m = description.match(/(\d+)[xX]\s*(?:de\s*)?(?:maand)?huur/i)
-             || description.match(/(\d+)\s*times.*rent/i);
+             || description.match(/(\d+)\s*times.*rent/i)
+             || description.match(/(\d+)[xX]\s*(?:monthly\s*)?rent/i);
       const mult = m ? parseInt(m[1]) : null;
       return mult
         ? `Landlord requires ${mult}x monthly rent — confirm your income meets this before applying`
