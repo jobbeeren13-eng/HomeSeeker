@@ -17,9 +17,13 @@ function formatCity(city) {
   return city.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-// Telegram renders **text** as literal asterisks — strip bold markers before sending
+// Strip markdown and punctuation that doesn't render well in Telegram
 function stripMarkdown(text) {
-  return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').trim();
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/\s*—\s*/g, ' ')
+    .trim();
 }
 
 // Try primary model, fall back to previous generation if model unavailable
@@ -102,7 +106,7 @@ async function generateLetterDirect({ listing, user }) {
   const price = listing.priceNumber || listing.price || 'unknown';
   const description = (listing.description || '').slice(0, 200).trim();
 
-  const systemPrompt = `You write short Dutch rental motivation letters for the Dutch housing market. Rules:
+  const systemPrompt = `You write short rental motivation letters for the Dutch housing market. Write in English only. Never write in Dutch. Rules:
 - Max 120 words total
 - Never use: 'reliable tenant', 'responsible', 'delighted', 'pride myself', 'perfect fit', 'pleased to apply'
 - Mention income ONCE only
