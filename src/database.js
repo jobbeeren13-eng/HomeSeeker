@@ -231,6 +231,7 @@ const insertListing = db.prepare(`
 `);
 const getUnsentListings = db.prepare('SELECT * FROM listings WHERE sent = 0');
 const markListingGloballySent = db.prepare('UPDATE listings SET sent = 1 WHERE url = ?');
+const updateListingDescription = db.prepare('UPDATE listings SET description = ? WHERE url = ?');
 const getRecentListings = db.prepare(
   "SELECT * FROM listings WHERE scraped_at > datetime('now', '-7 days') ORDER BY scraped_at DESC"
 );
@@ -254,7 +255,7 @@ module.exports = {
   cancelUserByStripe, cancelUserByChatId, setUserChatId, clearChatIdFromOthers,
   isListingSent, markListingSent, getChat, upsertChat,
   listingExists, getListingByUrl, getSentListingByFingerprint, insertListing,
-  getUnsentListings, markListingGloballySent,
+  getUnsentListings, markListingGloballySent, updateListingDescription,
   insertReview, getApprovedReviews, approveReview,
   persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings,
   getRecentListings,

@@ -6,6 +6,7 @@ const {
   insertListing,
   getUnsentListings,
   markListingGloballySent,
+  updateListingDescription,
   getSentListingByFingerprint,
 } = require('./database');
 
@@ -310,18 +311,54 @@ async function fetchFundaCity(city, transactionType) {
   }
 }
 
+async function fetchFundaDescription(url) {
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36',
+        'Accept': 'text/html',
+        'Accept-Language': 'nl-NL,nl;q=0.9',
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return '';
+    const html = await resp.text();
+    const m = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
+           || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
+    return m ? m[1].trim() : '';
+  } catch {
+    return '';
+  }
+}
+
 async function scrapeFunda() {
   const startTime = Date.now();
   let newCount = 0;
+  const needsDesc = [];
   console.log(`[scraper] Starting funda API (${CITIES.length * 2} searches)…`);
 
   for (const city of CITIES) {
     for (const type of ['huur', 'koop']) {
       const listings = await fetchFundaCity(city, type);
       for (const listing of listings) {
-        if (saveNewListing(listing)) newCount++;
+        if (saveNewListing(listing)) {
+          newCount++;
+          if (!listing.description) needsDesc.push(listing.url);
+        }
       }
       await new Promise(r => setTimeout(r, 300));
+    }
+  }
+
+  // Batch-fetch descriptions for new listings (concurrency = 3, non-blocking on error)
+  if (needsDesc.length > 0) {
+    console.log(`[scraper] Enriching ${needsDesc.length} new Funda listing(s) with descriptions…`);
+    const CONCURRENCY = 3;
+    for (let i = 0; i < needsDesc.length; i += CONCURRENCY) {
+      await Promise.allSettled(needsDesc.slice(i, i + CONCURRENCY).map(async url => {
+        const desc = await fetchFundaDescription(url);
+        if (desc) updateListingDescription.run(desc, url);
+      }));
     }
   }
 
