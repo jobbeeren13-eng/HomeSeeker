@@ -24,14 +24,25 @@ function detectPriceDrop(text) {
   return PRICE_DROP_PATTERNS.some(re => re.test(text));
 }
 
+function estimateAreaFromRooms(rooms) {
+  const r = rooms || 0;
+  if (r <= 0) return 50;
+  if (r === 1) return 25;
+  if (r === 2) return 45;
+  if (r === 3) return 65;
+  if (r === 4) return 85;
+  return 100;
+}
+
 function hasComparisonData(listing) {
-  return !!(listing.priceNumber > 0 && listing.area > 0 && listing.city);
+  return !!(listing.priceNumber > 0 && (listing.area > 0 || listing.rooms > 0) && listing.city);
 }
 
 function calculateDealScore(listing) {
   if (!hasComparisonData(listing)) return null;
 
-  const { priceNumber, area, city, transactionType, description } = listing;
+  const { priceNumber, city, transactionType, description } = listing;
+  const area = (listing.area > 0) ? listing.area : estimateAreaFromRooms(listing.rooms);
   const isHuur = transactionType === 'huur';
   let score = 0;
 

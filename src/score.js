@@ -183,34 +183,34 @@ function getImprovementTips(listing, user, _currentScore) {
   // ── LANDLORD INTENT TIPS (from description) ──────────────────────────
   if (desc.length > 50) {
     if (/professional|werkende|working professional|vast dienstverband/.test(desc)) {
-      add(landlordTips, 'Working professionals preferred — lead with your job title and employer name');
+      add(landlordTips, 'Working professionals preferred: lead with job title and employer name');
     }
     if (/\bexpat\b|international|relocation|internationally/.test(desc)) {
-      add(landlordTips, 'Expats welcome — state your country of origin, Dutch employer and expected stay');
+      add(landlordTips, 'Expats welcome: state your country, Dutch employer and expected stay');
     }
     if (/langdurig|long-term|lange termijn|meerdere jaren|minimaal 2 jaar/.test(desc)) {
-      add(landlordTips, 'Long-term tenant preferred — commit to 2+ years in your intro');
+      add(landlordTips, 'Long-term tenant preferred: commit to 2+ years in your intro');
     }
     if (/rustig|quiet|geen overlast|no noise|respectvol/.test(desc)) {
-      add(landlordTips, 'Quiet tenant preferred — mention regular hours and no parties');
+      add(landlordTips, 'Quiet tenant preferred: mention regular hours and no parties');
     }
     if (/geen huisdieren|no pets|geen dieren/.test(desc)) {
-      add(landlordTips, '⚠️ No pets allowed — do not apply if you have pets');
+      add(landlordTips, '⚠️ No pets allowed: do not apply if you have pets');
     }
     if (/\bkoppel\b|couple|stel|twee personen|2 personen/.test(desc)) {
-      add(landlordTips, 'Suited for couples — mention your partner upfront if applying together');
+      add(landlordTips, 'Suited for couples: mention your partner upfront if applying together');
     }
     if (/\bstudent\b|students welcome|studenten/.test(desc)) {
-      add(landlordTips, 'Students welcome — mention your institution and graduation date');
+      add(landlordTips, 'Students welcome: mention your institution and graduation date');
     }
     if (/income requirement|inkomenseis|3x huur|4x huur/.test(desc)) {
       if (inkomen > 0 && price > 0) {
         const maxHuur = inkomen / 3;
         if (price > maxHuur) {
           const gap = Math.ceil((price * 3 - inkomen) / 100) * 100;
-          add(landlordTips, `Income requirement stated — add a guarantor earning ${fmtEuro(gap)}/mo more`);
+          add(landlordTips, `Income requirement stated: add a guarantor earning ${fmtEuro(gap)}/mo`);
         } else {
-          add(landlordTips, 'Income meets 3x requirement — state this explicitly in your message');
+          add(landlordTips, 'Income meets 3x requirement: state this explicitly in your message');
         }
       }
     }
@@ -223,12 +223,12 @@ function getImprovementTips(listing, user, _currentScore) {
     if (ratio > 1.2) {
       const multiplier = (inkomen / price).toFixed(1);
       const gap = Math.ceil((price * 3 - inkomen) / 100) * 100;
-      add(financialTips, `Income at ${multiplier}x rent (need 3x) — a guarantor earning ${fmtEuro(gap)}/mo closes the gap`);
+      add(financialTips, `Income at ${multiplier}x rent, need 3x: guarantor earning ${fmtEuro(gap)}/mo closes the gap`);
     } else if (ratio > 1.0) {
       const gap = Math.ceil((price * 3 - inkomen) / 100) * 100;
-      add(financialTips, `Just below 3x threshold — add a co-applicant with ${fmtEuro(gap)}/mo extra income`);
+      add(financialTips, `Just below 3x threshold: add a co-applicant with ${fmtEuro(gap)}/mo extra income`);
     } else if (ratio > 0.85) {
-      add(financialTips, 'Income just meets the limit — mention savings or extra income sources');
+      add(financialTips, 'Income just meets the limit: mention savings or extra income sources');
     }
   }
 
@@ -236,9 +236,9 @@ function getImprovementTips(listing, user, _currentScore) {
   if (user.contract_type === 'zzp') {
     const maxHuur = inkomen > 0 ? inkomen / 3 : 0;
     if (price > 0 && inkomen > 0 && price > maxHuur) {
-      add(profileTips, 'ZZP below threshold — attach 3 annual tax returns and a current client contract');
+      add(profileTips, 'ZZP below threshold: attach 3 annual tax returns and a client contract');
     } else {
-      add(profileTips, 'ZZP: attach 3 years of tax returns upfront — removes the biggest landlord objection');
+      add(profileTips, 'ZZP: attach 3 years of tax returns upfront to remove the main landlord objection');
     }
   }
   if (user.contract_type === 'tijdelijk') {
@@ -252,9 +252,9 @@ function getImprovementTips(listing, user, _currentScore) {
   if (user.application_readiness === 'niet') {
     add(profileTips, 'Prepare your docs first: ID, 3 payslips, employer letter, bank statements');
   } else if (user.application_readiness === 'bezig') {
-    add(profileTips, 'Finish your document pack today — landlords decide within 24-48 hours');
+    add(profileTips, 'Finish your document pack today: landlords decide within 24-48 hours');
   } else if (user.application_readiness === 'bijna') {
-    add(profileTips, 'Almost ready — confirm you have: ID, BSN, 3 payslips, employer letter, bank statements');
+    add(profileTips, 'Almost ready: confirm you have ID, BSN, 3 payslips, employer letter, bank statements');
   }
 
   // ── TIMING TIPS ──────────────────────────────────────────────────────
@@ -262,30 +262,30 @@ function getImprovementTips(listing, user, _currentScore) {
     const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
     if (!isNaN(ageMins)) {
       if (ageMins < 30) {
-        add(timingTips, 'Listed just now — apply immediately before the inbox fills up');
+        add(timingTips, 'Listed just now: apply immediately before the inbox fills up');
       } else if (ageMins < 120) {
-        add(timingTips, 'Still fresh — apply within the hour to be in the first wave');
+        add(timingTips, 'Still fresh: apply within the hour to be in the first wave');
       } else if (ageMins > 360) {
-        add(timingTips, 'Listing is several hours old — stand out with a strong personal intro');
+        add(timingTips, 'Listing is several hours old: add a strong personal intro to stand out');
       }
     }
   }
 
   // ── CITY COMPETITION TIPS ────────────────────────────────────────────
   if (cityRaw.includes('amsterdam')) {
-    add(cityTips, 'Amsterdam: 80+ applicants per listing — a personal message is essential');
+    add(cityTips, 'Amsterdam: 80+ applicants per listing, a personal message is essential');
   } else if (cityRaw.includes('utrecht')) {
     add(cityTips, 'Utrecht: apply today and mention your viewing availability immediately');
   } else if (cityRaw.includes('haarlem')) {
-    add(cityTips, 'Haarlem: very limited supply — treat this as a priority application');
+    add(cityTips, 'Haarlem: very limited supply, treat this as a priority application');
   } else if (cityRaw.includes('rotterdam')) {
     add(cityTips, 'Rotterdam: respond today with your full document pack ready');
   }
 
   // ── FALLBACK TIPS ────────────────────────────────────────────────────
   add(fallbackTips, 'Write a short intro: who you are, why this home, and your move-in date');
-  add(fallbackTips, 'Have all documents in one PDF ready — immediate senders get priority');
-  add(fallbackTips, 'State your viewing availability — landlords prioritize flexible applicants');
+  add(fallbackTips, 'Have all documents in one PDF ready: immediate senders get priority');
+  add(fallbackTips, 'State your viewing availability: landlords prioritize flexible applicants');
 
   // ── MERGE: up to 2 from landlord+financial, fill rest from profile/timing/city, then fallback ──
   const tips = [];

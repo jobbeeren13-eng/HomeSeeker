@@ -533,7 +533,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
  
   const priceStr = listing.priceNumber
     ? `€${listing.priceNumber.toLocaleString('nl-NL')}`
-    : (listing.price || '—');
+    : (listing.price || 'N/A');
   const cityDisplay = formatCityDisplay(listing.city);
   const isHuur = listing.transactionType === 'huur';
   const monthlyCost = (isHuur && listing.priceNumber) ? estimateMonthlyCost(listing.priceNumber) : null;
@@ -556,10 +556,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   // Scores
   lines.push('');
-  lines.push(`*Application Score: ${appLabel(score)}*`);
+  lines.push(`*Application: ${appLabel(score)}*`);
   lines.push(bar(score));
   lines.push('');
-  const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'N/A';
+  const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
   lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore));
  
