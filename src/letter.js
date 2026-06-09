@@ -89,26 +89,45 @@ Rules:
 }
 
 async function generateLetterDirect({ listing, user }) {
-  const naam = user?.naam || 'Applicant';
-  const firstName = naam.split(' ')[0];
+  const rawNaam = (user?.naam || '').trim();
+  const noName = !rawNaam || rawNaam.toLowerCase() === 'huurder';
+  const naam = noName ? '' : rawNaam;
+  const firstName = noName ? '' : naam.split(' ')[0];
+
   const inkomen = user?.inkomen || 'unknown';
   const contract_type = user?.contract_type || 'unknown';
+  const profiel_type = user?.profiel_type || 'professional';
   const address = listing.address || 'the property';
   const city = formatCity(listing.city);
   const price = listing.priceNumber || listing.price || 'unknown';
   const description = (listing.description || '').slice(0, 200).trim();
 
-  const systemPrompt = `You write short, human rental motivation letters for the Dutch market. Rules: max 150 words, no clichés ('reliable tenant', 'delighted', 'pride myself'), one mention of income only, specific reason why this exact property/location, natural conversational tone. Never sound like a template.`;
+  const systemPrompt = `You write short Dutch rental motivation letters for the Dutch housing market. Rules:
+- Max 120 words total
+- Never use: 'reliable tenant', 'responsible', 'delighted', 'pride myself', 'perfect fit', 'pleased to apply'
+- Mention income ONCE only
+- No mention of pets, smoking, or children unless listing explicitly asks for it
+- Two parts: (1) short profile intro, (2) one specific sentence about WHY this exact property/location
+- End with first name only
+- Sound like a real person, not a template`;
 
-  const descPart = description ? ` Key property detail: ${description}.` : '';
-  const userPrompt = `Write a rental motivation letter for ${naam}, ${contract_type} employee earning €${inkomen}/month, looking for long-term housing. Property: ${address} in ${city}, €${price}/month.${descPart}
+  const nameClause = noName
+    ? 'The applicant has no name — write in first person using "I" throughout, no name at all, sign off with just "Met vriendelijke groet,"'
+    : `Applicant name: ${naam}. Sign off with just the first name: ${firstName}.`;
 
-Include: stable employment, long-term intention, why this specific location.
-Avoid: generic phrases, repeating income, formal corporate language.
-Max 150 words. Sign off with just the first name: ${firstName}.`;
+  const cityLine = city
+    ? ` Include one specific sentence about why ${city} or this neighbourhood suits long-term living.`
+    : '';
+
+  const descPart = description ? ` Property detail: ${description}.` : '';
+
+  const userPrompt = `Write a rental motivation letter for ${noName ? 'an applicant' : naam}, ${contract_type} ${profiel_type}, monthly income €${inkomen}.
+Property: ${address}${city ? `, ${city}` : ''}, €${price}/month.${descPart}${cityLine}
+Long-term housing search. Keep it under 120 words. Natural tone.
+${nameClause}`;
 
   const message = await callClaude({
-    max_tokens: 600,
+    max_tokens: 500,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
   });
