@@ -180,40 +180,10 @@ function getImprovementTips(listing, user, _currentScore) {
     if (!seen.has(tip)) { seen.add(tip); bucket.push({ tip }); }
   }
 
-  // ── LANDLORD INTENT TIPS (from description) ──────────────────────────
-  if (desc.length > 50) {
-    if (/professional|werkende|working professional|vast dienstverband/.test(desc)) {
-      add(landlordTips, 'Working professionals preferred: lead with job title and employer name');
-    }
-    if (/\bexpat\b|international|relocation|internationally/.test(desc)) {
-      add(landlordTips, 'Expats welcome: state your country, Dutch employer and expected stay');
-    }
-    if (/langdurig|long-term|lange termijn|meerdere jaren|minimaal 2 jaar/.test(desc)) {
-      add(landlordTips, 'Long-term tenant preferred: commit to 2+ years in your intro');
-    }
-    if (/rustig|quiet|geen overlast|no noise|respectvol/.test(desc)) {
-      add(landlordTips, 'Quiet tenant preferred: mention regular hours and no parties');
-    }
-    if (/geen huisdieren|no pets|geen dieren/.test(desc)) {
-      add(landlordTips, '⚠️ No pets allowed: do not apply if you have pets');
-    }
-    if (/\bkoppel\b|couple|stel|twee personen|2 personen/.test(desc)) {
-      add(landlordTips, 'Suited for couples: mention your partner upfront if applying together');
-    }
-    if (/\bstudent\b|students welcome|studenten/.test(desc)) {
-      add(landlordTips, 'Students welcome: mention your institution and graduation date');
-    }
-    if (/income requirement|inkomenseis|3x huur|4x huur/.test(desc)) {
-      if (inkomen > 0 && price > 0) {
-        const maxHuur = inkomen / 3;
-        if (price > maxHuur) {
-          const gap = Math.ceil((price * 3 - inkomen) / 100) * 100;
-          add(landlordTips, `Income requirement stated: add a guarantor earning ${fmtEuro(gap)}/mo`);
-        } else {
-          add(landlordTips, 'Income meets 3x requirement: state this explicitly in your message');
-        }
-      }
-    }
+  // ── LANDLORD INTENT TIPS (all matching LANDLORD_SIGNALS from description) ──────────────────
+  if (listing.description) {
+    const { tips: descTips } = detectLandlordIntent(listing.description);
+    for (const t of descTips) add(landlordTips, t.tip);
   }
 
   // ── FINANCIAL TIPS (actual ratio with real numbers) ──────────────────
@@ -287,22 +257,26 @@ function getImprovementTips(listing, user, _currentScore) {
   add(fallbackTips, 'Have all documents in one PDF ready: immediate senders get priority');
   add(fallbackTips, 'State your viewing availability: landlords prioritize flexible applicants');
 
-  // ── MERGE: up to 2 from landlord+financial, fill rest from profile/timing/city, then fallback ──
+  // ── MERGE: all landlord tips first, then financial, then profile/timing/city, then fallback ──
   const tips = [];
-  for (const t of [...landlordTips, ...financialTips]) {
-    if (tips.length >= 2) break;
+  for (const t of landlordTips) {
+    if (tips.length >= 5) break;
+    tips.push(t);
+  }
+  for (const t of financialTips) {
+    if (tips.length >= 5) break;
     tips.push(t);
   }
   for (const t of [...profileTips, ...timingTips, ...cityTips]) {
-    if (tips.length >= 3) break;
+    if (tips.length >= 5) break;
     tips.push(t);
   }
   for (const t of fallbackTips) {
-    if (tips.length >= 3) break;
+    if (tips.length >= 5) break;
     tips.push(t);
   }
 
-  return { tips: tips.slice(0, 3) };
+  return { tips: tips.slice(0, 5) };
 }
 
 // ─────────────────────────────────────────────
@@ -326,7 +300,7 @@ function getPillarBreakdown(listing, user) {
 
 const LANDLORD_SIGNALS = {
   professional: {
-    patterns: [/professional/i, /werkende/i, /working professional/i, /professional couple/i, /professional tenant/i],
+    patterns: [/professional/i, /werkende/i, /werkend\b/i, /working professional/i, /professional couple/i, /professional tenant/i, /vast dienstverband/i],
     label: 'Professional tenant preferred',
     tip: 'Emphasize your professional employment and stable income',
     boost: 8,
@@ -344,7 +318,7 @@ const LANDLORD_SIGNALS = {
     boost: 6,
   },
   quiet: {
-    patterns: [/quiet/i, /rustig/i, /respectful/i, /well-maintained/i, /no noise/i, /geen overlast/i],
+    patterns: [/quiet/i, /rustig/i, /respectful/i, /well-maintained/i, /no noise/i, /geen overlast/i, /geen feestjes/i, /geen muziek/i, /geen geluidsoverlast/i],
     label: 'Values quiet, responsible tenants',
     tip: 'Highlight your quiet lifestyle and responsible character',
     boost: 5,
@@ -421,6 +395,67 @@ const LANDLORD_SIGNALS = {
         : 'Income requirement mentioned — confirm your income meets it before applying';
     },
     boost: 8,
+  },
+  tidy_tenant: {
+    patterns: [/nette huurder/i, /nette bewoner/i, /\bverzorgd\b/i, /\bnetjes\b/i],
+    label: 'Tidy, well-presented tenant preferred',
+    tip: 'Landlord values a tidy tenant — mention you keep your home in excellent condition',
+    boost: 5,
+  },
+  couple_ok: {
+    patterns: [/voor (een )?(stel|koppel)/i, /(stel|koppel) welkom/i, /twee personen/i, /2[\s-]persoons/i, /geschikt voor.*koppel/i],
+    label: 'Suitable for a couple',
+    tip: 'Property is suited for a couple — if applying as two, mention this upfront',
+    boost: 4,
+  },
+  single_ok: {
+    patterns: [/alleenstaand/i, /voor één persoon/i, /voor 1 persoon/i, /1[\s-]persoonshuishouden/i],
+    label: 'Single occupant preferred',
+    tip: 'Single occupant preferred — if you live alone, state this clearly in your application',
+    boost: 5,
+  },
+  registration_ok: {
+    patterns: [/\binschrijving\b/i, /\binschrijven\b/i, /\bBRP\b/, /gemeentelijke\b/i, /inschrijf/i],
+    label: 'Address registration available',
+    tip: 'Address registration is available — mention that you need to register at this address',
+    boost: 6,
+  },
+  furnished_tip: {
+    patterns: [/gemeubileerd/i, /gestoffeerd/i, /\bfurnished\b/i, /inclusief meubels/i],
+    label: 'Property is furnished or decorated',
+    tip: 'Property is furnished/decorated — mention you appreciate a move-in ready home and will care for the furnishings',
+    boost: 3,
+  },
+  outdoor_space: {
+    patterns: [/\btuin\b/i, /\bbalkon\b/i, /\bdakterras\b/i, /\bterras\b/i],
+    label: 'Property has outdoor space',
+    tip: 'Property has outdoor space — mention how you would use and maintain it',
+    boost: 3,
+  },
+  pets_welcome: {
+    patterns: [/huisdierenvriendelijk/i, /huisdieren welkom/i, /pets welcome/i, /pets allowed/i, /huisdieren toegestaan/i, /huisdieren zijn welkom/i],
+    label: 'Pets welcome',
+    tip: 'Pets are welcome — if you have pets, mention them positively in your application',
+    boost: 4,
+  },
+  min_rental_period: {
+    patterns: [/minimaal\s+\d+\s*jaar/i, /minimale huurperiode/i, /minimum rental period/i, /minimum.*\d+\s*year/i],
+    label: 'Minimum rental period required',
+    computeTip: (description) => {
+      const m = description.match(/minimaal\s+(\d+)\s*jaar/i)
+             || description.match(/minimum.*?(\d+)\s*year/i);
+      const years = m ? parseInt(m[1]) : null;
+      return years
+        ? `Minimum ${years}-year rental period — state clearly that you plan to stay at least ${years} years`
+        : 'Minimum rental period required — state clearly how long you plan to stay';
+    },
+    boost: 7,
+  },
+  students_welcome: {
+    patterns: [/studenten welkom/i, /students welcome/i, /studentenwoning/i, /studentenhuis/i, /geschikt voor studenten/i],
+    label: 'Students welcome',
+    tip: 'Students are welcome — mention your institution, program, and expected graduation date',
+    boost: 5,
   },
 };
 
