@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
-const { upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
 const { sendWelcomeEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, sendAlert, processWebhookUpdate, injectCachedListing } = require('./src/telegram');
@@ -273,6 +273,17 @@ app.get('/api/users', (req, res) => {
   }
 });
 
+// Admin: database state — call after any deploy to verify volume is mounted and data persists
+app.get('/api/admin/db-status', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const total  = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
+  const paid   = db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald = 1').get().c;
+  const linked = db.prepare("SELECT COUNT(*) as c FROM users WHERE chat_id IS NOT NULL AND chat_id != ''").get().c;
+  const active = db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald = 1 AND actief = 1').get().c;
+  res.json({ dbPath, total, paid, linked, active, ts: new Date().toISOString() });
+});
+
 // Health + watchdog endpoint
 app.get('/health', (req, res) => {
   const scraper = getScraperHealth();
@@ -294,6 +305,25 @@ if (useWebhook) {
   tmpBot.setWebHook(`${BASE_URL}/webhook/telegram`).then(() => {
     console.log(`[telegram] Webhook set to ${BASE_URL}/webhook/telegram`);
   }).catch(console.error);
+}
+
+// Startup relink: if BOOT_RELINK_EMAIL + BOOT_RELINK_CHAT_ID are set in Railway Variables,
+// this ensures the user is re-linked automatically after any DB reset on redeploy.
+{
+  const bootEmail = (process.env.BOOT_RELINK_EMAIL || '').toLowerCase().trim();
+  const bootChat  = (process.env.BOOT_RELINK_CHAT_ID || '').trim();
+  if (bootEmail && bootChat) {
+    const existing = getUserByEmail.get(bootEmail);
+    if (!existing) {
+      createUserByCustomerId.run(bootChat, bootEmail, '', '');
+      console.log(`[boot] DB reset detected — created user: email=${bootEmail} chat_id=${bootChat}`);
+    } else if (!existing.chat_id || existing.chat_id !== bootChat) {
+      setUserChatId.run(bootChat, bootEmail);
+      console.log(`[boot] Re-linked chat_id=${bootChat} to email=${bootEmail}`);
+    } else {
+      console.log(`[boot] User OK: email=${bootEmail} chat_id=${bootChat}`);
+    }
+  }
 }
 
 app.listen(PORT, () => {

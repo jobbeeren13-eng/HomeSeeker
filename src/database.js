@@ -2,7 +2,10 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
  
-const DB_PATH = process.env.DATABASE_URL || '/app/data/homeseeker.db';
+// DB_PATH env var is our dedicated SQLite path variable (avoids collision with Railway's
+// auto-injected DATABASE_URL which gets overwritten when a Postgres service is linked).
+// Priority: DB_PATH (explicit) → DATABASE_URL (legacy) → hardcoded default.
+const DB_PATH = process.env.DB_PATH || process.env.DATABASE_URL || '/app/data/homeseeker.db';
 const DB_DIR = path.dirname(DB_PATH);
 if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
 const db = new Database(DB_PATH);
@@ -245,7 +248,8 @@ const getPersistedCacheListing = db.prepare(
 const purgeExpiredCacheListings = db.prepare('DELETE FROM listing_cache WHERE expires_at <= ?');
 
 module.exports = {
-  db, getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
+  db, dbPath: DB_PATH,
+  getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
   setUserPaid, setUserPaidByCustomerId, createUserByCustomerId, linkChatToCustomer,
   cancelUserByStripe, cancelUserByChatId, setUserChatId, clearChatIdFromOthers,
   isListingSent, markListingSent, getChat, upsertChat,
