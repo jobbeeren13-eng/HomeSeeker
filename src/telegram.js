@@ -606,7 +606,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score);
     if (tips.length > 0) {
-      boostSection = '\n\n' + tips.map(t => `• ${t.tip}`).join('\n');
+      boostSection = '\n\n*Boost your application:*\n' + tips.map(t => `• ${t.tip}`).join('\n');
     }
   }
 
