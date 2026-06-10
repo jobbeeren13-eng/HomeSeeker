@@ -154,7 +154,7 @@ async function sendStyleChoice(chatId) {
 }
  
 async function sendLetterOptions(chatId, listing, letter) {
-  const subject = encodeURIComponent(`Interesse in ${listing.address || 'huurwoning'}`);
+  const subject = encodeURIComponent(`Application for ${listing.address || 'property'}`);
   const body = encodeURIComponent(letter);
   const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
   const waLink = `https://wa.me/?text=${encodeURIComponent(letter)}`;
@@ -596,6 +596,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   else if (sigKeys.includes('students_welcome')) lines.push('🎓 Students welcome');
   else if (sigKeys.includes('young_professional')) lines.push('💼 Young professionals preferred');
 
+  lines.push('');
   if (listing.area) lines.push(`• ${listing.area}m²`);
   lines.push(`• Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
   if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
@@ -615,11 +616,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     lines.push('⛔ *Possible mismatch: read landlord requirements carefully*');
   }
 
-  // Scores
+  // Scores — Application and Market Value run flush together (no blank between)
   lines.push('');
   lines.push(`*Application: ${appLabel(score)}*`);
   lines.push(bar(score));
-  lines.push('');
   const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
   lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore));
@@ -640,7 +640,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   let verdictSection = '';
   if (user) {
     let verdict = '';
-    if (score >= 80) {
+    const isVeryFresh = ageMs !== null && !isNaN(ageMs) && ageMs < 30 * 60 * 1000;
+    if (isVeryFresh && score > 70) {
+      verdict = 'Strong match posted just now: this is your moment.';
+    } else if (score >= 80) {
       verdict = 'Strong match: apply today, you have a real chance.';
     } else if (score >= 65) {
       verdict = 'Good match: worth a strong application.';

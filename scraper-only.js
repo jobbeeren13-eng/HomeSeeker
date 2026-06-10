@@ -72,7 +72,10 @@ async function runScrapeAndAlert() {
 
     const sentUrls = await dispatchAlerts(matches);
     if (sentUrls.length) markListingsAsSent(sentUrls);
-    console.log(`[cron] Sent ${sentUrls.length} alerts`);
+    const srcCount = {};
+    for (const l of listings) srcCount[l.source] = (srcCount[l.source] || 0) + 1;
+    const srcStr = Object.entries(srcCount).map(([k, v]) => `${k}:${v}`).join(' ') || 'none';
+    console.log(`[cron] Sent ${sentUrls.length} alerts | new: ${srcStr} | matches: ${matches.length}`);
   } catch (err) {
     console.error('[cron] Error:', err.message);
   } finally {

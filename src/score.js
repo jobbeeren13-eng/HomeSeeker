@@ -248,7 +248,7 @@ function getImprovementTips(listing, user, _currentScore, dealScore) {
   const energyLbl = (listing.energyLabel || listing.energy_label || '').toUpperCase().trim();
   if (energyLbl) {
     if (/^A/.test(energyLbl)) {
-      add(profileTips, 'Energy label A: expect €50-100/mo lower utility bills than average');
+      add(profileTips, 'Energy label A: low utility costs, roughly €50-100/mo below average homes');
     } else if (energyLbl === 'B') {
       add(profileTips, 'Energy label B: decent insulation, reasonable heating costs');
     } else if (/^[C-G]/.test(energyLbl)) {
@@ -296,11 +296,11 @@ function getImprovementTips(listing, user, _currentScore, dealScore) {
     const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
     if (!isNaN(ageMins) && ageMins >= 0) {
       if (ageMins < 15) {
-        add(timingTips, 'Posted minutes ago: you are among the first, apply now');
+        add(timingTips, 'Posted just now: landlords shortlist within 15 minutes, reply immediately');
       } else if (ageMins < 60) {
-        add(timingTips, `Posted ${Math.round(ageMins)} min ago: still early, apply within the hour`);
-      } else if (ageMins < 180) {
-        add(timingTips, `Posted ${Math.round(ageMins / 60)}h ago: competition is building, apply today`);
+        add(timingTips, `Posted ${Math.round(ageMins)} min ago: shortlist fills fast, apply before the hour`);
+      } else if (ageMins < 240) {
+        add(timingTips, 'Request a viewing slot immediately: landlords fill viewing calendars fast');
       } else if (ageMins < 1440) {
         add(timingTips, `Posted ${Math.round(ageMins / 60)}h ago: many have applied, make your intro count`);
       } else {
@@ -313,12 +313,12 @@ function getImprovementTips(listing, user, _currentScore, dealScore) {
   // ── CITY COMPETITION TIPS ────────────────────────────────────────────
   if (cityRaw.includes('amsterdam')) {
     if (price > 0 && price < 1800) {
-      add(cityTips, 'Amsterdam under €1,800: expect 100+ applicants, apply immediately');
+      add(cityTips, 'Amsterdam under €1,800: average 57 applicants per listing, apply within the hour');
     } else {
-      add(cityTips, 'Amsterdam: highly competitive, include a personal message and viewing availability');
+      add(cityTips, 'Amsterdam: landlords choose within 24 hours, send your personal intro today');
     }
   } else if (cityRaw.includes('utrecht')) {
-    add(cityTips, 'Utrecht: extremely tight market, apply today with viewing availability');
+    add(cityTips, 'Utrecht: landlords shortlist within 24-48 hours, apply today and request a viewing');
   } else if (cityRaw.includes('haarlem')) {
     add(cityTips, 'Haarlem: very limited supply, treat this as a top-priority application');
   } else if (cityRaw.includes('rotterdam')) {
@@ -337,8 +337,9 @@ function getImprovementTips(listing, user, _currentScore, dealScore) {
   }
 
   // ── FALLBACK TIPS ────────────────────────────────────────────────────
-  add(fallbackTips, 'Open with a personal intro: who you are and your move-in date');
+  add(fallbackTips, 'Three sentences win applications: who you are, why this home, when you move in');
   add(fallbackTips, 'Have all documents in one PDF ready: immediate senders get priority');
+  add(fallbackTips, 'Open with a personal intro: who you are and your move-in date');
   add(fallbackTips, 'State your viewing availability: landlords prioritize flexible applicants');
 
   // ── MERGE: priority order ────────────────────────────────────────────
@@ -388,7 +389,7 @@ const LANDLORD_SIGNALS = {
   longterm: {
     patterns: [/long.term/i, /langdurig/i, /for several years/i, /meerdere jaren/i, /stable tenant/i, /vaste huurder/i],
     label: 'Long-term tenant preferred',
-    tip: 'Mention your intention to stay for 2+ years',
+    tip: 'Long-term preference: show stability through job, contract type, and city commitment',
     boost: 10,
   },
   expat: {
@@ -592,7 +593,7 @@ const LANDLORD_SIGNALS = {
     computeTip: (description) => {
       const m = description.match(/energielabel\s*([A-G][+]*)/i) || description.match(/energy\s*label\s*([A-G][+]*)/i);
       const lbl = m ? m[1].toUpperCase() : 'A';
-      if (/^A/.test(lbl)) return 'Energy label A: expect €50-100/mo lower utility bills than average';
+      if (/^A/.test(lbl)) return 'Energy label A: low utility costs, roughly €50-100/mo below average homes';
       return 'Energy label B: decent insulation, reasonable heating costs';
     },
     boost: 3,
