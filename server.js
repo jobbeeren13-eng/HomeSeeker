@@ -102,6 +102,9 @@ app.post('/api/filters', async (req, res) => {
       met_partner: b.met_partner || 'nee',
       partner_inkomen: parseFloat(b.partner_inkomen) || 0,
       heeft_borg: b.heeft_borg || 'nee',
+      user_description: (b.user_description || '').trim().slice(0, 200),
+      move_reason: (b.move_reason || '').trim().slice(0, 200),
+      tenant_quality: (b.tenant_quality || '').trim().slice(0, 200),
     });
 
     if (b.email) setUserChatId.run(chatId, b.email);

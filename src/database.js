@@ -137,6 +137,9 @@ try {
   if (!userCols.includes('met_partner')) db.exec(`ALTER TABLE users ADD COLUMN met_partner TEXT DEFAULT 'nee'`);
   if (!userCols.includes('partner_inkomen')) db.exec(`ALTER TABLE users ADD COLUMN partner_inkomen REAL DEFAULT 0`);
   if (!userCols.includes('heeft_borg')) db.exec(`ALTER TABLE users ADD COLUMN heeft_borg TEXT DEFAULT 'nee'`);
+  if (!userCols.includes('user_description')) db.exec(`ALTER TABLE users ADD COLUMN user_description TEXT DEFAULT ''`);
+  if (!userCols.includes('move_reason')) db.exec(`ALTER TABLE users ADD COLUMN move_reason TEXT DEFAULT ''`);
+  if (!userCols.includes('tenant_quality')) db.exec(`ALTER TABLE users ADD COLUMN tenant_quality TEXT DEFAULT ''`);
 } catch (e) {}
  
 db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
@@ -161,11 +164,13 @@ const upsertUser = db.prepare(`
   INSERT INTO users (chat_id, naam, email, profiel_type, expat_status, contract_type, inkomen,
     application_readiness, beschikbaarheid_timing, type, woningtype, locatie, prijs_min, prijs_max,
     opp_min, kamers_min, energielabel, bouwjaar_min, tuin, parkeren, delen_toegestaan, huisdieren,
-    gemeubileerd, beschikbaar_per, kans_min, deal_min, met_partner, partner_inkomen, heeft_borg)
+    gemeubileerd, beschikbaar_per, kans_min, deal_min, met_partner, partner_inkomen, heeft_borg,
+    user_description, move_reason, tenant_quality)
   VALUES (:chat_id, :naam, :email, :profiel_type, :expat_status, :contract_type, :inkomen,
     :application_readiness, :beschikbaarheid_timing, :type, :woningtype, :locatie, :prijs_min, :prijs_max,
     :opp_min, :kamers_min, :energielabel, :bouwjaar_min, :tuin, :parkeren, :delen_toegestaan, :huisdieren,
-    :gemeubileerd, :beschikbaar_per, :kans_min, :deal_min, :met_partner, :partner_inkomen, :heeft_borg)
+    :gemeubileerd, :beschikbaar_per, :kans_min, :deal_min, :met_partner, :partner_inkomen, :heeft_borg,
+    :user_description, :move_reason, :tenant_quality)
   ON CONFLICT(chat_id) DO UPDATE SET
     naam = excluded.naam, email = excluded.email, profiel_type = excluded.profiel_type,
     expat_status = excluded.expat_status, contract_type = excluded.contract_type,
@@ -178,7 +183,9 @@ const upsertUser = db.prepare(`
     huisdieren = excluded.huisdieren, gemeubileerd = excluded.gemeubileerd,
     beschikbaar_per = excluded.beschikbaar_per, kans_min = excluded.kans_min,
     deal_min = excluded.deal_min, met_partner = excluded.met_partner,
-    partner_inkomen = excluded.partner_inkomen, heeft_borg = excluded.heeft_borg
+    partner_inkomen = excluded.partner_inkomen, heeft_borg = excluded.heeft_borg,
+    user_description = excluded.user_description, move_reason = excluded.move_reason,
+    tenant_quality = excluded.tenant_quality
 `);
  
 const setUserActive = db.prepare('UPDATE users SET actief = ? WHERE chat_id = ?');

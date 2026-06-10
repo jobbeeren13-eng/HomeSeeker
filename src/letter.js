@@ -7,9 +7,9 @@ if (!process.env.ANTHROPIC_API_KEY) {
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const STYLE_LABELS = {
-  professional: 'Professional — formal business letter, emphasis on income and stability',
-  friendly: 'Friendly — warm personal tone with a short story about the tenant',
-  expat: 'Expat — English letter explaining the expat situation and 30% ruling if applicable',
+  professional: 'Professional: formal business letter, emphasis on income and stability',
+  friendly: 'Friendly: warm personal tone with a short story about the tenant',
+  expat: 'Expat: English letter explaining the expat situation and 30% ruling if applicable',
 };
 
 function formatCity(city) {
@@ -98,36 +98,53 @@ async function generateLetterDirect({ listing, user }) {
   const naam = noName ? '' : rawNaam;
   const firstName = noName ? '' : naam.split(' ')[0];
 
-  const inkomen = user?.inkomen || 'unknown';
-  const contract_type = user?.contract_type || 'unknown';
+  const inkomen = user?.inkomen || 0;
+  const contract_type = user?.contract_type || 'professional';
   const profiel_type = user?.profiel_type || 'professional';
   const address = listing.address || 'the property';
   const city = formatCity(listing.city);
   const price = listing.priceNumber || listing.price || 'unknown';
-  const description = (listing.description || '').slice(0, 200).trim();
 
-  const systemPrompt = `You write short rental motivation letters for the Dutch housing market. Write in English only. Never write in Dutch. Rules:
-- Max 120 words total
-- Never use: 'reliable tenant', 'responsible', 'delighted', 'pride myself', 'perfect fit', 'pleased to apply'
-- Mention income ONCE only
-- No mention of pets, smoking, or children unless listing explicitly asks for it
-- Two parts: (1) short profile intro, (2) one specific sentence about WHY this exact property/location
-- End with first name only
-- Sound like a real person, not a template`;
+  const user_description = (user?.user_description || '').trim();
+  const move_reason = (user?.move_reason || '').trim();
+  const tenant_quality = (user?.tenant_quality || '').trim();
+
+  let signalLines = '';
+  if (listing.description) {
+    const { detectLandlordIntent } = require('./score');
+    const { signals } = detectLandlordIntent(listing.description);
+    const topSignals = signals.slice(0, 2).map(s => s.label);
+    if (topSignals.length > 0) {
+      signalLines = `Landlord cares about: ${topSignals.join(', ')}`;
+    }
+  }
+
+  const systemPrompt = `You write short, human rental motivation letters for the Dutch housing market. You never sound like AI. Rules:
+- Max 130 words
+- Never use: reliable, responsible, delighted, pride myself, perfect fit, pleased to apply, ideal candidate
+- No em dashes, no bullet points, no markdown
+- Mention income ONCE, naturally
+- Address 1-2 specific things about the property or location
+- If landlord prefers quiet/long-term/professionals: address this naturally without stating it explicitly
+- Sign off with first name only
+- Sound like a thoughtful person wrote this at their desk, not an AI`;
+
+  const incomeClause = inkomen > 0 ? `, monthly income €${inkomen}` : '';
+  const profileLines = [
+    user_description && `About me: ${user_description}`,
+    move_reason && `Why moving: ${move_reason}`,
+    tenant_quality && `As a tenant: ${tenant_quality}`,
+  ].filter(Boolean).join('\n');
 
   const nameClause = noName
-    ? 'The applicant has no name — write in first person using "I" throughout, no name at all, sign off with just "Met vriendelijke groet,"'
-    : `Applicant name: ${naam}. Sign off with just the first name: ${firstName}.`;
+    ? 'Sign off with "Met vriendelijke groet," only (no name).'
+    : `Sign off with just the first name: ${firstName}.`;
 
-  const cityLine = city
-    ? ` Include one specific sentence about why ${city} or this neighbourhood suits long-term living.`
-    : '';
+  const userPrompt = `Write a rental motivation letter.
 
-  const descPart = description ? ` Property detail: ${description}.` : '';
-
-  const userPrompt = `Write a rental motivation letter for ${noName ? 'an applicant' : naam}, ${contract_type} ${profiel_type}, monthly income €${inkomen}.
-Property: ${address}${city ? `, ${city}` : ''}, €${price}/month.${descPart}${cityLine}
-Long-term housing search. Keep it under 120 words. Natural tone.
+Applicant: ${noName ? 'unnamed' : naam}, ${contract_type} ${profiel_type}${incomeClause}
+Property: ${address}${city ? `, ${city}` : ''}, €${price}/month
+${profileLines ? profileLines + '\n' : ''}${signalLines ? signalLines + '\n' : ''}
 ${nameClause}`;
 
   const message = await callClaude({

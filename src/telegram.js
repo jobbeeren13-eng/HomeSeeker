@@ -22,7 +22,7 @@ const SOURCE_BADGES = {
 const LETTER_QUESTIONS = [
   "What's your current living situation and why are you moving?",
   'Tell us about your work situation (employer, contract type, duration).',
-  'Anything else the landlord should know? (pets, partner, etc.) — or type *skip*',
+  'Anything else the landlord should know? (pets, partner, etc.) Type *skip* to skip.',
 ];
  
 let bot = null;
@@ -582,21 +582,27 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   // Source badge + freshness badge — first line
   let sourceLine = getPlatformBadge(listing.source);
-  if (isJustListed) sourceLine += '  🆕 Just listed';
+  if (isJustListed) sourceLine += '  · Just listed';
   if (hasPriceDrop) sourceLine += '  📉 Price reduced';
   lines.push(sourceLine);
 
   // Header: address + city on one line
   const cityStr = cityDisplay || listing.city || '';
   lines.push(`📍 *${address}${cityStr ? `, ${cityStr}` : ''}*`);
+
+  // Audience badge (expat / student priority)
+  const intentEarly = detectLandlordIntent(listing.description || '');
+  const sigKeys = intentEarly.signals.map(s => s.key);
+  if (sigKeys.includes('expat_with_family')) lines.push('🌍 Expat-friendly listing');
+  else if (sigKeys.includes('students_welcome')) lines.push('🎓 Students welcome');
+  else if (sigKeys.includes('young_professional')) lines.push('💼 Young professionals preferred');
+
   if (listing.area) lines.push(`• ${listing.area}m²`);
   lines.push(`• Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
   if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
-  const ageStr = listingAgeStr(listing);
-  if (ageStr) lines.push(`• Listed: ${ageStr}`);
 
   // Landlord warnings & profile mismatch — always, regardless of score
-  const intent = detectLandlordIntent(listing.description || '');
+  const intent = intentEarly;
   const warningKeys = intent.warnings.map(w => w.key);
   const conflicts = [];
   if (user) {
@@ -607,7 +613,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
   if (conflicts.length > 0) {
     lines.push('');
-    lines.push('⛔ *Possible mismatch — read landlord requirements carefully*');
+    lines.push('⛔ *Possible mismatch: read landlord requirements carefully*');
   }
 
   // Scores
@@ -636,15 +642,15 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user) {
     let verdict = '';
     if (score >= 80) {
-      verdict = 'Strong match — apply today.';
+      verdict = 'Strong match: apply today.';
     } else if (score >= 65) {
-      verdict = 'Good match — worth applying.';
+      verdict = 'Good match: worth applying.';
     } else if (score >= 50) {
-      verdict = 'Decent match — respond quickly.';
+      verdict = 'Decent match: respond quickly.';
     } else if (score >= 35) {
-      verdict = 'Weak match — boost your profile first.';
+      verdict = 'Weak match: boost your profile first.';
     } else {
-      verdict = 'Challenging — significant profile gaps.';
+      verdict = 'Challenging: significant profile gaps.';
     }
     verdictSection = '\n\n' + verdict;
   }
