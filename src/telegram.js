@@ -13,7 +13,7 @@ const LINK_SECRET = process.env.LINK_SECRET || 'changeme_set_in_env';
 const SOURCE_BADGES = {
   funda: '🏠 Funda',
   kamernet: '🚪 Kamernet',
-  housinganywhere: '🏠 HousingAnywhere',
+  housinganywhere: '🌍 HousingAnywhere',
   pararius: '🔑 Pararius',
   huurwoningen: '🏠 Huurwoningen',
   jaap: '🏠 Jaap',

@@ -399,8 +399,8 @@ const LANDLORD_SIGNALS = {
   },
   quiet: {
     patterns: [/quiet/i, /rustig/i, /respectful/i, /well-maintained/i, /no noise/i, /geen overlast/i, /geen feestjes/i, /geen muziek/i, /geen geluidsoverlast/i],
-    label: 'Values quiet, responsible tenants',
-    tip: 'Highlight your quiet lifestyle and responsible character',
+    label: 'Values quiet, considerate tenants',
+    tip: 'Landlord values quiet tenants: mention you keep regular hours and respect neighbors',
     boost: 5,
   },
   family: {

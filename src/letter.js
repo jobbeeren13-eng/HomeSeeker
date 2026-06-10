@@ -17,14 +17,16 @@ function formatCity(city) {
   return city.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-// Strip markdown and punctuation that doesn't render well in Telegram
+// Strip markdown and punctuation that doesn't render well in Telegram.
+// Preserves paragraph breaks (\n\n) while collapsing inline whitespace.
 function stripMarkdown(text) {
   return text
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/\*(.*?)\*/g, '$1')
     .replace(/—/g, '')
     .replace(/ - /g, ' ')
-    .replace(/\s{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')   // normalize 3+ newlines → double newline
+    .replace(/[^\S\n]{2,}/g, ' ') // collapse inline spaces (not newlines)
     .trim();
 }
 
@@ -127,6 +129,7 @@ Kind regards,
 
 Absolute rules:
 - English only
+- Separate every paragraph with a blank line (two newlines)
 - No dashes anywhere
 - No markdown or bold text
 - Never use: reliable, responsible, delighted, ideal, perfect, pleased, I hope, I would love, I am writing to
@@ -161,7 +164,8 @@ async function getAITip(listing, user) {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   if (!listing.description || listing.description.length < 200) return null;
 
-  const cacheKey = `aitip_${listing.fingerprint || listing.url}`;
+  // v2 prefix invalidates cached Dutch tips from old prompt
+  const cacheKey = `aitip2_${listing.fingerprint || listing.url}`;
 
   // Check persistent DB cache
   try {
@@ -181,10 +185,10 @@ async function getAITip(listing, user) {
 
     const msg = await callClaude({
       max_tokens: 80,
-      system: 'You are a Dutch rental application advisor. Give one actionable tip. Max 15 words. No preamble, no trailing punctuation changes, no quotes.',
+      system: 'You advise tenants on rental applications in the Netherlands. Always respond in English only, never Dutch. Give one single actionable tip. Max 12 words. No preamble, no quotes, no dashes.',
       messages: [{
         role: 'user',
-        content: `Listing description: "${listing.description.slice(0, 400)}"\nTenant: ${userProfile || 'professional'}\nWhat is the single most important thing this tenant should mention in their application?`,
+        content: `Listing description (may be Dutch): "${listing.description.slice(0, 400)}"\nTenant profile: ${userProfile || 'professional'}\nWhat is the ONE most important thing to mention in the application? English only.`,
       }],
     });
 
