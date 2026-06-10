@@ -215,7 +215,7 @@ function getImprovementTips(listing, user, _currentScore) {
   // ── DEPOSIT TIP ──────────────────────────────────────────────────────
   if (user.heeft_borg === 'nee' && listing.description) {
     const hasBorg = /\bborg\b|waarborgsom|\bdeposit\b/i.test(listing.description);
-    if (hasBorg) add(profileTips, 'Deposit required but you have no guarantor — budget for it and mention readiness to pay');
+    if (hasBorg) add(profileTips, 'Deposit required: budget for it and confirm you can pay upfront');
   }
 
   // ── FINANCIAL TIPS (actual ratio with real numbers) ──────────────────
@@ -238,13 +238,13 @@ function getImprovementTips(listing, user, _currentScore) {
   if (user.contract_type === 'zzp') {
     const maxHuur = inkomen > 0 ? inkomen / 3 : 0;
     if (price > 0 && inkomen > 0 && price > maxHuur) {
-      add(profileTips, 'ZZP below threshold: attach 3 annual tax returns and a client contract');
+      add(profileTips, 'Freelancer below 3x: provide 3 tax returns and an active client contract');
     } else {
-      add(profileTips, 'ZZP: attach 3 years of tax returns upfront to remove the main landlord objection');
+      add(profileTips, 'Freelancer: share 3 years of tax returns to remove the main objection');
     }
   }
   if (user.contract_type === 'tijdelijk') {
-    add(profileTips, 'Temporary contract: get a werkgeversverklaring confirming renewal intent');
+    add(profileTips, 'Temporary contract: attach an employer letter confirming contract renewal');
   }
   if (user.contract_type === 'student') {
     add(profileTips, 'Student: lead with institution, program, graduation year and guarantor if available');
@@ -256,7 +256,7 @@ function getImprovementTips(listing, user, _currentScore) {
   } else if (user.application_readiness === 'bezig') {
     add(profileTips, 'Finish your document pack today: landlords decide within 24-48 hours');
   } else if (user.application_readiness === 'bijna') {
-    add(profileTips, 'Almost ready: confirm you have ID, BSN, 3 payslips, employer letter, bank statements');
+    add(profileTips, 'Almost ready: gather ID, BSN, 3 payslips, employer letter, bank statements');
   }
 
   // ── TIMING TIPS ──────────────────────────────────────────────────────
@@ -293,7 +293,7 @@ function getImprovementTips(listing, user, _currentScore) {
   }
 
   // ── FALLBACK TIPS ────────────────────────────────────────────────────
-  add(fallbackTips, 'Write a short intro: who you are, why this home, and your move-in date');
+  add(fallbackTips, 'Open with a personal intro: who you are and your move-in date');
   add(fallbackTips, 'Have all documents in one PDF ready: immediate senders get priority');
   add(fallbackTips, 'State your viewing availability: landlords prioritize flexible applicants');
 
@@ -391,21 +391,21 @@ const LANDLORD_SIGNALS = {
   },
   no_students: {
     patterns: [/geen studenten/i, /no students/i, /niet voor studenten/i, /studenten niet/i, /not for students/i],
-    label: 'No students — listing explicitly excludes students',
+    label: 'No students: listing explicitly excludes students',
     tip: null,
     boost: 0,
     warning: true,
   },
   no_couples: {
     patterns: [/geen koppel/i, /geen koppels/i, /no couples/i, /geen stel\b/i, /geen stellen/i],
-    label: 'No couples — landlord prefers single occupant',
+    label: 'No couples: landlord prefers single occupant',
     tip: null,
     boost: 0,
     warning: true,
   },
   family_only: {
     patterns: [/uitsluitend.*gezin/i, /alleen.*gezin/i, /enkel.*gezin/i, /family only/i, /voor gezinnen\b/i, /alleen voor gezinnen/i],
-    label: 'Families only — landlord targets families with children',
+    label: 'Families only: landlord targets families with children',
     tip: null,
     boost: 0,
     warning: true,

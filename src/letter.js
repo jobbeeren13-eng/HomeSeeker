@@ -22,7 +22,9 @@ function stripMarkdown(text) {
   return text
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/\*(.*?)\*/g, '$1')
-    .replace(/\s*—\s*/g, ' ')
+    .replace(/—/g, '')
+    .replace(/ - /g, ' ')
+    .replace(/\s{2,}/g, ' ')
     .trim();
 }
 
@@ -104,53 +106,39 @@ async function generateLetterDirect({ listing, user }) {
   const address = listing.address || 'the property';
   const city = formatCity(listing.city);
   const price = listing.priceNumber || listing.price || 'unknown';
+  const description = (listing.description || '').trim();
 
   const user_description = (user?.user_description || '').trim();
   const move_reason = (user?.move_reason || '').trim();
   const tenant_quality = (user?.tenant_quality || '').trim();
 
-  let signalLines = '';
-  if (listing.description) {
-    const { detectLandlordIntent } = require('./score');
-    const { signals } = detectLandlordIntent(listing.description);
-    const topSignals = signals.slice(0, 2).map(s => s.label);
-    if (topSignals.length > 0) {
-      signalLines = `Landlord cares about: ${topSignals.join(', ')}`;
-    }
-  }
+  const systemPrompt = `You write short English rental motivation letters for the Dutch housing market. Rules:
+- Max 130 words, 3 short paragraphs
+- Never use: reliable, responsible, delighted, pride myself, perfect fit, pleased to apply, ideal candidate, I hope, I would love
+- No dashes, no bullet points, no markdown formatting
+- Mention income once, naturally woven in
+- If landlord prefers quiet tenants: show this through lifestyle, not by stating it
+- If landlord prefers long-term: mention stability naturally
+- If landlord prefers professionals: lead with employment naturally
+- Sign off with first name only on its own line
+- Sound like a thoughtful person wrote this, not an AI
+- Be specific about the property or location, show genuine interest`;
 
-  const systemPrompt = `You write short, human rental motivation letters for the Dutch housing market. You never sound like AI. Rules:
-- Max 130 words
-- Never use: reliable, responsible, delighted, pride myself, perfect fit, pleased to apply, ideal candidate
-- No em dashes, no bullet points, no markdown
-- Mention income ONCE, naturally
-- Address 1-2 specific things about the property or location
-- If landlord prefers quiet/long-term/professionals: address this naturally without stating it explicitly
-- Sign off with first name only
-- Sound like a thoughtful person wrote this at their desk, not an AI`;
-
-  const incomeClause = inkomen > 0 ? `, monthly income €${inkomen}` : '';
-  const profileLines = [
-    user_description && `About me: ${user_description}`,
-    move_reason && `Why moving: ${move_reason}`,
-    tenant_quality && `As a tenant: ${tenant_quality}`,
-  ].filter(Boolean).join('\n');
-
-  const nameClause = noName
-    ? 'Sign off with "Met vriendelijke groet," only (no name).'
-    : `Sign off with just the first name: ${firstName}.`;
-
-  const userPrompt = `Write a rental motivation letter.
-
-Applicant: ${noName ? 'unnamed' : naam}, ${contract_type} ${profiel_type}${incomeClause}
-Property: ${address}${city ? `, ${city}` : ''}, €${price}/month
-${profileLines ? profileLines + '\n' : ''}${signalLines ? signalLines + '\n' : ''}
-${nameClause}`;
+  const lines = [];
+  lines.push(`Write a rental motivation letter for ${noName ? 'an applicant' : naam}.`);
+  if (inkomen > 0) lines.push(`Employment: ${contract_type} contract, ${profiel_type}, monthly income €${inkomen}.`);
+  if (user_description) lines.push(`About them: ${user_description}`);
+  if (move_reason) lines.push(`Reason for moving: ${move_reason}`);
+  if (tenant_quality) lines.push(`As a tenant: ${tenant_quality}`);
+  lines.push(`Property: ${address}${city ? `, ${city}` : ''}, €${price}/month.`);
+  if (description.length > 50) lines.push(`Landlord notes: ${description.slice(0, 200)}`);
+  lines.push(`Write naturally. No AI phrases. No dashes. Max 130 words. 3 short paragraphs.`);
+  if (!noName) lines.push(`Sign off with just the first name: ${firstName}.`);
 
   const message = await callClaude({
     max_tokens: 500,
     system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
+    messages: [{ role: 'user', content: lines.join('\n') }],
   });
 
   return stripMarkdown(message.content[0].text);
