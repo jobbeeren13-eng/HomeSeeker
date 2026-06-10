@@ -139,4 +139,51 @@ ${nameClause}`;
   return stripMarkdown(message.content[0].text);
 }
 
-module.exports = { generateLetter, generateLetterDirect, STYLE_LABELS };
+// Generate a single AI-powered application tip for listings with rich descriptions.
+// Result is cached in listing_cache for 48h to avoid repeated API calls.
+async function getAITip(listing, user) {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  if (!listing.description || listing.description.length < 200) return null;
+
+  const cacheKey = `aitip_${listing.fingerprint || listing.url}`;
+
+  // Check persistent DB cache
+  try {
+    const { getPersistedCacheListing, persistCacheListing } = require('./database');
+    const cached = getPersistedCacheListing.get(cacheKey, Date.now());
+    if (cached) {
+      try { return JSON.parse(cached.listing_json); } catch { return null; }
+    }
+
+    const userProfile = [
+      user?.contract_type && `contract: ${user.contract_type}`,
+      user?.profiel_type && `profile: ${user.profiel_type}`,
+      user?.inkomen && `income: €${user.inkomen}/month`,
+      user?.met_partner === 'ja' && 'applying with partner',
+      user?.contract_type === 'zzp' && 'self-employed',
+    ].filter(Boolean).join(', ');
+
+    const msg = await callClaude({
+      max_tokens: 80,
+      system: 'You are a Dutch rental application advisor. Give one actionable tip. Max 15 words. No preamble, no trailing punctuation changes, no quotes.',
+      messages: [{
+        role: 'user',
+        content: `Listing description: "${listing.description.slice(0, 400)}"\nTenant: ${userProfile || 'professional'}\nWhat is the single most important thing this tenant should mention in their application?`,
+      }],
+    });
+
+    const raw = msg.content[0]?.text || '';
+    const tip = stripMarkdown(raw).replace(/^["'`]|["'`]$/g, '').trim();
+    if (!tip || tip.length < 10) return null;
+
+    const expiresAt = Date.now() + 48 * 60 * 60 * 1000;
+    try { persistCacheListing.run(cacheKey, JSON.stringify(tip), expiresAt); } catch {}
+
+    return tip;
+  } catch (err) {
+    console.warn('[aitip] Failed:', err.message);
+    return null;
+  }
+}
+
+module.exports = { generateLetter, generateLetterDirect, getAITip, STYLE_LABELS };

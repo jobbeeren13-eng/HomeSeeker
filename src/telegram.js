@@ -4,6 +4,7 @@ const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatT
 const { generateLetter, generateLetterDirect } = require('./letter');
 const { rowToListing } = require('./scraper');
 const { getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
+const { detectPriceDrop } = require('./deal_score');
  
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
@@ -516,19 +517,30 @@ function createBot(useWebhook = false) {
  
 function getBot() { return bot; }
  
+function listingAgeStr(listing) {
+  if (!listing.listedAt) return null;
+  const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
+  if (isNaN(ageMins) || ageMins < 0) return null;
+  if (ageMins < 2) return 'just now';
+  if (ageMins < 60) return `${Math.round(ageMins)}m ago`;
+  const h = Math.floor(ageMins / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
 async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user = null, botOverride = null) {
   const _bot = botOverride || bot;
   if (!_bot) return;
- 
+
   clearLetterState(chatId);
- 
+
   function bar(pct) {
     const total = 10;
     const filled = Math.round((pct / 100) * total);
     const dot = pct >= 70 ? '🟩' : pct >= 40 ? '🟨' : '🟥';
     return dot.repeat(filled) + '⬜'.repeat(total - filled) + `  ${pct}%`;
   }
- 
+
   function appLabel(pct) {
     if (pct >= 85) return 'Excellent';
     if (pct >= 70) return 'Strong';
@@ -536,20 +548,20 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     if (pct >= 30) return 'Fair';
     return 'Weak';
   }
- 
+
   function valueLabel(pct) {
     if (pct >= 60) return 'Good deal';
     if (pct >= 40) return 'Fair price';
     return 'Expensive';
   }
- 
+
   const JUNK = ['blikvanger', 'nieuw', 'verhuurd', 'verkocht', 'onder bod'];
   let address = listing.address || '';
   if (JUNK.some(j => address.toLowerCase().trim() === j || address.toLowerCase().trim().startsWith(j + ' '))) {
     const m = listing.url?.match(/\/([^/]+)\/\d+\/?$/);
     if (m) address = m[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
- 
+
   const priceStr = listing.priceNumber
     ? `€${listing.priceNumber.toLocaleString('nl-NL')}`
     : (listing.price || 'N/A');
@@ -560,11 +572,19 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const maxHuur = inkomen / 3;
   const price = listing.priceNumber || 0;
   const incomeRatio = (inkomen > 0 && price > 0) ? Math.round((price / maxHuur) * 10) / 10 : null;
- 
+
+  // Freshness & price drop signals
+  const ageMs = listing.listedAt ? Date.now() - new Date(listing.listedAt).getTime() : null;
+  const isJustListed = ageMs !== null && !isNaN(ageMs) && ageMs < 60 * 60 * 1000;
+  const hasPriceDrop = detectPriceDrop(`${listing.address || ''} ${listing.description || ''}`);
+
   const lines = [];
 
-  // Source badge — first line
-  lines.push(getPlatformBadge(listing.source));
+  // Source badge + freshness badge — first line
+  let sourceLine = getPlatformBadge(listing.source);
+  if (isJustListed) sourceLine += '  🆕 Just listed';
+  if (hasPriceDrop) sourceLine += '  📉 Price reduced';
+  lines.push(sourceLine);
 
   // Header: address + city on one line
   const cityStr = cityDisplay || listing.city || '';
@@ -572,6 +592,8 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (listing.area) lines.push(`• ${listing.area}m²`);
   lines.push(`• Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
   if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+  const ageStr = listingAgeStr(listing);
+  if (ageStr) lines.push(`• Listed: ${ageStr}`);
 
   // Landlord warnings & profile mismatch — always, regardless of score
   const intent = detectLandlordIntent(listing.description || '');
@@ -613,14 +635,16 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   let verdictSection = '';
   if (user) {
     let verdict = '';
-    if (score >= 70) {
-      verdict = 'Strong match: apply now.';
-    } else if (price > maxHuur && incomeRatio !== null) {
-      verdict = 'Worth applying with a guarantor or co-applicant.';
+    if (score >= 80) {
+      verdict = 'Strong match — apply today.';
+    } else if (score >= 65) {
+      verdict = 'Good match — worth applying.';
     } else if (score >= 50) {
-      verdict = 'Decent match: respond quickly.';
+      verdict = 'Decent match — respond quickly.';
+    } else if (score >= 35) {
+      verdict = 'Weak match — boost your profile first.';
     } else {
-      verdict = 'Challenging: strengthen your profile before applying.';
+      verdict = 'Challenging — significant profile gaps.';
     }
     verdictSection = '\n\n' + verdict;
   }

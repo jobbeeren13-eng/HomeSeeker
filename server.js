@@ -13,6 +13,25 @@ const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
+// Simple in-memory rate limiter for /api/filters (10 requests per IP per hour)
+const filterRateLimits = new Map();
+function checkFilterRateLimit(ip) {
+  const now = Date.now();
+  const entry = filterRateLimits.get(ip);
+  if (!entry || entry.resetAt < now) {
+    filterRateLimits.set(ip, { count: 1, resetAt: now + 3600000 });
+    return true;
+  }
+  if (entry.count >= 10) return false;
+  entry.count++;
+  return true;
+}
+// Purge stale entries every hour to avoid unbounded growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, e] of filterRateLimits) { if (e.resetAt < now) filterRateLimits.delete(ip); }
+}, 3600000);
+
 app.use('/webhook/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,6 +63,10 @@ app.get('/subscribe', async (req, res) => {
 app.get('/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 'success.html')));
 
 app.post('/api/filters', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!checkFilterRateLimit(clientIp)) {
+    return res.status(429).json({ error: 'Too many requests — please wait before submitting again' });
+  }
   try {
     const b = req.body;
     const chatId = String(b.chat_id || '').trim();

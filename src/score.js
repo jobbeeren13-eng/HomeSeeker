@@ -166,7 +166,6 @@ function getImprovementTips(listing, user, _currentScore) {
   const price = listing.priceNumber || 0;
   const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
   const cityRaw = (listing.city || '').toLowerCase().replace(/-/g, '');
-  const desc = (listing.description || '').toLowerCase();
 
   const seen = new Set();
   const landlordTips = [];
@@ -177,13 +176,45 @@ function getImprovementTips(listing, user, _currentScore) {
   const fallbackTips = [];
 
   function add(bucket, tip) {
-    if (!seen.has(tip)) { seen.add(tip); bucket.push({ tip }); }
+    if (tip && !seen.has(tip)) { seen.add(tip); bucket.push({ tip }); }
+  }
+
+  // ── AI-GENERATED TIP (pre-computed, highest priority) ────────────────
+  if (listing.aiTip) add(landlordTips, listing.aiTip);
+
+  // ── INCOME CROSS-REFERENCE (beats generic income_requirement tip) ────
+  let skipGenericIncomeReq = false;
+  if (inkomen > 0 && price > 0 && listing.description) {
+    const mIncome = listing.description.match(/(\d+)[xX]\s*(?:de\s*)?(?:maand)?huur/i)
+                 || listing.description.match(/(\d+)\s*times.*rent/i)
+                 || listing.description.match(/(\d+)[xX]\s*(?:monthly\s*)?rent/i);
+    if (mIncome) {
+      const mult = parseInt(mIncome[1]);
+      const required = price * mult;
+      const gap = required - inkomen;
+      skipGenericIncomeReq = true;
+      if (gap > 0) {
+        const shortfall = Math.ceil(gap / 100) * 100;
+        add(financialTips, `Landlord requires ${mult}x rent (${fmtEuro(required)}/mo) — you are ${fmtEuro(shortfall)}/mo short`);
+      } else {
+        add(financialTips, `Your income meets the ${mult}x rent requirement (${fmtEuro(required)}/mo) — state this explicitly`);
+      }
+    }
   }
 
   // ── LANDLORD INTENT TIPS (all matching LANDLORD_SIGNALS from description) ──────────────────
   if (listing.description) {
     const { tips: descTips } = detectLandlordIntent(listing.description);
-    for (const t of descTips) add(landlordTips, t.tip);
+    for (const t of descTips) {
+      if (skipGenericIncomeReq && t.tip && (t.tip.includes('income requirement') || t.tip.includes('Income requirement'))) continue;
+      add(landlordTips, t.tip);
+    }
+  }
+
+  // ── DEPOSIT TIP ──────────────────────────────────────────────────────
+  if (user.heeft_borg === 'nee' && listing.description) {
+    const hasBorg = /\bborg\b|waarborgsom|\bdeposit\b/i.test(listing.description);
+    if (hasBorg) add(profileTips, 'Deposit required but you have no guarantor — budget for it and mention readiness to pay');
   }
 
   // ── FINANCIAL TIPS (actual ratio with real numbers) ──────────────────
@@ -232,32 +263,40 @@ function getImprovementTips(listing, user, _currentScore) {
     const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
     if (!isNaN(ageMins)) {
       if (ageMins < 30) {
-        add(timingTips, 'Listed just now: apply immediately before the inbox fills up');
+        add(timingTips, 'Listed just now — apply immediately before the inbox fills up');
       } else if (ageMins < 120) {
-        add(timingTips, 'Still fresh: apply within the hour to be in the first wave');
+        add(timingTips, 'Still fresh — apply within the hour to be in the first wave');
       } else if (ageMins > 360) {
-        add(timingTips, 'Listing is several hours old: add a strong personal intro to stand out');
+        add(timingTips, 'Listing is several hours old — add a strong personal intro to stand out from late applicants');
       }
     }
   }
 
   // ── CITY COMPETITION TIPS ────────────────────────────────────────────
   if (cityRaw.includes('amsterdam')) {
-    add(cityTips, 'Amsterdam: 80+ applicants per listing, a personal message is essential');
+    if (price > 0 && price < 1800) {
+      add(cityTips, 'Amsterdam under €1,800: expect 100+ applicants — apply now, before the inbox fills');
+    } else {
+      add(cityTips, 'Amsterdam: highly competitive — include a personal message and viewing availability');
+    }
   } else if (cityRaw.includes('utrecht')) {
-    add(cityTips, 'Utrecht: apply today and mention your viewing availability immediately');
+    add(cityTips, 'Utrecht: extremely tight market — apply today and mention your earliest viewing availability');
   } else if (cityRaw.includes('haarlem')) {
-    add(cityTips, 'Haarlem: very limited supply, treat this as a priority application');
+    add(cityTips, 'Haarlem: very limited supply — treat this as a top-priority application');
   } else if (cityRaw.includes('rotterdam')) {
-    add(cityTips, 'Rotterdam: respond today with your full document pack ready');
+    add(cityTips, 'Rotterdam: fast market — respond today with your document pack ready');
+  } else if (cityRaw.includes('leiden') || cityRaw.includes('delft')) {
+    add(cityTips, 'Student city: high competition — a personal, concise intro message is essential');
+  } else if (cityRaw.includes('eindhoven')) {
+    add(cityTips, 'Eindhoven: international tech market — mention ASML/IMEC/Philips ties if relevant');
   }
 
   // ── FALLBACK TIPS ────────────────────────────────────────────────────
   add(fallbackTips, 'Write a short intro: who you are, why this home, and your move-in date');
-  add(fallbackTips, 'Have all documents in one PDF ready: immediate senders get priority');
+  add(fallbackTips, 'Have all documents in one PDF ready — immediate senders get priority');
   add(fallbackTips, 'State your viewing availability: landlords prioritize flexible applicants');
 
-  // ── MERGE: all landlord tips first, then financial, then profile/timing/city, then fallback ──
+  // ── MERGE: AI + landlord tips first, then financial, then profile/timing/city, then fallback ──
   const tips = [];
   for (const t of landlordTips) {
     if (tips.length >= 5) break;
@@ -455,6 +494,99 @@ const LANDLORD_SIGNALS = {
     patterns: [/studenten welkom/i, /students welcome/i, /studentenwoning/i, /studentenhuis/i, /geschikt voor studenten/i],
     label: 'Students welcome',
     tip: 'Students are welcome — mention your institution, program, and expected graduation date',
+    boost: 5,
+  },
+  deposit_mentioned: {
+    patterns: [/\bborg\b/i, /waarborgsom/i, /\bdeposit\b/i, /\bborgtocht\b/i, /\bkaution\b/i, /borg van/i, /borg bedraagt/i],
+    label: 'Security deposit required',
+    computeTip: (description) => {
+      const m = description.match(/(?:borg(?:som|tocht)?|deposit|waarborgsom)[^€\d]*(?:€\s*)?([\d.,]+)/i);
+      const amount = m ? parseFloat(m[1].replace(',', '.')) : null;
+      return amount && amount > 100
+        ? `Deposit of €${Math.round(amount)} required — have this ready before your viewing`
+        : 'Security deposit required — confirm the amount and have it ready before applying';
+    },
+    boost: 5,
+  },
+  no_dss: {
+    patterns: [/geen uitkering/i, /geen bijstand/i, /geen bijstandsuitkering/i, /no benefits/i, /no dss/i, /geen\s+ww\b/i, /geen werkloosheidsuitkering/i, /working income only/i],
+    label: 'No benefits — landlord requires earned income',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+  per_direct: {
+    patterns: [/per direct/i, /direct beschikbaar/i, /immediately available/i, /available immediately/i, /vanaf nu beschikbaar/i, /\bnu beschikbaar\b/i, /asap/i],
+    label: 'Available immediately',
+    tip: 'Property is available now — state your earliest possible move-in date in your first message',
+    boost: 7,
+  },
+  viewing_appointment: {
+    patterns: [/bezichtiging op afspraak/i, /viewing by appointment/i, /viewing on request/i, /viewing on appointment/i, /\bop afspraak\b/i, /bezichtiging aanvragen/i, /maak een afspraak/i],
+    label: 'Viewing by appointment only',
+    tip: 'Viewing is by appointment — explicitly request a viewing slot in your very first message',
+    boost: 5,
+  },
+  service_costs_incl: {
+    patterns: [/inclusief servicekosten/i, /servicekosten\s*(?:zijn\s*)?inbegrepen/i, /\ball.in\b/i, /utilities included/i, /stookkosten inbegrepen/i, /incl\.\s*servicekosten/i, /inclusief\s+gas\s*(?:en\s*)?elektra/i],
+    label: 'Service costs or utilities included',
+    tip: 'Service costs or utilities are included — verify exactly what is covered to understand your true monthly cost',
+    boost: 4,
+  },
+  service_costs_excl: {
+    patterns: [/exclusief servicekosten/i, /excl\.\s*servicekosten/i, /service costs excluded/i, /\+\s*servicekosten/i, /servicekosten niet inbegrepen/i],
+    label: 'Service costs on top of listed rent',
+    computeTip: (description) => {
+      const m = description.match(/servicekosten[^€\d]*(?:€\s*)?([\d.,]+)/i);
+      const amount = m ? parseFloat(m[1].replace(',', '.')) : null;
+      return amount && amount > 10
+        ? `Service costs of €${Math.round(amount)}/mo are NOT in the listed rent — factor this into your budget`
+        : 'Service costs are on top of listed rent — ask for the exact amount to budget correctly';
+    },
+    boost: 3,
+  },
+  energy_label_ab: {
+    patterns: [/\benergielabel\s*[ab]\b/i, /\benergy\s*label\s*[ab]\b/i, /\blabel\s*[ab]\b/i, /\benergieklasse\s*[ab]\b/i, /\benergiezuinig\b/i],
+    label: 'Good energy rating (A or B)',
+    tip: 'Property has an A or B energy label — mention your appreciation for the low energy costs in your application',
+    boost: 3,
+  },
+  brp_required: {
+    patterns: [/\binschrijving\s*(?:bij\s*)?(?:de\s*)?gemeente\s*(?:is\s*)?(?:niet\s*)?(?:mogelijk|toegestaan)/i, /\bBRP\s*(?:inschrijving)?\s*(?:is\s*)?(?:niet\s*)?(?:mogelijk|toegestaan)/i, /geen\s*inschrijving/i, /\bnot\s*possible\s*to\s*register\b/i, /gemeente\s*niet\s*mogelijk/i],
+    label: 'Address registration not allowed',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+  young_professional: {
+    patterns: [/young professional/i, /young professionals/i, /starter/i, /starters/i],
+    label: 'Aimed at young professionals or starters',
+    tip: 'Property targets young professionals — emphasise your career trajectory and commitment to the city',
+    boost: 5,
+  },
+  no_subletting: {
+    patterns: [/niet onderhuren/i, /no subletting/i, /no sublet/i, /onderhuur niet toegestaan/i, /no airbnb/i, /no short.term rental/i],
+    label: 'No subletting allowed',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+  good_maintenance: {
+    patterns: [/\bnetjes\s*achterlaten\b/i, /goed onderhoud/i, /goed onderhouden/i, /goed verzorgd/i, /\bverzorgd achterlaten\b/i, /maintain.*(?:clean|good)/i, /in\s*goede\s*staat\b/i],
+    label: 'Landlord expects property to be kept in good condition',
+    tip: 'Landlord values careful maintenance — mention your track record of keeping properties in excellent condition',
+    boost: 4,
+  },
+  availability_date: {
+    patterns: [/beschikbaar\s*(?:per|vanaf|op)\s*\d{1,2}[\s-]\w+/i, /available\s*(?:from|as of)\s*\d{1,2}/i, /\bper\s+\d{1,2}\s+(?:jan|feb|mrt|mar|apr|mei|may|jun|jul|aug|sep|okt|oct|nov|dec)/i, /\bfrom\s+\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i],
+    label: 'Specific availability date mentioned',
+    computeTip: (description) => {
+      const m = description.match(/(?:beschikbaar\s*(?:per|vanaf|op)|available\s*(?:from|as of))\s*(\d{1,2}[\s-]\w+\s*\d{0,4})/i);
+      const date = m ? m[1].trim() : null;
+      return date
+        ? `Property available from ${date} — mention your move-in flexibility around this date`
+        : 'Specific availability date mentioned — confirm your move-in timing aligns with it';
+    },
     boost: 5,
   },
 };

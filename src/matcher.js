@@ -58,6 +58,8 @@ function matchesUser(listing, user) {
   return true;
 }
 
+const MAX_ALERTS_PER_USER_PER_CYCLE = 20;
+
 async function findMatches(listings) {
   const users = await getActiveUsers();
   if (!users.length) {
@@ -65,30 +67,46 @@ async function findMatches(listings) {
     return [];
   }
   const matches = [];
+  const userAlertCount = new Map();
+  const userStats = new Map(); // chat_id -> { checked, matched, rejected }
 
   for (const listing of listings) {
-    // Calculate deal score once per listing (not per user)
     const dScore = calculateDealScore(listing);
     const dLabel = dealLabel(dScore, listing);
 
     for (const user of users) {
       if (!user.chat_id) continue;
-      if (isListingSent.get(listing.url, user.chat_id)) continue;
-      if (!matchesUser(listing, user)) continue;
+      const stats = userStats.get(user.chat_id) || { checked: 0, matched: 0, alreadySent: 0, noMatch: 0, lowScore: 0, lowDeal: 0, capped: 0 };
+      stats.checked++;
+
+      if (isListingSent.get(listing.url, user.chat_id)) { stats.alreadySent++; userStats.set(user.chat_id, stats); continue; }
+      if (!matchesUser(listing, user)) { stats.noMatch++; userStats.set(user.chat_id, stats); continue; }
 
       const score = calculateScore(listing, user);
-      const kansMin = user.kans_min || 0;
-      if (score < kansMin) continue;
+      if (score < (user.kans_min || 0)) { stats.lowScore++; userStats.set(user.chat_id, stats); continue; }
 
       const dealMin = user.deal_min || 0;
-      if (dealMin > 0 && (dScore === null || dScore < dealMin)) continue;
+      if (dealMin > 0 && (dScore === null || dScore < dealMin)) { stats.lowDeal++; userStats.set(user.chat_id, stats); continue; }
+
+      const alertCount = userAlertCount.get(user.chat_id) || 0;
+      if (alertCount >= MAX_ALERTS_PER_USER_PER_CYCLE) { stats.capped++; userStats.set(user.chat_id, stats); continue; }
 
       markListingSent.run(listing.url, user.chat_id);
+      userAlertCount.set(user.chat_id, alertCount + 1);
+      stats.matched++;
+      userStats.set(user.chat_id, stats);
       matches.push({
         listing, user,
         score, label: scoreLabel(score),
         dealScore: dScore, dealLabel: dLabel,
       });
+    }
+  }
+
+  // Log per-user match summary
+  for (const [chatId, s] of userStats) {
+    if (s.matched > 0 || s.capped > 0) {
+      console.log(`[matcher] user=${chatId} checked=${s.checked} matched=${s.matched} noMatch=${s.noMatch} lowScore=${s.lowScore} lowDeal=${s.lowDeal} capped=${s.capped}`);
     }
   }
 

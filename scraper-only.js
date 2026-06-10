@@ -9,7 +9,7 @@ const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const ADMIN_KEY   = process.env.ADMIN_KEY;
-const { generateLetterDirect } = require('./src/letter');
+const { generateLetterDirect, getAITip } = require('./src/letter');
 const PORT        = parseInt(process.env.MATCH_NOW_PORT || '3001', 10);
 
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
@@ -24,8 +24,15 @@ const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
 // ── Shared alert sender (cron + match-now) ────────────────────────────────
 async function dispatchAlerts(matches) {
   const sentUrls = [];
-  for (const { listing, user, score, label, dealScore, dealLabel } of matches) {
+  for (const { listing: rawListing, user, score, label, dealScore, dealLabel } of matches) {
     try {
+      // Inject AI tip for listings with rich descriptions (cached 48h, fails silently)
+      let listing = rawListing;
+      if (rawListing.description && rawListing.description.length >= 200) {
+        const aiTip = await getAITip(rawListing, user);
+        if (aiTip) listing = { ...rawListing, aiTip };
+      }
+
       const cacheId = await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user, bot);
       sentUrls.push(listing.url);
       if (cacheId) {

@@ -33,6 +33,9 @@ let scraperStats = {
   consecutiveZeroRuns: 0, totalRuns: 0, totalListingsFound: 0,
   averageListingsPerRun: 0, lastError: null, lastFailureReason: null,
   averageRuntime: 0, runtimes: [],
+  sourceCounts: { funda: 0, kamernet: 0, housinganywhere: 0 },
+  lastCycleSources: { funda: 0, kamernet: 0, housinganywhere: 0 },
+  descriptionFillRate: 0,
 };
 
 let _adminBot = null;
@@ -53,7 +56,12 @@ function getScraperHealth() {
   let status = 'ok';
   if (scraperStats.consecutiveZeroRuns >= 3) status = 'degraded';
   if (isStale) status = 'stale';
-  return { ...scraperStats, status, isStale };
+  return {
+    ...scraperStats,
+    status, isStale,
+    sources: scraperStats.lastCycleSources,
+    descriptionFillRate: scraperStats.descriptionFillRate,
+  };
 }
 
 function recordScraperRun(count, runtime, error = null) {
@@ -331,6 +339,58 @@ async function fetchFundaDescription(url) {
   }
 }
 
+async function fetchDescriptionFromMeta(url, userAgent) {
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': userAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html',
+        'Accept-Language': 'nl-NL,nl;q=0.9,en;q=0.8',
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!resp.ok) return '';
+    const html = await resp.text();
+    const m = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
+           || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
+    return m ? m[1].trim() : '';
+  } catch {
+    return '';
+  }
+}
+
+async function fetchKamernetDescription(url) {
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!resp.ok) return '';
+    const html = await resp.text();
+    // Try __NEXT_DATA__ first for structured description
+    const nextDataM = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+    if (nextDataM) {
+      try {
+        const data = JSON.parse(nextDataM[1]);
+        const desc = data?.props?.pageProps?.targetPageProps?.listingDetails?.description
+                  || data?.props?.pageProps?.listing?.description
+                  || '';
+        if (desc) return String(desc).slice(0, 500).trim();
+      } catch {}
+    }
+    // Fall back to meta description
+    const metaM = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
+               || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
+    return metaM ? metaM[1].trim() : '';
+  } catch {
+    return '';
+  }
+}
+
 async function scrapeFunda() {
   const startTime = Date.now();
   let newCount = 0;
@@ -363,6 +423,8 @@ async function scrapeFunda() {
   }
 
   const runtime = Date.now() - startTime;
+  scraperStats.sourceCounts.funda += newCount;
+  scraperStats.lastCycleSources.funda = newCount;
   console.log(`[scraper] funda API done — ${newCount} new listings in ${Math.round(runtime / 1000)}s`);
   recordScraperRun(newCount, runtime);
   return newCount;
@@ -441,14 +503,33 @@ function fetchKamernetPage(citySlug) {
 
 async function scrapeKamernet() {
   let newCount = 0;
+  const needsDesc = [];
   console.log('[scraper] Starting Kamernet scrape…');
   for (const city of CITIES) {
     const listings = await fetchKamernetPage(city);
     for (const listing of listings) {
-      if (saveNewListing(listing)) newCount++;
+      if (saveNewListing(listing)) {
+        newCount++;
+        if (!listing.description) needsDesc.push(listing.url);
+      }
     }
     await new Promise(r => setTimeout(r, 400));
   }
+
+  if (needsDesc.length > 0) {
+    console.log(`[scraper] Enriching ${needsDesc.length} new Kamernet listing(s) with descriptions…`);
+    const CONCURRENCY = 2;
+    for (let i = 0; i < needsDesc.length; i += CONCURRENCY) {
+      await Promise.allSettled(needsDesc.slice(i, i + CONCURRENCY).map(async url => {
+        const desc = await fetchKamernetDescription(url);
+        if (desc) updateListingDescription.run(desc, url);
+      }));
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+
+  scraperStats.sourceCounts.kamernet += newCount;
+  scraperStats.lastCycleSources.kamernet = newCount;
   console.log(`[scraper] Kamernet done — ${newCount} new listings`);
   return newCount;
 }
@@ -538,24 +619,51 @@ function fetchHousingAnywhereCity(city) {
 
 async function scrapeHousingAnywhere() {
   let newCount = 0;
+  const needsDesc = [];
   console.log('[scraper] Starting HousingAnywhere scrape…');
   for (const city of CITIES) {
     const listings = await fetchHousingAnywhereCity(city);
     for (const listing of listings) {
-      if (saveNewListing(listing)) newCount++;
+      if (saveNewListing(listing)) {
+        newCount++;
+        if (!listing.description) needsDesc.push(listing.url);
+      }
     }
     await new Promise(r => setTimeout(r, 1000));
   }
+
+  if (needsDesc.length > 0) {
+    console.log(`[scraper] Enriching ${needsDesc.length} new HousingAnywhere listing(s) with descriptions…`);
+    const CONCURRENCY = 2;
+    for (let i = 0; i < needsDesc.length; i += CONCURRENCY) {
+      await Promise.allSettled(needsDesc.slice(i, i + CONCURRENCY).map(async url => {
+        const desc = await fetchDescriptionFromMeta(url);
+        if (desc) updateListingDescription.run(desc, url);
+      }));
+      await new Promise(r => setTimeout(r, 800));
+    }
+  }
+
+  scraperStats.sourceCounts.housinganywhere += newCount;
+  scraperStats.lastCycleSources.housinganywhere = newCount;
   console.log(`[scraper] HousingAnywhere done — ${newCount} new listings`);
   return newCount;
 }
 
 async function scrapeListings() {
+  scraperStats.lastCycleSources = { funda: 0, kamernet: 0, housinganywhere: 0 };
   await scrapeFunda();
   await scrapeKamernet();
   await scrapeHousingAnywhere();
   const unsent = getUnsentListings.all().map(rowToListing);
-  console.log(`[scraper] Total unsent listings: ${unsent.length}`);
+
+  // Description fill rate for this cycle
+  const withDesc = unsent.filter(l => l.description && l.description.length > 20).length;
+  scraperStats.descriptionFillRate = unsent.length > 0 ? Math.round((withDesc / unsent.length) * 100) : 0;
+
+  const { funda, kamernet, housinganywhere } = scraperStats.lastCycleSources;
+  console.log(`[scraper] Cycle totals — funda: ${funda}, kamernet: ${kamernet}, housinganywhere: ${housinganywhere}`);
+  console.log(`[scraper] Total unsent listings: ${unsent.length} (desc fill: ${scraperStats.descriptionFillRate}%)`);
   return unsent;
 }
 

@@ -24,7 +24,7 @@ async function sendWelcomeEmail(email, naam, customerId) {
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#111">
         <h2 style="color:#00e5a0">Hi ${naam || 'there'} 👋</h2>
-        <p>Your 7-day HomeSeeker trial is active. Click the button below to activate your personal Telegram alerts:</p>
+        <p>Your 7-day HomeSeeker trial is active. We monitor <strong>Funda, Kamernet, and HousingAnywhere</strong> — 24/7, across 19 Dutch cities. Click the button below to activate your personal Telegram alerts:</p>
         <div style="text-align:center;margin:32px 0">
           <a href="${telegramLink}" style="background:#00e5a0;color:#000;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
             📱 Activate Telegram Alerts

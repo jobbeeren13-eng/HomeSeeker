@@ -1,17 +1,24 @@
 const MARKET_HUUR = {
   amsterdam: 26, rotterdam: 17, 'den-haag': 18, utrecht: 21,
-  haarlem: 22, amstelveen: 23, delft: 18,
+  haarlem: 22, amstelveen: 23, delft: 18, leiden: 19, eindhoven: 15,
+  groningen: 12, nijmegen: 14, tilburg: 13, almere: 13, breda: 13,
+  maastricht: 13, zwolle: 13, enschede: 11, arnhem: 12, apeldoorn: 11,
 };
 const MARKET_KOOP = {
   amsterdam: 6500, rotterdam: 4500, 'den-haag': 5000, utrecht: 5500,
-  haarlem: 5800, amstelveen: 5500, delft: 5000,
+  haarlem: 5800, amstelveen: 5500, delft: 5000, leiden: 5500, eindhoven: 4200,
+  groningen: 3200, nijmegen: 3800, tilburg: 3500, almere: 3800, breda: 3600,
+  maastricht: 3500, zwolle: 3800, enschede: 2800, arnhem: 3200, apeldoorn: 3000,
 };
-const DEFAULT_HUUR = 20;
-const DEFAULT_KOOP = 5000;
+const DEFAULT_HUUR = 16;
+const DEFAULT_KOOP = 4000;
 
 const LOCATION_SCORE = {
   delft: 15, haarlem: 14, amstelveen: 13, rotterdam: 13,
-  utrecht: 12, 'den-haag': 11, amsterdam: 8,
+  utrecht: 12, 'den-haag': 11, amsterdam: 8, leiden: 12,
+  eindhoven: 11, groningen: 11, nijmegen: 11, tilburg: 10,
+  almere: 10, breda: 10, maastricht: 10, zwolle: 10,
+  enschede: 9, arnhem: 9, apeldoorn: 9,
 };
 
 const PRICE_DROP_PATTERNS = [
@@ -86,4 +93,4 @@ function dealLabel(score, listing = {}) {
   return '💸 Overpriced';
 }
 
-module.exports = { calculateDealScore, dealLabel, hasComparisonData };
+module.exports = { calculateDealScore, dealLabel, hasComparisonData, detectPriceDrop, MARKET_HUUR };
