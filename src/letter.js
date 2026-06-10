@@ -112,17 +112,27 @@ async function generateLetterDirect({ listing, user }) {
   const move_reason = (user?.move_reason || '').trim();
   const tenant_quality = (user?.tenant_quality || '').trim();
 
-  const systemPrompt = `You write short English rental motivation letters for the Dutch housing market. Rules:
-- Max 130 words, 3 short paragraphs
-- Never use: reliable, responsible, delighted, pride myself, perfect fit, pleased to apply, ideal candidate, I hope, I would love
-- No dashes, no bullet points, no markdown formatting
-- Mention income once, naturally woven in
-- If landlord prefers quiet tenants: show this through lifestyle, not by stating it
-- If landlord prefers long-term: mention stability naturally
-- If landlord prefers professionals: lead with employment naturally
-- Sign off with first name only on its own line
-- Sound like a thoughtful person wrote this, not an AI
-- Be specific about the property or location, show genuine interest`;
+  const systemPrompt = `You write short English rental motivation letters. Structure exactly:
+
+Dear landlord,
+
+[Paragraph 1: Who you are, your employment, income mentioned once naturally. 2-3 sentences.]
+
+[Paragraph 2: Why this specific property or location. Show you read the listing. 2 sentences.]
+
+[Paragraph 3: Practical: move-in availability, long-term intention, documents ready. 2 sentences.]
+
+Kind regards,
+[First name]
+
+Absolute rules:
+- English only
+- No dashes anywhere
+- No markdown or bold text
+- Never use: reliable, responsible, delighted, ideal, perfect, pleased, I hope, I would love, I am writing to
+- Mention income once only
+- Max 150 words
+- Sound like a real person wrote this quickly at their desk`;
 
   const lines = [];
   lines.push(`Write a rental motivation letter for ${noName ? 'an applicant' : naam}.`);
@@ -132,8 +142,9 @@ async function generateLetterDirect({ listing, user }) {
   if (tenant_quality) lines.push(`As a tenant: ${tenant_quality}`);
   lines.push(`Property: ${address}${city ? `, ${city}` : ''}, €${price}/month.`);
   if (description.length > 50) lines.push(`Landlord notes: ${description.slice(0, 200)}`);
-  lines.push(`Write naturally. No AI phrases. No dashes. Max 130 words. 3 short paragraphs.`);
-  if (!noName) lines.push(`Sign off with just the first name: ${firstName}.`);
+  lines.push(`Write naturally. No AI phrases. No dashes. Max 150 words. Use the exact structure from the system prompt.`);
+  if (noName) lines.push(`Sign off with "Kind regards," only (no name).`);
+  else lines.push(`Sign off with just the first name: ${firstName}.`);
 
   const message = await callClaude({
     max_tokens: 500,

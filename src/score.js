@@ -49,7 +49,7 @@ function calcProfileStrength(user) {
 
   if (user.contract_type === 'vast') { score += 25; detail = 'Permanent contract'; }
   else if (user.contract_type === 'tijdelijk') { score += 10; detail = 'Temporary contract'; }
-  else if (user.contract_type === 'zzp') { score += 5; detail = 'Self-employed — may require extra docs'; }
+  else if (user.contract_type === 'zzp') { score += 5; detail = 'Self-employed: may require extra docs'; }
   else if (user.contract_type === 'student') { score -= 10; detail = 'Student profile'; }
 
   if (user.expat_status === 'EU') { score += 10; detail += ' · EU citizen'; }
@@ -66,9 +66,9 @@ function calcDocumentReadiness(user) {
   const score = points[user.application_readiness] || 5;
   const details = {
     klaar: 'All documents ready to submit',
-    bijna: 'Almost ready — minor documents missing',
-    bezig: 'Documents in progress — significant gap',
-    niet: 'No documents prepared — high risk',
+    bijna: 'Almost ready: minor documents missing',
+    bezig: 'Documents in progress: significant gap',
+    niet: 'No documents prepared: high risk',
   };
   return { score, label: tierLabel(score), detail: details[user.application_readiness] || 'Unknown' };
 }
@@ -79,11 +79,11 @@ function calcTimingAdvantage(listing) {
   if (isNaN(ageMs)) return { score: 60, label: 'Unknown', detail: 'Listing age unknown' };
   const ageMins = ageMs / 60000;
   let score, detail;
-  if (ageMins <= 15) { score = 100; detail = 'Listed just now — apply immediately'; }
-  else if (ageMins <= 60) { score = 80; detail = `Listed ${Math.round(ageMins)} min ago — still early`; }
-  else if (ageMins <= 240) { score = 55; detail = `Listed ${Math.round(ageMins / 60)}h ago — moderate competition`; }
-  else if (ageMins <= 1440) { score = 30; detail = 'Listed today — high competition likely'; }
-  else { score = 10; detail = 'Listing is older — very competitive'; }
+  if (ageMins <= 15) { score = 100; detail = 'Listed just now: apply immediately'; }
+  else if (ageMins <= 60) { score = 80; detail = `Listed ${Math.round(ageMins)} min ago: still early`; }
+  else if (ageMins <= 240) { score = 55; detail = `Listed ${Math.round(ageMins / 60)}h ago: moderate competition`; }
+  else if (ageMins <= 1440) { score = 30; detail = 'Listed today: high competition likely'; }
+  else { score = 10; detail = 'Listing is older: very competitive'; }
   return { score, label: tierLabel(score), detail };
 }
 
@@ -96,7 +96,7 @@ function calcCompetitionPressure(listing) {
   // High demand cities
   const hotCities = ['amsterdam', 'utrecht', 'haarlem', 'leiden'];
   const mediumCities = ['rotterdam', 'den-haag', 'eindhoven', 'delft'];
-  if (hotCities.includes(city)) { score -= 20; detail = 'High-demand city — expect many applications'; }
+  if (hotCities.includes(city)) { score -= 20; detail = 'High-demand city: expect many applications'; }
   else if (mediumCities.includes(city)) { score -= 5; detail = 'Moderate competition in this city'; }
 
   // Price attractiveness (lower price = more competition)
@@ -163,7 +163,7 @@ function fmtEuro(n) {
   return '€' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-function getImprovementTips(listing, user, _currentScore) {
+function getImprovementTips(listing, user, _currentScore, dealScore) {
   const price = listing.priceNumber || 0;
   const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
   const cityRaw = (listing.city || '').toLowerCase().replace(/-/g, '');
@@ -174,6 +174,7 @@ function getImprovementTips(listing, user, _currentScore) {
   const profileTips  = [];
   const timingTips   = [];
   const cityTips     = [];
+  const sourceTips   = [];
   const fallbackTips = [];
 
   function add(bucket, tip) {
@@ -203,11 +204,11 @@ function getImprovementTips(listing, user, _currentScore) {
     }
   }
 
-  // ── LANDLORD INTENT TIPS (all matching LANDLORD_SIGNALS from description) ──────────────────
+  // ── LANDLORD INTENT TIPS ─────────────────────────────────────────────
   if (listing.description) {
     const { tips: descTips } = detectLandlordIntent(listing.description);
     for (const t of descTips) {
-      if (skipGenericIncomeReq && t.tip && (t.tip.includes('income requirement') || t.tip.includes('Income requirement'))) continue;
+      if (skipGenericIncomeReq && t.tip && t.tip.toLowerCase().includes('income requirement')) continue;
       add(landlordTips, t.tip);
     }
   }
@@ -218,7 +219,7 @@ function getImprovementTips(listing, user, _currentScore) {
     if (hasBorg) add(profileTips, 'Deposit required: budget for it and confirm you can pay upfront');
   }
 
-  // ── FINANCIAL TIPS (actual ratio with real numbers) ──────────────────
+  // ── FINANCIAL TIPS ───────────────────────────────────────────────────
   if (inkomen > 0 && price > 0 && listing.transactionType === 'huur') {
     const maxHuur = inkomen / 3;
     const ratio   = price / maxHuur;
@@ -231,6 +232,27 @@ function getImprovementTips(listing, user, _currentScore) {
       add(financialTips, `Just below 3x threshold: add a co-applicant with ${fmtEuro(gap)}/mo extra income`);
     } else if (ratio > 0.85) {
       add(financialTips, 'Income just meets the limit: mention savings or extra income sources');
+    }
+  }
+
+  // ── PRICE VS MARKET ──────────────────────────────────────────────────
+  if (dealScore != null) {
+    if (dealScore < 30) {
+      add(cityTips, 'Priced above market: verify what is included before applying');
+    } else if (dealScore > 70) {
+      add(cityTips, 'Below market price: expect high competition for this listing');
+    }
+  }
+
+  // ── ENERGY LABEL (from listing metadata) ─────────────────────────────
+  const energyLbl = (listing.energyLabel || listing.energy_label || '').toUpperCase().trim();
+  if (energyLbl) {
+    if (/^A/.test(energyLbl)) {
+      add(profileTips, 'Energy label A: expect €50-100/mo lower utility bills than average');
+    } else if (energyLbl === 'B') {
+      add(profileTips, 'Energy label B: decent insulation, reasonable heating costs');
+    } else if (/^[C-G]/.test(energyLbl)) {
+      add(profileTips, `Energy label ${energyLbl}: budget €100-200/mo extra for utilities`);
     }
   }
 
@@ -247,7 +269,17 @@ function getImprovementTips(listing, user, _currentScore) {
     add(profileTips, 'Temporary contract: attach an employer letter confirming contract renewal');
   }
   if (user.contract_type === 'student') {
-    add(profileTips, 'Student: lead with institution, program, graduation year and guarantor if available');
+    const studentsWelcomeFired = [...seen].some(t => t.startsWith('Students welcome'));
+    if (studentsWelcomeFired) {
+      add(profileTips, 'Student: arrange a guarantor or strong bank statement if possible');
+    } else {
+      add(profileTips, 'Student: lead with institution, program, graduation year and guarantor');
+    }
+  }
+
+  // ── EXPAT-SPECIFIC TIP ───────────────────────────────────────────────
+  if (user.profiel_type === 'expat' || user.expat_status) {
+    add(profileTips, 'Expat applicant: confirm you have or can open a Dutch bank account');
   }
 
   // ── DOCUMENT TIPS ────────────────────────────────────────────────────
@@ -262,13 +294,18 @@ function getImprovementTips(listing, user, _currentScore) {
   // ── TIMING TIPS ──────────────────────────────────────────────────────
   if (listing.listedAt) {
     const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
-    if (!isNaN(ageMins)) {
-      if (ageMins < 30) {
-        add(timingTips, 'Just listed: apply immediately before the inbox fills up');
-      } else if (ageMins < 120) {
-        add(timingTips, 'Still fresh: apply within the hour to be in the first wave');
-      } else if (ageMins > 360) {
-        add(timingTips, 'Several hours old: add a strong personal intro to stand out');
+    if (!isNaN(ageMins) && ageMins >= 0) {
+      if (ageMins < 15) {
+        add(timingTips, 'Posted minutes ago: you are among the first, apply now');
+      } else if (ageMins < 60) {
+        add(timingTips, `Posted ${Math.round(ageMins)} min ago: still early, apply within the hour`);
+      } else if (ageMins < 180) {
+        add(timingTips, `Posted ${Math.round(ageMins / 60)}h ago: competition is building, apply today`);
+      } else if (ageMins < 1440) {
+        add(timingTips, `Posted ${Math.round(ageMins / 60)}h ago: many have applied, make your intro count`);
+      } else {
+        const days = Math.floor(ageMins / 1440);
+        add(timingTips, `Listing is ${days} day${days > 1 ? 's' : ''} old: only apply if you stand out`);
       }
     }
   }
@@ -289,7 +326,14 @@ function getImprovementTips(listing, user, _currentScore) {
   } else if (cityRaw.includes('leiden') || cityRaw.includes('delft')) {
     add(cityTips, 'Student city: high competition, a personal concise intro is essential');
   } else if (cityRaw.includes('eindhoven')) {
-    add(cityTips, 'Eindhoven: international tech market, mention ASML/IMEC/Philips ties if relevant');
+    add(cityTips, 'Eindhoven: tech market, mention ASML/IMEC/Philips ties if relevant');
+  }
+
+  // ── SOURCE-SPECIFIC TIPS ─────────────────────────────────────────────
+  if (listing.source === 'housinganywhere') {
+    add(sourceTips, 'Message the landlord directly on HousingAnywhere before applying');
+  } else if (listing.source === 'kamernet') {
+    add(sourceTips, 'Personalized intro messages get higher response rates on Kamernet');
   }
 
   // ── FALLBACK TIPS ────────────────────────────────────────────────────
@@ -297,26 +341,22 @@ function getImprovementTips(listing, user, _currentScore) {
   add(fallbackTips, 'Have all documents in one PDF ready: immediate senders get priority');
   add(fallbackTips, 'State your viewing availability: landlords prioritize flexible applicants');
 
-  // ── MERGE: AI + landlord tips first, then financial, then profile/timing/city, then fallback ──
-  const tips = [];
-  for (const t of landlordTips) {
-    if (tips.length >= 5) break;
-    tips.push(t);
-  }
-  for (const t of financialTips) {
-    if (tips.length >= 5) break;
-    tips.push(t);
-  }
-  for (const t of [...profileTips, ...timingTips, ...cityTips]) {
-    if (tips.length >= 5) break;
-    tips.push(t);
-  }
-  for (const t of fallbackTips) {
-    if (tips.length >= 5) break;
-    tips.push(t);
+  // ── MERGE: priority order ────────────────────────────────────────────
+  const all = [];
+  for (const t of landlordTips) { if (all.length >= 5) break; all.push(t); }
+  for (const t of financialTips) { if (all.length >= 5) break; all.push(t); }
+  for (const t of [...profileTips, ...timingTips, ...cityTips, ...sourceTips]) { if (all.length >= 5) break; all.push(t); }
+  for (const t of fallbackTips) { if (all.length >= 5) break; all.push(t); }
+
+  // ── DEDUP: drop tips with near-identical first 25 characters ─────────
+  const deduped = [];
+  const prefixes = new Set();
+  for (const t of all) {
+    const prefix = t.tip.slice(0, 25).toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!prefixes.has(prefix)) { prefixes.add(prefix); deduped.push(t); }
   }
 
-  return { tips: tips.slice(0, 5) };
+  return { tips: deduped.slice(0, 5) };
 }
 
 // ─────────────────────────────────────────────
@@ -486,7 +526,7 @@ const LANDLORD_SIGNALS = {
              || description.match(/minimum.*?(\d+)\s*year/i);
       const years = m ? parseInt(m[1]) : null;
       return years
-        ? `Minimum ${years}-year stay: state clearly you plan to stay at least that long`
+        ? `Minimum ${years}-year stay: commit to this explicitly in your application`
         : 'Minimum rental period required: state how long you plan to stay';
     },
     boost: 7,
@@ -547,9 +587,14 @@ const LANDLORD_SIGNALS = {
     boost: 3,
   },
   energy_label_ab: {
-    patterns: [/\benergielabel\s*[ab]\b/i, /\benergy\s*label\s*[ab]\b/i, /\blabel\s*[ab]\b/i, /\benergieklasse\s*[ab]\b/i, /\benergiezuinig\b/i],
+    patterns: [/\benergielabel\s*[ab]/i, /\benergy\s*label\s*[ab]/i, /\benergieklasse\s*[ab]/i, /\benergiezuinig\b/i],
     label: 'Good energy rating (A or B)',
-    tip: 'Energy label A/B: mention the lower running costs in your application',
+    computeTip: (description) => {
+      const m = description.match(/energielabel\s*([A-G][+]*)/i) || description.match(/energy\s*label\s*([A-G][+]*)/i);
+      const lbl = m ? m[1].toUpperCase() : 'A';
+      if (/^A/.test(lbl)) return 'Energy label A: expect €50-100/mo lower utility bills than average';
+      return 'Energy label B: decent insulation, reasonable heating costs';
+    },
     boost: 3,
   },
   brp_required: {
@@ -589,6 +634,49 @@ const LANDLORD_SIGNALS = {
         : 'Specific availability date: confirm your move-in timing aligns with it';
     },
     boost: 5,
+  },
+  werkgeversverklaring: {
+    patterns: [/werkgeversverklaring/i, /employer\s*(?:statement|declaration)/i],
+    label: 'Employer statement required',
+    tip: 'Employer statement required: get yours signed before applying',
+    boost: 6,
+  },
+  payslips_req: {
+    patterns: [/loonstrook/i, /loonstroken/i, /\bpayslip/i, /salarisstrook/i, /salary\s*slip/i],
+    label: 'Payslips required',
+    tip: 'Last 3 payslips required: have them ready to send immediately',
+    boost: 5,
+  },
+  digid_req: {
+    patterns: [/\bdigiD\b/i, /\bdigid\b/i],
+    label: 'DigiD required',
+    tip: 'DigiD required: ensure yours is active and accessible',
+    boost: 4,
+  },
+  bsn_req: {
+    patterns: [/\bBSN\b/, /\bbsn-nummer\b/i, /burgerservicenummer/i],
+    label: 'BSN number required',
+    tip: 'BSN required: have it ready for the application form',
+    boost: 4,
+  },
+  reference_req: {
+    patterns: [/\breferentie\b/i, /reference\s*(?:letter|required|needed|requested)/i, /landlord\s*reference/i, /huurdersreferentie/i],
+    label: 'References required',
+    tip: 'References required: prepare a previous landlord contact',
+    boost: 5,
+  },
+  guarantor_req: {
+    patterns: [/\bborgsteller\b/i, /\bgarantsteller\b/i, /guarantor\s*required/i, /guarantor\s*needed/i],
+    label: 'Guarantor required',
+    tip: null,
+    boost: 0,
+    warning: true,
+  },
+  documents_general: {
+    patterns: [/bewijs van inkomen/i, /\bpaspoort\b/i, /\blegitimatie\b/i, /\bidentiteitsbewijs\b/i, /\bID\s*bewijs\b/i],
+    label: 'Documents explicitly requested',
+    tip: 'Documents requested: prepare ID, payslips, employer letter, bank statements',
+    boost: 3,
   },
 };
 

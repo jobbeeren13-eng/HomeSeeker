@@ -631,7 +631,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     warningSection = '\n\n' + intent.warnings.map(w => `⚠️ ${w.label}`).join('\n');
   }
   if (user && score < 85) {
-    const { tips } = getImprovementTips(listing, user, score);
+    const { tips } = getImprovementTips(listing, user, score, dealScore);
     if (tips.length > 0) {
       boostSection = '\n\n*Boost your application:*\n\n' + tips.map(t => `• ${t.tip}`).join('\n\n');
     }
@@ -641,15 +641,15 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user) {
     let verdict = '';
     if (score >= 80) {
-      verdict = 'Strong match: apply today.';
+      verdict = 'Strong match: apply today, you have a real chance.';
     } else if (score >= 65) {
-      verdict = 'Good match: worth applying.';
+      verdict = 'Good match: worth a strong application.';
     } else if (score >= 50) {
-      verdict = 'Decent match: respond quickly.';
+      verdict = 'Decent match: apply with a guarantor or strong intro.';
     } else if (score >= 35) {
-      verdict = 'Weak match: boost your profile first.';
+      verdict = 'Weak match: address the gaps above before applying.';
     } else {
-      verdict = 'Challenging: significant profile gaps.';
+      verdict = 'Very weak match: significant barriers to this listing.';
     }
     verdictSection = '\n\n' + verdict;
   }
