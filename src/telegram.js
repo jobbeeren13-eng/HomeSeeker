@@ -55,8 +55,10 @@ function summariseTipLabel(text, maxLen = 60) {
 }
 
 function buildSelectionKeyboard(cacheId, tips) {
+  const labels = tips.map(t => summariseTipLabel(t.text));
+  const maxLen = Math.max(...labels.map(l => l.length));
   const rows = tips.map((t, i) => [{
-    text: `${t.selected ? '[x]' : '[]'} ${i + 1}. ${summariseTipLabel(t.text)}`,
+    text: `${t.selected ? '[✓]' : '[ ]'} ${i + 1}. ${labels[i].padEnd(maxLen)}`,
     callback_data: `tgl:${i}`,
   }]);
   rows.push([
@@ -459,7 +461,7 @@ function createBot(useWebhook = false) {
       const selTips = tips.map((t, i) => ({ text: t.tip, selected: i === 0 }));
       const selMsg = await bot.sendMessage(
         chatId,
-        '✉️ *Personalise your letter*\n\nSelect the points you want addressed:\n_(tap to select or deselect)_',
+        '✉️ *Build your letter*\n━━━━━━━━━━━━━━━━━━━━━━\nChoose what to address:\n_(tap to toggle)_',
         { parse_mode: 'Markdown', reply_markup: buildSelectionKeyboard(cacheId, selTips) }
       );
 
@@ -648,11 +650,12 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   clearLetterState(chatId);
 
+  const DIV = '━━━━━━━━━━━━━━━━━━━━━━';
+  const NUM_EMOJI = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'];
+
   function bar(pct) {
-    const total = 10;
-    const filled = Math.round((pct / 100) * total);
-    const dot = pct >= 70 ? '🟩' : pct >= 40 ? '🟨' : '🟥';
-    return dot.repeat(filled) + '⬜'.repeat(total - filled) + `  ${pct}%`;
+    const filled = Math.round((pct / 100) * 20);
+    return '[' + '█'.repeat(filled) + '░'.repeat(20 - filled) + '] ' + pct + '%';
   }
 
   function appLabel(pct) {
@@ -683,40 +686,14 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const isHuur = listing.transactionType === 'huur';
   const monthlyCost = (isHuur && listing.priceNumber) ? estimateMonthlyCost(listing.priceNumber) : null;
   const inkomen = user ? ((user.inkomen || 0) + (user.partner_inkomen || 0)) : 0;
-  const maxHuur = inkomen / 3;
   const price = listing.priceNumber || 0;
-  const incomeRatio = (inkomen > 0 && price > 0) ? Math.round((price / maxHuur) * 10) / 10 : null;
 
-  // Freshness & price drop signals
   const ageMs = listing.listedAt ? Date.now() - new Date(listing.listedAt).getTime() : null;
   const isJustListed = ageMs !== null && !isNaN(ageMs) && ageMs < 60 * 60 * 1000;
   const hasPriceDrop = detectPriceDrop(`${listing.address || ''} ${listing.description || ''}`);
 
-  const lines = [];
-
-  // Source badge + freshness badge — first line
-  let sourceLine = getPlatformBadge(listing.source);
-  if (hasPriceDrop) sourceLine += '  📉 Price reduced';
-  lines.push(sourceLine);
-
-  // Header: address + city on one line
-  const cityStr = cityDisplay || listing.city || '';
-  lines.push(`📍 *${address}${cityStr ? `, ${cityStr}` : ''}*`);
-
-  // Audience badge (expat / student priority)
-  const intentEarly = detectLandlordIntent(listing.description || '');
-  const sigKeys = intentEarly.signals.map(s => s.key);
-  if (sigKeys.includes('expat_with_family')) lines.push('🌍 Expat-friendly listing');
-  else if (sigKeys.includes('students_welcome')) lines.push('🎓 Students welcome');
-  else if (sigKeys.includes('young_professional')) lines.push('💼 Young professionals preferred');
-
-  lines.push('');
-  if (listing.area) lines.push(`• ${listing.area}m²`);
-  lines.push(`• Rent: ${priceStr}${isHuur ? '/mo' : ''}`);
-  if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
-
-  // Landlord warnings & profile mismatch — always, regardless of score
-  const intent = intentEarly;
+  const intent = detectLandlordIntent(listing.description || '');
+  const sigKeys = intent.signals.map(s => s.key);
   const warningKeys = intent.warnings.map(w => w.key);
   const conflicts = [];
   if (user) {
@@ -725,33 +702,67 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     if (warningKeys.includes('family_only') && user.met_partner !== 'ja') conflicts.push('family_only');
     if (warningKeys.includes('working_only') && user.contract_type === 'student') conflicts.push('working_only');
   }
-  if (conflicts.length > 0) {
-    lines.push('');
-    lines.push('⛔ *Possible mismatch: read landlord requirements carefully*');
-  }
 
-  // Scores — Application and Market Value run flush together (no blank between)
-  lines.push('');
-  lines.push(`*Application: ${appLabel(score)}*`);
+  const lines = [];
+
+  // ── Header ──────────────────────────────────────────────
+  let sourceLine = getPlatformBadge(listing.source);
+  if (hasPriceDrop) sourceLine += '  📉 Price reduced';
+  if (isJustListed) sourceLine += '  🔔 New';
+  lines.push(sourceLine);
+  lines.push(DIV);
+
+  // Address (bold, no city)
+  lines.push(`📍 *${address}*`);
+
+  // City • area • rooms
+  const cityStr = cityDisplay || listing.city || '';
+  const detailParts = [];
+  if (cityStr) detailParts.push(`🏙 ${cityStr}`);
+  if (listing.area) detailParts.push(`${listing.area}m²`);
+  if (listing.rooms && listing.rooms > 0) detailParts.push(`${listing.rooms} rooms`);
+  if (detailParts.length) lines.push(detailParts.join('  •  '));
+
+  // Price line
+  const priceParts = [`💰 ${priceStr}${isHuur ? '/mo' : ''}`];
+  if (monthlyCost) priceParts.push(`Est. €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+  lines.push(priceParts.join('  •  '));
+
+  // Audience badge
+  if (sigKeys.includes('expat_with_family')) lines.push('🌍 *Expat-friendly listing*');
+  else if (sigKeys.includes('students_welcome')) lines.push('🎓 *Students welcome*');
+  else if (sigKeys.includes('young_professional')) lines.push('💼 *Young professionals preferred*');
+
+  // Profile mismatch
+  if (conflicts.length > 0) lines.push('⛔ *Possible mismatch: read landlord requirements carefully*');
+
+  // ── Scores ──────────────────────────────────────────────
+  lines.push(DIV);
+  lines.push(`📊 *Application: ${appLabel(score)}*`);
   lines.push(bar(score));
   const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
-  lines.push(`*Market Value: ${dealDisplay}*`);
+  lines.push(`💹 *Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore));
 
-  // Sections: warnings first (deal-breakers), then boost tips, then verdict
+  const coreText = lines.join('\n');
+
+  // ── Warnings ─────────────────────────────────────────────
   let warningSection = '';
-  let boostSection = '';
   if (intent.warnings.length > 0) {
-    warningSection = '\n\n' + intent.warnings.map(w => `⚠️ ${w.label}`).join('\n');
+    warningSection = '\n' + DIV + '\n' + intent.warnings.map(w => `⚠️ ${w.label}`).join('\n');
   }
+
+  // ── Boost tips ───────────────────────────────────────────
+  let boostSection = '';
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score, dealScore);
     if (tips.length > 0) {
-      boostSection = '\n\n*Boost your application:*\n\n' +
-        tips.map((t, i) => `${i + 1}. ${t.tip}`).join('\n\n');
+      boostSection = '\n' + DIV + '\n🎯 *Boost your application*\n\n' +
+        tips.map((t, i) => `${NUM_EMOJI[i] || (i + 1) + '.'} ${t.tip}`).join('\n\n');
     }
   }
 
+  // ── Verdict ──────────────────────────────────────────────
   let verdictSection = '';
   if (user) {
     let verdict = '';
@@ -769,18 +780,15 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     } else {
       verdict = 'Very weak match: significant barriers to this listing.';
     }
-    verdictSection = '\n\n' + verdict;
+    verdictSection = '\n' + DIV + '\n📌 ' + verdict;
   }
 
-  const coreText = lines.join('\n');
-
-  // Full text for sendMessage (max 4000 chars)
+  // ── Assemble ─────────────────────────────────────────────
   let text = coreText + warningSection + boostSection + verdictSection;
   if (text.length > 4000) text = coreText + warningSection + verdictSection;
   if (text.length > 4000) text = coreText + verdictSection;
   if (text.length > 4000) text = text.slice(0, 3997) + '…';
 
-  // Photo caption (max 1024 chars — progressively strip boost tips to fit)
   let photoCaption = coreText + warningSection + boostSection + verdictSection;
   if (photoCaption.length > 1024) photoCaption = coreText + warningSection + verdictSection;
   if (photoCaption.length > 1024) photoCaption = coreText + verdictSection;
