@@ -134,6 +134,10 @@ Absolute rules:
 - No markdown or bold text
 - Never use: reliable, responsible, delighted, ideal, perfect, pleased, I hope, I would love, I am writing to
 - Mention income once only
+- NEVER invent or assume any details not explicitly provided in the user profile
+- NEVER mention an employer name unless it appears in the user description
+- NEVER mention a guarantor unless explicitly stated in the user profile
+- If information is missing, leave it out — do not guess or fabricate
 - Max 150 words
 - Sound like a real person wrote this quickly at their desk`;
 
@@ -145,6 +149,8 @@ Absolute rules:
   if (tenant_quality) lines.push(`As a tenant: ${tenant_quality}`);
   lines.push(`Property: ${address}${city ? `, ${city}` : ''}, €${price}/month.`);
   if (description.length > 50) lines.push(`Landlord notes: ${description.slice(0, 200)}`);
+  if (user.heeft_borg === 'ja') lines.push('Guarantor: available if required.');
+  else lines.push('Do NOT mention guarantors or co-applicants.');
   if (selectedTips && selectedTips.length > 0) {
     const tipsStr = selectedTips.slice(0, 3).join(' | ');
     lines.push(`Weave in these points naturally (one sentence each, never list them): ${tipsStr}`);

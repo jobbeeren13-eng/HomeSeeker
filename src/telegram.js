@@ -18,7 +18,17 @@ const SOURCE_BADGES = {
   huurwoningen: '🏠 Huurwoningen',
   jaap: '🏠 Jaap',
 };
- 
+
+const SOURCE_PLACEHOLDERS = {
+  funda: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Funda',
+  kamernet: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Kamernet',
+  housinganywhere: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=HousingAnywhere',
+  pararius: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Pararius',
+  huurwoningen: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Huurwoningen',
+  jaap: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Jaap',
+};
+const GENERIC_PLACEHOLDER = 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=HomeSeeker';
+
 const LETTER_QUESTIONS = [
   "What's your current living situation and why are you moving?",
   'Tell us about your work situation (employer, contract type, duration).',
@@ -42,14 +52,14 @@ function buildSelectionKeyboard(cacheId, tips) {
     callback_data: `tgl:${i}`,  // 6 bytes max — well under 64-byte limit
   }]);
   rows.push([
-    { text: '✉️ Generate with selected', callback_data: 'alg' },
-    { text: 'Quick letter →', callback_data: `ald:${cacheId}` },
+    { text: '✉️ Write my letter', callback_data: 'alg' },
+    { text: 'Skip →', callback_data: `ald:${cacheId}` },
   ]);
   return { inline_keyboard: rows };
 }
 
 // Shared letter-generation helper used by both ai_letter and alg handlers
-async function generateAndSendLetter(chatId, listing, user, selectedTips) {
+async function generateAndSendLetter(chatId, listing, user, selectedTips, usedIndices) {
   await bot.sendMessage(chatId, '✍️ Generating your letter…');
   try {
     let letter;
@@ -70,6 +80,9 @@ async function generateAndSendLetter(chatId, listing, user, selectedTips) {
       letter = await generateLetterDirect({ listing, user, selectedTips: selectedTips || [] });
     }
     await bot.sendMessage(chatId, letter);
+    if (usedIndices && usedIndices.length > 0) {
+      await bot.sendMessage(chatId, `_Addressed in letter: ${usedIndices.join(', ')}_`, { parse_mode: 'Markdown' });
+    }
   } catch (err) {
     console.error('[letter] Generation error:', err.message);
     await bot.sendMessage(chatId, 'Sorry, could not generate your letter. Please try again later.');
@@ -434,11 +447,11 @@ function createBot(useWebhook = false) {
         return;
       }
 
-      // Show tip-selection keyboard
-      const selTips = tips.map(t => ({ text: t.tip, selected: true }));
+      // Show tip-selection keyboard — only first tip pre-selected
+      const selTips = tips.map((t, i) => ({ text: t.tip, selected: i === 0 }));
       const selMsg = await bot.sendMessage(
         chatId,
-        'Select which tips to include in your letter:\n_(tap any tip to toggle it off)_',
+        '✉️ *Personalise your letter*\nTap the points you want included:',
         { parse_mode: 'Markdown', reply_markup: buildSelectionKeyboard(cacheId, selTips) }
       );
 
@@ -485,7 +498,8 @@ function createBot(useWebhook = false) {
       }
       const user = getUser.get(chatId);
       const selectedTips = state.tips.filter(t => t.selected).map(t => t.text);
-      await generateAndSendLetter(chatId, listing, user, selectedTips);
+      const usedIndices = state.tips.map((t, i) => t.selected ? i + 1 : null).filter(Boolean);
+      await generateAndSendLetter(chatId, listing, user, selectedTips, usedIndices);
       return;
     }
 
@@ -755,16 +769,18 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
 
   const coreText = lines.join('\n');
+
+  // Full text for sendMessage (max 4000 chars)
   let text = coreText + warningSection + boostSection + verdictSection;
-  if (text.length > 4000) {
-    text = coreText + warningSection + verdictSection;
-  }
-  if (text.length > 4000) {
-    text = coreText + verdictSection;
-  }
-  if (text.length > 4000) {
-    text = text.slice(0, 3997) + '…';
-  }
+  if (text.length > 4000) text = coreText + warningSection + verdictSection;
+  if (text.length > 4000) text = coreText + verdictSection;
+  if (text.length > 4000) text = text.slice(0, 3997) + '…';
+
+  // Photo caption (max 1024 chars — progressively strip boost tips to fit)
+  let photoCaption = coreText + warningSection + boostSection + verdictSection;
+  if (photoCaption.length > 1024) photoCaption = coreText + warningSection + verdictSection;
+  if (photoCaption.length > 1024) photoCaption = coreText + verdictSection;
+  if (photoCaption.length > 1024) photoCaption = photoCaption.slice(0, 1021) + '…';
   const cacheId = cacheListing(listing);
  
   const keyboard = {
@@ -780,34 +796,39 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     ],
   };
  
+  const imageUrl = (listing.image && /^https?:\/\//.test(listing.image))
+    ? listing.image
+    : (SOURCE_PLACEHOLDERS[listing.source] || GENERIC_PLACEHOLDER);
+
+  let sent = false;
   try {
-    if (listing.image) {
-      try {
-        await _bot.sendPhoto(chatId, listing.image, {
-          caption: text,
-          parse_mode: 'Markdown',
-          reply_markup: keyboard,
-        });
-      } catch (photoErr) {
-        await _bot.sendMessage(chatId, listing.image + '\n\n' + text, {
-          parse_mode: 'Markdown',
-          reply_markup: keyboard,
-          disable_web_page_preview: false,
-        });
-      }
-    } else {
-      await _bot.sendMessage(chatId, text, {
+    await _bot.sendPhoto(chatId, imageUrl, {
+      caption: photoCaption,
+      parse_mode: 'Markdown',
+      reply_markup: keyboard,
+    });
+    sent = true;
+  } catch (photoErr) {
+    console.warn('[telegram] sendPhoto failed (%s), retrying with placeholder', (photoErr.message || '').slice(0, 80));
+  }
+
+  if (!sent && imageUrl !== GENERIC_PLACEHOLDER) {
+    try {
+      await _bot.sendPhoto(chatId, GENERIC_PLACEHOLDER, {
+        caption: photoCaption,
         parse_mode: 'Markdown',
         reply_markup: keyboard,
-        disable_web_page_preview: false,
       });
-    }
-  } catch (err) {
+      sent = true;
+    } catch (_) {}
+  }
+
+  if (!sent) {
     try {
       await _bot.sendMessage(chatId, text, {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
-        disable_web_page_preview: false,
+        disable_web_page_preview: true,
       });
     } catch (e) {
       console.error(`[telegram] Failed to send alert to ${chatId}:`, e.message);
