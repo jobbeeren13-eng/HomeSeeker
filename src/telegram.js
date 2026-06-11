@@ -47,8 +47,7 @@ const tipSelectionState = new Map();
 const TIP_SEL_TTL = 4 * 60 * 60 * 1000; // 4 hours
 
 // Summarise a tip for use in a button label — strips filler, truncates at word boundary.
-// Max 45 chars so all buttons render at roughly the same width.
-function summariseTipLabel(text, maxLen = 45) {
+function summariseTipLabel(text, maxLen = 60) {
   let s = text.replace(/^(make sure to|verify what is|ensure that|check that|remember to|try to)\s+/i, '');
   if (s.length <= maxLen) return s;
   const cut = s.slice(0, maxLen + 1).replace(/\s+\S*$/, '');
@@ -57,7 +56,7 @@ function summariseTipLabel(text, maxLen = 45) {
 
 function buildSelectionKeyboard(cacheId, tips) {
   const rows = tips.map((t, i) => [{
-    text: `${t.selected ? '[x]' : '[ ]'} ${i + 1}. ${summariseTipLabel(t.text)}`,
+    text: `${t.selected ? '[x]' : '[]'} ${i + 1}. ${summariseTipLabel(t.text)}`,
     callback_data: `tgl:${i}`,
   }]);
   rows.push([
