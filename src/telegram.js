@@ -748,9 +748,8 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score, dealScore);
     if (tips.length > 0) {
-      const SEP = '*- - - - - - - - - - -*';
-      boostSection = '\n\n*Boost your application:*\n' +
-        tips.map((t, i) => (i > 0 ? SEP + '\n' : '') + `${i + 1}. ${t.tip}`).join('\n');
+      boostSection = '\n\n*Boost your application:*\n\n' +
+        tips.map((t, i) => `${i + 1}. ${t.tip}`).join('\n\n');
     }
   }
 

@@ -174,8 +174,8 @@ async function getAITip(listing, user) {
   if (!process.env.ANTHROPIC_API_KEY) return null;
   if (!listing.description || listing.description.length < 200) return null;
 
-  // v2 prefix invalidates cached Dutch tips from old prompt
-  const cacheKey = `aitip2_${listing.fingerprint || listing.url}`;
+  // v3 prefix invalidates tips containing banned words (reliable, highlight, stability)
+  const cacheKey = `aitip3_${listing.fingerprint || listing.url}`;
 
   // Check persistent DB cache
   try {
@@ -195,7 +195,7 @@ async function getAITip(listing, user) {
 
     const msg = await callClaude({
       max_tokens: 80,
-      system: 'You advise tenants on rental applications in the Netherlands. Always respond in English only, never Dutch. Give one single actionable tip. Max 12 words. No preamble, no quotes, no dashes.',
+      system: 'You advise tenants on rental applications in the Netherlands. Always respond in English only, never Dutch. Give one single actionable tip. Max 12 words. No preamble, no quotes, no dashes. Never use: reliable, highlight, stability, ensure, leverage, demonstrate.',
       messages: [{
         role: 'user',
         content: `Listing description (may be Dutch): "${listing.description.slice(0, 400)}"\nTenant profile: ${userProfile || 'professional'}\nWhat is the ONE most important thing to mention in the application? English only.`,
