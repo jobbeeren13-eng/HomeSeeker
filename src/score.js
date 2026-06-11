@@ -79,10 +79,8 @@ function calcTimingAdvantage(listing) {
   if (isNaN(ageMs)) return { score: 60, label: 'Unknown', detail: 'Listing age unknown' };
   const ageMins = ageMs / 60000;
   let score, detail;
-  if (ageMins <= 15) { score = 100; detail = 'Listed just now: apply immediately'; }
-  else if (ageMins <= 60) { score = 80; detail = `Listed ${Math.round(ageMins)} min ago: still early`; }
-  else if (ageMins <= 240) { score = 55; detail = `Listed ${Math.round(ageMins / 60)}h ago: moderate competition`; }
-  else if (ageMins <= 1440) { score = 30; detail = 'Listed today: high competition likely'; }
+  if (ageMins <= 120) { score = 100; detail = 'New listing: apply immediately'; }
+  else if (ageMins <= 1440) { score = 55; detail = 'Listed today: competition is building'; }
   else { score = 10; detail = 'Listing is older: very competitive'; }
   return { score, label: tierLabel(score), detail };
 }
@@ -295,17 +293,12 @@ function getImprovementTips(listing, user, _currentScore, dealScore) {
   if (listing.listedAt) {
     const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
     if (!isNaN(ageMins) && ageMins >= 0) {
-      if (ageMins < 15) {
-        add(timingTips, 'Posted just now: landlords shortlist within 15 minutes, reply immediately');
-      } else if (ageMins < 60) {
-        add(timingTips, `Posted ${Math.round(ageMins)} min ago: shortlist fills fast, apply before the hour`);
-      } else if (ageMins < 240) {
-        add(timingTips, 'Request a viewing slot immediately: landlords fill viewing calendars fast');
+      if (ageMins < 120) {
+        add(timingTips, 'New listing: apply before the shortlist fills');
       } else if (ageMins < 1440) {
-        add(timingTips, `Posted ${Math.round(ageMins / 60)}h ago: many have applied, make your intro count`);
+        add(timingTips, 'Listed today: competition is building, apply now');
       } else {
-        const days = Math.floor(ageMins / 1440);
-        add(timingTips, `Listing is ${days} day${days > 1 ? 's' : ''} old: only apply if you stand out`);
+        add(timingTips, 'Listing has been up a while: make your intro count');
       }
     }
   }

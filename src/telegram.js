@@ -46,10 +46,19 @@ let listingCacheId = 0;
 const tipSelectionState = new Map();
 const TIP_SEL_TTL = 4 * 60 * 60 * 1000; // 4 hours
 
+// Summarise a tip for use in a button label — strips filler, truncates at word boundary.
+// Total button text will be "☑ N. <label>" — keep label ≤ 50 chars so full button fits.
+function summariseTipLabel(text, maxLen = 50) {
+  let s = text.replace(/^(make sure to|verify what is|ensure that|check that|remember to|try to)\s+/i, '');
+  if (s.length <= maxLen) return s;
+  const cut = s.slice(0, maxLen + 1).replace(/\s+\S*$/, '');
+  return (cut || s.slice(0, maxLen)) + '…';
+}
+
 function buildSelectionKeyboard(cacheId, tips) {
   const rows = tips.map((t, i) => [{
-    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${t.text.length > 27 ? t.text.slice(0, 26) + '…' : t.text}`,
-    callback_data: `tgl:${i}`,  // 6 bytes max — well under 64-byte limit
+    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${summariseTipLabel(t.text)}`,
+    callback_data: `tgl:${i}`,
   }]);
   rows.push([
     { text: '✉️ Write my letter', callback_data: 'alg' },
@@ -451,7 +460,7 @@ function createBot(useWebhook = false) {
       const selTips = tips.map((t, i) => ({ text: t.tip, selected: i === 0 }));
       const selMsg = await bot.sendMessage(
         chatId,
-        '✉️ *Personalise your letter*\nTap the points you want included:',
+        '✉️ *Personalise your letter*\n\nSelect the points you want addressed:\n_(tap to select or deselect)_',
         { parse_mode: 'Markdown', reply_markup: buildSelectionKeyboard(cacheId, selTips) }
       );
 
@@ -627,13 +636,11 @@ function getBot() { return bot; }
  
 function listingAgeStr(listing) {
   if (!listing.listedAt) return null;
-  const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
-  if (isNaN(ageMins) || ageMins < 0) return null;
-  if (ageMins < 2) return 'just now';
-  if (ageMins < 60) return `${Math.round(ageMins)}m ago`;
-  const h = Math.floor(ageMins / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+  const ageMs = Date.now() - new Date(listing.listedAt).getTime();
+  if (isNaN(ageMs) || ageMs < 0) return null;
+  if (ageMs < 2 * 60 * 60 * 1000) return 'New listing';
+  if (ageMs < 24 * 60 * 60 * 1000) return 'Listed today';
+  return null;
 }
 
 async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user = null, botOverride = null) {
@@ -741,10 +748,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score, dealScore);
     if (tips.length > 0) {
-      const SEP = '───────────────────';
-      boostSection = '\n\n*Boost your application:*\n' + SEP + '\n' +
-        tips.map((t, i) => `${i + 1}. ${t.tip}`).join('\n' + SEP + '\n') +
-        '\n' + SEP;
+      const SEP = '──────────────────────';
+      boostSection = '\n\n*Boost your application:*\n' +
+        tips.map((t, i) => (i > 0 ? SEP + '\n' : '') + `${i + 1}. ${t.tip}`).join('\n');
     }
   }
 
@@ -753,7 +759,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     let verdict = '';
     const isVeryFresh = ageMs !== null && !isNaN(ageMs) && ageMs < 30 * 60 * 1000;
     if (isVeryFresh && score > 70) {
-      verdict = 'Strong match posted just now: this is your moment.';
+      verdict = 'Strong match — new listing: apply now.';
     } else if (score >= 80) {
       verdict = 'Strong match: apply today, you have a real chance.';
     } else if (score >= 65) {
