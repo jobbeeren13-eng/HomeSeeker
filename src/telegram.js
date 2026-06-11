@@ -3,8 +3,8 @@ const crypto = require('crypto');
 const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings } = require('./database');
 const { generateLetter, generateLetterDirect } = require('./letter');
 const { rowToListing } = require('./scraper');
-const { getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
-const { detectPriceDrop } = require('./deal_score');
+const { calculateScore, getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
+const { calculateDealScore, detectPriceDrop } = require('./deal_score');
  
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
@@ -30,6 +30,51 @@ const letterState = new Map();
 const pendingLinkState = new Map(); // chatId -> true, waiting for email input
 const listingCache = new Map();
 let listingCacheId = 0;
+
+// Tip-selection state for interactive AI letter flow
+// key: `${chatId}:${messageId}`, value: { cacheId, tips: [{text, selected}], expiresAt }
+const tipSelectionState = new Map();
+const TIP_SEL_TTL = 4 * 60 * 60 * 1000; // 4 hours
+
+function buildSelectionKeyboard(cacheId, tips) {
+  const rows = tips.map((t, i) => [{
+    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${t.text.length > 27 ? t.text.slice(0, 26) + '…' : t.text}`,
+    callback_data: `tgl:${i}`,  // 6 bytes max — well under 64-byte limit
+  }]);
+  rows.push([
+    { text: '✉️ Generate with selected', callback_data: 'alg' },
+    { text: 'Quick letter →', callback_data: `ald:${cacheId}` },
+  ]);
+  return { inline_keyboard: rows };
+}
+
+// Shared letter-generation helper used by both ai_letter and alg handlers
+async function generateAndSendLetter(chatId, listing, user, selectedTips) {
+  await bot.sendMessage(chatId, '✍️ Generating your letter…');
+  try {
+    let letter;
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    if (hetznerUrl && adminKey) {
+      const resp = await fetch(`${hetznerUrl}/api/generate-letter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ listing, user, selectedTips: selectedTips || [] }),
+      });
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => '');
+        throw new Error(`Letter proxy HTTP ${resp.status}: ${body}`);
+      }
+      letter = (await resp.json()).letter;
+    } else {
+      letter = await generateLetterDirect({ listing, user, selectedTips: selectedTips || [] });
+    }
+    await bot.sendMessage(chatId, letter);
+  } catch (err) {
+    console.error('[letter] Generation error:', err.message);
+    await bot.sendMessage(chatId, 'Sorry, could not generate your letter. Please try again later.');
+  }
+}
  
 // --- Signed start payload (prevents brute-forcing customer IDs) ---
 function generateStartPayload(customerId) {
@@ -371,39 +416,88 @@ function createBot(useWebhook = false) {
     }
  
     if (data.startsWith('ai_letter:')) {
-      const id = data.replace('ai_letter:', '');
-      const listing = getCachedListing(id);
+      const cacheId = data.replace('ai_letter:', '');
+      const listing = getCachedListing(cacheId);
       if (!listing?.url) {
         return bot.sendMessage(chatId, '❌ Listing expired. Tap AI Letter on a fresh alert.');
       }
       const user = getUser.get(chatId);
-      await bot.sendMessage(chatId, '✍️ Generating your motivation letter…');
-      try {
-        let letter;
-        const hetznerUrl = process.env.HETZNER_URL;
-        const adminKey   = process.env.ADMIN_KEY;
-        if (hetznerUrl && adminKey) {
-          // Proxy to Hetzner — ANTHROPIC_API_KEY lives there, no need to duplicate it to Railway
-          const resp = await fetch(`${hetznerUrl}/api/generate-letter`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-            body: JSON.stringify({ listing, user }),
-          });
-          if (!resp.ok) {
-            const body = await resp.text().catch(() => '');
-            throw new Error(`Letter proxy HTTP ${resp.status}: ${body}`);
-          }
-          const respJson = await resp.json();
-          letter = respJson.letter;
-        } else {
-          // Direct fallback — requires ANTHROPIC_API_KEY on this server
-          letter = await generateLetterDirect({ listing, user });
-        }
-        await bot.sendMessage(chatId, letter);
-      } catch (err) {
-        console.error('[letter] Direct generation error:', err);
-        await bot.sendMessage(chatId, 'Sorry, could not generate your letter. Please try again later.');
+
+      // Compute tips for the selection UI (recomputed fresh so they match listing context)
+      const score = calculateScore(listing, user || {});
+      const dealScore = calculateDealScore(listing);
+      const { tips } = getImprovementTips(listing, user || {}, score, dealScore);
+
+      if (!tips.length) {
+        // No tips available — generate immediately without selection step
+        await generateAndSendLetter(chatId, listing, user, []);
+        return;
       }
+
+      // Show tip-selection keyboard
+      const selTips = tips.map(t => ({ text: t.tip, selected: true }));
+      const selMsg = await bot.sendMessage(
+        chatId,
+        'Select which tips to include in your letter:\n_(tap any tip to toggle it off)_',
+        { parse_mode: 'Markdown', reply_markup: buildSelectionKeyboard(cacheId, selTips) }
+      );
+
+      // Store state keyed by chatId:messageId
+      const stateKey = `${chatId}:${selMsg.message_id}`;
+      tipSelectionState.set(stateKey, { cacheId, tips: selTips, expiresAt: Date.now() + TIP_SEL_TTL });
+      // Lazy cleanup of expired states
+      if (tipSelectionState.size > 200) {
+        const now = Date.now();
+        for (const [k, v] of tipSelectionState) { if (v.expiresAt < now) tipSelectionState.delete(k); }
+      }
+      return;
+    }
+
+    // Toggle a tip checkbox — updates keyboard in-place, no new message
+    if (data.startsWith('tgl:')) {
+      const tipIndex = parseInt(data.split(':')[1]);
+      const stateKey = `${chatId}:${query.message.message_id}`;
+      const state = tipSelectionState.get(stateKey);
+      if (!state || state.expiresAt < Date.now()) return;
+      if (tipIndex >= 0 && tipIndex < state.tips.length) {
+        state.tips[tipIndex].selected = !state.tips[tipIndex].selected;
+        try {
+          await bot.editMessageReplyMarkup(
+            buildSelectionKeyboard(state.cacheId, state.tips),
+            { chat_id: chatId, message_id: query.message.message_id }
+          );
+        } catch (_) {}
+      }
+      return;
+    }
+
+    // Generate letter with selected tips
+    if (data === 'alg') {
+      const stateKey = `${chatId}:${query.message.message_id}`;
+      const state = tipSelectionState.get(stateKey);
+      if (!state || state.expiresAt < Date.now()) {
+        return bot.sendMessage(chatId, '❌ Selection expired. Please tap AI Letter on a fresh alert.');
+      }
+      tipSelectionState.delete(stateKey);
+      const listing = getCachedListing(state.cacheId);
+      if (!listing?.url) {
+        return bot.sendMessage(chatId, '❌ Listing expired. Tap AI Letter on a fresh alert.');
+      }
+      const user = getUser.get(chatId);
+      const selectedTips = state.tips.filter(t => t.selected).map(t => t.text);
+      await generateAndSendLetter(chatId, listing, user, selectedTips);
+      return;
+    }
+
+    // Quick letter — bypass tip selection entirely
+    if (data.startsWith('ald:')) {
+      const cacheId = data.slice(4);
+      const listing = getCachedListing(cacheId);
+      if (!listing?.url) {
+        return bot.sendMessage(chatId, '❌ Listing expired. Tap AI Letter on a fresh alert.');
+      }
+      const user = getUser.get(chatId);
+      await generateAndSendLetter(chatId, listing, user, []);
       return;
     }
  
@@ -633,7 +727,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score, dealScore);
     if (tips.length > 0) {
-      boostSection = '\n\n*Boost your application:*\n\n' + tips.map(t => `• ${t.tip}`).join('\n\n');
+      const SEP = '───────────────────';
+      boostSection = '\n\n*Boost your application:*\n' + SEP + '\n' +
+        tips.map((t, i) => `${i + 1}. ${t.tip}`).join('\n' + SEP + '\n') +
+        '\n' + SEP;
     }
   }
 

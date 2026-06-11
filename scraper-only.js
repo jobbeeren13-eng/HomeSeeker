@@ -123,10 +123,10 @@ app.post('/api/match-now', (req, res) => {
 app.post('/api/generate-letter', async (req, res) => {
   const key = req.headers['x-admin-key'];
   if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
-  const { listing, user } = req.body;
+  const { listing, user, selectedTips } = req.body;
   if (!listing) return res.status(400).json({ error: 'listing required' });
   try {
-    const letter = await generateLetterDirect({ listing, user: user || {} });
+    const letter = await generateLetterDirect({ listing, user: user || {}, selectedTips: selectedTips || [] });
     res.json({ letter });
   } catch (err) {
     console.error('[generate-letter] Error:', err);

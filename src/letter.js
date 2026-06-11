@@ -96,7 +96,7 @@ Rules:
   return stripMarkdown(message.content[0].text);
 }
 
-async function generateLetterDirect({ listing, user }) {
+async function generateLetterDirect({ listing, user, selectedTips = [] }) {
   const rawNaam = (user?.naam || '').trim();
   const noName = !rawNaam || rawNaam.toLowerCase() === 'huurder';
   const naam = noName ? '' : rawNaam;
@@ -145,6 +145,10 @@ Absolute rules:
   if (tenant_quality) lines.push(`As a tenant: ${tenant_quality}`);
   lines.push(`Property: ${address}${city ? `, ${city}` : ''}, €${price}/month.`);
   if (description.length > 50) lines.push(`Landlord notes: ${description.slice(0, 200)}`);
+  if (selectedTips && selectedTips.length > 0) {
+    const tipsStr = selectedTips.slice(0, 3).join(' | ');
+    lines.push(`Weave in these points naturally (one sentence each, never list them): ${tipsStr}`);
+  }
   lines.push(`Write naturally. No AI phrases. No dashes. Max 150 words. Use the exact structure from the system prompt.`);
   if (noName) lines.push(`Sign off with "Kind regards," only (no name).`);
   else lines.push(`Sign off with just the first name: ${firstName}.`);
