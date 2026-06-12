@@ -46,9 +46,12 @@ let listingCacheId = 0;
 const tipSelectionState = new Map();
 const TIP_SEL_TTL = 4 * 60 * 60 * 1000; // 4 hours
 
+const BUTTON_MAX = 28; // total chars per button — fits one line in Telegram without wrapping
+
 function buildSelectionKeyboard(cacheId, tips) {
+  const tipLen = BUTTON_MAX - 5; // "☑ 1. " prefix = 5 chars, leaving 23 for tip text
   const rows = tips.map((t, i) => [{
-    text: `${t.selected ? '☑' : '☐'} Tip ${i + 1}: ${t.text.substring(0, 30).padEnd(30)}`,
+    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${t.text.substring(0, tipLen).padEnd(tipLen)}`,
     callback_data: `tgl:${i}`,
   }]);
   rows.push([{ text: '✉️ Write my letter', callback_data: 'alg' }]);
@@ -780,6 +783,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const imageUrl = (listing.image && /^https?:\/\//.test(listing.image))
     ? listing.image
     : (SOURCE_PLACEHOLDERS[listing.source] || GENERIC_PLACEHOLDER);
+
+  // Debug: confirm colored bars are in the outgoing text
+  console.log('[alert] fullText preview:', fullText.slice(0, 200).replace(/\n/g, '\\n'));
 
   // Try sendPhoto with full text; if caption too long or photo fails, fall back to sendMessage
   let sent = false;
