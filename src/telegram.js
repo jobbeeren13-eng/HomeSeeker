@@ -47,7 +47,7 @@ const tipSelectionState = new Map();
 const TIP_SEL_TTL = 4 * 60 * 60 * 1000; // 4 hours
 
 // Summarise a tip for use in a button label — strips filler, truncates at word boundary.
-function summariseTipLabel(text, maxLen = 60) {
+function summariseTipLabel(text, maxLen = 45) {
   let s = text.replace(/^(make sure to|verify what is|ensure that|check that|remember to|try to)\s+/i, '');
   if (s.length <= maxLen) return s;
   const cut = s.slice(0, maxLen + 1).replace(/\s+\S*$/, '');
@@ -58,13 +58,11 @@ function buildSelectionKeyboard(cacheId, tips) {
   const labels = tips.map(t => summariseTipLabel(t.text));
   const maxLen = Math.max(...labels.map(l => l.length));
   const rows = tips.map((t, i) => [{
-    text: `${t.selected ? '[✓]' : '[ ]'} ${i + 1}. ${labels[i].padEnd(maxLen)}`,
+    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${labels[i].padEnd(maxLen)}`,
     callback_data: `tgl:${i}`,
   }]);
-  rows.push([
-    { text: '✉️ Write my letter', callback_data: 'alg' },
-    { text: 'Skip →', callback_data: `ald:${cacheId}` },
-  ]);
+  rows.push([{ text: '✉️ Write my letter', callback_data: 'alg' }]);
+  rows.push([{ text: 'Skip', callback_data: `ald:${cacheId}` }]);
   return { inline_keyboard: rows };
 }
 
@@ -461,7 +459,7 @@ function createBot(useWebhook = false) {
       const selTips = tips.map((t, i) => ({ text: t.tip, selected: i === 0 }));
       const selMsg = await bot.sendMessage(
         chatId,
-        '✉️ *Build your letter*\n━━━━━━━━━━━━━━━━━━━━━━\nChoose what to address:\n_(tap to toggle)_',
+        '✉️ *Select tips for your letter:*',
         { parse_mode: 'Markdown', reply_markup: buildSelectionKeyboard(cacheId, selTips) }
       );
 
@@ -650,10 +648,13 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   clearLetterState(chatId);
 
-  function bar(pct) {
-    const filled = Math.round((pct / 100) * 20);
-    return '[' + '█'.repeat(filled) + '░'.repeat(20 - filled) + '] ' + pct + '%';
+  function bar(pct, fill) {
+    const filled = Math.round((pct / 100) * 10);
+    return fill.repeat(filled) + '⬜'.repeat(10 - filled) + ' ' + pct + '%';
   }
+
+  function appFill(pct) { return pct >= 70 ? '🟩' : pct >= 40 ? '🟨' : '🟥'; }
+  function dealFill(pct) { return pct >= 60 ? '🟩' : pct >= 35 ? '🟨' : '🟥'; }
 
   function appLabel(pct) {
     if (pct >= 85) return 'Excellent';
@@ -728,10 +729,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
   lines.push('');
   lines.push(`*Application: ${appLabel(score)}*`);
-  lines.push(bar(score));
+  lines.push(bar(score, appFill(score)));
   lines.push('');
   lines.push(`*Market Value: ${dealDisplay}*`);
-  if (dealScore != null) lines.push(bar(dealScore));
+  if (dealScore != null) lines.push(bar(dealScore, dealFill(dealScore)));
 
   // Warnings
   if (intent.warnings.length > 0) {
