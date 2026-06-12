@@ -700,23 +700,23 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   const lines = [];
 
-  // Source badge — plain, no extra badges
+  // Line 1: source badge
   lines.push(getPlatformBadge(listing.source));
 
-  // Address with city
+  // Line 2: address + city, bold
   const cityStr = cityDisplay || listing.city || '';
-  lines.push(`📍 ${address}${cityStr ? ', ' + cityStr : ''}`);
+  lines.push(`📍 *${address}${cityStr ? ', ' + cityStr : ''}*`);
 
-  // Detail bullets
-  if (listing.area) lines.push(`- ${listing.area}m²`);
+  // Bullet details
+  if (listing.area) lines.push(`• ${listing.area}m²`);
   if (isHuur && listing.priceNumber) {
-    lines.push(`- Rent: ${priceStr}/mo`);
-    if (monthlyCost) lines.push(`- Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+    lines.push(`• Rent: ${priceStr}/mo`);
+    if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
   } else {
-    lines.push(`- ${priceStr}${isHuur ? '/mo' : ''}`);
+    lines.push(`• ${priceStr}${isHuur ? '/mo' : ''}`);
   }
 
-  // Audience signals (plain, no divider)
+  // Audience signals
   if (sigKeys.includes('expat_with_family')) lines.push('🌍 Expat-friendly listing');
   else if (sigKeys.includes('students_welcome')) lines.push('🎓 Students welcome');
   else if (sigKeys.includes('young_professional')) lines.push('💼 Young professionals preferred');
@@ -724,32 +724,32 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   // Profile mismatch
   if (conflicts.length > 0) lines.push('⛔ Possible mismatch: read landlord requirements carefully');
 
-  const coreText = lines.join('\n');
-
   // Scores
   const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
-  let scoresSection = `\n\nApplication: ${appLabel(score)}\n${bar(score)}`;
-  scoresSection += `\n\nMarket Value: ${dealDisplay}`;
-  if (dealScore != null) scoresSection += `\n${bar(dealScore)}`;
+  lines.push('');
+  lines.push(`*Application: ${appLabel(score)}*`);
+  lines.push(bar(score));
+  lines.push('');
+  lines.push(`*Market Value: ${dealDisplay}*`);
+  if (dealScore != null) lines.push(bar(dealScore));
 
   // Warnings
-  let warningSection = '';
   if (intent.warnings.length > 0) {
-    warningSection = '\n\n' + intent.warnings.map(w => `⚠️ ${w.label}`).join('\n');
+    lines.push('');
+    intent.warnings.forEach(w => lines.push(`⚠️ ${w.label}`));
   }
 
-  // Boost tips
-  let boostSection = '';
+  // Boost tips — always fully included, never truncated
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score, dealScore);
     if (tips.length > 0) {
-      boostSection = '\n\n*Boost your application:*\n\n' +
-        tips.map((t, i) => `${i + 1}. ${t.tip}`).join('\n\n');
+      lines.push('');
+      lines.push('*Boost your application:*');
+      tips.forEach((t, i) => { lines.push(''); lines.push(`${i + 1}. ${t.tip}`); });
     }
   }
 
   // Verdict
-  let verdictSection = '';
   if (user) {
     let verdict = '';
     const isVeryFresh = ageMs !== null && !isNaN(ageMs) && ageMs < 30 * 60 * 1000;
@@ -766,19 +766,11 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     } else {
       verdict = 'Very weak match: significant barriers to this listing.';
     }
-    verdictSection = '\n\n' + verdict;
+    lines.push('');
+    lines.push(verdict);
   }
 
-  // Assemble
-  let text = coreText + scoresSection + warningSection + boostSection + verdictSection;
-  if (text.length > 4000) text = coreText + scoresSection + warningSection + verdictSection;
-  if (text.length > 4000) text = coreText + scoresSection + verdictSection;
-  if (text.length > 4000) text = text.slice(0, 3997) + '…';
-
-  let photoCaption = coreText + scoresSection + warningSection + boostSection + verdictSection;
-  if (photoCaption.length > 1024) photoCaption = coreText + scoresSection + warningSection + verdictSection;
-  if (photoCaption.length > 1024) photoCaption = coreText + scoresSection + verdictSection;
-  if (photoCaption.length > 1024) photoCaption = photoCaption.slice(0, 1021) + '…';
+  const fullText = lines.join('\n');
   const cacheId = cacheListing(listing);
  
   const keyboard = {
@@ -798,32 +790,20 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     ? listing.image
     : (SOURCE_PLACEHOLDERS[listing.source] || GENERIC_PLACEHOLDER);
 
+  // Try sendPhoto with full text; if caption too long or photo fails, fall back to sendMessage
   let sent = false;
   try {
     await _bot.sendPhoto(chatId, imageUrl, {
-      caption: photoCaption,
+      caption: fullText,
       parse_mode: 'Markdown',
       reply_markup: keyboard,
     });
     sent = true;
-  } catch (photoErr) {
-    console.warn('[telegram] sendPhoto failed (%s), retrying with placeholder', (photoErr.message || '').slice(0, 80));
-  }
-
-  if (!sent && imageUrl !== GENERIC_PLACEHOLDER) {
-    try {
-      await _bot.sendPhoto(chatId, GENERIC_PLACEHOLDER, {
-        caption: photoCaption,
-        parse_mode: 'Markdown',
-        reply_markup: keyboard,
-      });
-      sent = true;
-    } catch (_) {}
-  }
+  } catch (_) {}
 
   if (!sent) {
     try {
-      await _bot.sendMessage(chatId, text, {
+      await _bot.sendMessage(chatId, fullText, {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
         disable_web_page_preview: true,
