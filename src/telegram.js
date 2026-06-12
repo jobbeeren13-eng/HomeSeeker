@@ -46,19 +46,9 @@ let listingCacheId = 0;
 const tipSelectionState = new Map();
 const TIP_SEL_TTL = 4 * 60 * 60 * 1000; // 4 hours
 
-// Summarise a tip for use in a button label — strips filler, truncates at word boundary.
-function summariseTipLabel(text, maxLen = 45) {
-  let s = text.replace(/^(make sure to|verify what is|ensure that|check that|remember to|try to)\s+/i, '');
-  if (s.length <= maxLen) return s;
-  const cut = s.slice(0, maxLen + 1).replace(/\s+\S*$/, '');
-  return (cut || s.slice(0, maxLen)) + '…';
-}
-
 function buildSelectionKeyboard(cacheId, tips) {
-  const labels = tips.map(t => summariseTipLabel(t.text));
-  const maxLen = Math.max(...labels.map(l => l.length));
   const rows = tips.map((t, i) => [{
-    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${labels[i].padEnd(maxLen)}`,
+    text: `${t.selected ? '☑' : '☐'} Tip ${i + 1}: ${t.text.substring(0, 30).padEnd(30)}`,
     callback_data: `tgl:${i}`,
   }]);
   rows.push([{ text: '✉️ Write my letter', callback_data: 'alg' }]);
