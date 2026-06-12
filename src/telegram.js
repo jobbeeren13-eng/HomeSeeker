@@ -650,9 +650,6 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   clearLetterState(chatId);
 
-  const DIV = '━━━━━━━━━━━━━━━━━━━━━━';
-  const NUM_EMOJI = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'];
-
   function bar(pct) {
     const filled = Math.round((pct / 100) * 20);
     return '[' + '█'.repeat(filled) + '░'.repeat(20 - filled) + '] ' + pct + '%';
@@ -689,8 +686,6 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const price = listing.priceNumber || 0;
 
   const ageMs = listing.listedAt ? Date.now() - new Date(listing.listedAt).getTime() : null;
-  const isJustListed = ageMs !== null && !isNaN(ageMs) && ageMs < 60 * 60 * 1000;
-  const hasPriceDrop = detectPriceDrop(`${listing.address || ''} ${listing.description || ''}`);
 
   const intent = detectLandlordIntent(listing.description || '');
   const sigKeys = intent.signals.map(s => s.key);
@@ -705,64 +700,55 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   const lines = [];
 
-  // ── Header ──────────────────────────────────────────────
-  let sourceLine = getPlatformBadge(listing.source);
-  if (hasPriceDrop) sourceLine += '  📉 Price reduced';
-  if (isJustListed) sourceLine += '  🔔 New';
-  lines.push(sourceLine);
-  lines.push(DIV);
+  // Source badge — plain, no extra badges
+  lines.push(getPlatformBadge(listing.source));
 
-  // Address (bold, no city)
-  lines.push(`📍 *${address}*`);
-
-  // City • area • rooms
+  // Address with city
   const cityStr = cityDisplay || listing.city || '';
-  const detailParts = [];
-  if (cityStr) detailParts.push(`🏙 ${cityStr}`);
-  if (listing.area) detailParts.push(`${listing.area}m²`);
-  if (listing.rooms && listing.rooms > 0) detailParts.push(`${listing.rooms} rooms`);
-  if (detailParts.length) lines.push(detailParts.join('  •  '));
+  lines.push(`📍 ${address}${cityStr ? ', ' + cityStr : ''}`);
 
-  // Price line
-  const priceParts = [`💰 ${priceStr}${isHuur ? '/mo' : ''}`];
-  if (monthlyCost) priceParts.push(`Est. €${monthlyCost.toLocaleString('nl-NL')}/mo`);
-  lines.push(priceParts.join('  •  '));
+  // Detail bullets
+  if (listing.area) lines.push(`- ${listing.area}m²`);
+  if (isHuur && listing.priceNumber) {
+    lines.push(`- Rent: ${priceStr}/mo`);
+    if (monthlyCost) lines.push(`- Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+  } else {
+    lines.push(`- ${priceStr}${isHuur ? '/mo' : ''}`);
+  }
 
-  // Audience badge
-  if (sigKeys.includes('expat_with_family')) lines.push('🌍 *Expat-friendly listing*');
-  else if (sigKeys.includes('students_welcome')) lines.push('🎓 *Students welcome*');
-  else if (sigKeys.includes('young_professional')) lines.push('💼 *Young professionals preferred*');
+  // Audience signals (plain, no divider)
+  if (sigKeys.includes('expat_with_family')) lines.push('🌍 Expat-friendly listing');
+  else if (sigKeys.includes('students_welcome')) lines.push('🎓 Students welcome');
+  else if (sigKeys.includes('young_professional')) lines.push('💼 Young professionals preferred');
 
   // Profile mismatch
-  if (conflicts.length > 0) lines.push('⛔ *Possible mismatch: read landlord requirements carefully*');
-
-  // ── Scores ──────────────────────────────────────────────
-  lines.push(DIV);
-  lines.push(`📊 *Application: ${appLabel(score)}*`);
-  lines.push(bar(score));
-  const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
-  lines.push(`💹 *Market Value: ${dealDisplay}*`);
-  if (dealScore != null) lines.push(bar(dealScore));
+  if (conflicts.length > 0) lines.push('⛔ Possible mismatch: read landlord requirements carefully');
 
   const coreText = lines.join('\n');
 
-  // ── Warnings ─────────────────────────────────────────────
+  // Scores
+  const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
+  let scoresSection = `\n\nApplication: ${appLabel(score)}\n${bar(score)}`;
+  scoresSection += `\n\nMarket Value: ${dealDisplay}`;
+  if (dealScore != null) scoresSection += `\n${bar(dealScore)}`;
+
+  // Warnings
   let warningSection = '';
   if (intent.warnings.length > 0) {
-    warningSection = '\n' + DIV + '\n' + intent.warnings.map(w => `⚠️ ${w.label}`).join('\n');
+    warningSection = '\n\n' + intent.warnings.map(w => `⚠️ ${w.label}`).join('\n');
   }
 
-  // ── Boost tips ───────────────────────────────────────────
+  // Boost tips
   let boostSection = '';
   if (user && score < 85) {
     const { tips } = getImprovementTips(listing, user, score, dealScore);
     if (tips.length > 0) {
-      boostSection = '\n' + DIV + '\n🎯 *Boost your application*\n\n' +
-        tips.map((t, i) => `${NUM_EMOJI[i] || (i + 1) + '.'} ${t.tip}`).join('\n\n');
+      boostSection = '\n\n*Boost your application:*\n\n' +
+        tips.map((t, i) => `${i + 1}. ${t.tip}`).join('\n\n');
     }
   }
 
-  // ── Verdict ──────────────────────────────────────────────
+  // Verdict
   let verdictSection = '';
   if (user) {
     let verdict = '';
@@ -780,18 +766,18 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     } else {
       verdict = 'Very weak match: significant barriers to this listing.';
     }
-    verdictSection = '\n' + DIV + '\n📌 ' + verdict;
+    verdictSection = '\n\n' + verdict;
   }
 
-  // ── Assemble ─────────────────────────────────────────────
-  let text = coreText + warningSection + boostSection + verdictSection;
-  if (text.length > 4000) text = coreText + warningSection + verdictSection;
-  if (text.length > 4000) text = coreText + verdictSection;
+  // Assemble
+  let text = coreText + scoresSection + warningSection + boostSection + verdictSection;
+  if (text.length > 4000) text = coreText + scoresSection + warningSection + verdictSection;
+  if (text.length > 4000) text = coreText + scoresSection + verdictSection;
   if (text.length > 4000) text = text.slice(0, 3997) + '…';
 
-  let photoCaption = coreText + warningSection + boostSection + verdictSection;
-  if (photoCaption.length > 1024) photoCaption = coreText + warningSection + verdictSection;
-  if (photoCaption.length > 1024) photoCaption = coreText + verdictSection;
+  let photoCaption = coreText + scoresSection + warningSection + boostSection + verdictSection;
+  if (photoCaption.length > 1024) photoCaption = coreText + scoresSection + warningSection + verdictSection;
+  if (photoCaption.length > 1024) photoCaption = coreText + scoresSection + verdictSection;
   if (photoCaption.length > 1024) photoCaption = photoCaption.slice(0, 1021) + '…';
   const cacheId = cacheListing(listing);
  
