@@ -460,7 +460,8 @@ function listingAgeStr(listing) {
   if (!listing.listedAt) return null;
   const ageMs = Date.now() - new Date(listing.listedAt).getTime();
   if (isNaN(ageMs) || ageMs < 0) return null;
-  if (ageMs < 2 * 60 * 60 * 1000) return 'New listing';
+  if (ageMs < 30 * 60 * 1000) return 'Just listed';
+  if (ageMs < 2 * 60 * 60 * 1000) return 'New today';
   if (ageMs < 24 * 60 * 60 * 1000) return 'Listed today';
   return null;
 }
@@ -523,12 +524,16 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
 
   const lines = [];
+  const freshnessStr = listingAgeStr(listing);
 
   // Line 1: source badge + transaction type
   const typeLabel = listing.transactionType === 'huur' ? '🏠 Rental' : '🏡 For sale';
   lines.push(`${getPlatformBadge(listing.source)} · ${typeLabel}`);
 
-  // Line 2: address + city, bold
+  // Line 2: freshness (always show if available)
+  if (freshnessStr) lines.push(`⏱ *${freshnessStr}*`);
+
+  // Line 3: address + city, bold
   const cityStr = cityDisplay || listing.city || '';
   lines.push(`📍 *${address}${cityStr ? ', ' + cityStr : ''}*`);
 
@@ -536,7 +541,17 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (listing.area) lines.push(`• ${listing.area}m²`);
   if (isHuur && listing.priceNumber) {
     lines.push(`• Rent: ${priceStr}/mo`);
+    if (listing.area && listing.priceNumber) {
+      const ppm2 = Math.round(listing.priceNumber / listing.area);
+      lines.push(`• ${ppm2}/m²`);
+    }
     if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+  } else if (!isHuur && listing.priceNumber) {
+    lines.push(`• ${priceStr}`);
+    if (listing.area && listing.priceNumber) {
+      const ppm2 = Math.round(listing.priceNumber / listing.area);
+      lines.push(`• ${ppm2}/m²`);
+    }
   } else {
     lines.push(`• ${priceStr}${isHuur ? '/mo' : ''}`);
   }
@@ -546,8 +561,11 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   else if (sigKeys.includes('students_welcome')) lines.push('🎓 Students welcome');
   else if (sigKeys.includes('young_professional')) lines.push('💼 Young professionals preferred');
 
-  // Profile mismatch
-  if (conflicts.length > 0) lines.push('⛔ Possible mismatch: read landlord requirements carefully');
+  // Profile mismatch BEFORE scores so it is seen immediately
+  if (conflicts.length > 0) {
+    lines.push('');
+    lines.push('⛔ *Possible profile mismatch — read landlord requirements carefully*');
+  }
 
   // Scores
   const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
@@ -558,36 +576,59 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore, dealFill(dealScore)));
 
+  // Expensive market warning
+  if (dealScore != null && dealScore < 25) {
+    lines.push('');
+    lines.push('Priced significantly above market - negotiate or verify what is included in the rent');
+  }
+
   // Warnings
   if (intent.warnings.length > 0) {
     lines.push('');
     intent.warnings.forEach(w => lines.push(`⚠️ ${w.label}`));
   }
 
-  // Tips — always shown, padded to at least 3 with universal fallbacks
+  // Tips
   if (user) {
-    const FALLBACK_TIPS = [
-      'Respond within the hour — speed signals seriousness',
-      'Mention your move-in date is flexible',
-      'Attach all documents in one PDF for instant submission',
-    ];
-    const { tips } = getImprovementTips(listing, user, score, dealScore);
-    const displayTips = [...tips];
-    for (const ft of FALLBACK_TIPS) {
-      if (displayTips.length >= 3) break;
-      if (!displayTips.some(t => t.tip === ft)) displayTips.push({ tip: ft, category: 'general' });
+    if (isHuur) {
+      const { tips } = getImprovementTips(listing, user, score, dealScore);
+      lines.push('');
+      lines.push('*Tips:*');
+      tips.slice(0, 5).forEach((t, i) => { lines.push(''); lines.push(`${i + 1}. ${t.tip}`); });
+    } else {
+      // Buyer-specific tips for koop listings
+      const buyerTips = [];
+      if (listing.area && listing.priceNumber) {
+        const ppm2 = Math.round(listing.priceNumber / listing.area);
+        const cityLower = (listing.city || '').toLowerCase().replace(/-/g, '');
+        const BENCHMARKS = { amsterdam: 6800, utrecht: 5100, rotterdam: 4200, denhaag: 4400, haarlem: 5200, eindhoven: 3800, leiden: 4900, delft: 4600, groningen: 3100, maastricht: 3200 };
+        const benchmark = BENCHMARKS[cityLower] || null;
+        if (benchmark && ppm2 > benchmark * 1.10) {
+          buyerTips.push(`At ${ppm2}/m² you are paying above the ${cityStr || 'local'} average - get a valuation before bidding`);
+        } else if (benchmark && ppm2 < benchmark * 0.90) {
+          buyerTips.push(`At ${ppm2}/m² this is below market - move quickly, expect competing bids`);
+        }
+      }
+      const cityLower2 = (listing.city || '').toLowerCase().replace(/-/g, '');
+      const hotBuyerCities = ['amsterdam', 'utrecht', 'haarlem'];
+      if (hotBuyerCities.includes(cityLower2)) {
+        buyerTips.push(`Overbidding is common in ${cityStr || 'this area'} - budget 8-15% above asking`);
+      } else {
+        buyerTips.push('Overbidding of 3-8% is typical in this area - research recent sold prices on Kadaster');
+      }
+      buyerTips.push('Always include financing condition (voorbehoud financiering) and check VvE costs if apartment - can add 200+ euros per month');
+      lines.push('');
+      lines.push('*Buyer Tips:*');
+      buyerTips.slice(0, 3).forEach((t, i) => { lines.push(''); lines.push(`${i + 1}. ${t}`); });
     }
-    lines.push('');
-    lines.push('*Tips:*');
-    displayTips.forEach((t, i) => { lines.push(''); lines.push(`${i + 1}. ${t.tip}`); });
   }
 
   // Verdict
   if (user) {
     let verdict = '';
-    const isVeryFresh = ageMs !== null && !isNaN(ageMs) && ageMs < 30 * 60 * 1000;
-    if (isVeryFresh && score > 70) {
-      verdict = 'Strong match — new listing: apply now.';
+    const isJustListed = ageMs !== null && !isNaN(ageMs) && ageMs < 60 * 60 * 1000;
+    if (score >= 80 && isJustListed) {
+      verdict = 'Top match and just listed - apply immediately, do not wait.';
     } else if (score >= 80) {
       verdict = 'Strong match: apply today, you have a real chance.';
     } else if (score >= 65) {

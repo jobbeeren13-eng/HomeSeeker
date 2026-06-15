@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,123 +7,64 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --green: #00e5a0;
-    --bg: #080b0f;
-    --bg2: #0f1318;
-    --bg3: #141920;
-    --border: rgba(255,255,255,0.07);
-    --muted: #7a8494;
-    --text: #e8edf3;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
-
-  header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; }
-  header a { color: var(--muted); text-decoration: none; font-size: 14px; }
-  header a:hover { color: var(--text); }
-  .header-title { font-size: 18px; font-weight: 700; color: var(--text); }
-  .header-title span { color: var(--green); }
-
-  .container { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
-
-  h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
-  h1 span { color: var(--green); }
-  .subtitle { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
-
-  .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 24px; scrollbar-width: none; }
-  .tab-bar::-webkit-scrollbar { display: none; }
-  .tab-btn {
-    flex-shrink: 0;
-    padding: 9px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg2);
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-    font-family: inherit;
-  }
-  .tab-btn:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
-  .tab-btn.active { background: var(--green); border-color: var(--green); color: #080b0f; font-weight: 700; }
-
-  .panel { display: none; }
-  .panel.active { display: block; }
-
-  .form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
-  .form-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
-
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-  .field input, .field textarea, .field select {
-    width: 100%;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); }
-  .field textarea { resize: vertical; min-height: 90px; }
-
-  .btn {
-    background: var(--green);
-    color: #080b0f;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 11px 24px;
-    border: none;
-    border-radius: 9px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn:hover { opacity: 0.88; }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-  .response-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-top: 20px; display: none; }
-  .response-card.visible { display: block; }
-  .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .response-header h3 { font-size: 15px; font-weight: 600; }
-  .copy-btn {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: inherit;
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .copy-btn:hover { border-color: var(--green); color: var(--green); }
-  .copy-btn.copied { color: var(--green); border-color: var(--green); }
-
-  .response-body { font-size: 14px; line-height: 1.7; color: var(--text); }
-  .response-body h2 { font-size: 15px; font-weight: 700; color: var(--green); margin-top: 18px; margin-bottom: 8px; }
-  .response-body h2:first-child { margin-top: 0; }
-  .response-body ul, .response-body ol { padding-left: 20px; margin: 6px 0 12px; }
-  .response-body li { margin-bottom: 4px; }
-  .response-body p { margin-bottom: 10px; }
-
-  .spinner { display: none; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; margin-left: 12px; }
-  .spinner.visible { display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .btn-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .error-msg { color: #ff6b6b; font-size: 13px; margin-top: 10px; display: none; }
-  .error-msg.visible { display: block; }
-
-  .listing-badge { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--muted); margin-bottom: 14px; display: none; }
-  .listing-badge.visible { display: flex; gap: 8px; align-items: center; }
-  .listing-badge strong { color: var(--text); }
+  :root { --green:#00e5a0;--bg:#080b0f;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
+  header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+  header a{color:var(--muted);text-decoration:none;font-size:14px}
+  header a:hover{color:var(--text)}
+  .header-title{font-size:18px;font-weight:700}
+  .header-title span{color:var(--green)}
+  .container{max-width:860px;margin:0 auto;padding:32px 20px 100px}
+  h1{font-size:26px;font-weight:700;margin-bottom:6px}
+  h1 span{color:var(--green)}
+  .subtitle{color:var(--muted);font-size:15px;margin-bottom:28px}
+  .tab-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:24px;scrollbar-width:none}
+  .tab-bar::-webkit-scrollbar{display:none}
+  .tab-btn{flex-shrink:0;padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+  .tab-btn:hover{border-color:rgba(255,255,255,0.15);color:var(--text)}
+  .tab-btn.active{background:var(--green);border-color:var(--green);color:#080b0f;font-weight:700}
+  .panel{display:none}
+  .panel.active{display:block}
+  .form-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+  .form-card h2{font-size:16px;font-weight:600;margin-bottom:6px}
+  .form-card .desc{font-size:13px;color:var(--muted);margin-bottom:18px}
+  .field{margin-bottom:14px}
+  .field label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .char-count{font-size:12px;color:var(--muted)}
+  .field input,.field textarea,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:10px 14px;outline:none;transition:border-color .15s}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green)}
+  .field textarea{resize:vertical;min-height:100px}
+  .btn{background:var(--green);color:#080b0f;font-family:inherit;font-size:14px;font-weight:700;padding:11px 24px;border:none;border-radius:9px;cursor:pointer;transition:opacity .15s}
+  .btn:hover{opacity:.88}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-example{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:13px;font-weight:500;padding:8px 14px;border-radius:7px;cursor:pointer;transition:all .15s}
+  .btn-example:hover{border-color:rgba(0,229,160,0.4);color:var(--green)}
+  .response-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:20px;display:none}
+  .response-card.visible{display:block}
+  .response-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+  .response-header h3{font-size:15px;font-weight:600}
+  .resp-actions{display:flex;gap:8px}
+  .copy-btn,.followup-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s}
+  .copy-btn:hover,.followup-btn:hover{border-color:var(--green);color:var(--green)}
+  .copy-btn.copied{color:var(--green);border-color:var(--green)}
+  .response-body{font-size:14px;line-height:1.75;color:var(--text)}
+  .response-body h2{font-size:15px;font-weight:700;color:var(--green);margin-top:20px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+  .response-body h2:first-child{margin-top:0}
+  .response-body ul{padding-left:20px;margin:6px 0 14px}
+  .response-body li{margin-bottom:5px}
+  .response-body p{margin-bottom:10px}
+  .response-body strong{color:var(--text);font-weight:700}
+  .spinner{display:none;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin-left:12px}
+  .spinner.visible{display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .btn-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .error-msg{color:#ff6b6b;font-size:13px;margin-top:10px;display:none}
+  .error-msg.visible{display:block}
+  .listing-badge{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--muted);margin-bottom:14px;display:none}
+  .listing-badge.visible{display:flex;gap:8px;align-items:center}
+  .listing-badge strong{color:var(--text)}
+  footer{text-align:center;padding:24px;font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -134,152 +75,217 @@
 
 <div class="container">
   <h1><span>AI</span> Rental Assistant</h1>
-  <p class="subtitle">Five specialised tools to help you find, view, negotiate, and move into your Dutch rental.</p>
+  <p class="subtitle">Five specialist tools to help you find, view, negotiate, and move into your Dutch rental.</p>
 
   <div id="listing-badge" class="listing-badge"></div>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab(1, this)">1. Application Coach</button>
-    <button class="tab-btn" onclick="switchTab(2, this)">2. Viewing Prep</button>
-    <button class="tab-btn" onclick="switchTab(3, this)">3. Negotiation Scripts</button>
-    <button class="tab-btn" onclick="switchTab(4, this)">4. Lease Analyser</button>
-    <button class="tab-btn" onclick="switchTab(5, this)">5. Move-In Checklist</button>
+    <button class="tab-btn active" onclick="switchTab(1,this)">1. Application Coach</button>
+    <button class="tab-btn" onclick="switchTab(2,this)">2. Viewing Prep</button>
+    <button class="tab-btn" onclick="switchTab(3,this)">3. Negotiation</button>
+    <button class="tab-btn" onclick="switchTab(4,this)">4. Lease Analyser</button>
+    <button class="tab-btn" onclick="switchTab(5,this)">5. Move-In Checklist</button>
   </div>
 
-  <!-- Tab 1: Application Coach -->
+  <!-- Tab 1 -->
   <div id="panel-1" class="panel active">
     <div class="form-card">
       <h2>Application Coach</h2>
+      <p class="desc">Paste the listing and get a strategy, first contact message, and document order tailored to this landlord.</p>
       <div class="field">
-        <label>Listing description or URL (paste the listing text)</label>
-        <textarea id="t1-listing" rows="4" placeholder="Paste the listing description here — address, price, rooms, any details from the ad..."></textarea>
+        <label>Listing description <span class="char-count" id="cc-1-1">0 / 2000</span></label>
+        <textarea id="t1-listing" rows="5" placeholder="2-bedroom apartment, €1,450/mo, Amsterdam Oud-West. Description says: working professionals preferred, no students, available immediately, registration possible. Listed 2 hours ago." oninput="updateCount(this,'cc-1-1')"></textarea>
       </div>
       <div class="field">
         <label>Your goal for this application</label>
-        <input id="t1-goal" type="text" placeholder="e.g. Stand out from 30+ applicants, I need to move in by July 1">
+        <input id="t1-goal" type="text" placeholder="e.g. Stand out from 30+ applicants, need to move in by July 1">
       </div>
       <div class="btn-row">
         <button class="btn" onclick="submit(1)">Get Strategy</button>
+        <button class="btn-example" onclick="fillExample(1)">Try an example</button>
         <div class="spinner" id="spin-1"></div>
       </div>
       <div class="error-msg" id="err-1"></div>
     </div>
     <div class="response-card" id="resp-1">
-      <div class="response-header"><h3>Application Strategy</h3><button class="copy-btn" onclick="copyResp(1)">Copy</button></div>
+      <div class="response-header"><h3>Application Strategy</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(1)">Copy</button><button class="followup-btn" onclick="followUp(1)">Follow-up</button></div></div>
       <div class="response-body" id="body-1"></div>
     </div>
   </div>
 
-  <!-- Tab 2: Viewing Prep -->
+  <!-- Tab 2 -->
   <div id="panel-2" class="panel">
     <div class="form-card">
       <h2>Viewing Preparation</h2>
+      <p class="desc">Get 10 tailored questions, a physical inspection checklist, and exactly how to stand out from other viewers.</p>
       <div class="field">
-        <label>Property address or listing description</label>
-        <textarea id="t2-listing" rows="3" placeholder="e.g. 2-bedroom apartment, 75m2, 3rd floor, no lift, service costs €120/month, central Amsterdam..."></textarea>
+        <label>Property description <span class="char-count" id="cc-2-1">0 / 2000</span></label>
+        <textarea id="t2-listing" rows="4" placeholder="75m2 apartment, 3rd floor, no lift, €1,350/mo, service costs €110/mo, central Utrecht. Energy label B, furnished. Building 1960s." oninput="updateCount(this,'cc-2-1')"></textarea>
       </div>
       <div class="field">
-        <label>Your main concern or what you want to check</label>
+        <label>Main concern or what you want to check</label>
         <input id="t2-goal" type="text" placeholder="e.g. Damp problems, noisy neighbours, VvE health, hidden costs">
       </div>
       <div class="btn-row">
         <button class="btn" onclick="submit(2)">Prepare My Viewing</button>
+        <button class="btn-example" onclick="fillExample(2)">Try an example</button>
         <div class="spinner" id="spin-2"></div>
       </div>
       <div class="error-msg" id="err-2"></div>
     </div>
     <div class="response-card" id="resp-2">
-      <div class="response-header"><h3>Viewing Guide</h3><button class="copy-btn" onclick="copyResp(2)">Copy</button></div>
+      <div class="response-header"><h3>Viewing Guide</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(2)">Copy</button><button class="followup-btn" onclick="followUp(2)">Follow-up</button></div></div>
       <div class="response-body" id="body-2"></div>
     </div>
   </div>
 
-  <!-- Tab 3: Negotiation Scripts -->
+  <!-- Tab 3 -->
   <div id="panel-3" class="panel">
     <div class="form-card">
       <h2>Negotiation Scripts</h2>
+      <p class="desc">Honest market assessment plus word-for-word scripts for rent, lease terms, and repairs.</p>
       <div class="field">
         <label>What do you want to negotiate?</label>
-        <input id="t3-goal" type="text" placeholder="e.g. Lower rent by €100, remove the no-pets clause, get 2 months free for signing a 2-year lease">
+        <input id="t3-goal" type="text" placeholder="e.g. Lower rent by €100/mo, remove the no-pets clause, get kitchen repainted before move-in">
       </div>
       <div class="field">
-        <label>Your situation (be specific — helps the AI tailor the script)</label>
-        <textarea id="t3-situation" rows="3" placeholder="e.g. The apartment has been on Pararius for 3 weeks. I have all docs ready and can move in immediately. Market rent in this area is €200 lower..."></textarea>
+        <label>Your situation <span class="char-count" id="cc-3-1">0 / 2000</span></label>
+        <textarea id="t3-situation" rows="3" placeholder="The apartment has been on Pararius for 3 weeks. I have all docs ready and can move in immediately. I found comparable 2-bed apartments in the same street for €200 less." oninput="updateCount(this,'cc-3-1')"></textarea>
       </div>
       <div class="btn-row">
-        <button class="btn" onclick="submit(3)">Write My Script</button>
+        <button class="btn" onclick="submit(3)">Write My Scripts</button>
+        <button class="btn-example" onclick="fillExample(3)">Try an example</button>
         <div class="spinner" id="spin-3"></div>
       </div>
       <div class="error-msg" id="err-3"></div>
     </div>
     <div class="response-card" id="resp-3">
-      <div class="response-header"><h3>Negotiation Scripts</h3><button class="copy-btn" onclick="copyResp(3)">Copy</button></div>
+      <div class="response-header"><h3>Negotiation Scripts</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(3)">Copy</button><button class="followup-btn" onclick="followUp(3)">Follow-up</button></div></div>
       <div class="response-body" id="body-3"></div>
     </div>
   </div>
 
-  <!-- Tab 4: Lease Analyser -->
+  <!-- Tab 4 -->
   <div id="panel-4" class="panel">
     <div class="form-card">
       <h2>Lease Analyser</h2>
+      <p class="desc">Paste your lease and get a clause-by-clause RAG analysis, your Dutch law rights, and what to ask the landlord to change.</p>
       <div class="field">
-        <label>Paste your lease text (or the key clauses you want checked)</label>
-        <textarea id="t4-lease" rows="8" placeholder="Paste the full lease or the clauses you are unsure about. The more detail, the more specific the analysis..."></textarea>
+        <label>Paste your lease text <span class="char-count" id="cc-4-1">0 / 2000</span></label>
+        <textarea id="t4-lease" rows="9" placeholder="Paste the full lease or the key clauses you want checked. The more detail, the more specific the analysis. Example clauses to paste: deposit amount, notice period, rent increase method, maintenance responsibilities, service costs, subletting rules..." oninput="updateCount(this,'cc-4-1')"></textarea>
       </div>
       <div class="btn-row">
         <button class="btn" onclick="submit(4)">Analyse Lease</button>
+        <button class="btn-example" onclick="fillExample(4)">Try an example</button>
         <div class="spinner" id="spin-4"></div>
       </div>
       <div class="error-msg" id="err-4"></div>
     </div>
     <div class="response-card" id="resp-4">
-      <div class="response-header"><h3>Lease Analysis</h3><button class="copy-btn" onclick="copyResp(4)">Copy</button></div>
+      <div class="response-header"><h3>Lease Analysis</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(4)">Copy</button><button class="followup-btn" onclick="followUp(4)">Follow-up</button></div></div>
       <div class="response-body" id="body-4"></div>
     </div>
   </div>
 
-  <!-- Tab 5: Move-In Checklist -->
+  <!-- Tab 5 -->
   <div id="panel-5" class="panel">
     <div class="form-card">
       <h2>Move-In Checklist Generator</h2>
+      <p class="desc">Get a room-by-room checklist, meter reading instructions, gemeente registration steps, and a template email to your landlord.</p>
       <div class="field">
         <label>Property type</label>
         <select id="t5-type">
           <option value="apartment">Apartment</option>
           <option value="house">House (eengezinswoning)</option>
           <option value="studio">Studio</option>
-          <option value="shared">Shared house (room)</option>
+          <option value="shared room">Shared house (room)</option>
         </select>
       </div>
       <div class="field">
-        <label>Number of rooms</label>
-        <input id="t5-rooms" type="text" placeholder="e.g. 2 bedrooms, 1 bathroom, kitchen, living room">
+        <label>Rooms (describe what is in the property)</label>
+        <input id="t5-rooms" type="text" placeholder="e.g. 2 bedrooms, 1 bathroom, open kitchen, living room, storage room, balcony">
       </div>
       <div class="field">
-        <label>Anything special about your move-in situation?</label>
-        <textarea id="t5-extra" rows="2" placeholder="e.g. Moving from abroad, no furniture yet, need to register at gemeente within 5 days..."></textarea>
+        <label>Anything special about your move? <span class="char-count" id="cc-5-1">0 / 2000</span></label>
+        <textarea id="t5-extra" rows="2" placeholder="e.g. Moving from Germany, first time in the Netherlands, no furniture yet, need gemeente registration within 5 days for my work permit." oninput="updateCount(this,'cc-5-1')"></textarea>
       </div>
       <div class="btn-row">
         <button class="btn" onclick="submit(5)">Generate Checklist</button>
+        <button class="btn-example" onclick="fillExample(5)">Try an example</button>
         <div class="spinner" id="spin-5"></div>
       </div>
       <div class="error-msg" id="err-5"></div>
     </div>
     <div class="response-card" id="resp-5">
-      <div class="response-header"><h3>Move-In Checklist</h3><button class="copy-btn" onclick="copyResp(5)">Copy</button></div>
+      <div class="response-header"><h3>Move-In Checklist</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(5)">Copy</button><button class="followup-btn" onclick="followUp(5)">Follow-up</button></div></div>
       <div class="response-body" id="body-5"></div>
     </div>
   </div>
 </div>
 
+<footer>Powered by Claude AI</footer>
+
 <script>
-let activeTab = 1;
 let chatId = null;
 let listingContext = '';
-let lastResponses = {};
+const lastResponses = {};
+
+const EXAMPLES = {
+  1: {
+    listing: '2-bedroom apartment, 78m2, €1,450/mo + €120 service costs, Amsterdam Oud-West. Ground floor. Energy label C. Description: working professionals preferred, no students, no pets. Registration (BRP) possible. Available from 1 August. Building managed by Van der Linden Vastgoed.',
+    goal: 'Stand out from many applicants  -  I have all my docs ready and a permanent contract at ASML'
+  },
+  2: {
+    listing: '65m2 apartment, 3rd floor, no lift, €1,200/mo, service costs €95/mo, Rotterdam Kralingen. 1970s building, energy label D, partially furnished, 1 bedroom, small balcony. VvE active.',
+    goal: 'Worried about energy costs and whether the building is well-maintained'
+  },
+  3: {
+    goal: 'Ask for €100/mo rent reduction',
+    situation: 'The apartment at Keizersgracht 234 has been on Pararius for 4 weeks. Asking rent is €1,600/mo. I found 3 comparable apartments on the same canal for €1,450-1,500. I have a permanent contract, all docs ready, and can move in immediately  -  which is flexible for me. I am a quiet single professional.'
+  },
+  4: {
+    lease: `RENTAL AGREEMENT\nRent: €1,350 per month\nDeposit: 3 months rent (€4,050)\nLease start: 1 September 2024\nFixed term: 12 months, then month-to-month\nNotice period: 2 months for tenant, 1 month for landlord\nRent increase: 8% annually at landlord's discretion\nMaintenance: All repairs under €500 are tenant's responsibility\nService costs: €150/mo all-in (internet, water, general cleaning)\nSubletting: Not permitted under any circumstances\nPets: Not allowed without written permission\nRegistration: Tenant may not register at this address with the gemeente\nKey clause: If property is sold, tenant must vacate within 60 days`
+  },
+  5: {
+    type: 'apartment',
+    rooms: '2 bedrooms, 1 bathroom, open kitchen/living room, hallway, small storage room, ground floor with small terrace',
+    extra: 'Moving from the UK, first apartment in the Netherlands, need BSN registration, no furniture so everything is new'
+  }
+};
+
+function fillExample(tab) {
+  const ex = EXAMPLES[tab];
+  if (!ex) return;
+  if (tab === 1) {
+    document.getElementById('t1-listing').value = ex.listing;
+    document.getElementById('t1-goal').value = ex.goal;
+    updateCount(document.getElementById('t1-listing'), 'cc-1-1');
+  } else if (tab === 2) {
+    document.getElementById('t2-listing').value = ex.listing;
+    document.getElementById('t2-goal').value = ex.goal;
+    updateCount(document.getElementById('t2-listing'), 'cc-2-1');
+  } else if (tab === 3) {
+    document.getElementById('t3-goal').value = ex.goal;
+    document.getElementById('t3-situation').value = ex.situation;
+    updateCount(document.getElementById('t3-situation'), 'cc-3-1');
+  } else if (tab === 4) {
+    document.getElementById('t4-lease').value = ex.lease;
+    updateCount(document.getElementById('t4-lease'), 'cc-4-1');
+  } else if (tab === 5) {
+    document.getElementById('t5-type').value = ex.type;
+    document.getElementById('t5-rooms').value = ex.rooms;
+    document.getElementById('t5-extra').value = ex.extra;
+    updateCount(document.getElementById('t5-extra'), 'cc-5-1');
+  }
+}
+
+function updateCount(el, ccId) {
+  const cc = document.getElementById(ccId);
+  if (cc) cc.textContent = `${el.value.length} / 2000`;
+}
 
 function getParams() {
-  const p = new URLSearchParams(window.location.search);
+  const p = new URLSearchParams(location.search);
   chatId = p.get('chat_id') || null;
   const listingId = p.get('listing') || null;
   if (listingId) {
@@ -288,15 +294,18 @@ function getParams() {
       .then(data => {
         if (data && data.listing) {
           const l = data.listing;
-          listingContext = `${l.address || ''} ${l.city || ''} - ${l.price || ''} - ${l.description || ''}`.trim();
+          listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
           const badge = document.getElementById('listing-badge');
-          badge.innerHTML = `<strong>Listing loaded:</strong> ${l.address || l.url} &mdash; ${l.price || ''}`;
+          badge.innerHTML = `<strong>Listing loaded:</strong> ${l.address || l.url} - ${l.price || ''}`;
           badge.classList.add('visible');
+          document.getElementById('t1-listing').value = listingContext.slice(0, 800);
+          updateCount(document.getElementById('t1-listing'), 'cc-1-1');
         }
       }).catch(() => {});
   }
 }
 
+let activeTab = 1;
 function switchTab(n, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -314,16 +323,16 @@ function buildMessage(tab) {
       return `${goal ? 'Goal: ' + goal + '\n\n' : ''}Listing: ${listing || listingContext}`;
     }
     case 2: {
-      const listing = document.getElementById('t2-listing').value.trim();
+      const listing = document.getElementById('t2-listing').value.trim() || listingContext;
       const concern = document.getElementById('t2-goal').value.trim();
-      if (!listing && !listingContext) return null;
-      return `Property: ${listing || listingContext}${concern ? '\n\nMain concern: ' + concern : ''}`;
+      if (!listing) return null;
+      return `Property: ${listing}${concern ? '\n\nMain concern: ' + concern : ''}`;
     }
     case 3: {
       const goal = document.getElementById('t3-goal').value.trim();
       const situation = document.getElementById('t3-situation').value.trim();
-      if (!goal || !situation) return null;
-      return `Goal: ${goal}\n\nSituation: ${situation}`;
+      if (!goal) return null;
+      return `Negotiation goal: ${goal}${situation ? '\n\nSituation: ' + situation : ''}`;
     }
     case 4: {
       const lease = document.getElementById('t4-lease').value.trim();
@@ -334,26 +343,23 @@ function buildMessage(tab) {
       const type = document.getElementById('t5-type').value;
       const rooms = document.getElementById('t5-rooms').value.trim();
       const extra = document.getElementById('t5-extra').value.trim();
-      return `Property type: ${type}. Rooms: ${rooms || 'not specified'}.${extra ? ' Additional context: ' + extra : ''}`;
+      return `Property type: ${type}. Rooms: ${rooms || 'standard layout'}.${extra ? ' Additional context: ' + extra : ''}`;
     }
     default: return null;
   }
 }
 
-const PLACEHOLDERS = {
-  1: 'Please fill in the listing description.',
+const ERRORS = {
+  1: 'Please paste the listing description.',
   2: 'Please describe the property.',
-  3: 'Please fill in both your goal and situation.',
+  3: 'Please fill in what you want to negotiate.',
   4: 'Please paste at least 40 characters of lease text.',
-  5: 'Please fill in the number of rooms.',
+  5: 'Please describe the rooms in the property.',
 };
 
 async function submit(tab) {
   const msg = buildMessage(tab);
-  if (!msg) {
-    showErr(tab, PLACEHOLDERS[tab] || 'Please fill in the required fields.');
-    return;
-  }
+  if (!msg) { showErr(tab, ERRORS[tab] || 'Please fill in the required fields.'); return; }
   hideErr(tab);
   setLoading(tab, true);
   try {
@@ -379,28 +385,33 @@ async function submit(tab) {
 function renderResponse(tab, text) {
   const body = document.getElementById(`body-${tab}`);
   const card = document.getElementById(`resp-${tab}`);
-  body.innerHTML = parseMarkdown(text);
+  body.innerHTML = renderMarkdown(text);
   card.classList.add('visible');
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function parseMarkdown(text) {
-  let html = text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, (match) => {
-    if (!match.startsWith('<ul>') && !match.startsWith('<ol>')) return `<ul>${match}</ul>`;
-    return match;
+function renderMarkdown(text) {
+  let s = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  // Convert bullet lines to <ul><li>
+  s = s.replace(/((?:^[-*] .+\n?)+)/gm, match => {
+    const items = match.trim().split('\n').map(l => `<li>${l.replace(/^[-*] /,'')}</li>`).join('');
+    return `<ul>${items}</ul>`;
   });
-  html = html.replace(/<\/ul>\s*<ul>/g, '');
-  html = html.replace(/([^>\n].+)(\n|$)/g, (m, p1) => {
-    if (p1.startsWith('<')) return m;
-    return `<p>${p1}</p>`;
+  // Convert numbered lines to <ol><li>
+  s = s.replace(/((?:^\d+\. .+\n?)+)/gm, match => {
+    const items = match.trim().split('\n').map(l => `<li>${l.replace(/^\d+\. /,'')}</li>`).join('');
+    return `<ol>${items}</ol>`;
   });
-  return html;
+  // Wrap remaining plain-text lines as <p>
+  s = s.split('\n').map(line => {
+    if (!line.trim()) return '';
+    if (/^<(h2|ul|ol|li|p)/.test(line.trim())) return line;
+    return `<p>${line}</p>`;
+  }).join('');
+  return s;
 }
 
 function showErr(tab, msg) {
@@ -408,9 +419,7 @@ function showErr(tab, msg) {
   el.textContent = msg;
   el.classList.add('visible');
 }
-function hideErr(tab) {
-  document.getElementById(`err-${tab}`).classList.remove('visible');
-}
+function hideErr(tab) { document.getElementById(`err-${tab}`).classList.remove('visible'); }
 function setLoading(tab, on) {
   document.getElementById(`spin-${tab}`).classList.toggle('visible', on);
   document.querySelectorAll(`#panel-${tab} .btn`).forEach(b => b.disabled = on);
@@ -425,6 +434,16 @@ function copyResp(tab) {
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
   }).catch(() => {});
+}
+
+function followUp(tab) {
+  const fields = { 1: 't1-listing', 2: 't2-listing', 3: 't3-situation', 4: 't4-lease', 5: 't5-extra' };
+  const fieldId = fields[tab];
+  if (!fieldId) return;
+  const el = document.getElementById(fieldId);
+  el.value = 'Following up on the above: ';
+  el.focus();
+  el.setSelectionRange(el.value.length, el.value.length);
 }
 
 getParams();

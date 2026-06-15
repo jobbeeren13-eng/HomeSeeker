@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Dashboard — HomeSeeker</title>
+  <title>My Dashboard  -  HomeSeeker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -70,9 +70,46 @@
     /* Sub status nav */
     .section-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
 
+    /* Journey progress bar */
+    .journey-bar { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; }
+    .journey-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); margin-bottom: 14px; }
+    .journey-steps { display: flex; align-items: center; gap: 0; }
+    .journey-step { flex: 1; text-align: center; position: relative; }
+    .journey-step::after { content: ''; position: absolute; top: 11px; left: 50%; width: 100%; height: 2px; background: var(--border); z-index: 0; }
+    .journey-step:last-child::after { display: none; }
+    .journey-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--bg3); border: 2px solid var(--border); margin: 0 auto 6px; position: relative; z-index: 1; }
+    .journey-step.done .journey-dot { background: var(--green); border-color: var(--green); }
+    .journey-step.active .journey-dot { background: rgba(0,229,160,0.15); border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,229,160,0.12); }
+    .journey-step-name { font-size: 11px; color: var(--muted); font-weight: 500; }
+    .journey-step.active .journey-step-name { color: var(--green); font-weight: 700; }
+    .journey-step.done .journey-step-name { color: var(--text); }
+
+    /* Quick stats row */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .stat-value { font-size: 24px; font-weight: 800; color: var(--green); margin-bottom: 2px; }
+    .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Next action card */
+    .next-action { background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.18); border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 14px; }
+    .next-action-icon { font-size: 22px; flex-shrink: 0; }
+    .next-action-title { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 3px; }
+    .next-action-desc { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+    /* Notes field */
+    .notes-field { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: inherit; font-size: 12px; padding: 6px 10px; margin-top: 6px; resize: none; outline: none; transition: border-color .15s; }
+    .notes-field:focus { border-color: rgba(0,229,160,0.4); }
+    .notes-saved { font-size: 11px; color: var(--green); margin-top: 3px; display: none; }
+
+    /* Export */
+    .export-btn { font-family: inherit; font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 7px; background: var(--bg3); border: 1px solid var(--border); color: var(--muted); cursor: pointer; transition: all .15s; }
+    .export-btn:hover { border-color: var(--green); color: var(--green); }
+
     @media (max-width: 700px) {
       .dash-grid { grid-template-columns: 1fr; }
       .tools-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .journey-step-name { font-size: 10px; }
     }
     @media (max-width: 400px) { .tools-grid { grid-template-columns: 1fr 1fr; } }
   </style>
@@ -100,6 +137,34 @@
 
     <h1 id="user-name">My HomeSeeker</h1>
     <p class="user-sub" id="user-sub"></p>
+
+    <!-- Journey bar -->
+    <div class="journey-bar">
+      <div class="journey-label">Your Journey</div>
+      <div class="journey-steps" id="journey-steps">
+        <div class="journey-step" data-phase="searching"><div class="journey-dot"></div><div class="journey-step-name">Searching</div></div>
+        <div class="journey-step" data-phase="applying"><div class="journey-dot"></div><div class="journey-step-name">Applying</div></div>
+        <div class="journey-step" data-phase="viewing"><div class="journey-dot"></div><div class="journey-step-name">Viewing</div></div>
+        <div class="journey-step" data-phase="negotiating"><div class="journey-dot"></div><div class="journey-step-name">Negotiating</div></div>
+        <div class="journey-step" data-phase="signed"><div class="journey-dot"></div><div class="journey-step-name">Signed</div></div>
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-value" id="stat-seen">0</div><div class="stat-label">Listings seen</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-applied">0</div><div class="stat-label">Applications</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-viewing">0</div><div class="stat-label">Viewings</div></div>
+    </div>
+
+    <!-- Next action -->
+    <div class="next-action" id="next-action">
+      <div class="next-action-icon">🎯</div>
+      <div>
+        <div class="next-action-title" id="next-action-title">Recommended next step</div>
+        <div class="next-action-desc" id="next-action-desc">Loading your recommendation...</div>
+      </div>
+    </div>
 
     <div class="dash-grid">
 
@@ -129,7 +194,10 @@
 
       <!-- Quick tools -->
       <div class="card full-width">
-        <h2>Tools</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="margin:0">Tools</h2>
+          <button class="export-btn" onclick="exportSummary()">Export summary</button>
+        </div>
         <div class="tools-grid">
           <a href="/how-scores-work" class="tool-card">
             <div class="tool-icon">📖</div>
@@ -198,16 +266,70 @@
     }
   }
 
+  let _tracker = [];
+  let _favorites = [];
+  let _notes = {};
+
   function render({ user, favorites, tracker }) {
     document.getElementById('loading-state').classList.add('hidden');
     document.getElementById('main').classList.remove('hidden');
+    _tracker = tracker || [];
+    _favorites = favorites || [];
+
+    // Load saved notes from localStorage
+    try { _notes = JSON.parse(localStorage.getItem('hs_notes_' + chatId) || '{}'); } catch(e) { _notes = {}; }
 
     document.getElementById('user-name').textContent = user.naam ? `Hi, ${user.naam.split(' ')[0]}` : 'My HomeSeeker';
     const sub = [user.locatie ? cap(user.locatie.replace(/-/g, ' ')) : null, user.type ? user.type : null, user.betaald ? 'Active subscription' : null].filter(Boolean).join(' · ');
     document.getElementById('user-sub').textContent = sub;
 
-    renderFavorites(favorites);
-    renderTracker(tracker);
+    renderStats(_tracker, _favorites);
+    renderJourney(_tracker);
+    renderNextAction(_tracker, _favorites);
+    renderFavorites(_favorites);
+    renderTracker(_tracker);
+  }
+
+  function renderStats(tracker, favorites) {
+    const applied = tracker.filter(t => ['applied','viewing','accepted','rejected'].includes(t.status)).length;
+    const viewings = tracker.filter(t => ['viewing','accepted'].includes(t.status)).length;
+    document.getElementById('stat-seen').textContent = favorites.length + tracker.length;
+    document.getElementById('stat-applied').textContent = applied;
+    document.getElementById('stat-viewing').textContent = viewings;
+  }
+
+  function renderJourney(tracker) {
+    const phases = ['searching', 'applying', 'viewing', 'negotiating', 'signed'];
+    let phaseIdx = 0;
+    if (tracker.some(t => t.status === 'accepted')) phaseIdx = 3;
+    else if (tracker.some(t => t.status === 'viewing')) phaseIdx = 2;
+    else if (tracker.some(t => t.status === 'applied')) phaseIdx = 1;
+    if (tracker.some(t => t.status === 'signed')) phaseIdx = 4;
+
+    document.querySelectorAll('.journey-step').forEach((el, i) => {
+      el.classList.remove('done', 'active');
+      if (i < phaseIdx) el.classList.add('done');
+      else if (i === phaseIdx) el.classList.add('active');
+    });
+  }
+
+  const NEXT_ACTIONS = {
+    0: { title: 'Set up your search alerts', desc: 'You have no applications yet. Set your filters in My Filters and make sure HomeSeeker alerts are active so you can respond to listings the moment they appear.' },
+    1: { title: 'Keep applying - response rates are low', desc: 'You have sent applications. The Dutch rental market is competitive. Aim to apply to every matching listing within the hour and keep your documents ready. Most applicants need 10-30 applications before a viewing.' },
+    2: { title: 'Prepare for your viewing', desc: 'You have a viewing coming up. Use the Viewing Prep tab in the AI Rental Assistant to get 10 tailored questions and a physical inspection checklist.' },
+    3: { title: 'Review your lease before signing', desc: 'You are in negotiation or your application was accepted. Use the Lease Analyser tab to check every clause before you sign. Pay special attention to rent increase method and the deposit amount.' },
+    4: { title: 'Plan your move-in', desc: 'Congratulations! Generate your move-in checklist with the AI assistant, photograph every room on day one, read your meter readings, and register at the gemeente within 5 working days.' },
+  };
+
+  function renderNextAction(tracker, favorites) {
+    let phaseIdx = 0;
+    if (tracker.some(t => t.status === 'signed')) phaseIdx = 4;
+    else if (tracker.some(t => t.status === 'accepted')) phaseIdx = 3;
+    else if (tracker.some(t => t.status === 'viewing')) phaseIdx = 2;
+    else if (tracker.some(t => t.status === 'applied')) phaseIdx = 1;
+    const action = NEXT_ACTIONS[phaseIdx];
+    document.getElementById('next-action-title').textContent = action.title;
+    document.getElementById('next-action-desc').textContent = action.desc;
   }
 
   function renderFavorites(favorites) {
@@ -249,19 +371,72 @@
     tracker.slice(0, 8).forEach(t => {
       const row = document.createElement('div');
       row.className = 'listing-row';
+      row.style.flexDirection = 'column';
+      row.style.alignItems = 'stretch';
       const statusOpts = ['applied','viewing','accepted','rejected'].map(s =>
         `<option value="${s}" ${t.status === s ? 'selected' : ''}>${cap(s)}</option>`
       ).join('');
+      const urlKey = encodeURIComponent(t.url);
+      const savedNote = _notes[t.url] || '';
       row.innerHTML = `
-        ${t.image && t.image.startsWith('http') ? `<img class="listing-thumb" src="${esc(t.image)}" onerror="this.style.display='none'" alt="" />` : `<div class="listing-thumb no-img">🏠</div>`}
-        <div class="listing-info">
-          <div class="listing-addr">${esc(t.address || t.url)}</div>
-          <div class="listing-meta">${esc(t.price || '')} &nbsp;<span class="status-badge status-${t.status}">${t.status}</span></div>
+        <div style="display:flex;align-items:center;gap:14px">
+          ${t.image && t.image.startsWith('http') ? `<img class="listing-thumb" src="${esc(t.image)}" onerror="this.style.display='none'" alt="" />` : `<div class="listing-thumb no-img">🏠</div>`}
+          <div class="listing-info">
+            <div class="listing-addr">${esc(t.address || t.url)}</div>
+            <div class="listing-meta">${esc(t.price || '')} &nbsp;<span class="status-badge status-${t.status}">${t.status}</span></div>
+          </div>
+          <div class="listing-actions">
+            <select class="status-select" onchange="updateStatus('${esc(t.url)}', this.value)">${statusOpts}</select>
+          </div>
         </div>
-        <div class="listing-actions">
-          <select class="status-select" onchange="updateStatus('${esc(t.url)}', this.value)">${statusOpts}</select>
+        <div style="padding-left:58px">
+          <textarea class="notes-field" rows="2" placeholder="Add notes (viewings, landlord info, impressions)..." data-url="${esc(t.url)}" onblur="saveNote(this)">${esc(savedNote)}</textarea>
+          <div class="notes-saved" id="ns-${urlKey}">Saved</div>
         </div>`;
       list.appendChild(row);
+    });
+  }
+
+  function saveNote(textarea) {
+    const url = textarea.dataset.url;
+    _notes[url] = textarea.value;
+    try { localStorage.setItem('hs_notes_' + chatId, JSON.stringify(_notes)); } catch(e) {}
+    const indicator = document.getElementById('ns-' + encodeURIComponent(url));
+    if (indicator) { indicator.style.display = 'block'; setTimeout(() => { indicator.style.display = 'none'; }, 1500); }
+  }
+
+  function exportSummary() {
+    const lines = ['HomeSeeker Summary', '==================', ''];
+    lines.push(`Listings seen: ${document.getElementById('stat-seen').textContent}`);
+    lines.push(`Applications sent: ${document.getElementById('stat-applied').textContent}`);
+    lines.push(`Viewings: ${document.getElementById('stat-viewing').textContent}`);
+    lines.push('');
+    if (_tracker.length) {
+      lines.push('Applications:');
+      _tracker.forEach(t => {
+        const note = _notes[t.url] ? ` | Note: ${_notes[t.url]}` : '';
+        lines.push(`- [${(t.status||'applied').toUpperCase()}] ${t.address || t.url} ${t.price ? '(' + t.price + ')' : ''}${note}`);
+      });
+      lines.push('');
+    }
+    if (_favorites.length) {
+      lines.push('Saved listings:');
+      _favorites.forEach(f => {
+        const l = f.listing || {};
+        lines.push(`- ${l.address || f.url} ${l.price ? '(' + l.price + ')' : ''}`);
+      });
+    }
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.export-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Export summary'; }, 2000);
+    }).catch(() => {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'homeseeker-summary.txt';
+      a.click();
     });
   }
 

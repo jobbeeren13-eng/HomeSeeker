@@ -84,7 +84,7 @@ app.get('/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 's
 app.post('/api/filters', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!checkFilterRateLimit(clientIp)) {
-    return res.status(429).json({ error: 'Too many requests — please wait before submitting again' });
+    return res.status(429).json({ error: 'Too many requests - please wait before submitting again' });
   }
   try {
     const b = req.body;
@@ -577,6 +577,28 @@ app.post('/api/bid-advisor', async (req, res) => {
   } catch (err) {
     console.error('[api/bid-advisor]', err.message);
     res.status(500).json({ error: 'Bid advice generation failed. Please try again.' });
+  }
+});
+
+// AI letter modification — proxies to Hetzner
+app.post('/api/modify-letter-web', async (req, res) => {
+  const { letter, instruction } = req.body;
+  if (!letter || !instruction) return res.status(400).json({ error: 'letter and instruction required' });
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    if (!hetznerUrl || !adminKey) return res.status(503).json({ error: 'AI service not configured' });
+    const r = await fetch(`${hetznerUrl}/api/modify-letter`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+      body: JSON.stringify({ letter, instruction }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Hetzner error');
+    return res.json(data);
+  } catch (err) {
+    console.error('[api/modify-letter-web]', err.message);
+    res.status(500).json({ error: 'Letter modification failed. Please try again.' });
   }
 });
 

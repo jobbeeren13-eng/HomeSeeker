@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Letter Generator — HomeSeeker</title>
+  <title>Letter Generator  -  HomeSeeker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -90,9 +90,15 @@
     }
     .letter-box h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
     #letter-text { font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: var(--text); }
-    .letter-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .letter-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
     .copy-feedback { font-size: 12px; color: var(--green); margin-left: 8px; opacity: 0; transition: opacity .3s; }
     .copy-feedback.show { opacity: 1; }
+    .word-count { font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .word-count.warn { color: #ffb347; font-weight: 600; }
+    .letter-modify { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .btn-modify { background: var(--bg3); border: 1px solid var(--border); color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all .15s; }
+    .btn-modify:hover { border-color: rgba(0,229,160,0.4); color: var(--green); }
+    .btn-modify:disabled { opacity: .4; cursor: not-allowed; }
 
     /* Apply package teaser */
     .package-teaser {
@@ -159,7 +165,7 @@
     <!-- Tip selection -->
     <section id="tips-section">
       <h2>What to address in your letter</h2>
-      <p class="section-sub">Select the points most relevant to you — or keep all checked.</p>
+      <p class="section-sub">Select the points most relevant to you  -  or keep all checked.</p>
       <div class="tip-list" id="tip-list"></div>
     </section>
 
@@ -180,18 +186,24 @@
     <div class="letter-box" id="letter-box">
       <h3>Your application letter</h3>
       <div id="letter-text"></div>
+      <div class="word-count" id="word-count"></div>
+      <div class="letter-modify">
+        <button class="btn-modify" id="btn-shorter" onclick="modifyLetter('Make this letter shorter  -  aim for 120 words maximum, keep the key points')">Shorter</button>
+        <button class="btn-modify" id="btn-personal" onclick="modifyLetter('Make this letter more personal and warm  -  add one genuine sentence about what specifically appeals about this home')">More personal</button>
+      </div>
       <div class="letter-actions">
         <button class="btn-secondary" onclick="copyLetter()">
-          📋 Copy letter<span class="copy-feedback" id="copy-feedback">Copied!</span>
+          📋 Copy<span class="copy-feedback" id="copy-feedback">Copied!</span>
         </button>
-        <button class="btn-secondary" onclick="downloadLetter()">⬇ Download .txt</button>
+        <button class="btn-secondary" onclick="shareWhatsApp()">📱 WhatsApp</button>
+        <button class="btn-secondary" onclick="downloadLetter()">⬇ Download</button>
       </div>
     </div>
 
     <!-- Full package teaser -->
     <div class="package-teaser" id="package-teaser">
       <h3>🚀 Want the full application package?</h3>
-      <p>Get your motivation letter + a personal intro paragraph + a WhatsApp one-liner + a financial summary card — all in one click.</p>
+      <p>Get your motivation letter + a personal intro paragraph + a WhatsApp one-liner + a financial summary card  -  all in one click.</p>
       <a href="#" id="package-link" class="btn-package">Create full package →</a>
     </div>
 
@@ -210,7 +222,12 @@
   const valueLabel = p => p >= 60 ? 'Good deal' : p >= 40 ? 'Fair price' : 'Expensive';
   const cityFmt = c => c ? c.replace(/-/g, ' ').replace(/\b\w/g, x => x.toUpperCase()) : '';
 
-  let state = { tips: [], cacheId: null };
+  const FIXED_TIPS = [
+    { tip: 'Why this specific home appeals to you', category: 'general' },
+    { tip: 'Your move-in timeline and document readiness', category: 'documents' },
+  ];
+
+  let state = { tips: [], cacheId: null, listing: null };
 
   async function init() {
     const params = new URLSearchParams(location.search);
@@ -236,6 +253,7 @@
   function render({ listing, tips, score, dealScore }) {
     document.getElementById('loading-state').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
+    state.listing = listing;
 
     // Listing card
     const img = document.getElementById('listing-img');
@@ -261,13 +279,10 @@
       scoreRow.innerHTML += `<span class="badge ${cls}">Market: ${valueLabel(dealScore)}</span>`;
     }
 
-    // Tips — use defaults if none returned so Generate is never blocked
-    const DEFAULT_TIPS = [
-      { tip: 'Who you are and your current situation', category: 'general' },
-      { tip: 'Why this specific home appeals to you', category: 'general' },
-      { tip: 'When you can move in and that your documents are ready', category: 'documents' },
-    ];
-    state.tips = (tips.length > 0 ? tips : DEFAULT_TIPS).map(t => ({ ...t, selected: true }));
+    // Always exactly 4 tips: first 2 dynamic, last 2 always fixed
+    const dynamicTips = tips.slice(0, 2).map(t => ({ ...t, selected: true }));
+    const fixedTips = FIXED_TIPS.map(t => ({ ...t, selected: true }));
+    state.tips = [...dynamicTips, ...fixedTips];
     renderTips();
   }
 
@@ -311,10 +326,7 @@
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Generation failed');
 
-      document.getElementById('letter-text').textContent = data.letter;
-      const box = document.getElementById('letter-box');
-      box.style.display = 'block';
-      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showLetter(data.letter);
       document.getElementById('package-teaser').style.display = 'block';
     } catch (e) {
       alert(e.message || 'Letter generation failed. Please try again.');
@@ -325,14 +337,52 @@
     }
   }
 
+  function showLetter(text) {
+    document.getElementById('letter-text').textContent = text;
+    const box = document.getElementById('letter-box');
+    box.style.display = 'block';
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    const wc = document.getElementById('word-count');
+    wc.textContent = `~${words} words`;
+    wc.className = words > 250 ? 'word-count warn' : 'word-count';
+    if (words > 250) wc.textContent += ' - this letter may be too long. Use "Shorter" below.';
+  }
+
+  async function modifyLetter(instruction) {
+    const currentText = document.getElementById('letter-text').textContent;
+    if (!currentText) return;
+    ['btn-shorter', 'btn-personal'].forEach(id => { const b = document.getElementById(id); if (b) b.disabled = true; });
+    document.getElementById('generate-label').style.display = 'none';
+    document.getElementById('generate-spinner').style.display = '';
+    try {
+      const resp = await fetch('/api/modify-letter-web', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ letter: currentText, instruction }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Modification failed');
+      showLetter(data.letter);
+    } catch (e) {
+      alert(e.message || 'Modification failed. Please try again.');
+    } finally {
+      ['btn-shorter', 'btn-personal'].forEach(id => { const b = document.getElementById(id); if (b) b.disabled = false; });
+      document.getElementById('generate-label').style.display = '';
+      document.getElementById('generate-spinner').style.display = 'none';
+    }
+  }
+
   function copyLetter() {
     const text = document.getElementById('letter-text').textContent;
     navigator.clipboard.writeText(text).then(() => {
       const fb = document.getElementById('copy-feedback');
+      const btn = fb.closest('button');
+      const originalText = btn.childNodes[0].textContent;
+      btn.childNodes[0].textContent = 'Copied! ';
       fb.classList.add('show');
-      setTimeout(() => fb.classList.remove('show'), 2000);
+      setTimeout(() => { btn.childNodes[0].textContent = originalText; fb.classList.remove('show'); }, 2000);
     }).catch(() => {
-      // Fallback for older browsers
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
@@ -340,6 +390,13 @@
       document.execCommand('copy');
       document.body.removeChild(ta);
     });
+  }
+
+  function shareWhatsApp() {
+    const text = document.getElementById('letter-text').textContent;
+    const address = state.listing ? (state.listing.address || 'the property') : 'the property';
+    const msg = `Here is my application letter for ${address}:\n\n${text}`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
   }
 
   function downloadLetter() {

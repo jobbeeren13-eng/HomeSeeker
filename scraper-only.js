@@ -9,7 +9,7 @@ const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const ADMIN_KEY   = process.env.ADMIN_KEY;
-const { generateLetterDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse } = require('./src/letter');
+const { generateLetterDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect } = require('./src/letter');
 const PORT        = parseInt(process.env.MATCH_NOW_PORT || '3001', 10);
 
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
@@ -234,6 +234,21 @@ app.post('/api/generate-buy-assistant', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('[generate-buy-assistant] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Letter modification proxy
+app.post('/api/modify-letter', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { letter, instruction } = req.body;
+  if (!letter || !instruction) return res.status(400).json({ error: 'letter and instruction required' });
+  try {
+    const modified = await modifyLetterDirect({ letter, instruction });
+    res.json({ letter: modified });
+  } catch (err) {
+    console.error('[modify-letter] Error:', err);
     res.status(500).json({ error: err.message });
   }
 });

@@ -20,17 +20,17 @@ async function sendWelcomeEmail(email, naam, customerId) {
   await r.emails.send({
     from: 'HomeSeeker <support@homeseeker.dev>',
     to: email,
-    subject: 'Welcome to HomeSeeker — Activate your Telegram alerts',
+    subject: 'Welcome to HomeSeeker - Activate your Telegram alerts',
     html: `
       <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#111">
         <h2 style="color:#00e5a0">Hi ${naam || 'there'} 👋</h2>
-        <p>Your 7-day HomeSeeker trial is active. We monitor <strong>Funda, Kamernet, and HousingAnywhere</strong> — 24/7, across 19 Dutch cities. Click the button below to activate your personal Telegram alerts:</p>
+        <p>Your 7-day HomeSeeker trial is active. We monitor <strong>Funda, Kamernet, and HousingAnywhere</strong> - 24/7, across 19 Dutch cities. Click the button below to activate your personal Telegram alerts:</p>
         <div style="text-align:center;margin:32px 0">
           <a href="${telegramLink}" style="background:#00e5a0;color:#000;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
             📱 Activate Telegram Alerts
           </a>
         </div>
-        <p><strong>This link is personal</strong> — it securely connects your payment to your Telegram account. Do not share it.</p>
+        <p><strong>This link is personal</strong> - it securely connects your payment to your Telegram account. Do not share it.</p>
         <ol>
           <li>Click the button above</li>
           <li>Telegram opens the HomeSeeker bot</li>

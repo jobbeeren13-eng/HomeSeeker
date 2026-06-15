@@ -79,10 +79,21 @@ function calcTimingAdvantage(listing) {
   if (isNaN(ageMs)) return { score: 60, label: 'Unknown', detail: 'Listing age unknown' };
   const ageMins = ageMs / 60000;
   let score, detail;
-  if (ageMins <= 120) { score = 100; detail = 'New listing: apply immediately'; }
+  if (ageMins <= 30) { score = 100; detail = 'Just listed: apply in the next 30 minutes'; }
+  else if (ageMins <= 120) { score = 100; detail = 'New listing: apply immediately'; }
   else if (ageMins <= 1440) { score = 55; detail = 'Listed today: competition is building'; }
   else { score = 10; detail = 'Listing is older: very competitive'; }
   return { score, label: tierLabel(score), detail };
+}
+
+function listingAgeBonusPoints(listing) {
+  if (!listing.listedAt) return 0;
+  const ageMs = Date.now() - new Date(listing.listedAt).getTime();
+  if (isNaN(ageMs) || ageMs < 0) return 0;
+  const ageMins = ageMs / 60000;
+  if (ageMins <= 30) return 15;
+  if (ageMins <= 120) return 8;
+  return 0;
 }
 
 function calcCompetitionPressure(listing) {
@@ -138,7 +149,8 @@ function calculateScore(listing, user) {
     timing.score * WEIGHTS.timing +
     competition.score * WEIGHTS.competition;
 
-  const result = Math.round(weighted);
+  const bonus = listingAgeBonusPoints(listing);
+  const result = Math.round(weighted) + bonus;
   return isNaN(result) ? 0 : Math.min(100, Math.max(0, result));
 }
 
@@ -329,25 +341,48 @@ function getImprovementTips(listing, user, _currentScore, dealScore) {
     add(sourceTips, 'Personalized intro messages get higher response rates on Kamernet', 'source_action');
   }
 
-  // ── FALLBACK TIPS ────────────────────────────────────────────────────
-  add(fallbackTips, 'Three sentences win applications: who you are, why this home, when you move in', 'documents');
-  add(fallbackTips, 'Have all documents in one PDF ready: immediate senders get priority', 'documents');
-  add(fallbackTips, 'Open with a personal intro: who you are and your move-in date', 'documents');
-  add(fallbackTips, 'State your viewing availability: landlords prioritize flexible applicants', 'documents');
-
   // ── MERGE: priority order ────────────────────────────────────────────
   const all = [];
   for (const t of landlordTips) { if (all.length >= 5) break; all.push(t); }
   for (const t of financialTips) { if (all.length >= 5) break; all.push(t); }
   for (const t of [...profileTips, ...timingTips, ...cityTips, ...sourceTips]) { if (all.length >= 5) break; all.push(t); }
-  for (const t of fallbackTips) { if (all.length >= 5) break; all.push(t); }
 
-  // ── DEDUP: drop tips with near-identical first 25 characters ─────────
+  // ── DEDUP: compare full tip text ─────────────────────────────────────
+  const seen2 = new Set();
   const deduped = [];
-  const prefixes = new Set();
   for (const t of all) {
-    const prefix = t.tip.slice(0, 25).toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (!prefixes.has(prefix)) { prefixes.add(prefix); deduped.push(t); }
+    const key = t.tip.toLowerCase().trim();
+    if (!seen2.has(key)) { seen2.add(key); deduped.push(t); }
+  }
+
+  // ── UNIVERSAL POOL: always pad to exactly 5 tips ─────────────────────
+  const UNIVERSAL_POOL = [
+    { tip: 'Respond within the hour - landlords shortlist fast', category: 'timing' },
+    { tip: 'Mention your move-in date is flexible if possible', category: 'general' },
+    { tip: 'Attach all documents in one PDF, not separate files', category: 'documents' },
+    { tip: 'Include a short personal intro in your first message', category: 'general' },
+    { tip: 'Ask for a viewing slot within 24 hours of applying', category: 'timing' },
+    { tip: 'Confirm you have no pets if the listing does not mention them', category: 'lifestyle' },
+    { tip: 'Mention if you have a guarantor available', category: 'guarantor' },
+    { tip: 'State your employment situation clearly upfront', category: 'contract' },
+    { tip: 'Offer to do a video call if in-person viewing is not immediately possible', category: 'general' },
+    { tip: 'Follow up once after 48 hours if you have not heard back', category: 'timing' },
+  ];
+  for (const u of UNIVERSAL_POOL) {
+    if (deduped.length >= 5) break;
+    const key = u.tip.toLowerCase().trim();
+    if (!seen2.has(key)) { seen2.add(key); deduped.push(u); }
+  }
+
+  // ── URGENCY TIP: strong match on fresh listing ───────────────────────
+  const ageMs = listing.listedAt ? Date.now() - new Date(listing.listedAt).getTime() : null;
+  const isFresh = ageMs !== null && !isNaN(ageMs) && ageMs < 2 * 60 * 60 * 1000;
+  if (isFresh && _currentScore >= 80) {
+    const urgencyTip = { tip: 'This is a strong match and a fresh listing - apply in the next hour before the shortlist fills', category: 'timing' };
+    const urgencyKey = urgencyTip.tip.toLowerCase().trim();
+    const filtered = deduped.filter(t => t.tip.toLowerCase().trim() !== urgencyKey);
+    filtered.unshift(urgencyTip);
+    return { tips: filtered.slice(0, 5) };
   }
 
   return { tips: deduped.slice(0, 5) };
