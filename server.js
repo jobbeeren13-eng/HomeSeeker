@@ -9,7 +9,7 @@ const { createBot, sendAlert, processWebhookUpdate, injectCachedListing, getCach
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
-const { generateLetterDirect, generatePackageDirect, generateBuyerLetterDirect, generateBidAdviceDirect } = require('./src/letter');
+const { generateLetterDirect, generatePackageDirect, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect } = require('./src/letter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -506,7 +506,7 @@ app.post('/api/buyer-letter', async (req, res) => {
   }
 });
 
-// AI lease review — proxies to Hetzner
+// AI lease review — proxies to Hetzner, falls back to direct
 app.post('/api/lease-review', async (req, res) => {
   const { leaseText, context } = req.body;
   if (!leaseText || leaseText.length < 50) return res.status(400).json({ error: 'leaseText must be at least 50 characters' });
@@ -523,14 +523,15 @@ app.post('/api/lease-review', async (req, res) => {
       if (!r.ok) throw new Error(data.error || 'Hetzner error');
       return res.json(data);
     }
-    return res.status(503).json({ error: 'AI service not configured' });
+    const result = await generateLeaseReviewDirect({ leaseText, context });
+    return res.json(result);
   } catch (err) {
     console.error('[api/lease-review]', err.message);
     res.status(500).json({ error: 'Lease review failed. Please try again.' });
   }
 });
 
-// AI negotiation coach — proxies to Hetzner
+// AI negotiation coach — proxies to Hetzner, falls back to direct
 app.post('/api/negotiate', async (req, res) => {
   const { goal, property, situation, extraContext } = req.body;
   if (!goal || !situation || situation.length < 20) return res.status(400).json({ error: 'goal and situation are required' });
@@ -547,7 +548,8 @@ app.post('/api/negotiate', async (req, res) => {
       if (!r.ok) throw new Error(data.error || 'Hetzner error');
       return res.json(data);
     }
-    return res.status(503).json({ error: 'AI service not configured' });
+    const result = await generateNegotiateDirect({ goal, property, situation, extraContext });
+    return res.json(result);
   } catch (err) {
     console.error('[api/negotiate]', err.message);
     res.status(500).json({ error: 'Negotiation strategy generation failed. Please try again.' });
@@ -580,74 +582,83 @@ app.post('/api/bid-advisor', async (req, res) => {
   }
 });
 
-// AI letter modification — proxies to Hetzner
+// AI letter modification — proxies to Hetzner, falls back to direct
 app.post('/api/modify-letter-web', async (req, res) => {
   const { letter, instruction } = req.body;
   if (!letter || !instruction) return res.status(400).json({ error: 'letter and instruction required' });
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
-    if (!hetznerUrl || !adminKey) return res.status(503).json({ error: 'AI service not configured' });
-    const r = await fetch(`${hetznerUrl}/api/modify-letter`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-      body: JSON.stringify({ letter, instruction }),
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Hetzner error');
-    return res.json(data);
+    if (hetznerUrl && adminKey) {
+      const r = await fetch(`${hetznerUrl}/api/modify-letter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ letter, instruction }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Hetzner error');
+      return res.json(data);
+    }
+    const modified = await modifyLetterDirect({ letter, instruction });
+    return res.json({ letter: modified });
   } catch (err) {
     console.error('[api/modify-letter-web]', err.message);
     res.status(500).json({ error: 'Letter modification failed. Please try again.' });
   }
 });
 
-// AI rental assistant — proxies to Hetzner
+// AI rental assistant — proxies to Hetzner, falls back to direct
 app.post('/api/rent-assistant', async (req, res) => {
   const { tab, userMessage, listingContext, chatId } = req.body;
   if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
-    if (!hetznerUrl || !adminKey) return res.status(503).json({ error: 'AI service not configured' });
     let user = null;
     if (chatId) {
       try { user = getUser.get(String(chatId)); } catch (_) {}
     }
-    const r = await fetch(`${hetznerUrl}/api/generate-rent-assistant`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-      body: JSON.stringify({ tab, userMessage, user, listingContext }),
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Hetzner error');
-    return res.json(data);
+    if (hetznerUrl && adminKey) {
+      const r = await fetch(`${hetznerUrl}/api/generate-rent-assistant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ tab, userMessage, user, listingContext }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Hetzner error');
+      return res.json(data);
+    }
+    const result = await generateRentAssistantResponse({ tab, userMessage, user, listingContext });
+    return res.json(result);
   } catch (err) {
     console.error('[api/rent-assistant]', err.message);
     res.status(500).json({ error: 'Assistant response failed. Please try again.' });
   }
 });
 
-// AI buyer assistant — proxies to Hetzner
+// AI buyer assistant — proxies to Hetzner, falls back to direct
 app.post('/api/buy-assistant', async (req, res) => {
   const { tab, userMessage, listingContext, chatId } = req.body;
   if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
-    if (!hetznerUrl || !adminKey) return res.status(503).json({ error: 'AI service not configured' });
     let user = null;
     if (chatId) {
       try { user = getUser.get(String(chatId)); } catch (_) {}
     }
-    const r = await fetch(`${hetznerUrl}/api/generate-buy-assistant`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-      body: JSON.stringify({ tab, userMessage, user, listingContext }),
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Hetzner error');
-    return res.json(data);
+    if (hetznerUrl && adminKey) {
+      const r = await fetch(`${hetznerUrl}/api/generate-buy-assistant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ tab, userMessage, user, listingContext }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Hetzner error');
+      return res.json(data);
+    }
+    const result = await generateBuyAssistantResponse({ tab, userMessage, user, listingContext });
+    return res.json(result);
   } catch (err) {
     console.error('[api/buy-assistant]', err.message);
     res.status(500).json({ error: 'Assistant response failed. Please try again.' });
