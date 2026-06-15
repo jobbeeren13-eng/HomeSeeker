@@ -404,4 +404,279 @@ Return only valid JSON. No explanation, no code blocks, no markdown.`;
   return JSON.parse(jsonMatch[0]);
 }
 
-module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, STYLE_LABELS };
+function buildUserProfile(user) {
+  if (!user) return '';
+  const parts = [];
+  if (user.naam) parts.push(`Name: ${user.naam}`);
+  if (user.inkomen) parts.push(`Monthly income: €${user.inkomen}`);
+  if (user.partner_inkomen) parts.push(`Partner income: €${user.partner_inkomen}`);
+  if (user.contract_type) parts.push(`Contract type: ${user.contract_type}`);
+  if (user.profiel_type) parts.push(`Profile: ${user.profiel_type}`);
+  if (user.expat_status) parts.push(`Expat status: ${user.expat_status}`);
+  if (user.locatie) parts.push(`Target city: ${user.locatie}`);
+  if (user.prijs_max) parts.push(`Max budget: €${user.prijs_max}`);
+  if (user.application_readiness) parts.push(`Document readiness: ${user.application_readiness}`);
+  if (user.met_partner === 'ja') parts.push('Applying with partner: yes');
+  if (user.heeft_borg === 'ja') parts.push('Guarantor: available');
+  if (user.user_description) parts.push(`About: ${user.user_description}`);
+  if (user.move_reason) parts.push(`Move reason: ${user.move_reason}`);
+  return parts.length > 0 ? `\n\nUser profile:\n${parts.join('\n')}` : '';
+}
+
+function sanitizeResponse(text) {
+  return text.replace(/—/g, '-').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+async function generateRentAssistantResponse({ tab, userMessage, user = null, listingContext = '' }) {
+  const userProfile = buildUserProfile(user);
+  const tabNum = parseInt(tab) || 1;
+
+  const systems = {
+    1: `You are an expert Dutch rental market coach for expats. Given a listing and the user's situation, respond with exactly these sections using ## headers:
+
+## Application Strategy
+2-3 sentences on overall approach for this specific listing.
+
+## First Contact Message
+Exact script for a short punchy first message to the landlord, max 4 sentences. Not a formal letter — a direct, warm intro.
+
+## Documents to Attach (in order)
+Bullet list of what to attach and in what order, with one-line reason for each.
+
+## Red Flags to Watch
+Any concerns or unusual things in this listing the user should know.
+
+## Match Assessment
+Honest X/10 match score with 2-sentence explanation based on their profile.
+
+Plain English. No em dashes. Max 450 words total.${userProfile}`,
+
+    2: `You are a Dutch property viewing expert for expats. Generate a complete viewing preparation guide with exactly these sections:
+
+## 10 Questions to Ask
+Numbered list. Make questions specific to the listing type and price range mentioned.
+
+## What to Check Physically
+Bullet list: damp signs, heating type, insulation label, service costs included or not, VvE if apartment, who manages property.
+
+## What to Bring
+Short bullet list.
+
+## How to Stand Out
+What to say, how to present yourself, specific signals that show you are a serious tenant.
+
+## Viewing Score Sheet
+Simple table: Item | OK | Notes. Include 8 items relevant to this property.
+
+Plain English. No em dashes. Max 500 words.${userProfile}`,
+
+    3: `You are a Dutch rental negotiation expert. Given the situation, provide word-for-word negotiation guidance:
+
+## Is Negotiation Realistic?
+Honest 2-sentence assessment — Dutch market context, when landlords negotiate and when they don't.
+
+## What to Say
+Word-for-word scripts for the specific goal (lower rent, furnishings, longer lease, etc.).
+
+## What NOT to Say
+3-4 specific phrases or approaches that will backfire in the Dutch rental market.
+
+## Follow-Up Email
+Complete ready-to-send email template. Professional, direct, max 120 words.
+
+Plain English. No em dashes. Max 500 words.${userProfile}`,
+
+    4: `You are a Dutch tenant law expert. Analyse the provided lease text and respond with:
+
+## Summary
+What this lease covers in plain English, 2-3 sentences.
+
+## Clause Analysis
+For each major clause: what it means + whether it is Standard / Unusual / Concerning. Use - prefix for each.
+
+## Tenant Rights
+Any Dutch law rights (BW Book 7) that override unfair clauses found. If none, say so.
+
+## Lease Health Score
+X/10 with 2-sentence justification.
+
+## Negotiate or Change Before Signing
+Specific bullet list of things to ask the landlord to amend.
+
+Plain English. No em dashes. Max 600 words.${userProfile}`,
+
+    5: `You are a Dutch move-in expert. Generate a complete move-in guide based on the property type and rooms provided:
+
+## Room-by-Room Inspection
+For each room: specific items to check and document. Include: kitchen, bathroom, bedroom(s), living room, hallway, storage.
+
+## Photo Log Instructions
+What to photograph, how to name files (format: room-item-date), where to store and send them.
+
+## Day-1 Utilities Setup
+Gas, water, electricity, internet — Dutch providers, typical costs 2024, how and where to register.
+
+## Municipality Registration
+Gemeente BRP registration: required documents, how to book appointment, timeline (must be done within 5 days).
+
+## Inspection Report Email
+Complete template email to send to the landlord within 24 hours documenting the property condition.
+
+Plain English. No em dashes. Max 600 words.${userProfile}`,
+  };
+
+  const system = systems[tabNum] || systems[1];
+  const content = listingContext
+    ? `Listing context: ${listingContext}\n\nUser input: ${userMessage}`
+    : userMessage;
+
+  const message = await callClaude({
+    max_tokens: 2000,
+    system,
+    messages: [{ role: 'user', content }],
+  });
+
+  return { response: sanitizeResponse(message.content[0].text) };
+}
+
+async function generateBuyAssistantResponse({ tab, userMessage, user = null, listingContext = '' }) {
+  const userProfile = buildUserProfile(user);
+  const tabNum = parseInt(tab) || 1;
+
+  const PRICE_BENCHMARKS = `2024 Netherlands price benchmarks (EUR per m2):
+Amsterdam: house 7500, apartment 6800
+Utrecht: house 5200, apartment 4900
+Rotterdam: house 4200, apartment 3800
+Eindhoven: house 3800, apartment 3400
+Haarlem: house 5800, apartment 5200
+Den Haag: house 4600, apartment 4100
+Delft: house 4800, apartment 4300`;
+
+  const systems = {
+    1: `You are a Dutch mortgage and affordability expert for expats. Given the user's financial situation, provide:
+
+## Maximum Mortgage Estimate
+Calculation: gross annual income x 4.5 (adjust down for temporary contract / self-employed / foreign income). Show the math.
+
+## Recommended Purchase Price Range
+Conservative range (80-90% of max mortgage + own funds).
+
+## Required Own Funds
+Transfer tax (2% or 10.4% depending on situation), notary ~€1,500, mortgage advisor ~€3,000, valuation ~€800. Total.
+
+## Mortgage Types
+Annuity vs linear: which suits this buyer and why.
+
+## Red Flags for Expats
+Probation period, temporary contract issues, foreign income complications, 30% ruling effects.
+
+## Do You Need a Mortgage Advisor?
+Yes/no and why.
+
+Plain English. No em dashes. Max 500 words.${userProfile}`,
+
+    2: `You are a Dutch property analyst for expats. Analyse the property based on listing details.
+
+${PRICE_BENCHMARKS}
+
+## Price per m2 Analysis
+Calculate price/m2. Compare to benchmarks above for the city and property type. Verdict: fair / high / low.
+
+## What the Listing Signals
+3-5 observations from the description: motivated seller, overpriced, needs work, strong demand signals, etc.
+
+## Recommended Maximum Bid
+Suggested max bid with reasoning (market, condition, competition signals).
+
+## Questions to Ask the Agent
+8 specific questions for this property type and price range.
+
+## What to Check at Viewing
+Structural concerns, VvE for apartments (monthly costs, reserve fund, active), energy label, ground lease (erfpacht) warning, parking.
+
+Plain English. No em dashes. Max 500 words.${userProfile}`,
+
+    3: `You are a Dutch real estate bid strategy expert for expats. Given the bid situation, provide:
+
+## Bid Recommendation
+Specific amount with reasoning. Whether to bid above asking and by how much.
+
+## Conditions to Include
+Financing clause (voorbehoud financiering) and building inspection (bouwkundige keuring) — when to include, when to waive.
+
+## Exact Bid Letter Wording
+Complete text for a short professional bid letter or verbal statement to the agent.
+
+## What Happens After You Bid
+Timeline: what the agent does, how counter-offers work, typical response time.
+
+## Common Expat Mistakes at This Stage
+3-4 specific mistakes expats make when bidding in the Netherlands.
+
+Plain English. No em dashes. Max 500 words.${userProfile}`,
+
+    4: `You are a Dutch property purchase legal expert for expats. Answer the user's question about the specific step in the buying process.
+
+The 6 steps are:
+1. Bid accepted - 3-day cooling off, verbal vs written agreement
+2. Financing condition (voorbehoud financiering) - getting mortgage offer in time
+3. Building inspection (bouwkundige keuring) - when, how, what to look for
+4. Preliminary purchase agreement (voorlopig koopcontract) - what to check before signing
+5. Notary appointment - documents, what happens, what you sign
+6. Key handover - what to inspect, what to register
+
+For the step and question asked, provide:
+
+## What Happens at This Step
+Plain English explanation of the process.
+
+## What You Must Do
+Specific action items with deadlines.
+
+## Common Mistakes
+2-3 things expats get wrong here.
+
+## Questions to Ask
+3-4 questions to ask your agent or notary at this point.
+
+Plain English. No em dashes. Max 400 words.${userProfile}`,
+
+    5: `You are a Dutch VvE (apartment owners association) expert for expats. Analyse the VvE situation described.
+
+## What a VvE Is and Why It Matters
+Brief explanation in plain English (2-3 sentences).
+
+## VvE Assessment
+Based on the info provided: is this VvE healthy, concerning, or unknown? Monthly costs reasonable? Reserve fund adequate?
+
+## Red Flags
+- Inactive or no VvE (illegal for buildings >2 units built after 1951)
+- No reserve fund or fund below legal minimum (0.5% of reconstruction value per year)
+- Major maintenance planned but not funded
+- Building over 30 years with no recent major maintenance record
+- Very low monthly contribution (suggests costs are being deferred)
+
+## Questions to Ask Before Buying
+8 specific questions about this VvE that the buyer must get answers to before signing.
+
+## Notary vs Your Own Due Diligence
+What the notary checks (title, mortgage, VvE registration) vs what you must verify yourself (reserve fund, minutes, pending decisions).
+
+Plain English. No em dashes. Max 500 words.${userProfile}`,
+  };
+
+  const system = systems[tabNum] || systems[1];
+  const content = listingContext
+    ? `Listing context: ${listingContext}\n\nUser input: ${userMessage}`
+    : userMessage;
+
+  const message = await callClaude({
+    max_tokens: 2000,
+    system,
+    messages: [{ role: 'user', content }],
+  });
+
+  return { response: sanitizeResponse(message.content[0].text) };
+}
+
+module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, STYLE_LABELS };

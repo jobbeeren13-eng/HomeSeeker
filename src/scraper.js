@@ -7,6 +7,7 @@ const {
   getUnsentListings,
   markListingGloballySent,
   updateListingDescription,
+  updateListingImage,
   getSentListingByFingerprint,
 } = require('./database');
 
@@ -544,28 +545,36 @@ async function fetchHousingAnywhereDescription(url) {
       },
       signal: AbortSignal.timeout(10000),
     });
-    if (!resp.ok) return '';
+    if (!resp.ok) return { description: '', image: '' };
     const html = await resp.text();
-    // Try __NEXT_DATA__ for structured description (HA uses Next.js)
+    // Try __NEXT_DATA__ for structured description + image (HA uses Next.js)
     const nextDataM = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
     if (nextDataM) {
       try {
         const data = JSON.parse(nextDataM[1]);
-        const desc = data?.props?.pageProps?.listing?.description
-                  || data?.props?.pageProps?.room?.description
-                  || data?.props?.pageProps?.unit?.description
-                  || data?.props?.pageProps?.unitType?.description
-                  || data?.props?.pageProps?.initialData?.listing?.description
-                  || '';
-        if (desc && String(desc).trim().length > 20) return String(desc).slice(0, 600).trim();
+        const unit = data?.props?.pageProps?.listing
+                  || data?.props?.pageProps?.room
+                  || data?.props?.pageProps?.unit
+                  || data?.props?.pageProps?.unitType
+                  || data?.props?.pageProps?.initialData?.listing
+                  || {};
+        const desc = unit.description || unit.longDescription || '';
+        const imgUrl = (unit.photos && unit.photos[0] && (unit.photos[0].url || unit.photos[0].original))
+                    || (unit.images && unit.images[0] && (unit.images[0].url || unit.images[0].original))
+                    || (unit.mainPhoto && (unit.mainPhoto.url || unit.mainPhoto.original))
+                    || (unit.photo && (unit.photo.url || unit.photo.original))
+                    || '';
+        if (desc && String(desc).trim().length > 20) {
+          return { description: String(desc).slice(0, 600).trim(), image: String(imgUrl || '') };
+        }
       } catch {}
     }
     // Fall back to meta description
     const metaM = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
                || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
-    return metaM ? metaM[1].trim() : '';
+    return { description: metaM ? metaM[1].trim() : '', image: '' };
   } catch {
-    return '';
+    return { description: '', image: '' };
   }
 }
 
@@ -594,8 +603,11 @@ function parseHousingAnywhereCards(html) {
     const [, propType, priceStr, city, , ] = tp;
     const priceNumber = parseInt(priceStr.replace(/,/g, ''));
     if (!priceNumber) continue;
-    const imgM = chunk.match(/src="(https:\/\/housinganywhere\.imgix\.net\/unit_type\/[^"?]+)/);
-    const image = imgM ? `${imgM[1]}?fit=crop&auto=format&w=400` : '';
+    const imgM = chunk.match(/src="(https:\/\/housinganywhere\.imgix\.net\/[^"?]+)/i)
+              || chunk.match(/src="(https:\/\/[^"]+\.imgix\.net\/[^"?]*(?:unit|room|listing|photo)[^"?]*)/i)
+              || chunk.match(/src="(https:\/\/[^"]*housinganywhere[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)/i);
+    const rawImg = imgM ? imgM[1] : '';
+    const image = rawImg ? (rawImg.includes('?') ? rawImg : `${rawImg}?fit=crop&auto=format&w=400`) : '';
     const streetSlug = url.split('/').pop();
     const address = streetSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     const cityName = tp[3];
@@ -672,8 +684,9 @@ async function scrapeHousingAnywhere() {
     const CONCURRENCY = 2;
     for (let i = 0; i < needsDesc.length; i += CONCURRENCY) {
       await Promise.allSettled(needsDesc.slice(i, i + CONCURRENCY).map(async url => {
-        const desc = await fetchHousingAnywhereDescription(url);
-        if (desc) updateListingDescription.run(desc, url);
+        const result = await fetchHousingAnywhereDescription(url);
+        if (result.description) updateListingDescription.run(result.description, url);
+        if (result.image) try { updateListingImage.run(result.image, url); } catch {}
       }));
       await new Promise(r => setTimeout(r, 800));
     }

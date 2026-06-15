@@ -305,12 +305,12 @@ function createBot(useWebhook = false) {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
+          [{ text: '🤖 Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}` }, { text: '🏡 Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}` }],
           [{ text: '📖 Rental Guide', url: `${BASE_URL}/guide/rent` }, { text: '🏠 Buyer Guide', url: `${BASE_URL}/guide/buy` }],
           [{ text: '📄 Lease Review', url: `${BASE_URL}/tools/lease-review` }, { text: '💬 Negotiation Coach', url: `${BASE_URL}/tools/negotiate` }],
-          [{ text: '📋 Documents', url: `${BASE_URL}/tools/documents` }, { text: '🗝 Move-In Checklist', url: `${BASE_URL}/tools/move-in` }],
-          [{ text: '✉️ Buyer Intro Letter', url: `${BASE_URL}/tools/buyer-letter` }, { text: '💰 Mortgage Calculator', url: `${BASE_URL}/tools/mortgage` }],
+          [{ text: '📋 Documents', url: `${BASE_URL}/tools/documents` }, { text: '🗝 Move-In', url: `${BASE_URL}/tools/move-in` }],
+          [{ text: '✉️ Buyer Letter', url: `${BASE_URL}/tools/buyer-letter` }, { text: '💰 Mortgage Calc', url: `${BASE_URL}/tools/mortgage` }],
           [{ text: '🎯 Bid Advisor', url: `${BASE_URL}/tools/bid-advisor` }, { text: '⚖️ Legal Process', url: `${BASE_URL}/tools/legal` }],
-          [{ text: '🗝 Handover Checklist', url: `${BASE_URL}/tools/handover` }],
         ],
       },
     });
@@ -524,8 +524,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   const lines = [];
 
-  // Line 1: source badge
-  lines.push(getPlatformBadge(listing.source));
+  // Line 1: source badge + transaction type
+  const typeLabel = listing.transactionType === 'huur' ? '🏠 Rental' : '🏡 For sale';
+  lines.push(`${getPlatformBadge(listing.source)} · ${typeLabel}`);
 
   // Line 2: address + city, bold
   const cityStr = cityDisplay || listing.city || '';
@@ -563,14 +564,22 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     intent.warnings.forEach(w => lines.push(`⚠️ ${w.label}`));
   }
 
-  // Boost tips — always fully included, never truncated
-  if (user && score < 85) {
+  // Tips — always shown, padded to at least 3 with universal fallbacks
+  if (user) {
+    const FALLBACK_TIPS = [
+      'Respond within the hour — speed signals seriousness',
+      'Mention your move-in date is flexible',
+      'Attach all documents in one PDF for instant submission',
+    ];
     const { tips } = getImprovementTips(listing, user, score, dealScore);
-    if (tips.length > 0) {
-      lines.push('');
-      lines.push('*Boost your application:*');
-      tips.forEach((t, i) => { lines.push(''); lines.push(`${i + 1}. ${t.tip}`); });
+    const displayTips = [...tips];
+    for (const ft of FALLBACK_TIPS) {
+      if (displayTips.length >= 3) break;
+      if (!displayTips.some(t => t.tip === ft)) displayTips.push({ tip: ft, category: 'general' });
     }
+    lines.push('');
+    lines.push('*Tips:*');
+    displayTips.forEach((t, i) => { lines.push(''); lines.push(`${i + 1}. ${t.tip}`); });
   }
 
   // Verdict
@@ -601,7 +610,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     inline_keyboard: [
       [
         { text: 'View listing', url: listing.url },
-        { text: 'AI Letter', callback_data: `ai_letter:${cacheId}` },
+        isHuur
+          ? { text: 'AI Letter', callback_data: `ai_letter:${cacheId}` }
+          : { text: '🏡 Buyer Tools', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}&listing=${cacheId}` },
       ],
       [
         { text: 'Share', callback_data: `share:${cacheId}` },
@@ -610,20 +621,20 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     ],
   };
  
-  const imageUrl = (listing.image && /^https?:\/\//.test(listing.image))
-    ? listing.image
-    : (SOURCE_PLACEHOLDERS[listing.source] || GENERIC_PLACEHOLDER);
+  const hasRealImage = listing.image && /^https?:\/\//.test(listing.image);
 
-  // Try sendPhoto with full text; if caption too long or photo fails, fall back to sendMessage
+  // Only attempt sendPhoto if there is a real (non-placeholder) image URL
   let sent = false;
-  try {
-    await _bot.sendPhoto(chatId, imageUrl, {
-      caption: fullText,
-      parse_mode: 'Markdown',
-      reply_markup: keyboard,
-    });
-    sent = true;
-  } catch (_) {}
+  if (hasRealImage) {
+    try {
+      await _bot.sendPhoto(chatId, listing.image, {
+        caption: fullText,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+      sent = true;
+    } catch (_) {}
+  }
 
   if (!sent) {
     try {

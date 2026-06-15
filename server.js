@@ -59,6 +59,8 @@ app.get('/tools/lease-review', (req, res) => res.sendFile(path.join(__dirname, '
 app.get('/tools/negotiate', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'negotiate.html')));
 app.get('/tools/documents', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'documents.html')));
 app.get('/tools/move-in', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'move-in.html')));
+app.get('/tools/rent-assistant', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'rent-assistant.html')));
+app.get('/tools/buy-assistant', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'buy-assistant.html')));
 app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 
 app.get('/subscribe', async (req, res) => {
@@ -575,6 +577,58 @@ app.post('/api/bid-advisor', async (req, res) => {
   } catch (err) {
     console.error('[api/bid-advisor]', err.message);
     res.status(500).json({ error: 'Bid advice generation failed. Please try again.' });
+  }
+});
+
+// AI rental assistant — proxies to Hetzner
+app.post('/api/rent-assistant', async (req, res) => {
+  const { tab, userMessage, listingContext, chatId } = req.body;
+  if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    if (!hetznerUrl || !adminKey) return res.status(503).json({ error: 'AI service not configured' });
+    let user = null;
+    if (chatId) {
+      try { user = getUser.get(String(chatId)); } catch (_) {}
+    }
+    const r = await fetch(`${hetznerUrl}/api/generate-rent-assistant`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+      body: JSON.stringify({ tab, userMessage, user, listingContext }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Hetzner error');
+    return res.json(data);
+  } catch (err) {
+    console.error('[api/rent-assistant]', err.message);
+    res.status(500).json({ error: 'Assistant response failed. Please try again.' });
+  }
+});
+
+// AI buyer assistant — proxies to Hetzner
+app.post('/api/buy-assistant', async (req, res) => {
+  const { tab, userMessage, listingContext, chatId } = req.body;
+  if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    if (!hetznerUrl || !adminKey) return res.status(503).json({ error: 'AI service not configured' });
+    let user = null;
+    if (chatId) {
+      try { user = getUser.get(String(chatId)); } catch (_) {}
+    }
+    const r = await fetch(`${hetznerUrl}/api/generate-buy-assistant`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+      body: JSON.stringify({ tab, userMessage, user, listingContext }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Hetzner error');
+    return res.json(data);
+  } catch (err) {
+    console.error('[api/buy-assistant]', err.message);
+    res.status(500).json({ error: 'Assistant response failed. Please try again.' });
   }
 });
 

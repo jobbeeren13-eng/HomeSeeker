@@ -9,7 +9,7 @@ const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const ADMIN_KEY   = process.env.ADMIN_KEY;
-const { generateLetterDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect } = require('./src/letter');
+const { generateLetterDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse } = require('./src/letter');
 const PORT        = parseInt(process.env.MATCH_NOW_PORT || '3001', 10);
 
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
@@ -204,6 +204,36 @@ app.post('/api/generate-bid-advice', async (req, res) => {
     res.json(advice);
   } catch (err) {
     console.error('[generate-bid-advice] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Rental assistant proxy
+app.post('/api/generate-rent-assistant', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { tab, userMessage, user, listingContext } = req.body;
+  if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
+  try {
+    const result = await generateRentAssistantResponse({ tab, userMessage, user, listingContext });
+    res.json(result);
+  } catch (err) {
+    console.error('[generate-rent-assistant] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Buyer assistant proxy
+app.post('/api/generate-buy-assistant', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { tab, userMessage, user, listingContext } = req.body;
+  if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
+  try {
+    const result = await generateBuyAssistantResponse({ tab, userMessage, user, listingContext });
+    res.json(result);
+  } catch (err) {
+    console.error('[generate-buy-assistant] Error:', err);
     res.status(500).json({ error: err.message });
   }
 });

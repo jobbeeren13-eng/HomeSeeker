@@ -261,13 +261,14 @@
       scoreRow.innerHTML += `<span class="badge ${cls}">Market: ${valueLabel(dealScore)}</span>`;
     }
 
-    // Tips
-    state.tips = tips.map(t => ({ ...t, selected: true }));
+    // Tips — use defaults if none returned so Generate is never blocked
+    const DEFAULT_TIPS = [
+      { tip: 'Who you are and your current situation', category: 'general' },
+      { tip: 'Why this specific home appeals to you', category: 'general' },
+      { tip: 'When you can move in and that your documents are ready', category: 'documents' },
+    ];
+    state.tips = (tips.length > 0 ? tips : DEFAULT_TIPS).map(t => ({ ...t, selected: true }));
     renderTips();
-
-    if (!tips.length) {
-      document.getElementById('tips-section').style.display = 'none';
-    }
   }
 
   function renderTips() {

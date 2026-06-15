@@ -134,7 +134,7 @@
       .hero-cta-group { justify-content: center; }
       .hero-sub, .hero-hook { margin-left: auto; margin-right: auto; }
       .hero-right { display: block; margin-top: 32px; }
-      .audience-grid, .steps, .letter-grid, .two-col-grid, .tools-cols { grid-template-columns: 1fr; }
+      .audience-grid, .steps, .letter-grid, .two-col-grid, .tools-cols, .assistant-cards { grid-template-columns: 1fr; }
       .preview-grid, .scores-row { grid-template-columns: 1fr; }
       .price-card { padding: 28px 20px; }
     }
@@ -489,6 +489,22 @@
     <div class="section-tag">All Tools</div>
     <h2>Every tool you need.<br />Renting or buying.</h2>
     <p class="section-sub">From real-time alerts to AI letters to bid strategy — everything is included in one subscription.</p>
+
+    <div class="assistant-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px;margin-bottom:8px">
+      <a href="/tools/rent-assistant" style="display:block;background:linear-gradient(135deg,rgba(0,229,160,0.08),rgba(0,229,160,0.02));border:1px solid rgba(0,229,160,0.25);border-radius:14px;padding:22px 20px;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(0,229,160,0.5)'" onmouseout="this.style.borderColor='rgba(0,229,160,0.25)'">
+        <div style="font-size:28px;margin-bottom:10px">🤖</div>
+        <div style="font-size:15px;font-weight:700;color:#e8edf3;margin-bottom:6px">AI Rental Assistant</div>
+        <div style="font-size:13px;color:#7a8494;line-height:1.5">5-in-1: Application Coach, Viewing Prep, Negotiation Scripts, Lease Analyser, Move-In Checklist</div>
+        <div style="margin-top:14px;font-size:13px;font-weight:600;color:#00e5a0">Open assistant →</div>
+      </a>
+      <a href="/tools/buy-assistant" style="display:block;background:linear-gradient(135deg,rgba(0,229,160,0.08),rgba(0,229,160,0.02));border:1px solid rgba(0,229,160,0.25);border-radius:14px;padding:22px 20px;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(0,229,160,0.5)'" onmouseout="this.style.borderColor='rgba(0,229,160,0.25)'">
+        <div style="font-size:28px;margin-bottom:10px">🏡</div>
+        <div style="font-size:15px;font-weight:700;color:#e8edf3;margin-bottom:6px">AI Buyer Assistant</div>
+        <div style="font-size:13px;color:#7a8494;line-height:1.5">5-in-1: Affordability, Property Analyser, Bid Strategy, Legal Process Guide, VvE Checker</div>
+        <div style="margin-top:14px;font-size:13px;font-weight:600;color:#00e5a0">Open assistant →</div>
+      </a>
+    </div>
+
     <div class="tools-cols">
       <div>
         <div class="tools-col-title">🏠 Renting</div>
