@@ -119,13 +119,14 @@
     .footer-links a:hover { color: var(--text); }
     .footer-copy { color: var(--muted); font-size: 12px; }
     .sticky-cta { display: none; }
+    .two-col-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 780px; }
     @media (max-width: 900px) {
       .hero-grid { grid-template-columns: 1fr; gap: 48px; text-align: center; }
       .hero-trust { justify-content: center; }
       .hero-cta-group { justify-content: center; }
       .hero-sub, .hero-hook { margin-left: auto; margin-right: auto; }
       .hero-right { display: block; margin-top: 32px; }
-      .audience-grid, .steps, .letter-grid { grid-template-columns: 1fr; }
+      .audience-grid, .steps, .letter-grid, .two-col-grid { grid-template-columns: 1fr; }
       .preview-grid, .scores-row { grid-template-columns: 1fr; }
       .price-card { padding: 28px 20px; }
     }
@@ -281,7 +282,7 @@
     <div class="section-tag">The expat reality</div>
     <h2>You're competing with<br />80+ applicants per listing.</h2>
     <p class="section-sub" style="margin-bottom: 40px">The Dutch rental market is one of the toughest in Europe for internationals — but it's beatable.</p>
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 780px;">
+    <div class="two-col-grid">
       <div class="audience-card">
         <div class="audience-icon">⚡</div>
         <h3>Top listings disappear in hours</h3>

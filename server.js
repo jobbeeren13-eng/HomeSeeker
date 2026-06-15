@@ -371,7 +371,20 @@ app.post('/api/generate-package', async (req, res) => {
   const user = chatId ? getUser.get(String(chatId)) : null;
 
   try {
-    const pkg = await generatePackageDirect({ listing, user: user || {}, extraContext });
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    let pkg;
+    if (hetznerUrl && adminKey) {
+      const resp = await fetch(`${hetznerUrl}/api/generate-package`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ listing, user: user || {}, extraContext }),
+      });
+      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+      pkg = await resp.json();
+    } else {
+      pkg = await generatePackageDirect({ listing, user: user || {}, extraContext });
+    }
     res.json(pkg);
   } catch (err) {
     console.error('[api/generate-package]', err.message);

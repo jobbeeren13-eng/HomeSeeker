@@ -134,6 +134,22 @@ app.post('/api/generate-letter', async (req, res) => {
   }
 });
 
+// Package generation proxy — same reason: ANTHROPIC_API_KEY lives only on Hetzner
+app.post('/api/generate-package', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { listing, user, extraContext } = req.body;
+  if (!listing) return res.status(400).json({ error: 'listing required' });
+  try {
+    const { generatePackageDirect } = require('./src/letter');
+    const pkg = await generatePackageDirect({ listing, user: user || {}, extraContext: extraContext || '' });
+    res.json(pkg);
+  } catch (err) {
+    console.error('[generate-package] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`[match-now] Listening on port ${PORT}`));
 
 // ── Boot: run once immediately then on schedule ───────────────────────────

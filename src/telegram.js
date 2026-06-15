@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
 const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings } = require('./database');
-const { generateLetter, generateLetterDirect } = require('./letter');
+const { generateLetterDirect } = require('./letter');
 const { rowToListing } = require('./scraper');
 const { calculateScore, getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
 const { calculateDealScore, detectPriceDrop } = require('./deal_score');
@@ -29,12 +29,6 @@ const SOURCE_PLACEHOLDERS = {
 };
 const GENERIC_PLACEHOLDER = 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=HomeSeeker';
 
-const LETTER_QUESTIONS = [
-  "What's your current living situation and why are you moving?",
-  'Tell us about your work situation (employer, contract type, duration).',
-  'Anything else the landlord should know? (pets, partner, etc.) Type *skip* to skip.',
-];
- 
 let bot = null;
 const letterState = new Map();
 const pendingLinkState = new Map(); // chatId -> true, waiting for email input
@@ -203,35 +197,6 @@ function estimateMonthlyCost(rentPrice) {
   const internet = 40;
   const total = rentPrice + serviceCosts + utilities + internet;
   return Math.round(total / 10) * 10;
-}
- 
-async function sendStyleChoice(chatId) {
-  await bot.sendMessage(chatId, 'Choose your letter style:', {
-    reply_markup: {
-      inline_keyboard: [[
-        { text: '🎯 Professional', callback_data: 'letter_style:professional' },
-        { text: '😊 Friendly', callback_data: 'letter_style:friendly' },
-        { text: '🌍 Expat', callback_data: 'letter_style:expat' },
-      ]],
-    },
-  });
-}
- 
-async function sendLetterOptions(chatId, listing, letter) {
-  const subject = encodeURIComponent(`Application for ${listing.address || 'property'}`);
-  const body = encodeURIComponent(letter);
-  const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
-  const waLink = `https://wa.me/?text=${encodeURIComponent(letter)}`;
- 
-  await bot.sendMessage(chatId, '✅ Your letter is ready! Choose how to send it:', {
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: '📋 Copy letter', callback_data: 'letter_copy' }],
-        [{ text: '📧 Open in email', url: mailtoLink }],
-        [{ text: '💬 WhatsApp', url: waLink }],
-      ],
-    },
-  });
 }
  
 function createBot(useWebhook = false) {
@@ -463,26 +428,6 @@ function createBot(useWebhook = false) {
       return;
     }
 
-    if (data.startsWith('letter_style:')) {
-      const style = data.replace('letter_style:', '');
-      const state = letterState.get(chatId);
-      if (!state) return;
-      state.style = style;
-      state.step = 'q1';
-      state.answers = [];
-      await bot.sendMessage(chatId, LETTER_QUESTIONS[0], { parse_mode: 'Markdown' });
-      return;
-    }
- 
-    if (data === 'letter_copy') {
-      const state = letterState.get(chatId);
-      if (!state?.generatedLetter) {
-        return bot.sendMessage(chatId, '❌ No letter found. Start again from a listing alert.');
-      }
-      await bot.sendMessage(chatId, state.generatedLetter);
-      clearLetterState(chatId);
-      return;
-    }
   });
  
   bot.on('message', async (msg) => {
@@ -525,46 +470,6 @@ function createBot(useWebhook = false) {
       return;
     }
 
-    const state = letterState.get(chatId);
-    if (!state) return;
-
-    if (!hasAccess(chatId)) {
-      clearLetterState(chatId);
-      return denyAccess(chatId);
-    }
-
-    const qIndex = { q1: 0, q2: 1, q3: 2 }[state.step];
-    if (qIndex === undefined) return;
- 
-    state.answers[qIndex] = text === 'skip' ? '' : text;
- 
-    if (state.step === 'q1') {
-      state.step = 'q2';
-      return bot.sendMessage(chatId, LETTER_QUESTIONS[1]);
-    }
-    if (state.step === 'q2') {
-      state.step = 'q3';
-      return bot.sendMessage(chatId, LETTER_QUESTIONS[2], { parse_mode: 'Markdown' });
-    }
-    if (state.step === 'q3') {
-      state.step = 'done';
-      await bot.sendMessage(chatId, '✍️ Generating your application letter…');
-      try {
-        const user = getUser.get(chatId);
-        const letter = await generateLetter({
-          style: state.style,
-          listing: state.listing,
-          user,
-          answers: state.answers,
-        });
-        state.generatedLetter = letter;
-        await sendLetterOptions(chatId, state.listing, letter);
-      } catch (err) {
-        console.error('[letter] Error:', err);
-        clearLetterState(chatId);
-        await bot.sendMessage(chatId, '❌ Something went wrong generating the letter. Please try again.');
-      }
-    }
   });
  
   console.log('[telegram] Bot started (polling=%s)', !useWebhook);
@@ -730,9 +635,6 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const imageUrl = (listing.image && /^https?:\/\//.test(listing.image))
     ? listing.image
     : (SOURCE_PLACEHOLDERS[listing.source] || GENERIC_PLACEHOLDER);
-
-  // Debug: confirm colored bars are in the outgoing text
-  console.log('[alert] fullText preview:', fullText.slice(0, 200).replace(/\n/g, '\\n'));
 
   // Try sendPhoto with full text; if caption too long or photo fails, fall back to sendMessage
   let sent = false;
