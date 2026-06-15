@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bid Advisor — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { text-align: center; margin-bottom: 40px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+    h1 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+    .hero-sub { font-size: 14px; color: var(--muted); line-height: 1.65; max-width: 480px; margin: 0 auto; }
+
+    .form-section { margin-bottom: 18px; }
+    label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 7px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    input[type="text"], input[type="number"], textarea {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 13px 16px; color: var(--text); font-family: inherit; font-size: 14px;
+      line-height: 1.5; transition: border-color .15s; appearance: none; -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input:focus, textarea:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .price-input { position: relative; }
+    .price-input::before { content: '€'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .price-input input { padding-left: 28px; }
+
+    .btn-primary {
+      width: 100%; background: var(--green); color: #000; font-family: inherit;
+      font-size: 15px; font-weight: 700; padding: 15px 24px; border: none; border-radius: 10px;
+      cursor: pointer; transition: opacity .2s; display: flex; align-items: center;
+      justify-content: center; gap: 8px; margin-top: 8px;
+    }
+    .btn-primary:hover { opacity: .9; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Results */
+    .results { display: none; margin-top: 28px; }
+    .results.visible { display: block; }
+
+    .rec-card { background: rgba(0,229,160,0.07); border: 1px solid rgba(0,229,160,0.25); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+    .rec-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); margin-bottom: 8px; }
+    .rec-value { font-size: 24px; font-weight: 800; color: var(--green); margin-bottom: 6px; }
+    .rec-reasoning { font-size: 14px; color: var(--text); line-height: 1.65; }
+
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .stat-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .stat-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .stat-value { font-size: 18px; font-weight: 800; }
+    .stat-value.hot { color: #ff6b6b; }
+    .stat-value.warm { color: #ffb347; }
+    .stat-value.neutral { color: var(--muted); }
+    .stat-value.cool { color: #6ab4ff; }
+
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 14px; }
+    .card-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .tag-list { display: flex; flex-direction: column; gap: 8px; }
+    .tag { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; font-size: 13px; color: var(--text); line-height: 1.4; }
+    .tag.green { border-color: rgba(0,229,160,0.2); background: rgba(0,229,160,0.05); }
+
+    /* Price per m2 indicator */
+    .ppm2-result { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 14px; display: none; }
+    .ppm2-result.visible { display: block; }
+    .ppm2-bar { height: 6px; border-radius: 99px; background: var(--bg3); margin: 10px 0; position: relative; overflow: visible; }
+    .ppm2-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width .4s; }
+    .ppm2-marker { position: absolute; top: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--green); border: 2px solid var(--bg); transform: translateX(-50%); transition: left .4s; }
+    .ppm2-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+    .btn-sm { background: var(--bg3); color: var(--text); font-family: inherit; font-size: 12px; font-weight: 600; padding: 9px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s; margin-top: 8px; }
+    .btn-sm:hover { border-color: rgba(255,255,255,0.2); }
+
+    .guide-link { display: flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; text-decoration: none; color: var(--text); font-size: 13px; margin-top: 20px; transition: border-color .15s; }
+    .guide-link:hover { border-color: rgba(0,229,160,0.3); }
+
+    @media (max-width: 480px) {
+      .field-row, .stat-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Bid Advisor</span>
+</nav>
+
+<div class="page">
+  <a href="/guide/buy" class="back-link">← Buyer Guide</a>
+
+  <div class="hero">
+    <div class="hero-tag">AI Tool</div>
+    <h1>Bid Advisor</h1>
+    <p class="hero-sub">Get an AI-powered bid strategy based on the asking price, neighborhood, and your situation. Know whether to bid above or below, and which conditions to include.</p>
+  </div>
+
+  <div class="form-section">
+    <div class="field-row">
+      <div>
+        <label for="listing-price">Asking price *</label>
+        <div class="price-input">
+          <input type="number" id="listing-price" placeholder="450000" min="0" oninput="updatePpm2()" />
+        </div>
+      </div>
+      <div>
+        <label for="area-m2">Property area (m²) <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+        <input type="number" id="area-m2" placeholder="85" min="0" oninput="updatePpm2()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Price per m2 indicator -->
+  <div class="ppm2-result" id="ppm2-box">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:700;letter-spacing:0.5px">Price per m²</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text)" id="ppm2-value"></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:var(--muted)" id="ppm2-signal"></div>
+      </div>
+    </div>
+    <div class="ppm2-bar" id="ppm2-bar-container">
+      <div class="ppm2-fill" id="ppm2-fill"></div>
+      <div class="ppm2-marker" id="ppm2-marker"></div>
+    </div>
+    <div class="ppm2-labels">
+      <span>Budget (under €3,000/m²)</span>
+      <span>Prime (€8,000+/m²)</span>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <label for="neighborhood">Location / neighborhood *</label>
+    <input type="text" id="neighborhood" placeholder="e.g. Amsterdam Zuid, Utrecht Oost, Eindhoven city centre" />
+  </div>
+
+  <div class="form-section">
+    <label for="situation">Your situation <span style="font-weight:400;color:var(--muted)">(optional but improves advice)</span></label>
+    <textarea id="situation" placeholder="e.g. First-time buyer, pre-approved mortgage up to €500k, flexible move-in date, have a buying agent, planning to waive the financing condition"></textarea>
+  </div>
+
+  <div class="form-section">
+    <label for="extra-context">Extra context <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <textarea id="extra-context" placeholder="e.g. Property has been on market for 6 weeks, reduced from €480k, no viewings on the listing page yet, similar house sold last month for €430k"></textarea>
+  </div>
+
+  <button class="btn-primary" id="generate-btn" onclick="generateAdvice()">
+    <span id="gen-label">🎯 Get my bid strategy</span>
+    <span id="gen-spinner" class="spinner" style="display:none"></span>
+  </button>
+
+  <div class="results" id="results">
+
+    <div class="rec-card">
+      <div class="rec-label">Recommended strategy</div>
+      <div class="rec-value" id="res-recommendation"></div>
+      <div class="rec-reasoning" id="res-reasoning"></div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-label">Suggested bid</div>
+        <div class="stat-value green" id="res-bid"></div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Market signal</div>
+        <div class="stat-value" id="res-market-signal"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="res-market-note"></div>
+      </div>
+    </div>
+
+    <div class="card" id="conditions-card">
+      <div class="card-label">Conditions to include</div>
+      <div class="tag-list" id="res-conditions"></div>
+    </div>
+
+    <div class="card" id="waive-card" style="display:none">
+      <div class="card-label">Conditions to consider waiving</div>
+      <div class="tag-list" id="res-waive"></div>
+    </div>
+
+    <button class="btn-sm" onclick="regenerate()">↺ Get a second opinion</button>
+
+  </div>
+
+  <a href="/guide/buy" class="guide-link">
+    <div style="font-size:18px">📖</div>
+    <div>
+      <div style="font-weight:700;font-size:14px">Complete Buyer Guide</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">How bidding works, makelaar roles, timeline</div>
+    </div>
+  </a>
+
+</div>
+
+<script>
+  function updatePpm2() {
+    const price = parseFloat(document.getElementById('listing-price').value) || 0;
+    const area = parseFloat(document.getElementById('area-m2').value) || 0;
+    const box = document.getElementById('ppm2-box');
+    if (!price || !area) { box.classList.remove('visible'); return; }
+    const ppm2 = price / area;
+    box.classList.add('visible');
+    document.getElementById('ppm2-value').textContent = '€' + Math.round(ppm2).toLocaleString('nl-NL') + '/m²';
+
+    const min = 2000, max = 9000;
+    const pct = Math.min(100, Math.max(0, ((ppm2 - min) / (max - min)) * 100));
+    document.getElementById('ppm2-fill').style.width = pct + '%';
+    document.getElementById('ppm2-marker').style.left = pct + '%';
+
+    let signal = '';
+    if (ppm2 < 3000) signal = 'Below average for NL';
+    else if (ppm2 < 4500) signal = 'Average for most cities';
+    else if (ppm2 < 6000) signal = 'Above average';
+    else if (ppm2 < 8000) signal = 'Premium range';
+    else signal = 'Top tier pricing';
+    document.getElementById('ppm2-signal').textContent = signal;
+  }
+
+  async function generateAdvice() {
+    const price = document.getElementById('listing-price').value.trim();
+    const neighborhood = document.getElementById('neighborhood').value.trim();
+    if (!price) { alert('Asking price is required.'); return; }
+    if (!neighborhood) { alert('Location is required.'); return; }
+
+    const btn = document.getElementById('generate-btn');
+    document.getElementById('gen-label').style.display = 'none';
+    document.getElementById('gen-spinner').style.display = '';
+    btn.disabled = true;
+    document.getElementById('results').classList.remove('visible');
+
+    try {
+      const resp = await fetch('/api/bid-advisor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          listingPrice: price,
+          neighborhood,
+          situation: document.getElementById('situation').value.trim(),
+          extraContext: document.getElementById('extra-context').value.trim(),
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Failed');
+      renderResults(data);
+    } catch (e) {
+      alert(e.message || 'Advice generation failed. Please try again.');
+    } finally {
+      document.getElementById('gen-label').style.display = '';
+      document.getElementById('gen-spinner').style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  function renderResults(data) {
+    document.getElementById('res-recommendation').textContent = data.recommendation || '';
+    document.getElementById('res-reasoning').textContent = data.reasoning || '';
+    document.getElementById('res-bid').textContent = data.bidAmount ? '€' + Number(data.bidAmount).toLocaleString('nl-NL') : '';
+
+    const sig = (data.marketSignal || 'neutral').toLowerCase();
+    const sigEl = document.getElementById('res-market-signal');
+    const labels = { hot: 'Hot market', warm: 'Warm market', neutral: 'Neutral market', cool: 'Cool market' };
+    sigEl.textContent = labels[sig] || sig;
+    sigEl.className = 'stat-value ' + sig;
+    document.getElementById('res-market-note').textContent = data.marketNote || '';
+
+    const condList = document.getElementById('res-conditions');
+    condList.innerHTML = '';
+    (data.conditions || []).forEach(c => {
+      const d = document.createElement('div');
+      d.className = 'tag green';
+      d.textContent = '+ ' + c;
+      condList.appendChild(d);
+    });
+
+    const waiveList = document.getElementById('res-waive');
+    waiveList.innerHTML = '';
+    if (data.conditionsToWaive && data.conditionsToWaive.length > 0) {
+      document.getElementById('waive-card').style.display = 'block';
+      data.conditionsToWaive.forEach(c => {
+        const d = document.createElement('div');
+        d.className = 'tag';
+        d.textContent = c;
+        waiveList.appendChild(d);
+      });
+    } else {
+      document.getElementById('waive-card').style.display = 'none';
+    }
+
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function regenerate() {
+    document.getElementById('results').classList.remove('visible');
+    generateAdvice();
+  }
+</script>
+
+</body>
+</html>

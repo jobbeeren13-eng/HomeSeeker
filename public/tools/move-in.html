@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Move-In Checklist — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { margin-bottom: 40px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+    h1 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+    .hero-sub { font-size: 14px; color: var(--muted); line-height: 1.65; max-width: 520px; }
+    .section { margin-bottom: 40px; }
+    h2 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+    .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; }
+
+    .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .progress-bar { background: var(--bg3); border-radius: 99px; height: 6px; margin-bottom: 18px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width .3s; }
+
+    .checklist { list-style: none; }
+    .checklist li { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .checklist li:last-child { border-bottom: none; }
+    .check-box { flex-shrink: 0; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all .15s; margin-top: 1px; }
+    .checklist li.done .check-box { background: var(--green); border-color: var(--green); color: #000; }
+    .check-content { flex: 1; }
+    .check-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+    .check-hint { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .checklist li.done .check-name { color: var(--muted); text-decoration: line-through; }
+    .checklist li.done .check-hint { text-decoration: none; }
+
+    .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,229,160,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
+    .tool-link:hover { background: var(--green-dim); }
+
+    @media (max-width: 480px) { h1 { font-size: 22px; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Move-In Checklist</span>
+</nav>
+
+<div class="page">
+  <a href="/guide/rent" class="back-link">← Rental Guide</a>
+
+  <div class="hero">
+    <div class="hero-tag">Interactive Checklist</div>
+    <h1>Move-In Day Checklist</h1>
+    <p class="hero-sub">Everything to do when you get the keys to your rental — from the initial inspection to registering at the municipality. Tap each item to mark it done.</p>
+  </div>
+
+  <!-- Key handover -->
+  <div class="section">
+    <h2>Getting the Keys</h2>
+    <p class="section-sub">Do these immediately on or before move-in day.</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-keys">0 of 5 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-keys" style="width:0%"></div></div>
+      <ul class="checklist" id="list-keys">
+        <li onclick="toggle(this,'keys',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Do a full walkthrough with the landlord or agent present</div><div class="check-hint">Note all existing damage — scratches, stains, broken fixtures. Take timestamped photos of everything. This protects your deposit when you leave.</div></div>
+        </li>
+        <li onclick="toggle(this,'keys',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Record all meter readings (gas, electricity, water)</div><div class="check-hint">Take photos showing the meter numbers clearly. You will need these when registering with utility suppliers.</div></div>
+        </li>
+        <li onclick="toggle(this,'keys',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Confirm which keys open which locks</div><div class="check-hint">Front door, mailbox, bike storage, building entrance. Count all sets of keys you receive.</div></div>
+        </li>
+        <li onclick="toggle(this,'keys',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Get a signed check-in inspection report (opleveringsrapport)</div><div class="check-hint">Both you and the landlord sign a document listing the property's condition. If they don't offer one, create your own with photos and ask them to sign or confirm by email.</div></div>
+        </li>
+        <li onclick="toggle(this,'keys',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Locate the fuse box and main water shutoff valve</div><div class="check-hint">Essential to know in an emergency. The fuse box is usually in a hallway cupboard or storage room. The water shutoff is typically under the kitchen sink or in a meter cupboard.</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Registration -->
+  <div class="section">
+    <h2>Register Your Address</h2>
+    <p class="section-sub">Required by law within 5 days of moving in.</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-register">0 of 4 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-register" style="width:0%"></div></div>
+      <ul class="checklist" id="list-register">
+        <li onclick="toggle(this,'register',4)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Register at the municipality (gemeente)</div><div class="check-hint">Book an appointment online at your gemeente's website. Bring your passport and rental contract. This updates your BRP (municipal personal records) and is required by law within 5 days.</div></div>
+        </li>
+        <li onclick="toggle(this,'register',4)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Update your address with DigiD</div><div class="check-hint">Log in to MijnOverheid via DigiD and update your correspondence address. Also update your BSN registration if your address was different before.</div></div>
+        </li>
+        <li onclick="toggle(this,'register',4)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Notify your employer, bank, and insurance providers</div><div class="check-hint">Update your registered address with your employer's HR, your Dutch bank account, health insurance (zorgverzekering), and any other financial services.</div></div>
+        </li>
+        <li onclick="toggle(this,'register',4)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Set up mail redirection from your old address</div><div class="check-hint">PostNL offers a paid redirection service. Useful for the first 3 months to catch anything addressed to your old home.</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Utilities -->
+  <div class="section">
+    <h2>Set Up Utilities</h2>
+    <p class="section-sub">Do these in the first 3 days.</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-utils">0 of 5 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-utils" style="width:0%"></div></div>
+      <ul class="checklist" id="list-utils">
+        <li onclick="toggle(this,'utils',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Transfer or set up gas and electricity contracts</div><div class="check-hint">Contact the current supplier (ask landlord who supplies the property) with your meter readings from move-in day. If the contract is still in the previous tenant's name, register a new one immediately. Common suppliers: Vattenfall, Eneco, Essent, Greenchoice.</div></div>
+        </li>
+        <li onclick="toggle(this,'utils',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Set up water contract if billed separately</div><div class="check-hint">In many rentals, water is included in servicekosten. Check your lease. If it's billed separately, contact the regional water company (e.g. Waternet in Amsterdam, Dunea in The Hague).</div></div>
+        </li>
+        <li onclick="toggle(this,'utils',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Order internet/fibre connection</div><div class="check-hint">Providers: KPN, Ziggo, T-Mobile Home, or local fibre providers. Allow 1-2 weeks for installation. Check what's already installed in the building — Ziggo coax or KPN fibre points are often already present.</div></div>
+        </li>
+        <li onclick="toggle(this,'utils',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Arrange contents insurance (inboedelverzekering)</div><div class="check-hint">Covers your furniture, electronics, and belongings inside the property. Compare at Independer.nl. Cost is typically €5-€15/month depending on property value and coverage.</div></div>
+        </li>
+        <li onclick="toggle(this,'utils',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Check if aansprakelijkheidsverzekering (liability insurance) is included</div><div class="check-hint">Personal liability insurance covers accidental damage you cause to others' property. Many Dutch people have it (€3-€7/month). Often bundled with contents insurance.</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- First week -->
+  <div class="section">
+    <h2>First Week</h2>
+    <div class="card">
+      <div class="progress-label" id="lbl-week">0 of 5 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-week" style="width:0%"></div></div>
+      <ul class="checklist" id="list-week">
+        <li onclick="toggle(this,'week',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Report any issues or damage discovered after moving in</div><div class="check-hint">Dutch law requires landlords to fix serious defects (serious damp, broken heating, structural issues). Report in writing (email) within the first week to create a paper trail.</div></div>
+        </li>
+        <li onclick="toggle(this,'week',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Find out your bin collection days</div><div class="check-hint">Check your gemeente website or ask a neighbour. Different coloured bins (grey/blue/green/orange) collect different waste on different days. Using the wrong bin on the wrong day leads to a fine.</div></div>
+        </li>
+        <li onclick="toggle(this,'week',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Register for parking permit if needed</div><div class="check-hint">In most Dutch cities, street parking requires a resident permit. Apply at your gemeente immediately — there can be waiting lists.</div></div>
+        </li>
+        <li onclick="toggle(this,'week',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Read your lease's house rules (huisreglement)</div><div class="check-hint">Check rules about noise hours, shared spaces, package deliveries, smoking policy, and guest policies. Landlords can issue warnings or end leases for repeated violations.</div></div>
+        </li>
+        <li onclick="toggle(this,'week',5)">
+          <div class="check-box"></div>
+          <div class="check-content"><div class="check-name">Save your landlord's emergency contact details</div><div class="check-hint">In case of serious problems (burst pipe, power failure, broken heating), you need to be able to reach them fast. Check if they have a 24/7 emergency number.</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tools-row">
+    <a href="/tools/lease-review" class="tool-link">📄 Lease Review</a>
+    <a href="/guide/rent" class="tool-link">📖 Rental Guide</a>
+  </div>
+
+</div>
+
+<script>
+  const counts = { keys: 0, register: 0, utils: 0, week: 0 };
+  const totals = { keys: 5, register: 4, utils: 5, week: 5 };
+
+  function toggle(el, section, total) {
+    const was = el.classList.contains('done');
+    el.classList.toggle('done', !was);
+    counts[section] += was ? -1 : 1;
+    const pct = Math.round((counts[section] / totals[section]) * 100);
+    document.getElementById('prog-' + section).style.width = pct + '%';
+    document.getElementById('lbl-' + section).textContent = counts[section] + ' of ' + totals[section] + ' done';
+  }
+</script>
+
+</body>
+</html>

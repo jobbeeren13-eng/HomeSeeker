@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Checklist — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { margin-bottom: 40px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+    h1 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+    .hero-sub { font-size: 14px; color: var(--muted); line-height: 1.65; max-width: 520px; }
+    .section { margin-bottom: 40px; }
+    h2 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+    .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    p { font-size: 14px; line-height: 1.7; color: var(--muted); }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 14px; }
+
+    .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .progress-bar { background: var(--bg3); border-radius: 99px; height: 6px; margin-bottom: 20px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width .3s; }
+
+    .checklist { list-style: none; }
+    .checklist li { display: flex; align-items: flex-start; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .checklist li:last-child { border-bottom: none; }
+    .check-box { flex-shrink: 0; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all .15s; margin-top: 1px; }
+    .checklist li.done .check-box { background: var(--green); border-color: var(--green); color: #000; }
+    .check-content { flex: 1; }
+    .check-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
+    .check-hint { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .checklist li.done .check-name { color: var(--muted); text-decoration: line-through; }
+
+    .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; }
+    .badge-req { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+    .badge-opt { background: rgba(0,229,160,0.12); color: var(--green); }
+
+    .tip-box { background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.18); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: var(--text); line-height: 1.6; }
+
+    .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,229,160,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
+    .tool-link:hover { background: var(--green-dim); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Document Checklist</span>
+</nav>
+
+<div class="page">
+  <a href="/guide/rent" class="back-link">← Rental Guide</a>
+
+  <div class="hero">
+    <div class="hero-tag">Interactive Checklist</div>
+    <h1>Rental Application Documents</h1>
+    <p class="hero-sub">Have everything ready before you start applying. Landlords move fast — being able to send all documents the same day dramatically improves your chances.</p>
+  </div>
+
+  <div class="tip-box">
+    Prepare all <span style="color:#ff6b6b;font-weight:700">required</span> documents before your first viewing. Having them ready to send within the hour is one of the strongest signals you can give a landlord.
+  </div>
+
+  <!-- Identity -->
+  <div class="section">
+    <h2>Identity</h2>
+    <p class="section-sub">Every landlord requires this.</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-id">0 of 2 ready</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-id" style="width:0%"></div></div>
+      <ul class="checklist" id="list-id">
+        <li onclick="toggle(this,'id',2)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Passport or EU ID card <span class="badge badge-req">Required</span></div>
+            <div class="check-hint">Clear photo or scan of the information page. Must be valid (not expired).</div>
+          </div>
+        </li>
+        <li onclick="toggle(this,'id',2)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">BSN number (if you have one) <span class="badge badge-opt">Helps</span></div>
+            <div class="check-hint">Your Dutch citizen service number. Not always required but signals you are registered in the Netherlands.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Income proof -->
+  <div class="section">
+    <h2>Income Proof</h2>
+    <p class="section-sub">Most landlords require 3x to 4x the monthly rent in gross income. Choose the documents that match your situation.</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-income">0 of 5 ready</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-income" style="width:0%"></div></div>
+      <ul class="checklist" id="list-income">
+        <li onclick="toggle(this,'income',5)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Last 3 months payslips <span class="badge badge-req">Required</span></div>
+            <div class="check-hint">In Dutch or German ideally. If your payslips are in another language, prepare a certified translation or official employer letter in Dutch or English.</div>
+          </div>
+        </li>
+        <li onclick="toggle(this,'income',5)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Employer statement (werkgeversverklaring) <span class="badge badge-req">Required</span></div>
+            <div class="check-hint">Letter from your employer confirming your contract type (permanent or temporary), start date, and gross monthly salary. This is a standard document — ask your HR team. Download the standard NVM form if your employer asks for a template.</div>
+          </div>
+        </li>
+        <li onclick="toggle(this,'income',5)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Last 3 months bank statements <span class="badge badge-req">Required</span></div>
+            <div class="check-hint">Shows consistent salary deposits and no large unexplained debits. Export as PDF from your bank's app.</div>
+          </div>
+        </li>
+        <li onclick="toggle(this,'income',5)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">IB-60 / Annual income statement <span class="badge badge-opt">Freelancers</span></div>
+            <div class="check-hint">For ZZP (self-employed): your last 3 annual tax returns (jaaropgave) from the Belastingdienst. Log in to MijnBelastingdienst to download.</div>
+          </div>
+        </li>
+        <li onclick="toggle(this,'income',5)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">30% ruling decision letter <span class="badge badge-opt">If applicable</span></div>
+            <div class="check-hint">If you have the Dutch 30% tax ruling, some landlords accept your gross income before the deduction for the income calculation — attach the decision letter.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- References -->
+  <div class="section">
+    <h2>References</h2>
+    <p class="section-sub">Optional but strongly recommended — especially for expats.</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-ref">0 of 2 ready</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-ref" style="width:0%"></div></div>
+      <ul class="checklist" id="list-ref">
+        <li onclick="toggle(this,'ref',2)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Reference from previous landlord <span class="badge badge-opt">Recommended</span></div>
+            <div class="check-hint">A short letter or email from your previous landlord confirming you paid rent on time and left the property in good condition. Ask for it before your current lease ends.</div>
+          </div>
+        </li>
+        <li onclick="toggle(this,'ref',2)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Employer reference contact <span class="badge badge-opt">Recommended</span></div>
+            <div class="check-hint">Name and phone number of your HR contact or manager who can confirm your employment if the landlord calls for verification.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Good to have -->
+  <div class="section">
+    <h2>Extras That Help</h2>
+    <div class="card">
+      <div class="progress-label" id="lbl-extra">0 of 3 ready</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-extra" style="width:0%"></div></div>
+      <ul class="checklist" id="list-extra">
+        <li onclick="toggle(this,'extra',3)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Motivation letter <span class="badge badge-opt">Highly recommended</span></div>
+            <div class="check-hint">A short personal letter (under 200 words) explaining who you are and why you want this specific property. Use HomeSeeker's AI Letter generator.</div>
+          </div>
+        </li>
+        <li onclick="toggle(this,'extra',3)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Brief introduction paragraph <span class="badge badge-opt">Helpful</span></div>
+            <div class="check-hint">3-4 sentences about yourself: job, lifestyle, why this location. Include in your application email. Easy to personalise with HomeSeeker's Full Application Package.</div>
+          </div>
+        </li>
+        <li onclick="toggle(this,'extra',3)">
+          <div class="check-box"></div>
+          <div class="check-content">
+            <div class="check-name">Photo (professional headshot optional) <span class="badge badge-opt">Optional</span></div>
+            <div class="check-hint">Some applicants include a professional photo to make the application feel more personal. Entirely optional and not required.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tools-row">
+    <a href="/letter" class="tool-link">✉️ Generate AI Letter</a>
+    <a href="/guide/rent" class="tool-link">📖 Rental Guide</a>
+  </div>
+
+</div>
+
+<script>
+  const counts = { id: 0, income: 0, ref: 0, extra: 0 };
+  const totals = { id: 2, income: 5, ref: 2, extra: 3 };
+
+  function toggle(el, section, total) {
+    const was = el.classList.contains('done');
+    el.classList.toggle('done', !was);
+    counts[section] += was ? -1 : 1;
+    const pct = Math.round((counts[section] / totals[section]) * 100);
+    document.getElementById('prog-' + section).style.width = pct + '%';
+    document.getElementById('lbl-' + section).textContent = counts[section] + ' of ' + totals[section] + ' ready';
+  }
+</script>
+
+</body>
+</html>

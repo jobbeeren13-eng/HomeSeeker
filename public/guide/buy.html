@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buyer Guide — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { margin-bottom: 48px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+    h1 { font-size: 32px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; }
+    .hero-sub { font-size: 16px; color: var(--muted); line-height: 1.6; max-width: 560px; }
+    .section { margin-bottom: 52px; }
+    h2 { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+    h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    p { font-size: 14px; line-height: 1.75; color: var(--muted); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+    .card-icon { font-size: 22px; margin-bottom: 10px; }
+    .highlight { color: var(--text); font-weight: 600; }
+    .green { color: var(--green); font-weight: 700; }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 32px; }
+    .timeline::before { content: ''; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+    .tl-step { position: relative; margin-bottom: 32px; }
+    .tl-step:last-child { margin-bottom: 0; }
+    .tl-dot { position: absolute; left: -32px; top: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--bg3); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: var(--green); }
+    .tl-step.active .tl-dot { background: var(--green-dim); border-color: var(--green); }
+    .tl-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
+    .tl-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .tl-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .tl-time { display: inline-block; font-size: 11px; font-weight: 700; background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; margin-top: 8px; color: var(--muted); }
+
+    /* Cost grid */
+    .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cost-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .cost-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .cost-value { font-size: 17px; font-weight: 800; color: var(--text); }
+    .cost-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* Tool links */
+    .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,229,160,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
+    .tool-link:hover { background: var(--green-dim); }
+
+    .info-box { background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.18); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+    .info-box p { color: var(--text); font-size: 13px; }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 24px; }
+      .cost-grid { grid-template-columns: 1fr; }
+      .tools-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Buyer Guide</span>
+</nav>
+
+<div class="page">
+  <a href="/" class="back-link">← Back to home</a>
+
+  <div class="hero">
+    <div class="hero-tag">Complete Guide</div>
+    <h1>Buying a Home in the Netherlands</h1>
+    <p class="hero-sub">A step-by-step guide for expats: how Funda works, what agents and notaries do, how bidding works, and what it all costs.</p>
+  </div>
+
+  <!-- How Funda works -->
+  <div class="section">
+    <h2>How Funda Works</h2>
+    <p>Funda is the dominant property listing platform in the Netherlands. Nearly every property for sale is listed there first. Here is what you need to know:</p>
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <h3>Searching on Funda</h3>
+      <p>You can browse listings without an account. Use filters for price, city, area (m²), number of rooms, and property type. Listings show the asking price, floor plan, photos, and energy label.</p>
+      <p>Most listings include a viewing request button. You contact the selling agent (the makelaar) directly through Funda to schedule a viewing.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Speed matters</h3>
+      <p>Popular listings in cities like Amsterdam, Utrecht, and Eindhoven receive dozens of viewing requests in the first few hours. Set up a <span class="highlight">saved search alert</span> on Funda so you are notified the moment a matching listing appears.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>Listing details to check</h3>
+      <p>Energy label (A+++ to G affects running costs), servicekosten (monthly owner association fees), ground lease (erfpacht) vs. full ownership, and the VvE reserve fund if buying an apartment.</p>
+    </div>
+  </div>
+
+  <!-- What a makelaar does -->
+  <div class="section">
+    <h2>What a Makelaar (Estate Agent) Does</h2>
+    <div class="info-box">
+      <p>In the Netherlands, a makelaar can represent either the seller (verkoopmakelaar) or the buyer (aankoopmakelaar). When you see a listing on Funda, the agent listed is the seller's agent. They do not represent your interests.</p>
+    </div>
+    <div class="card">
+      <h3>Selling agent (verkoopmakelaar)</h3>
+      <p>Lists the property, organises viewings, collects bids, and advises the seller on which offer to accept. They work for the seller and their job is to get the highest price.</p>
+    </div>
+    <div class="card">
+      <h3>Buying agent (aankoopmakelaar)</h3>
+      <p>Represents you as the buyer. They help you find properties, assess fair value, negotiate the price and conditions, review the purchase contract, and attend the notary appointment. Typical cost is <span class="highlight">€2,000 to €4,500</span> or 1% of the purchase price.</p>
+      <p>For expats unfamiliar with the Dutch system, a buying agent is often worth the cost. They can spot red flags in the property and negotiate conditions you might miss.</p>
+    </div>
+    <div class="card">
+      <h3>NVM vs. non-NVM agents</h3>
+      <p>NVM (Nederlandse Coöperatieve Vereniging van Makelaars) certified agents follow a code of conduct and have access to market data. Look for the NVM logo when choosing your buying agent.</p>
+    </div>
+  </div>
+
+  <!-- How bidding works -->
+  <div class="section">
+    <h2>How Bidding Works</h2>
+    <p>The Dutch system has no set rules on how bids are handled. Each seller and agent can run the process differently.</p>
+    <div class="card">
+      <div class="card-icon">💬</div>
+      <h3>The bid process</h3>
+      <p>You submit a bid in writing (usually via email or through your buying agent). Your bid includes: <span class="highlight">the price</span>, the conditions you want, and a proposed transfer date.</p>
+      <p>Common conditions: <strong>financieringsvoorbehoud</strong> (financing condition, usually 4-6 weeks), <strong>bouwkundige keuring</strong> (building inspection). Waiving conditions makes your bid stronger but adds risk.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <h3>Overbidding</h3>
+      <p>In competitive markets (Amsterdam, Utrecht), properties frequently sell for 5-20% above asking price. The asking price is a starting point, not the expected price. Check similar sold prices via Funda (premium) or Kadaster for real market data.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📅</div>
+      <h3>Sealed bids vs. ongoing negotiation</h3>
+      <p>Some agents run a sealed bid round with a deadline. Others negotiate 1-on-1. Ask the selling agent upfront which process applies so you know whether to come in at your best price immediately or have room to negotiate.</p>
+    </div>
+    <div class="tools-row">
+      <a href="/tools/bid-advisor" class="tool-link">🎯 AI Bid Advisor</a>
+      <a href="/tools/buyer-letter" class="tool-link">✉️ Buyer Intro Letter</a>
+    </div>
+  </div>
+
+  <!-- Transfer tax -->
+  <div class="section">
+    <h2>Transfer Tax (Overdrachtsbelasting)</h2>
+    <p>When you buy a property in the Netherlands, you pay transfer tax to the government. The rate depends on your situation:</p>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="cost-label">First-time buyers</div>
+        <div class="cost-value green">0%</div>
+        <div class="cost-sub">Under 35, home under €510,000 (2024), buying to live in</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Standard buyers</div>
+        <div class="cost-value">2%</div>
+        <div class="cost-sub">Buying as your primary residence, over 35 or home over €510,000</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Investors / second homes</div>
+        <div class="cost-value">10.4%</div>
+        <div class="cost-sub">Buying as rental property or second home</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Companies</div>
+        <div class="cost-value">10.4%</div>
+        <div class="cost-sub">Legal entities purchasing residential property</div>
+      </div>
+    </div>
+    <p style="margin-top:16px">The first-time buyer exemption only applies once. You must be buying to live there yourself (no subletting). The notary verifies your eligibility before applying it.</p>
+    <div class="tools-row">
+      <a href="/tools/mortgage" class="tool-link">💰 Mortgage Calculator</a>
+    </div>
+  </div>
+
+  <!-- What a notary does -->
+  <div class="section">
+    <h2>What the Notary (Notaris) Does</h2>
+    <div class="card">
+      <div class="card-icon">⚖️</div>
+      <h3>The notary is neutral — not your lawyer</h3>
+      <p>A notary in the Netherlands is a public official who handles the legal transfer of property. They draft the purchase deed, check the title, calculate the transfer tax, and register the transfer with the Kadaster (land registry).</p>
+      <p>The buyer typically chooses and pays for the notary. Cost is usually <span class="highlight">€1,200 to €2,000</span> for a straightforward transaction.</p>
+    </div>
+    <div class="card">
+      <h3>What they check</h3>
+      <p>The notary verifies there are no outstanding mortgages on the property, no liens or debts attached to it, that the seller has the legal right to sell, and that the buyer qualifies for any tax exemptions.</p>
+    </div>
+    <div class="card">
+      <h3>The transfer day</h3>
+      <p>You sign the transfer deed (leveringsakte) at the notary's office. The mortgage deed (if applicable) is signed at the same time. The notary then registers the transfer at the Kadaster. Keys are handed over after signing.</p>
+      <p>The full legal process is explained in the <a href="/tools/legal" style="color:var(--green)">Legal Process Guide</a>.</p>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="section">
+    <h2>Typical Timeline</h2>
+    <p>From starting your search to getting the keys, the Dutch purchase process typically takes 3 to 6 months.</p>
+    <div class="timeline">
+      <div class="tl-step active">
+        <div class="tl-dot">1</div>
+        <div class="tl-label">Preparation</div>
+        <div class="tl-title">Get your mortgage pre-approval</div>
+        <div class="tl-desc">Talk to a mortgage advisor to understand your budget. Get a mortgage indication (hypotheekindicatie) so you can bid confidently. Also decide whether to hire a buying agent.</div>
+        <div class="tl-time">1-3 weeks</div>
+      </div>
+      <div class="tl-step active">
+        <div class="tl-dot">2</div>
+        <div class="tl-label">Search</div>
+        <div class="tl-title">Find and view properties</div>
+        <div class="tl-desc">Set up Funda alerts, visit viewings, and assess properties. In a competitive market, expect to view 5-15 properties before finding the right one.</div>
+        <div class="tl-time">2-8 weeks</div>
+      </div>
+      <div class="tl-step active">
+        <div class="tl-dot">3</div>
+        <div class="tl-label">Offer</div>
+        <div class="tl-title">Submit your bid</div>
+        <div class="tl-desc">Research comparable sales, use the AI Bid Advisor, and submit your bid with conditions. Negotiation may take 1-5 days.</div>
+        <div class="tl-time">1-5 days</div>
+      </div>
+      <div class="tl-step active">
+        <div class="tl-dot">4</div>
+        <div class="tl-label">Agreement</div>
+        <div class="tl-title">Preliminary purchase agreement (koopakte)</div>
+        <div class="tl-desc">Once your bid is accepted, the notary or selling agent drafts the preliminary contract. You have 3 days to withdraw for any reason (cooling-off period). After signing, your conditions (inspection, financing) apply.</div>
+        <div class="tl-time">1-2 weeks after bid</div>
+      </div>
+      <div class="tl-step active">
+        <div class="tl-dot">5</div>
+        <div class="tl-label">Conditions</div>
+        <div class="tl-title">Building inspection and financing</div>
+        <div class="tl-desc">Arrange your building inspection (bouwkundige keuring) and finalise your mortgage. Both must be completed within the timeframe agreed in the contract, typically 4-6 weeks.</div>
+        <div class="tl-time">3-6 weeks</div>
+      </div>
+      <div class="tl-step active">
+        <div class="tl-dot">6</div>
+        <div class="tl-label">Transfer</div>
+        <div class="tl-title">Notary appointment and key handover</div>
+        <div class="tl-desc">Sign the transfer deed and mortgage deed at the notary. The notary registers the transfer. Keys are handed over. You are now the owner.</div>
+        <div class="tl-time">1 day</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tools -->
+  <div class="section">
+    <h2>Tools for Buyers</h2>
+    <div class="card">
+      <p>Use these tools throughout your buying journey:</p>
+      <div class="tools-row" style="margin-top:16px">
+        <a href="/tools/buyer-letter" class="tool-link">✉️ Buyer Intro Letter</a>
+        <a href="/tools/mortgage" class="tool-link">💰 Mortgage Calculator</a>
+        <a href="/tools/bid-advisor" class="tool-link">🎯 Bid Advisor</a>
+        <a href="/tools/legal" class="tool-link">⚖️ Legal Process</a>
+        <a href="/tools/handover" class="tool-link">🗝 Handover Checklist</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

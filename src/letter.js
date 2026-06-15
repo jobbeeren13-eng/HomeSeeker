@@ -274,4 +274,134 @@ Return only valid JSON. No explanation, no code blocks.`;
   };
 }
 
-module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, STYLE_LABELS };
+async function generateBuyerLetterDirect({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext = '' }) {
+  const city = houseCity ? formatCity(houseCity) : '';
+  const systemPrompt = `You write short English buyer introduction letters for Dutch property purchases. Structure exactly:
+
+Dear selling agent,
+
+[Paragraph 1: Who the buyer is and their situation. 2-3 sentences.]
+
+[Paragraph 2: Why they love this specific property and what resonates with them. 2 sentences.]
+
+[Paragraph 3: Their offer intent and what they want as next step. 2 sentences.]
+
+Kind regards,
+[Buyer]
+
+Rules:
+- English only
+- Separate every paragraph with a blank line
+- No dashes, no markdown, no bold text
+- Never use: reliable, responsible, delighted, ideal, perfect, pleased, I hope, I would love, I am writing to
+- Max 160 words
+- Personal and specific to the property mentioned
+- Sound like a real person writing, not a template`;
+
+  const lines = [];
+  lines.push(`Write a buyer introduction letter for a property at ${houseAddress}${city ? `, ${city}` : ''}.`);
+  if (housePrice) lines.push(`Asking price: ${housePrice}.`);
+  if (situation) lines.push(`Buyer situation: ${situation}`);
+  if (whyLove) lines.push(`Why they want this property: ${whyLove}`);
+  if (offerIntent) lines.push(`Offer intent: ${offerIntent}`);
+  if (extraContext) lines.push(`Extra context: ${extraContext}`);
+  lines.push('Write the letter. Max 160 words. No dashes. English only. Use the exact structure from the system prompt.');
+
+  const message = await callClaude({
+    max_tokens: 600,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  return stripMarkdown(message.content[0].text);
+}
+
+async function generateBidAdviceDirect({ listingPrice, neighborhood, situation, extraContext = '' }) {
+  const systemPrompt = `You are a Dutch real estate expert advising expat buyers on bid strategy. Return a JSON object with exactly these keys:
+- "recommendation": one sentence bid strategy (e.g. "Bid 5% above asking price")
+- "bidAmount": suggested bid as an integer (euros, no formatting)
+- "reasoning": 2-3 sentences explaining the reasoning based on Dutch market conditions
+- "conditions": array of strings listing conditions to include (e.g. "financing condition", "building inspection")
+- "conditionsToWaive": array of strings listing conditions to consider waiving with brief reason each
+- "marketSignal": one of "hot", "warm", "neutral", "cool"
+- "marketNote": one sentence about current market dynamics for this type of property
+
+Return only valid JSON. No explanation, no code blocks, no markdown.`;
+
+  const lines = [];
+  lines.push(`Property asking price: ${listingPrice}`);
+  if (neighborhood) lines.push(`Location/neighborhood: ${neighborhood}`);
+  if (situation) lines.push(`Buyer situation: ${situation}`);
+  if (extraContext) lines.push(`Additional context: ${extraContext}`);
+  lines.push('Generate bid strategy as JSON.');
+
+  const message = await callClaude({
+    max_tokens: 700,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  const raw = message.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in bid advice response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateLeaseReviewDirect({ leaseText, context = '' }) {
+  const systemPrompt = `You are a Dutch tenant law expert helping an expat review a rental lease. Return a JSON object with exactly these keys:
+- "summary": 2-3 sentence plain English summary of what the lease covers
+- "flags": array of objects with keys "type" ("warning", "ok", or "info") and "text" (explanation in English)
+  - "warning": unusual, unfair, or potentially illegal clauses
+  - "ok": standard clauses that are fine
+  - "info": clauses worth understanding even if normal
+  Include 4-8 flags total. Prioritize warnings and important clauses.
+- "questions": string with 3-5 specific questions the tenant should ask their landlord, one per line
+
+Return only valid JSON. No explanation, no code blocks, no markdown.`;
+
+  const lines = [];
+  lines.push(`Lease text to review:\n${leaseText.slice(0, 3000)}`);
+  if (context) lines.push(`Tenant situation: ${context}`);
+  lines.push('Review this lease and return the JSON analysis.');
+
+  const message = await callClaude({
+    max_tokens: 1200,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n\n') }],
+  });
+
+  const raw = message.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in lease review response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateNegotiateDirect({ goal, property = '', situation, extraContext = '' }) {
+  const systemPrompt = `You are an expert at negotiating Dutch rental terms on behalf of tenants. Return a JSON object with exactly these keys:
+- "strategy": 2-3 sentence overall negotiation strategy for this goal
+- "arguments": 3-4 bullet points (as a single string, one point per line starting with "- ") with strong arguments the tenant can use
+- "emailScript": a complete, ready-to-send professional email to the landlord or agent. Plain text, no markdown, max 150 words.
+- "avoid": 2-3 things to avoid saying or doing in this negotiation, as a single string (one per line starting with "- ")
+
+Return only valid JSON. No explanation, no code blocks, no markdown.`;
+
+  const lines = [];
+  lines.push(`Negotiation goal: ${goal}`);
+  if (property) lines.push(`Property: ${property}`);
+  if (situation) lines.push(`Tenant situation: ${situation}`);
+  if (extraContext) lines.push(`Additional context: ${extraContext}`);
+  lines.push('Generate the negotiation strategy as JSON.');
+
+  const message = await callClaude({
+    max_tokens: 1000,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  const raw = message.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in negotiate response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, STYLE_LABELS };

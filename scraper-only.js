@@ -9,7 +9,7 @@ const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const ADMIN_KEY   = process.env.ADMIN_KEY;
-const { generateLetterDirect, getAITip } = require('./src/letter');
+const { generateLetterDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect } = require('./src/letter');
 const PORT        = parseInt(process.env.MATCH_NOW_PORT || '3001', 10);
 
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
@@ -146,6 +146,64 @@ app.post('/api/generate-package', async (req, res) => {
     res.json(pkg);
   } catch (err) {
     console.error('[generate-package] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Buyer letter generation proxy
+app.post('/api/generate-buyer-letter', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext } = req.body;
+  if (!houseAddress) return res.status(400).json({ error: 'houseAddress required' });
+  try {
+    const letter = await generateBuyerLetterDirect({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext });
+    res.json({ letter });
+  } catch (err) {
+    console.error('[generate-buyer-letter] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Lease review generation proxy
+app.post('/api/generate-lease-review', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { leaseText, context } = req.body;
+  try {
+    const result = await generateLeaseReviewDirect({ leaseText, context });
+    res.json(result);
+  } catch (err) {
+    console.error('[generate-lease-review] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Negotiation coach generation proxy
+app.post('/api/generate-negotiate', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { goal, property, situation, extraContext } = req.body;
+  try {
+    const result = await generateNegotiateDirect({ goal, property, situation, extraContext });
+    res.json(result);
+  } catch (err) {
+    console.error('[generate-negotiate] Error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Bid advisor generation proxy
+app.post('/api/generate-bid-advice', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { listingPrice, neighborhood, situation, extraContext } = req.body;
+  if (!listingPrice) return res.status(400).json({ error: 'listingPrice required' });
+  try {
+    const advice = await generateBidAdviceDirect({ listingPrice, neighborhood, situation, extraContext });
+    res.json(advice);
+  } catch (err) {
+    console.error('[generate-bid-advice] Error:', err);
     res.status(500).json({ error: err.message });
   }
 });

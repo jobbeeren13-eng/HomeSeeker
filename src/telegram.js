@@ -297,6 +297,34 @@ function createBot(useWebhook = false) {
       reply_markup: { inline_keyboard: [[{ text: '⚙️ Open filter form', url: filterUrl }]] },
     });
   });
+
+  bot.onText(/\/tools/, async (msg) => {
+    const chatId = String(msg.chat.id);
+    if (!hasAccess(chatId)) return denyAccess(chatId);
+    await bot.sendMessage(chatId, '🛠 *HomeSeeker Tools*\n\nAll the tools to help you find and secure a home in the Netherlands:', {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '📖 Rental Guide', url: `${BASE_URL}/guide/rent` }, { text: '🏠 Buyer Guide', url: `${BASE_URL}/guide/buy` }],
+          [{ text: '📄 Lease Review', url: `${BASE_URL}/tools/lease-review` }, { text: '💬 Negotiation Coach', url: `${BASE_URL}/tools/negotiate` }],
+          [{ text: '📋 Documents', url: `${BASE_URL}/tools/documents` }, { text: '🗝 Move-In Checklist', url: `${BASE_URL}/tools/move-in` }],
+          [{ text: '✉️ Buyer Intro Letter', url: `${BASE_URL}/tools/buyer-letter` }, { text: '💰 Mortgage Calculator', url: `${BASE_URL}/tools/mortgage` }],
+          [{ text: '🎯 Bid Advisor', url: `${BASE_URL}/tools/bid-advisor` }, { text: '⚖️ Legal Process', url: `${BASE_URL}/tools/legal` }],
+          [{ text: '🗝 Handover Checklist', url: `${BASE_URL}/tools/handover` }],
+        ],
+      },
+    });
+  });
+
+  bot.onText(/\/dashboard/, async (msg) => {
+    const chatId = String(msg.chat.id);
+    if (!hasAccess(chatId)) return denyAccess(chatId);
+    const dashUrl = `${BASE_URL}/dashboard?chat_id=${chatId}`;
+    await bot.sendMessage(chatId, '📊 *Your HomeSeeker Dashboard*\n\nView your saved listings, application status, and quick links to all tools:', {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '📊 Open Dashboard', url: dashUrl }]] },
+    });
+  });
  
   bot.onText(/\/status/, async (msg) => {
     const chatId = String(msg.chat.id);

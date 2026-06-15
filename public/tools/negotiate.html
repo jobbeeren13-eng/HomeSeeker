@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Negotiation Coach — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 680px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { text-align: center; margin-bottom: 40px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+    h1 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+    .hero-sub { font-size: 14px; color: var(--muted); line-height: 1.65; max-width: 480px; margin: 0 auto; }
+
+    .form-section { margin-bottom: 18px; }
+    label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 7px; }
+    input[type="text"], textarea, select {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 13px 16px; color: var(--text); font-family: inherit; font-size: 14px;
+      line-height: 1.5; resize: vertical; transition: border-color .15s; appearance: none;
+    }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8494' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+    option { background: var(--bg2); }
+
+    .btn-primary {
+      width: 100%; background: var(--green); color: #000; font-family: inherit;
+      font-size: 15px; font-weight: 700; padding: 15px 24px; border: none; border-radius: 10px;
+      cursor: pointer; transition: opacity .2s; display: flex; align-items: center;
+      justify-content: center; gap: 8px; margin-top: 8px;
+    }
+    .btn-primary:hover { opacity: .9; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .results { display: none; margin-top: 28px; }
+    .results.visible { display: block; }
+    .res-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+    .res-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+    .res-text { font-size: 14px; line-height: 1.75; color: var(--text); white-space: pre-wrap; }
+
+    .script-box { background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.2); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
+    .script-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+    .script-text { font-size: 14px; line-height: 1.8; color: var(--text); white-space: pre-wrap; }
+
+    .btn-sm { background: var(--bg3); color: var(--text); font-family: inherit; font-size: 12px; font-weight: 600; padding: 9px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: border-color .15s; margin-top: 8px; }
+    .btn-sm:hover { border-color: rgba(255,255,255,0.2); }
+    .copy-feedback { font-size: 11px; color: var(--green); margin-left: 6px; opacity: 0; transition: opacity .3s; }
+    .copy-feedback.show { opacity: 1; }
+
+    .guide-link { display: flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; text-decoration: none; color: var(--text); font-size: 13px; margin-top: 20px; transition: border-color .15s; }
+    .guide-link:hover { border-color: rgba(0,229,160,0.3); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Negotiation Coach</span>
+</nav>
+
+<div class="page">
+  <a href="/guide/rent" class="back-link">← Rental Guide</a>
+
+  <div class="hero">
+    <div class="hero-tag">AI Tool</div>
+    <h1>Negotiation Coach</h1>
+    <p class="hero-sub">Tell us what you want to negotiate and your situation. Get a strategy, talking points, and a word-for-word email script to send to your landlord or agent.</p>
+  </div>
+
+  <div class="form-section">
+    <label for="goal">What do you want to negotiate? *</label>
+    <select id="goal">
+      <option value="">Select your goal...</option>
+      <option value="lower rent">Lower rent</option>
+      <option value="waive or reduce the deposit">Waive or reduce the deposit</option>
+      <option value="longer notice period">Longer notice period</option>
+      <option value="allow a pet">Allow a pet</option>
+      <option value="allow working from home">Allow working from home</option>
+      <option value="allow a roommate or partner to move in">Allow a roommate or partner to move in</option>
+      <option value="reduce planned rent increase">Reduce a planned rent increase</option>
+      <option value="get repairs done before signing">Get repairs done before signing</option>
+      <option value="extend the current lease term">Extend the current lease term</option>
+      <option value="move-in date change">Move-in date change</option>
+    </select>
+  </div>
+
+  <div class="form-section">
+    <label for="property">Property and rent</label>
+    <input type="text" id="property" placeholder="e.g. 2-bedroom apartment in Amsterdam, €1,800/month, private landlord" />
+  </div>
+
+  <div class="form-section">
+    <label for="situation">Your situation *</label>
+    <textarea id="situation" rows="4" placeholder="e.g. I have a permanent contract at ASML earning €5,500/month. I am a quiet professional, no pets currently. The listing has been available for 3 weeks. I am a serious candidate and ready to sign quickly."></textarea>
+  </div>
+
+  <div class="form-section">
+    <label for="extra">Anything else relevant <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+    <textarea id="extra" rows="3" placeholder="e.g. I saw a similar apartment 2 streets away for €150 less. The landlord mentioned they want a stable long-term tenant."></textarea>
+  </div>
+
+  <button class="btn-primary" id="generate-btn" onclick="generate()">
+    <span id="gen-label">💬 Get my negotiation strategy</span>
+    <span id="gen-spinner" class="spinner" style="display:none"></span>
+  </button>
+
+  <div class="results" id="results">
+    <div class="res-card">
+      <div class="res-label">Strategy</div>
+      <div class="res-text" id="res-strategy"></div>
+    </div>
+
+    <div class="res-card">
+      <div class="res-label">Key arguments</div>
+      <div class="res-text" id="res-arguments"></div>
+    </div>
+
+    <div class="script-box">
+      <div class="script-label">✉️ Email script — ready to send</div>
+      <div class="script-text" id="res-script"></div>
+    </div>
+
+    <div class="res-card">
+      <div class="res-label">What to avoid</div>
+      <div class="res-text" id="res-avoid"></div>
+    </div>
+
+    <button class="btn-sm" onclick="copyScript()">📋 Copy email<span class="copy-feedback" id="copy-fb"></span></button>
+    <button class="btn-sm" onclick="regenerate()" style="margin-left:8px">↺ Try again</button>
+  </div>
+
+  <a href="/guide/rent" class="guide-link">
+    <div style="font-size:18px">📖</div>
+    <div>
+      <div style="font-weight:700;font-size:14px">Rental Guide</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">Application process, tenant rights, what landlords want</div>
+    </div>
+  </a>
+</div>
+
+<script>
+  async function generate() {
+    const goal = document.getElementById('goal').value;
+    const situation = document.getElementById('situation').value.trim();
+    if (!goal) { alert('Please select what you want to negotiate.'); return; }
+    if (situation.length < 20) { alert('Please describe your situation (at least a few words).'); return; }
+
+    const btn = document.getElementById('generate-btn');
+    document.getElementById('gen-label').style.display = 'none';
+    document.getElementById('gen-spinner').style.display = '';
+    btn.disabled = true;
+    document.getElementById('results').classList.remove('visible');
+
+    try {
+      const resp = await fetch('/api/negotiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          goal,
+          property: document.getElementById('property').value.trim(),
+          situation,
+          extraContext: document.getElementById('extra').value.trim(),
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Failed');
+      renderResults(data);
+    } catch (e) {
+      alert(e.message || 'Generation failed. Please try again.');
+    } finally {
+      document.getElementById('gen-label').style.display = '';
+      document.getElementById('gen-spinner').style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  function renderResults(data) {
+    document.getElementById('res-strategy').textContent = data.strategy || '';
+    document.getElementById('res-arguments').textContent = data.arguments || '';
+    document.getElementById('res-script').textContent = data.emailScript || '';
+    document.getElementById('res-avoid').textContent = data.avoid || '';
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function copyScript() {
+    const text = document.getElementById('res-script').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const fb = document.getElementById('copy-fb');
+      fb.textContent = ' Copied!';
+      fb.classList.add('show');
+      setTimeout(() => fb.classList.remove('show'), 2000);
+    }).catch(() => {
+      const ta = document.createElement('textarea'); ta.value = text;
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    });
+  }
+
+  function regenerate() {
+    document.getElementById('results').classList.remove('visible');
+    generate();
+  }
+</script>
+
+</body>
+</html>

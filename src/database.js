@@ -102,6 +102,28 @@ db.exec(`
     listing_json TEXT NOT NULL,
     expires_at INTEGER NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS favorites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id TEXT NOT NULL,
+    listing_url TEXT NOT NULL,
+    listing_json TEXT NOT NULL DEFAULT '{}',
+    added_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(chat_id, listing_url)
+  );
+
+  CREATE TABLE IF NOT EXISTS application_tracker (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id TEXT NOT NULL,
+    listing_url TEXT NOT NULL,
+    listing_address TEXT DEFAULT '',
+    listing_price TEXT DEFAULT '',
+    listing_image TEXT DEFAULT '',
+    status TEXT DEFAULT 'applied' CHECK(status IN ('applied','viewing','rejected','accepted')),
+    notes TEXT DEFAULT '',
+    updated_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(chat_id, listing_url)
+  );
 `);
  
 try {
@@ -255,6 +277,22 @@ const getPersistedCacheListing = db.prepare(
 );
 const purgeExpiredCacheListings = db.prepare('DELETE FROM listing_cache WHERE expires_at <= ?');
 
+const getFavorites = db.prepare('SELECT * FROM favorites WHERE chat_id = ? ORDER BY added_at DESC');
+const addFavorite = db.prepare('INSERT OR REPLACE INTO favorites (chat_id, listing_url, listing_json) VALUES (?, ?, ?)');
+const removeFavorite = db.prepare('DELETE FROM favorites WHERE chat_id = ? AND listing_url = ?');
+
+const getApplicationTracker = db.prepare('SELECT * FROM application_tracker WHERE chat_id = ? ORDER BY updated_at DESC');
+const upsertApplicationStatus = db.prepare(`
+  INSERT INTO application_tracker (chat_id, listing_url, listing_address, listing_price, listing_image, status, notes)
+  VALUES (?, ?, ?, ?, ?, ?, ?)
+  ON CONFLICT(chat_id, listing_url) DO UPDATE SET
+    status = excluded.status, notes = excluded.notes, updated_at = datetime('now'),
+    listing_address = COALESCE(NULLIF(excluded.listing_address,''), listing_address),
+    listing_price = COALESCE(NULLIF(excluded.listing_price,''), listing_price),
+    listing_image = COALESCE(NULLIF(excluded.listing_image,''), listing_image)
+`);
+const removeApplicationStatus = db.prepare('DELETE FROM application_tracker WHERE chat_id = ? AND listing_url = ?');
+
 module.exports = {
   db, dbPath: DB_PATH,
   getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
@@ -266,5 +304,7 @@ module.exports = {
   insertReview, getApprovedReviews, approveReview,
   persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings,
   getRecentListings,
+  getFavorites, addFavorite, removeFavorite,
+  getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
 };
  

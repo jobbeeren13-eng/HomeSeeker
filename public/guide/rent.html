@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rental Guide — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { margin-bottom: 48px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+    h1 { font-size: 32px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; }
+    .hero-sub { font-size: 16px; color: var(--muted); line-height: 1.6; max-width: 560px; }
+    .section { margin-bottom: 52px; }
+    h2 { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+    h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    p { font-size: 14px; line-height: 1.75; color: var(--muted); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+    .card-icon { font-size: 22px; margin-bottom: 10px; }
+    .highlight { color: var(--text); font-weight: 600; }
+    .green { color: var(--green); font-weight: 700; }
+    .warn { color: #ffb347; font-weight: 600; }
+
+    /* Checklist */
+    .check-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .check-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .check-list li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+    /* Cost grid */
+    .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cost-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .cost-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .cost-value { font-size: 17px; font-weight: 800; }
+    .cost-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 32px; }
+    .timeline::before { content: ''; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+    .tl-step { position: relative; margin-bottom: 28px; }
+    .tl-step:last-child { margin-bottom: 0; }
+    .tl-dot { position: absolute; left: -32px; top: 2px; width: 22px; height: 22px; border-radius: 50%; background: var(--green-dim); border: 2px solid rgba(0,229,160,0.3); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: var(--green); }
+    .tl-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .tl-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    .info-box { background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.18); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+    .info-box p { color: var(--text); font-size: 13px; }
+
+    .warn-box { background: rgba(255,179,71,0.07); border: 1px solid rgba(255,179,71,0.2); border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; }
+    .warn-box p { color: var(--text); font-size: 13px; }
+    .warn-box strong { color: #ffb347; }
+
+    .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,229,160,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
+    .tool-link:hover { background: var(--green-dim); }
+
+    @media (max-width: 600px) { h1 { font-size: 24px; } .cost-grid { grid-template-columns: 1fr; } .tools-row { flex-direction: column; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Rental Guide</span>
+</nav>
+
+<div class="page">
+  <a href="/" class="back-link">← Back to home</a>
+
+  <div class="hero">
+    <div class="hero-tag">Complete Guide</div>
+    <h1>Renting in the Netherlands</h1>
+    <p class="hero-sub">How to find, apply for, and secure a rental in the Dutch housing market as an expat. Everything you need to know — in English.</p>
+  </div>
+
+  <div class="section">
+    <h2>The Dutch Rental Market</h2>
+    <div class="info-box">
+      <p>The Netherlands has one of the most competitive rental markets in Europe. In Amsterdam and Utrecht, popular listings receive 30 to 200 applications within 24 hours. Speed and a strong application are both essential.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h3>Social vs private rental</h3>
+      <p>The Dutch market has two segments: <span class="highlight">social housing</span> (corporatiewoningen), which has rent controls and very long waiting lists (5-15 years in major cities), and <span class="highlight">private rental</span> (vrije sector), where rents are market-rate and availability moves fast. Most expats rent in the private sector.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Private rental moves fast</h3>
+      <p>Private rental listings typically stay online for 3 to 7 days. The landlord schedules one or two rounds of viewings and picks the strongest application. Being among the first to respond matters.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💶</div>
+      <h3>What to budget</h3>
+      <p>Rent in the private sector varies widely. Budget around <span class="highlight">€1,200-€1,800/month</span> for a studio or 1-bedroom in a major city; €1,800-€2,800 for a 2-3 bedroom. Service costs (servicekosten) and utilities are usually on top of the advertised price.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Where to Search</h2>
+    <div class="card">
+      <h3>Funda (funda.nl)</h3>
+      <p>The largest listing platform. Covers both rental and purchase properties. Most professional landlords and agencies list here. Set up a saved search with email alerts for instant notifications when new listings appear.</p>
+    </div>
+    <div class="card">
+      <h3>Kamernet (kamernet.nl)</h3>
+      <p>Focused on rooms and studio apartments. Popular with students and young professionals. Many listings are from private landlords.</p>
+    </div>
+    <div class="card">
+      <h3>HousingAnywhere (housinganywhere.com)</h3>
+      <p>Targeted at internationals. Mid-term rentals (1-12 months) in furnished properties. Good for expats arriving without a long-term contract yet.</p>
+    </div>
+    <div class="card">
+      <h3>Pararius, Huurwoningen, Jaap</h3>
+      <p>Additional platforms used by agencies and private landlords. Some listings appear here first before reaching Funda.</p>
+    </div>
+    <p style="margin-top:12px">HomeSeeker monitors Funda, Kamernet, and HousingAnywhere simultaneously and sends you a Telegram alert the moment a matching listing appears — before you'd find it manually.</p>
+  </div>
+
+  <div class="section">
+    <h2>What Landlords Want</h2>
+    <p>Understanding what landlords look for is the fastest way to improve your application success rate.</p>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <h3>Income requirements</h3>
+      <p>Most landlords require gross monthly income of <span class="highlight">3x to 4x the monthly rent</span>. For a €1,500/month apartment, you need to show €4,500 to €6,000 gross monthly income. For expats with foreign income or ZZP (freelance) income, provide a Dutch tax return or signed employer statement.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>Document readiness</h3>
+      <p>Landlords want to move fast. Having all documents ready to send the same day gives you a significant edge. Key documents: passport or EU ID, last 3 months payslips, employer letter confirming permanent contract, last 3 months bank statements, and a reference from your previous landlord if available.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📝</div>
+      <h3>Motivation letter</h3>
+      <p>A concise, personal letter explaining who you are, why you want this specific property, and why you'd be a reliable tenant. Keep it under 200 words. No generic templates — landlords can spot them immediately.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤝</div>
+      <h3>Guarantor (borg)</h3>
+      <p>For applicants with foreign income, non-permanent contracts, or lower income, offering a guarantor (someone who co-signs the lease and is liable for unpaid rent) can tip the balance. Some landlords require a cash deposit (waarborgsom) of 1-2 months rent instead.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>The Application Process</h2>
+    <div class="timeline">
+      <div class="tl-step">
+        <div class="tl-dot">1</div>
+        <div class="tl-title">Alert: a listing matches your filters</div>
+        <div class="tl-desc">You receive a Telegram alert with your Application Score, tips, and a link to the listing. Act fast — top listings fill within hours.</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">2</div>
+        <div class="tl-title">Request a viewing</div>
+        <div class="tl-desc">Contact the agent or landlord immediately by phone or the Funda/platform contact form. Being among the first viewers increases your chance of being shortlisted.</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">3</div>
+        <div class="tl-title">Prepare your application</div>
+        <div class="tl-desc">Generate your motivation letter using HomeSeeker's AI tool. Gather all documents. Prepare a brief personal introduction.</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">4</div>
+        <div class="tl-title">Attend the viewing</div>
+        <div class="tl-desc">Be punctual, ask specific questions about the property and the lease, and express genuine interest. Send your application and documents the same day.</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">5</div>
+        <div class="tl-title">Application selected</div>
+        <div class="tl-desc">The landlord or agent reviews all applications and chooses a candidate. If selected, you move to contract signing. If not, ask for feedback — it helps your next application.</div>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">6</div>
+        <div class="tl-title">Lease signing and deposit</div>
+        <div class="tl-desc">Review your lease carefully before signing. Check: rent amount and increases, deposit amount, notice period, subletting rules, and pet policies. Pay the deposit and first month's rent before receiving the keys.</div>
+      </div>
+    </div>
+    <div class="tools-row">
+      <a href="/tools/lease-review" class="tool-link">📄 Review your lease</a>
+      <a href="/tools/move-in" class="tool-link">🗝 Move-in checklist</a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Typical Costs at Signing</h2>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="cost-label">Security deposit</div>
+        <div class="cost-value">1-2 months</div>
+        <div class="cost-sub">Refundable at end of lease if no damage</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">First month's rent</div>
+        <div class="cost-value">1 month</div>
+        <div class="cost-sub">Paid before or at key handover</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Agency fee</div>
+        <div class="cost-value">Usually €0</div>
+        <div class="cost-sub">Landlord pays agency fees since 2023 law change</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Service costs</div>
+        <div class="cost-value">€50-€300/mo</div>
+        <div class="cost-sub">Varies: internet, cleaning, parking, VvE</div>
+      </div>
+    </div>
+    <p style="margin-top:14px">Since January 2023, landlords and agents can no longer charge agency fees to tenants. If you are asked to pay a fee to the agency for finding or processing your application, this is illegal in the Netherlands.</p>
+  </div>
+
+  <div class="section">
+    <h2>Common Expat Mistakes</h2>
+    <div class="warn-box"><p><strong>Applying without a letter.</strong> A generic email with documents attached is not enough in a competitive market. A personalised motivation letter significantly increases your response rate.</p></div>
+    <div class="warn-box"><p><strong>Waiting to gather documents.</strong> Prepare your full document pack before you start searching. When the right listing appears, you need to move the same day.</p></div>
+    <div class="warn-box"><p><strong>Not reading the lease.</strong> Dutch leases can include clauses about rent increases, subletting restrictions, and penalty fees. Always read — or have reviewed — the full contract before signing.</p></div>
+    <div class="warn-box"><p><strong>Ignoring income ratios.</strong> If your income is below 3x the rent, your application will be deprioritised. Focus on listings in your budget range, or offer a guarantor.</p></div>
+    <div class="warn-box"><p><strong>Paying agency fees.</strong> Since 2023 this is illegal. Report to the Huurcommissie (rent tribunal) if you are asked to pay.</p></div>
+  </div>
+
+  <div class="tools-row">
+    <a href="/tools/negotiate" class="tool-link">💬 Negotiation Coach</a>
+    <a href="/tools/lease-review" class="tool-link">📄 Lease Review</a>
+    <a href="/tools/documents" class="tool-link">📋 Document Checklist</a>
+    <a href="/tools/move-in" class="tool-link">🗝 Move-in Checklist</a>
+  </div>
+
+</div>
+</body>
+</html>

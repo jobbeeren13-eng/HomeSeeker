@@ -120,13 +120,21 @@
     .footer-copy { color: var(--muted); font-size: 12px; }
     .sticky-cta { display: none; }
     .two-col-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 780px; }
+    .tools-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 40px; }
+    .tools-col-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .tool-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); text-decoration: none; transition: opacity .15s; }
+    .tool-item:last-child { border-bottom: none; }
+    .tool-item:hover { opacity: .85; }
+    .tool-item-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--green-dim); border: 1px solid rgba(0,229,160,0.15); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .tool-item-text strong { display: block; font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .tool-item-text span { font-size: 12px; color: var(--muted); line-height: 1.4; }
     @media (max-width: 900px) {
       .hero-grid { grid-template-columns: 1fr; gap: 48px; text-align: center; }
       .hero-trust { justify-content: center; }
       .hero-cta-group { justify-content: center; }
       .hero-sub, .hero-hook { margin-left: auto; margin-right: auto; }
       .hero-right { display: block; margin-top: 32px; }
-      .audience-grid, .steps, .letter-grid, .two-col-grid { grid-template-columns: 1fr; }
+      .audience-grid, .steps, .letter-grid, .two-col-grid, .tools-cols { grid-template-columns: 1fr; }
       .preview-grid, .scores-row { grid-template-columns: 1fr; }
       .price-card { padding: 28px 20px; }
     }
@@ -475,6 +483,59 @@
 <section style="padding: 32px var(--section-x) 0; text-align:center;">
   <p style="font-size:18px;font-weight:600;color:var(--text);max-width:540px;margin:0 auto;line-height:1.6">Hundreds of people are applying for the same listing as you.<br/><span style="color:var(--green)">Be the one who responds first — and applies best.</span></p>
 </section>
+
+<section style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="container">
+    <div class="section-tag">All Tools</div>
+    <h2>Every tool you need.<br />Renting or buying.</h2>
+    <p class="section-sub">From real-time alerts to AI letters to bid strategy — everything is included in one subscription.</p>
+    <div class="tools-cols">
+      <div>
+        <div class="tools-col-title">🏠 Renting</div>
+        <a href="/how-scores-work" class="tool-item">
+          <div class="tool-item-icon">📖</div>
+          <div class="tool-item-text"><strong>Rental Guide</strong><span>How scores work, what landlords look for, and how to maximise your application</span></div>
+        </a>
+        <a href="/letter" class="tool-item">
+          <div class="tool-item-icon">✉️</div>
+          <div class="tool-item-text"><strong>AI Motivation Letter</strong><span>Personalised rental letter generated from your Telegram alert in seconds</span></div>
+        </a>
+        <a href="/apply" class="tool-item">
+          <div class="tool-item-icon">📦</div>
+          <div class="tool-item-text"><strong>Full Application Package</strong><span>Letter, personal intro, WhatsApp one-liner, and financial summary — all at once</span></div>
+        </a>
+      </div>
+      <div>
+        <div class="tools-col-title">🏡 Buying</div>
+        <a href="/guide/buy" class="tool-item">
+          <div class="tool-item-icon">📖</div>
+          <div class="tool-item-text"><strong>Buyer Guide</strong><span>How Funda works, bidding, transfer tax, notary, and the full timeline explained</span></div>
+        </a>
+        <a href="/tools/buyer-letter" class="tool-item">
+          <div class="tool-item-icon">✉️</div>
+          <div class="tool-item-text"><strong>Buyer Intro Letter</strong><span>AI letter to the selling agent — helps tip the balance when bids are close</span></div>
+        </a>
+        <a href="/tools/mortgage" class="tool-item">
+          <div class="tool-item-icon">💰</div>
+          <div class="tool-item-text"><strong>Mortgage Calculator</strong><span>Understand what income is accepted and estimate your max mortgage and monthly cost</span></div>
+        </a>
+        <a href="/tools/bid-advisor" class="tool-item">
+          <div class="tool-item-icon">🎯</div>
+          <div class="tool-item-text"><strong>Bid Advisor</strong><span>AI-powered bid strategy: how much to offer, which conditions to include or waive</span></div>
+        </a>
+        <a href="/tools/legal" class="tool-item">
+          <div class="tool-item-icon">⚖️</div>
+          <div class="tool-item-text"><strong>Legal Process Guide</strong><span>Step-by-step: from bid accepted to keys in hand — what expats often get wrong</span></div>
+        </a>
+        <a href="/tools/handover" class="tool-item">
+          <div class="tool-item-icon">🗝</div>
+          <div class="tool-item-text"><strong>Key Handover Checklist</strong><span>Interactive checklist for handover day: notary, property inspection, registration</span></div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="pricing" class="pricing-section">
   <div class="container">
     <div class="section-tag">Pricing</div>

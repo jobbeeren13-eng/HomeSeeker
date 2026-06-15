@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legal Process Guide — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { margin-bottom: 48px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+    h1 { font-size: 32px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; }
+    .hero-sub { font-size: 16px; color: var(--muted); line-height: 1.6; max-width: 560px; }
+    .section { margin-bottom: 52px; }
+    h2 { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+    h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    p { font-size: 14px; line-height: 1.75; color: var(--muted); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+    .highlight { color: var(--text); font-weight: 600; }
+    .green { color: var(--green); font-weight: 700; }
+    .warn { color: #ffb347; font-weight: 600; }
+
+    /* Step list */
+    .step-list { counter-reset: steps; }
+    .step { counter-increment: steps; display: flex; gap: 18px; margin-bottom: 32px; }
+    .step-num { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--green-dim); border: 2px solid rgba(0,229,160,0.3); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--green); }
+    .step-body { flex: 1; }
+    .step-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
+    .step-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+    .step-time { display: inline-block; font-size: 11px; font-weight: 700; background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; margin-bottom: 10px; color: var(--muted); }
+    .step-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    /* Warning box */
+    .warn-box { background: rgba(255,179,71,0.07); border: 1px solid rgba(255,179,71,0.2); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+    .warn-box p { color: var(--text); font-size: 13px; }
+    .warn-box strong { color: #ffb347; }
+
+    .info-box { background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.18); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+    .info-box p { color: var(--text); font-size: 13px; }
+
+    .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,229,160,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
+    .tool-link:hover { background: var(--green-dim); }
+
+    @media (max-width: 600px) { h1 { font-size: 24px; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Legal Process</span>
+</nav>
+
+<div class="page">
+  <a href="/guide/buy" class="back-link">← Buyer Guide</a>
+
+  <div class="hero">
+    <div class="hero-tag">Step by Step</div>
+    <h1>After Your Bid Is Accepted</h1>
+    <p class="hero-sub">What happens legally between accepting a bid and getting the keys. Timelines, documents, and the mistakes expats commonly make.</p>
+  </div>
+
+  <div class="info-box">
+    <p>Getting your bid accepted is just the beginning. There are 6 distinct legal stages before you own the property. Missing a deadline or condition can cost you 10% of the purchase price as a penalty deposit.</p>
+  </div>
+
+  <div class="section">
+    <h2>The 6 Legal Stages</h2>
+    <div class="step-list">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-label">Stage 1</div>
+          <div class="step-title">Verbal agreement</div>
+          <div class="step-time">Day 1</div>
+          <div class="step-desc">The seller accepts your bid verbally (by phone, email, or via agents). <span class="warn">This is NOT legally binding yet.</span> Either party can still walk away without penalty. The preliminary purchase agreement is what creates legal obligations.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-label">Stage 2</div>
+          <div class="step-title">Preliminary purchase agreement (voorlopig koopcontract / koopakte)</div>
+          <div class="step-time">Typically within 1-2 weeks of bid acceptance</div>
+          <div class="step-desc">A written contract drafted by the selling agent or notary. It states: the agreed price, conditions (financieringsvoorbehoud, bouwkundige keuring), the transfer date, and the 10% deposit deadline. Read this document in full before signing. If you do not read Dutch, hire a translator or buying agent to review it with you.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-label">Stage 3</div>
+          <div class="step-title">3-day cooling-off period</div>
+          <div class="step-time">3 business days after signing the koopakte</div>
+          <div class="step-desc">After signing the preliminary contract, you have 3 business days to withdraw for any reason with no financial penalty. This is a legal right in the Netherlands. The seller does not have this right. After the cooling-off period, the contract conditions apply and withdrawal means losing your deposit (or paying 10% of the purchase price).</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-label">Stage 4</div>
+          <div class="step-title">Building inspection (bouwkundige keuring)</div>
+          <div class="step-time">Usually within 1-2 weeks of signing</div>
+          <div class="step-desc">A certified inspector visits the property and produces a detailed report on the structural condition, any defects, and estimated repair costs. Cost is typically <span class="highlight">€350 to €600</span>. If serious defects are found above the threshold in your contract, you can withdraw using the inspection condition. Most contracts set the threshold at €5,000 to €15,000 in repair costs. Always include an inspection condition unless you are buying a new-build.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-label">Stage 5</div>
+          <div class="step-title">Financing condition (financieringsvoorbehoud)</div>
+          <div class="step-time">4-6 weeks from signing</div>
+          <div class="step-desc">You have until the deadline in your contract to secure a mortgage offer. If your bank declines the mortgage, you can withdraw using this condition. You will typically need written rejection letters from 2 lenders to invoke this condition. Get your application started immediately after signing the koopakte as timelines are tight.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-label">Stage 6</div>
+          <div class="step-title">Notary appointment and key handover</div>
+          <div class="step-time">Transfer date agreed in the contract</div>
+          <div class="step-desc">You sign two documents at the notary: the transfer deed (leveringsakte) and the mortgage deed (hypotheekakte). The notary registers the transfer with the Kadaster (land registry). After signing, the keys are handed over. You are now the legal owner. See the <a href="/tools/handover" style="color:var(--green)">Handover Checklist</a> for what to do that day.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Common expat mistakes -->
+  <div class="section">
+    <h2>What Expats Often Get Wrong</h2>
+    <div class="warn-box">
+      <p><strong>Not reading the koopakte in full.</strong> The preliminary contract is binding after the cooling-off period. Clauses about the deposit, conditions, and penalty terms are in Dutch. Always get it reviewed.</p>
+    </div>
+    <div class="warn-box">
+      <p><strong>Missing condition deadlines.</strong> If your financing condition expires before your mortgage is confirmed, you lose the protection. Track all deadlines carefully and ask your buying agent or mortgage advisor to flag them.</p>
+    </div>
+    <div class="warn-box">
+      <p><strong>Skipping the building inspection.</strong> Especially in competitive markets, buyers sometimes waive the inspection to make their bid more attractive. This is a significant risk. A hidden structural defect or damp problem can cost tens of thousands of euros.</p>
+    </div>
+    <div class="warn-box">
+      <p><strong>Assuming the notary works for you.</strong> The Dutch notary is neutral. They handle the transaction correctly but they do not advise you on whether the deal is fair or protect your interests. You need your own buying agent or legal advisor for that.</p>
+    </div>
+    <div class="warn-box">
+      <p><strong>Not checking the VvE (owners association).</strong> When buying an apartment, check the VvE reserve fund. A low reserve means future special assessments (extra costs charged to all owners) for maintenance. Ask for the VvE meeting minutes and financial statements.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Key Documents to Know</h2>
+    <div class="card">
+      <h3>Koopakte (preliminary purchase agreement)</h3>
+      <p>The binding purchase contract signed by both parties. Contains price, conditions, dates, and penalty clauses.</p>
+    </div>
+    <div class="card">
+      <h3>Leveringsakte (transfer deed)</h3>
+      <p>The final document signed at the notary that legally transfers ownership. Registered with the Kadaster.</p>
+    </div>
+    <div class="card">
+      <h3>Hypotheekakte (mortgage deed)</h3>
+      <p>The document that records your mortgage lien on the property. Also signed at the notary and registered with the Kadaster.</p>
+    </div>
+    <div class="card">
+      <h3>Eigendomsbewijs (title deed)</h3>
+      <p>Proof of ownership registered in the Kadaster. Your notary will provide you a copy after the transfer.</p>
+    </div>
+  </div>
+
+  <div class="tools-row">
+    <a href="/tools/handover" class="tool-link">🗝 Handover Checklist</a>
+    <a href="/tools/bid-advisor" class="tool-link">🎯 Bid Advisor</a>
+    <a href="/guide/buy" class="tool-link">📖 Full Buyer Guide</a>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Key Handover Checklist — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { margin-bottom: 48px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+    h1 { font-size: 32px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; }
+    .hero-sub { font-size: 16px; color: var(--muted); line-height: 1.6; max-width: 560px; }
+    .section { margin-bottom: 48px; }
+    h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    p { font-size: 14px; line-height: 1.75; color: var(--muted); margin-bottom: 12px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+    h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+    .highlight { color: var(--text); font-weight: 600; }
+    .green { color: var(--green); font-weight: 700; }
+
+    /* Checklist */
+    .checklist { list-style: none; }
+    .checklist li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .checklist li:last-child { border-bottom: none; }
+    .check-box { flex-shrink: 0; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all .15s; margin-top: 1px; }
+    .checklist li.done .check-box { background: var(--green); border-color: var(--green); color: #000; }
+    .check-text { font-size: 14px; line-height: 1.5; color: var(--text); flex: 1; }
+    .check-note { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .checklist li.done .check-text { color: var(--muted); text-decoration: line-through; }
+    .checklist li.done .check-note { text-decoration: none; }
+
+    .progress-bar { background: var(--bg3); border-radius: 99px; height: 6px; margin: 8px 0 20px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width .3s; }
+    .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+
+    .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,229,160,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
+    .tool-link:hover { background: var(--green-dim); }
+
+    @media (max-width: 600px) { h1 { font-size: 24px; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Handover Checklist</span>
+</nav>
+
+<div class="page">
+  <a href="/tools/legal" class="back-link">← Legal Process</a>
+
+  <div class="hero">
+    <div class="hero-tag">Interactive Checklist</div>
+    <h1>Key Handover Day</h1>
+    <p class="hero-sub">Everything to do on the day you get the keys, and in the first week. Tap each item to mark it done.</p>
+  </div>
+
+  <!-- Before the notary -->
+  <div class="section">
+    <h2>Before the Notary Appointment</h2>
+    <p class="section-sub">Prepare these in the days before your transfer appointment.</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-before">0 of 6 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-before" style="width:0%"></div></div>
+      <ul class="checklist" id="list-before">
+        <li onclick="toggle(this,'before')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Confirm notary appointment time and address</div><div class="check-note">You will receive appointment details from the notary office</div></div>
+        </li>
+        <li onclick="toggle(this,'before')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Bring valid ID (passport or EU ID card)</div><div class="check-note">Required by law for the notary to verify your identity</div></div>
+        </li>
+        <li onclick="toggle(this,'before')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Confirm the transfer amount is in your account or arranged with your bank</div><div class="check-note">Your notary will send exact payment instructions a few days before</div></div>
+        </li>
+        <li onclick="toggle(this,'before')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Review the transfer deed (leveringsakte) draft sent by the notary</div><div class="check-note">Check names, address, price, and any special clauses are correct</div></div>
+        </li>
+        <li onclick="toggle(this,'before')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Arrange home insurance (opstalverzekering) to start from the transfer date</div><div class="check-note">Required by your mortgage lender. You become responsible for the property from the moment the deed is signed</div></div>
+        </li>
+        <li onclick="toggle(this,'before')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Plan the final walk-through inspection of the property before signing</div><div class="check-note">Done the morning of transfer or the day before. Check that nothing has been removed and no damage has occurred since your last visit</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- At the notary -->
+  <div class="section">
+    <h2>At the Notary</h2>
+    <p class="section-sub">What happens during the appointment (typically 1 to 2 hours).</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-notary">0 of 5 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-notary" style="width:0%"></div></div>
+      <ul class="checklist" id="list-notary">
+        <li onclick="toggle(this,'notary')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Identity verified by notary</div><div class="check-note">Bring your passport or EU ID card</div></div>
+        </li>
+        <li onclick="toggle(this,'notary')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Sign the transfer deed (leveringsakte)</div><div class="check-note">The notary reads aloud the key clauses. Ask questions before signing if anything is unclear</div></div>
+        </li>
+        <li onclick="toggle(this,'notary')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Sign the mortgage deed (hypotheekakte) if applicable</div><div class="check-note">Registers the lender's claim on the property with the Kadaster</div></div>
+        </li>
+        <li onclick="toggle(this,'notary')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Receive confirmation of Kadaster registration</div><div class="check-note">The notary registers the transfer electronically. You will receive a copy of the deed</div></div>
+        </li>
+        <li onclick="toggle(this,'notary')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Receive the keys from the seller</div><div class="check-note">Keys are typically handed over at the notary after all documents are signed</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- At the property -->
+  <div class="section">
+    <h2>At the Property on Handover Day</h2>
+    <p class="section-sub">Do this walk-through immediately after receiving the keys, ideally with the seller or their agent present.</p>
+    <div class="card">
+      <div class="progress-label" id="lbl-property">0 of 7 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-property" style="width:0%"></div></div>
+      <ul class="checklist" id="list-property">
+        <li onclick="toggle(this,'property')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Check all rooms, walls, and ceilings for new damage</div><div class="check-note">Compare to inspection report and photos from viewings</div></div>
+        </li>
+        <li onclick="toggle(this,'property')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Test all window and door locks</div><div class="check-note">Note which keys open which locks</div></div>
+        </li>
+        <li onclick="toggle(this,'property')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Record all meter readings (gas, electricity, water)</div><div class="check-note">Take photos with timestamp. Report to utility suppliers immediately</div></div>
+        </li>
+        <li onclick="toggle(this,'property')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Check that all agreed fixtures and appliances are present</div><div class="check-note">Cross-reference with the lijst van zaken (inventory list) from the koopakte</div></div>
+        </li>
+        <li onclick="toggle(this,'property')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Locate the fuse box (meterkast) and main water shutoff</div><div class="check-note">Important to know in an emergency</div></div>
+        </li>
+        <li onclick="toggle(this,'property')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Test heating, hot water, and any built-in appliances</div></div>
+        </li>
+        <li onclick="toggle(this,'property')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Receive all documentation (manuals, VvE documents, warranties)</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Registration -->
+  <div class="section">
+    <h2>First Week: Register and Set Up</h2>
+    <div class="card">
+      <div class="progress-label" id="lbl-register">0 of 7 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-register" style="width:0%"></div></div>
+      <ul class="checklist" id="list-register">
+        <li onclick="toggle(this,'register')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Register your new address at the municipality (gemeente)</div><div class="check-note">Required by law within 5 days of moving in. Bring your ID and proof of address (deed or utility bill)</div></div>
+        </li>
+        <li onclick="toggle(this,'register')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Transfer utility contracts (gas, electricity, water) to your name</div><div class="check-note">Contact current suppliers with your meter readings from handover day</div></div>
+        </li>
+        <li onclick="toggle(this,'register')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Arrange contents insurance (inboedelverzekering)</div><div class="check-note">Covers your furniture and belongings inside the property</div></div>
+        </li>
+        <li onclick="toggle(this,'register')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Change all locks</div><div class="check-note">You do not know how many copies of the keys exist from previous owners. Standard security practice</div></div>
+        </li>
+        <li onclick="toggle(this,'register')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Update your address with your employer, bank, and DigiD</div></div>
+        </li>
+        <li onclick="toggle(this,'register')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Notify the VvE (owners association) of the ownership change if applicable</div><div class="check-note">They will update their records and provide you access to building systems</div></div>
+        </li>
+        <li onclick="toggle(this,'register')">
+          <div class="check-box"></div>
+          <div><div class="check-text">Set up internet and TV subscription</div><div class="check-note">KPN, Ziggo, or fiber providers. Allow 1-2 weeks for installation</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tools-row">
+    <a href="/tools/legal" class="tool-link">⚖️ Legal Process Guide</a>
+    <a href="/guide/buy" class="tool-link">📖 Full Buyer Guide</a>
+  </div>
+
+</div>
+
+<script>
+  const counts = { before: 0, notary: 0, property: 0, register: 0 };
+  const totals = { before: 6, notary: 5, property: 7, register: 7 };
+
+  function toggle(el, section) {
+    const wasDone = el.classList.contains('done');
+    el.classList.toggle('done', !wasDone);
+    counts[section] += wasDone ? -1 : 1;
+    updateProgress(section);
+  }
+
+  function updateProgress(section) {
+    const pct = Math.round((counts[section] / totals[section]) * 100);
+    document.getElementById('prog-' + section).style.width = pct + '%';
+    document.getElementById('lbl-' + section).textContent = counts[section] + ' of ' + totals[section] + ' done';
+  }
+</script>
+
+</body>
+</html>

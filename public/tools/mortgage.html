@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mortgage Guide &amp; Calculator — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .page { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 32px; }
+    .back-link:hover { color: var(--text); }
+    .hero { margin-bottom: 48px; }
+    .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+    h1 { font-size: 32px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; }
+    .hero-sub { font-size: 16px; color: var(--muted); line-height: 1.6; max-width: 560px; }
+    .section { margin-bottom: 52px; }
+    h2 { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+    h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    p { font-size: 14px; line-height: 1.75; color: var(--muted); margin-bottom: 12px; }
+    p:last-child { margin-bottom: 0; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 14px; }
+    .highlight { color: var(--text); font-weight: 600; }
+    .green { color: var(--green); font-weight: 700; }
+
+    /* Cost table */
+    .cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .cost-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .cost-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .cost-value { font-size: 17px; font-weight: 800; color: var(--text); }
+    .cost-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* Calculator */
+    .calculator { background: var(--bg2); border: 1px solid rgba(0,229,160,0.2); border-radius: 16px; padding: 28px; }
+    .calc-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+    .calc-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 7px; }
+    input[type="number"] {
+      width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+      padding: 13px 16px; color: var(--text); font-family: inherit; font-size: 15px; font-weight: 600;
+      transition: border-color .15s; appearance: none; -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type="number"]:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    .input-prefix { position: relative; }
+    .input-prefix::before { content: '€'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; }
+    .input-prefix input { padding-left: 28px; }
+    .calc-btn { width: 100%; background: var(--green); color: #000; font-family: inherit; font-size: 15px; font-weight: 700; padding: 15px; border: none; border-radius: 10px; cursor: pointer; transition: opacity .2s; margin-top: 6px; }
+    .calc-btn:hover { opacity: .9; }
+
+    /* Results */
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+    .result-item { background: var(--bg3); border-radius: 12px; padding: 16px 18px; }
+    .result-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .result-value { font-size: 22px; font-weight: 800; color: var(--green); }
+    .result-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .result-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
+    .results-box { display: none; }
+    .results-box.visible { display: block; }
+
+    .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,229,160,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
+    .tool-link:hover { background: var(--green-dim); }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 24px; }
+      .cost-grid, .field-row, .result-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Mortgage Guide</span>
+</nav>
+
+<div class="page">
+  <a href="/guide/buy" class="back-link">← Buyer Guide</a>
+
+  <div class="hero">
+    <div class="hero-tag">Guide + Calculator</div>
+    <h1>Mortgages for Expats in the Netherlands</h1>
+    <p class="hero-sub">Understand what income is accepted, how much you can borrow, and what all the costs add up to.</p>
+  </div>
+
+  <!-- Mortgage types -->
+  <div class="section">
+    <h2>Types of Mortgages</h2>
+    <div class="card">
+      <h3>Annuity mortgage (annuiteitenhypotheek)</h3>
+      <p>The standard in the Netherlands. You pay a fixed monthly amount for the full term (usually 30 years). In the early years most of your payment is interest; over time the principal repayment portion grows. <span class="highlight">Tax deduction applies to the interest portion.</span></p>
+    </div>
+    <div class="card">
+      <h3>Linear mortgage (lineaire hypotheek)</h3>
+      <p>You repay a fixed amount of principal every month, so your total payment decreases over time. Higher payments at the start but you pay less total interest. Better if you expect your income to grow.</p>
+    </div>
+    <div class="card">
+      <h3>Interest-only (aflossingsvrij)</h3>
+      <p>You only pay interest — the principal stays the same. No longer eligible for mortgage interest deduction (since 2013) and harder to get in full. Only available as part of a mixed mortgage now.</p>
+    </div>
+    <p>For expats, the <span class="highlight">annuity mortgage is almost always the right choice</span>. It qualifies for the mortgage interest deduction and has predictable monthly payments.</p>
+  </div>
+
+  <!-- What income is accepted -->
+  <div class="section">
+    <h2>What Income Is Accepted</h2>
+    <div class="card">
+      <h3>Dutch permanent contract (vast contract)</h3>
+      <p>The gold standard. Your full gross annual salary is used for the calculation. Any allowances (holiday pay, bonuses) count if they are structurally guaranteed in your contract.</p>
+    </div>
+    <div class="card">
+      <h3>Foreign income / posted workers</h3>
+      <p>Many Dutch lenders accept foreign income if you work for a recognised employer and pay tax in the Netherlands (or can prove income continuity). You may need 3 months of payslips in Dutch or German, or a certified translation. Not all lenders accept this — an experienced mortgage advisor is essential.</p>
+    </div>
+    <div class="card">
+      <h3>Temporary contracts / freelance (ZZP)</h3>
+      <p>If you have a temporary contract (tijdelijk), some lenders require a declaration of continued employment from your employer. For freelancers (ZZP), you typically need <span class="highlight">3 years of tax returns</span>, and the lender uses your average income over those years. New ZZP starters face significantly more restrictions.</p>
+    </div>
+    <div class="card">
+      <h3>30% ruling</h3>
+      <p>If you have the 30% tax ruling, some lenders allow you to include your full gross salary (before the ruling deduction) in the calculation, which can substantially increase your maximum mortgage.</p>
+    </div>
+  </div>
+
+  <!-- LTV -->
+  <div class="section">
+    <h2>Loan-to-Value (LTV) Ratios</h2>
+    <p>Dutch mortgage rules are set by law (NHG limits and LTV caps):</p>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="cost-label">Maximum LTV (2024)</div>
+        <div class="cost-value">100%</div>
+        <div class="cost-sub">Of the appraised value (taxatiewaarde), not the purchase price</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">NHG limit (2024)</div>
+        <div class="cost-value">€435,000</div>
+        <div class="cost-sub">National mortgage guarantee — lower interest rate and extra security</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Energy improvements</div>
+        <div class="cost-value">+€9,000</div>
+        <div class="cost-sub">Extra above LTV for energy-efficient renovations with NHG</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Income multiple</div>
+        <div class="cost-value">4.5x</div>
+        <div class="cost-sub">Gross annual income is the standard rule of thumb</div>
+      </div>
+    </div>
+    <p>The maximum mortgage is determined by the lower of: 100% of appraisal value, or the maximum based on your income. If you buy for above the appraisal value, you must cover the difference from your own savings.</p>
+  </div>
+
+  <!-- Costs -->
+  <div class="section">
+    <h2>Costs on Top of the Purchase Price</h2>
+    <p>Plan for approximately 5-7% of the purchase price in additional costs:</p>
+    <div class="cost-grid">
+      <div class="cost-item">
+        <div class="cost-label">Transfer tax (2%, or 0% first-time)</div>
+        <div class="cost-value">2%</div>
+        <div class="cost-sub">Of purchase price. 0% if under 35 buying first home under €510k</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Notary fees</div>
+        <div class="cost-value">~€1,500</div>
+        <div class="cost-sub">Transfer deed + mortgage deed. Price varies by notary</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Mortgage advisor</div>
+        <div class="cost-value">~€3,000</div>
+        <div class="cost-sub">Independent advisor fee. Shop around — prices vary significantly</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Property valuation (taxatie)</div>
+        <div class="cost-value">~€800</div>
+        <div class="cost-sub">Required by the lender before approving the mortgage</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">NHG guarantee fee</div>
+        <div class="cost-value">0.6%</div>
+        <div class="cost-sub">Of mortgage amount if using NHG. Paid once at signing</div>
+      </div>
+      <div class="cost-item">
+        <div class="cost-label">Buying agent (optional)</div>
+        <div class="cost-value">~€3,000</div>
+        <div class="cost-sub">Aankoopmakelaar fee. Highly recommended for expats</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator -->
+  <div class="section">
+    <h2>Affordability Calculator</h2>
+    <div class="calculator">
+      <div class="calc-title">How much can I borrow?</div>
+      <div class="calc-sub">Enter your gross annual income to see an estimate. This uses the 4.5x income rule and assumes a 30-year annuity mortgage at 4.5% interest.</div>
+      <div class="field-row">
+        <div>
+          <label for="income1">Your gross annual income</label>
+          <div class="input-prefix">
+            <input type="number" id="income1" placeholder="65000" min="0" oninput="calculateMortgage()" />
+          </div>
+        </div>
+        <div>
+          <label for="income2">Partner gross annual income (optional)</label>
+          <div class="input-prefix">
+            <input type="number" id="income2" placeholder="0" min="0" oninput="calculateMortgage()" />
+          </div>
+        </div>
+      </div>
+
+      <div id="results-box" class="results-box">
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">Estimated max mortgage</div>
+            <div class="result-value" id="res-mortgage">-</div>
+            <div class="result-sub">Based on 4.5x combined gross income</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Est. monthly payment</div>
+            <div class="result-value" id="res-monthly">-</div>
+            <div class="result-sub">30yr annuity at 4.5% interest</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Total purchase costs</div>
+            <div class="result-value" id="res-costs">-</div>
+            <div class="result-sub">Approx. 5% extra (tax, notary, advisor)</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Suggested savings buffer</div>
+            <div class="result-value" id="res-buffer">-</div>
+            <div class="result-sub">Purchase costs + 3 months mortgage reserve</div>
+          </div>
+        </div>
+        <p class="result-note">This is an estimate for planning purposes only. Your actual maximum mortgage depends on your specific income type, debts, credit history, the lender, and the appraised value of the property. Always get personalised advice from a mortgage advisor (hypotheekadviseur).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mortgage advisor -->
+  <div class="section">
+    <h2>What a Mortgage Advisor Does</h2>
+    <div class="card">
+      <p>A Dutch mortgage advisor (hypotheekadviseur) is a licensed professional who helps you find and apply for the right mortgage. For expats, they are particularly valuable because:</p>
+      <p>They know which lenders accept foreign income, temporary contracts, or ZZP income. They compare products across multiple lenders (a bank's own advisor only sells their own products). They handle the application, communicate with the lender, and ensure you meet all deadlines in your koopakte.</p>
+      <p>An independent advisor typically costs <span class="highlight">€2,500 to €3,500</span>. Many expat-focused advisors work in English. Look for advisors with the AFM license and specialisation in expat mortgages.</p>
+    </div>
+  </div>
+
+  <div class="tools-row">
+    <a href="/tools/bid-advisor" class="tool-link">🎯 Bid Advisor</a>
+    <a href="/guide/buy" class="tool-link">📖 Full Buyer Guide</a>
+    <a href="/tools/legal" class="tool-link">⚖️ Legal Process</a>
+  </div>
+
+</div>
+
+<script>
+  function fmt(n) {
+    return '€' + Math.round(n).toLocaleString('nl-NL');
+  }
+
+  function calculateMortgage() {
+    const inc1 = parseFloat(document.getElementById('income1').value) || 0;
+    const inc2 = parseFloat(document.getElementById('income2').value) || 0;
+    const totalIncome = inc1 + inc2;
+
+    if (totalIncome < 1000) {
+      document.getElementById('results-box').classList.remove('visible');
+      return;
+    }
+
+    const maxMortgage = totalIncome * 4.5;
+    const rate = 0.045 / 12;
+    const n = 30 * 12;
+    const monthly = maxMortgage * (rate * Math.pow(1 + rate, n)) / (Math.pow(1 + rate, n) - 1);
+    const costs = maxMortgage * 0.05;
+    const buffer = costs + monthly * 3;
+
+    document.getElementById('res-mortgage').textContent = fmt(maxMortgage);
+    document.getElementById('res-monthly').textContent = fmt(monthly) + '/mo';
+    document.getElementById('res-costs').textContent = fmt(costs);
+    document.getElementById('res-buffer').textContent = fmt(buffer);
+    document.getElementById('results-box').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>

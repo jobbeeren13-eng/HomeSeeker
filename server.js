@@ -2,14 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus } = require('./src/database');
 const { sendWelcomeEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
-const { generateLetterDirect, generatePackageDirect } = require('./src/letter');
+const { generateLetterDirect, generatePackageDirect, generateBuyerLetterDirect, generateBidAdviceDirect } = require('./src/letter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -48,6 +48,18 @@ app.get('/how-scores-work', (req, res) => res.sendFile(path.join(__dirname, 'pub
 app.get('/reviews', (req, res) => res.sendFile(path.join(__dirname, 'public', 'review.html')));
 app.get('/letter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'letter.html')));
 app.get('/apply', (req, res) => res.sendFile(path.join(__dirname, 'public', 'apply.html')));
+app.get('/guide/buy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'guide', 'buy.html')));
+app.get('/guide/rent', (req, res) => res.sendFile(path.join(__dirname, 'public', 'guide', 'rent.html')));
+app.get('/tools/buyer-letter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'buyer-letter.html')));
+app.get('/tools/mortgage', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'mortgage.html')));
+app.get('/tools/bid-advisor', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'bid-advisor.html')));
+app.get('/tools/legal', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'legal.html')));
+app.get('/tools/handover', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'handover.html')));
+app.get('/tools/lease-review', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'lease-review.html')));
+app.get('/tools/negotiate', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'negotiate.html')));
+app.get('/tools/documents', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'documents.html')));
+app.get('/tools/move-in', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'move-in.html')));
+app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 
 app.get('/subscribe', async (req, res) => {
   if (!process.env.STRIPE_PRICE_ID || !process.env.STRIPE_SECRET_KEY) {
@@ -426,6 +438,144 @@ app.get('/api/admin/db-status', (req, res) => {
   const linked = db.prepare("SELECT COUNT(*) as c FROM users WHERE chat_id IS NOT NULL AND chat_id != ''").get().c;
   const active = db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald = 1 AND actief = 1').get().c;
   res.json({ dbPath, total, paid, linked, active, ts: new Date().toISOString() });
+});
+
+// ── Dashboard API ──────────────────────────────────────────────────────────
+
+app.get('/api/dashboard', (req, res) => {
+  const { chat_id } = req.query;
+  if (!chat_id) return res.status(400).json({ error: 'chat_id required' });
+  const user = getUser.get(String(chat_id));
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const favorites = getFavorites.all(String(chat_id));
+  const tracker = getApplicationTracker.all(String(chat_id));
+  res.json({
+    user: { naam: user.naam, email: user.email, locatie: user.locatie, type: user.type, betaald: user.betaald, actief: user.actief },
+    favorites: favorites.map(f => { try { return { url: f.listing_url, listing: JSON.parse(f.listing_json), addedAt: f.added_at }; } catch { return { url: f.listing_url, listing: {}, addedAt: f.added_at }; } }),
+    tracker: tracker.map(t => ({ url: t.listing_url, address: t.listing_address, price: t.listing_price, image: t.listing_image, status: t.status, notes: t.notes, updatedAt: t.updated_at })),
+  });
+});
+
+app.post('/api/favorites', (req, res) => {
+  const { chat_id, listing_url, listing, action } = req.body;
+  if (!chat_id || !listing_url) return res.status(400).json({ error: 'chat_id and listing_url required' });
+  if (action === 'remove') {
+    removeFavorite.run(String(chat_id), listing_url);
+  } else {
+    addFavorite.run(String(chat_id), listing_url, JSON.stringify(listing || {}));
+  }
+  res.json({ ok: true });
+});
+
+app.post('/api/application-status', (req, res) => {
+  const { chat_id, listing_url, listing_address, listing_price, listing_image, status, notes } = req.body;
+  if (!chat_id || !listing_url) return res.status(400).json({ error: 'chat_id and listing_url required' });
+  if (!status) {
+    removeApplicationStatus.run(String(chat_id), listing_url);
+  } else {
+    upsertApplicationStatus.run(String(chat_id), listing_url, listing_address || '', listing_price || '', listing_image || '', status, notes || '');
+  }
+  res.json({ ok: true });
+});
+
+// AI buyer letter — proxies to Hetzner (ANTHROPIC_API_KEY lives there)
+app.post('/api/buyer-letter', async (req, res) => {
+  const { houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext } = req.body;
+  if (!houseAddress) return res.status(400).json({ error: 'houseAddress required' });
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    let letter;
+    if (hetznerUrl && adminKey) {
+      const resp = await fetch(`${hetznerUrl}/api/generate-buyer-letter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext }),
+      });
+      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+      letter = (await resp.json()).letter;
+    } else {
+      letter = await generateBuyerLetterDirect({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext });
+    }
+    res.json({ letter });
+  } catch (err) {
+    console.error('[api/buyer-letter]', err.message);
+    res.status(500).json({ error: 'Letter generation failed. Please try again.' });
+  }
+});
+
+// AI lease review — proxies to Hetzner
+app.post('/api/lease-review', async (req, res) => {
+  const { leaseText, context } = req.body;
+  if (!leaseText || leaseText.length < 50) return res.status(400).json({ error: 'leaseText must be at least 50 characters' });
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    if (hetznerUrl && adminKey) {
+      const r = await fetch(`${hetznerUrl}/api/generate-lease-review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ leaseText, context }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Hetzner error');
+      return res.json(data);
+    }
+    return res.status(503).json({ error: 'AI service not configured' });
+  } catch (err) {
+    console.error('[api/lease-review]', err.message);
+    res.status(500).json({ error: 'Lease review failed. Please try again.' });
+  }
+});
+
+// AI negotiation coach — proxies to Hetzner
+app.post('/api/negotiate', async (req, res) => {
+  const { goal, property, situation, extraContext } = req.body;
+  if (!goal || !situation || situation.length < 20) return res.status(400).json({ error: 'goal and situation are required' });
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    if (hetznerUrl && adminKey) {
+      const r = await fetch(`${hetznerUrl}/api/generate-negotiate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ goal, property, situation, extraContext }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Hetzner error');
+      return res.json(data);
+    }
+    return res.status(503).json({ error: 'AI service not configured' });
+  } catch (err) {
+    console.error('[api/negotiate]', err.message);
+    res.status(500).json({ error: 'Negotiation strategy generation failed. Please try again.' });
+  }
+});
+
+// AI bid advisor — proxies to Hetzner
+app.post('/api/bid-advisor', async (req, res) => {
+  const { listingPrice, neighborhood, situation, extraContext } = req.body;
+  if (!listingPrice) return res.status(400).json({ error: 'listingPrice required' });
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    let advice;
+    if (hetznerUrl && adminKey) {
+      const resp = await fetch(`${hetznerUrl}/api/generate-bid-advice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ listingPrice, neighborhood, situation, extraContext }),
+      });
+      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+      advice = await resp.json();
+    } else {
+      advice = await generateBidAdviceDirect({ listingPrice, neighborhood, situation, extraContext });
+    }
+    res.json(advice);
+  } catch (err) {
+    console.error('[api/bid-advisor]', err.message);
+    res.status(500).json({ error: 'Bid advice generation failed. Please try again.' });
+  }
 });
 
 // Health + watchdog endpoint
