@@ -1,10 +1,8 @@
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
 const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings } = require('./database');
-const { generateLetterDirect } = require('./letter');
 const { rowToListing } = require('./scraper');
-const { calculateScore, getImprovementTips, getPillarBreakdown, detectLandlordIntent } = require('./score');
-const { calculateDealScore, detectPriceDrop } = require('./deal_score');
+const { getImprovementTips, detectLandlordIntent } = require('./score');
  
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
@@ -35,37 +33,6 @@ const pendingLinkState = new Map(); // chatId -> true, waiting for email input
 const listingCache = new Map();
 let listingCacheId = 0;
 
-// Categories that are action items, not letter content — filtered from auto-selected tips
-const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_action']);
-
-// Shared letter-generation helper
-async function generateAndSendLetter(chatId, listing, user, selectedTips) {
-  await bot.sendMessage(chatId, '✍️ Generating your letter…');
-  try {
-    let letter;
-    const hetznerUrl = process.env.HETZNER_URL;
-    const adminKey = process.env.ADMIN_KEY;
-    if (hetznerUrl && adminKey) {
-      const resp = await fetch(`${hetznerUrl}/api/generate-letter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ listing, user, selectedTips: selectedTips || [] }),
-      });
-      if (!resp.ok) {
-        const body = await resp.text().catch(() => '');
-        throw new Error(`Letter proxy HTTP ${resp.status}: ${body}`);
-      }
-      letter = (await resp.json()).letter;
-    } else {
-      letter = await generateLetterDirect({ listing, user, selectedTips: selectedTips || [] });
-    }
-    await bot.sendMessage(chatId, letter);
-  } catch (err) {
-    console.error('[letter] Generation error:', err.message);
-    await bot.sendMessage(chatId, 'Sorry, could not generate your letter. Please try again later.');
-  }
-}
- 
 // --- Signed start payload (prevents brute-forcing customer IDs) ---
 function generateStartPayload(customerId) {
   const sig = crypto
@@ -400,29 +367,12 @@ function createBot(useWebhook = false) {
     }
  
     if (data.startsWith('ai_letter:')) {
-      const cacheId = data.replace('ai_letter:', '');
-      const listing = getCachedListing(cacheId);
-      if (!listing?.url) {
-        return bot.sendMessage(chatId, '❌ Listing expired. Tap AI Letter on a fresh alert.');
-      }
-      const user = getUser.get(chatId);
-
-      // Auto-select all letter-safe tips, max 3
-      const score = calculateScore(listing, user || {});
-      const dealScore = calculateDealScore(listing);
-      const { tips } = getImprovementTips(listing, user || {}, score, dealScore);
-      const selectedTips = tips
-        .filter(t => !SKIP_LETTER_CATS.has(t.category))
-        .slice(0, 3)
-        .map(t => t.tip);
-
-      await generateAndSendLetter(chatId, listing, user, selectedTips);
-
-      // Offer web customization
-      const letterUrl = `${BASE_URL}/letter?id=${cacheId}`;
-      await bot.sendMessage(chatId, '✏️ Want a more personalised letter? Customise it here:', {
+      const cacheId = data.split(':')[1];
+      await bot.sendMessage(chatId, '✍️ Generate your application letter on HomeSeeker:', {
         reply_markup: {
-          inline_keyboard: [[{ text: 'Open letter generator →', url: letterUrl }]],
+          inline_keyboard: [[
+            { text: 'Open letter generator →', url: `${BASE_URL}/letter?id=${cacheId}` },
+          ]],
         },
       });
       return;
