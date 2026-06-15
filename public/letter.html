@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Letter Generator — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Nav */
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+
+    /* Page */
+    .page { max-width: 680px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    /* Listing card */
+    .listing-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 32px; }
+    .listing-img { width: 100%; height: 180px; object-fit: cover; display: block; background: var(--bg3); }
+    .listing-body { padding: 16px 20px; }
+    .listing-address { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+    .listing-meta { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+    .score-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .badge-green { background: rgba(0,229,160,0.12); color: var(--green); }
+    .badge-blue  { background: rgba(100,180,255,0.12); color: #6ab4ff; }
+    .badge-yellow{ background: rgba(255,200,60,0.12); color: #ffc83c; }
+
+    /* Section headers */
+    h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .section-sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+    section { margin-bottom: 32px; }
+
+    /* Tip cards */
+    .tip-list { display: flex; flex-direction: column; gap: 10px; }
+    .tip-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; display: flex; align-items: flex-start; gap: 14px;
+      cursor: pointer; transition: border-color .15s, background .15s; user-select: none;
+    }
+    .tip-card.selected { border-color: var(--green); background: rgba(0,229,160,0.05); }
+    .tip-check {
+      width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: all .15s; margin-top: 1px;
+    }
+    .tip-card.selected .tip-check { background: var(--green); border-color: var(--green); color: #000; }
+    .tip-content { flex: 1; }
+    .tip-kw { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--green); margin-bottom: 3px; }
+    .tip-text { font-size: 14px; line-height: 1.5; color: var(--text); }
+
+    /* Textarea */
+    .context-box {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; color: var(--text); font-family: inherit; font-size: 14px;
+      line-height: 1.6; resize: vertical; min-height: 90px; transition: border-color .15s;
+    }
+    .context-box:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    .context-box::placeholder { color: var(--muted); }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%; background: var(--green); color: #000; font-family: inherit;
+      font-size: 15px; font-weight: 700; padding: 15px 24px; border: none; border-radius: 10px;
+      cursor: pointer; transition: opacity .2s, transform .1s; display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+    .btn-primary:hover { opacity: .9; }
+    .btn-primary:active { transform: scale(.98); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-secondary {
+      background: var(--bg2); color: var(--text); font-family: inherit; font-size: 14px;
+      font-weight: 600; padding: 12px 20px; border: 1px solid var(--border); border-radius: 10px;
+      cursor: pointer; transition: border-color .15s; flex: 1;
+    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.2); }
+
+    /* Letter output */
+    .letter-box {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+      padding: 24px; margin-top: 20px; display: none;
+    }
+    .letter-box h3 { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    #letter-text { font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: var(--text); }
+    .letter-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .copy-feedback { font-size: 12px; color: var(--green); margin-left: 8px; opacity: 0; transition: opacity .3s; }
+    .copy-feedback.show { opacity: 1; }
+
+    /* Apply package teaser */
+    .package-teaser {
+      background: linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,229,160,0.02));
+      border: 1px solid rgba(0,229,160,0.2); border-radius: 14px; padding: 20px 24px;
+      margin-top: 24px; display: none;
+    }
+    .package-teaser h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .package-teaser p { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .btn-package {
+      display: inline-block; background: transparent; color: var(--green); border: 1px solid rgba(0,229,160,0.4);
+      font-family: inherit; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 8px;
+      cursor: pointer; text-decoration: none; transition: background .15s;
+    }
+    .btn-package:hover { background: rgba(0,229,160,0.08); }
+
+    /* Spinner */
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* States */
+    .loading-state, .error-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .error-state { color: #ff6b6b; }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .letter-actions { flex-direction: column; }
+      nav { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Letter Generator</span>
+</nav>
+
+<div class="page">
+
+  <div id="loading-state" class="loading-state">
+    <div style="font-size:28px;margin-bottom:12px">✉️</div>
+    <div>Loading your listing…</div>
+  </div>
+
+  <div id="error-state" class="error-state" style="display:none">
+    <div style="font-size:28px;margin-bottom:12px">⚠️</div>
+    <div id="error-msg">Something went wrong.</div>
+    <div style="margin-top:8px;font-size:13px">Request a fresh alert from Telegram to get a new link.</div>
+  </div>
+
+  <div id="main-content" style="display:none">
+
+    <!-- Listing summary -->
+    <div class="listing-card" id="listing-card">
+      <img id="listing-img" class="listing-img" src="" alt="" />
+      <div class="listing-body">
+        <div class="listing-address" id="listing-address"></div>
+        <div class="listing-meta" id="listing-meta"></div>
+        <div class="score-row" id="score-row"></div>
+      </div>
+    </div>
+
+    <!-- Tip selection -->
+    <section id="tips-section">
+      <h2>What to address in your letter</h2>
+      <p class="section-sub">Select the points most relevant to you — or keep all checked.</p>
+      <div class="tip-list" id="tip-list"></div>
+    </section>
+
+    <!-- Optional context -->
+    <section>
+      <h2>Add personal context <span style="font-weight:400;color:var(--muted);font-size:14px">(optional)</span></h2>
+      <p class="section-sub">Anything specific about you, your move-in date, or why you want this home.</p>
+      <textarea id="extra-context" class="context-box" placeholder="E.g. I work at ASML and need to be in Eindhoven by September. I have my documents ready and can view this week."></textarea>
+    </section>
+
+    <!-- Generate -->
+    <button class="btn-primary" id="generate-btn" onclick="generateLetter()">
+      <span id="generate-label">✉️ Generate my letter</span>
+      <span id="generate-spinner" class="spinner" style="display:none"></span>
+    </button>
+
+    <!-- Letter output -->
+    <div class="letter-box" id="letter-box">
+      <h3>Your application letter</h3>
+      <div id="letter-text"></div>
+      <div class="letter-actions">
+        <button class="btn-secondary" onclick="copyLetter()">
+          📋 Copy letter<span class="copy-feedback" id="copy-feedback">Copied!</span>
+        </button>
+        <button class="btn-secondary" onclick="downloadLetter()">⬇ Download .txt</button>
+      </div>
+    </div>
+
+    <!-- Full package teaser -->
+    <div class="package-teaser" id="package-teaser">
+      <h3>🚀 Want the full application package?</h3>
+      <p>Get your motivation letter + a personal intro paragraph + a WhatsApp one-liner + a financial summary card — all in one click.</p>
+      <a href="#" id="package-link" class="btn-package">Create full package →</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const TIP_KEYWORDS = {
+    contract: 'Contract', energy: 'Energy', guarantor: 'Guarantor',
+    documents: 'Documents', lifestyle: 'Lifestyle', garden: 'Garden',
+    furnished: 'Furnished', expat: 'Expat', 'long-term': 'Long-term',
+    location: 'Location', family: 'Family', general: 'Info',
+  };
+
+  const appLabel = p => p >= 85 ? 'Excellent' : p >= 70 ? 'Strong' : p >= 50 ? 'Good' : p >= 30 ? 'Fair' : 'Weak';
+  const valueLabel = p => p >= 60 ? 'Good deal' : p >= 40 ? 'Fair price' : 'Expensive';
+  const cityFmt = c => c ? c.replace(/-/g, ' ').replace(/\b\w/g, x => x.toUpperCase()) : '';
+
+  let state = { tips: [], cacheId: null };
+
+  async function init() {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!id) return showError('No listing ID in URL. Use the link from your Telegram alert.');
+
+    state.cacheId = id;
+    document.getElementById('package-link').href = `/apply?id=${id}`;
+
+    try {
+      const resp = await fetch(`/api/letter-data?id=${encodeURIComponent(id)}`);
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        return showError(err.error || 'Listing not found or expired.');
+      }
+      const data = await resp.json();
+      render(data);
+    } catch (e) {
+      showError('Failed to load listing. Check your connection and try again.');
+    }
+  }
+
+  function render({ listing, tips, score, dealScore }) {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+
+    // Listing card
+    const img = document.getElementById('listing-img');
+    if (listing.image && listing.image.startsWith('http')) {
+      img.src = listing.image;
+      img.onerror = () => { img.style.display = 'none'; };
+    } else {
+      img.style.display = 'none';
+    }
+
+    document.getElementById('listing-address').textContent = listing.address || 'Listing';
+    const metaParts = [cityFmt(listing.city), listing.priceNumber ? `€${listing.priceNumber}/mo` : listing.price, listing.area ? `${listing.area}m²` : null].filter(Boolean);
+    document.getElementById('listing-meta').textContent = metaParts.join(' · ');
+
+    const scoreRow = document.getElementById('score-row');
+    scoreRow.innerHTML = '';
+    if (score != null) {
+      const cls = score >= 70 ? 'badge-green' : score >= 40 ? 'badge-yellow' : 'badge-blue';
+      scoreRow.innerHTML += `<span class="badge ${cls}">Application: ${appLabel(score)} (${score}%)</span>`;
+    }
+    if (dealScore != null) {
+      const cls = dealScore >= 60 ? 'badge-green' : dealScore >= 35 ? 'badge-yellow' : 'badge-blue';
+      scoreRow.innerHTML += `<span class="badge ${cls}">Market: ${valueLabel(dealScore)}</span>`;
+    }
+
+    // Tips
+    state.tips = tips.map(t => ({ ...t, selected: true }));
+    renderTips();
+
+    if (!tips.length) {
+      document.getElementById('tips-section').style.display = 'none';
+    }
+  }
+
+  function renderTips() {
+    const list = document.getElementById('tip-list');
+    list.innerHTML = '';
+    state.tips.forEach((t, i) => {
+      const card = document.createElement('div');
+      card.className = 'tip-card' + (t.selected ? ' selected' : '');
+      card.innerHTML = `
+        <div class="tip-check">${t.selected ? '✓' : ''}</div>
+        <div class="tip-content">
+          <div class="tip-kw">${TIP_KEYWORDS[t.category] || 'Info'}</div>
+          <div class="tip-text">${escHtml(t.tip)}</div>
+        </div>`;
+      card.onclick = () => toggleTip(i);
+      list.appendChild(card);
+    });
+  }
+
+  function toggleTip(i) {
+    state.tips[i].selected = !state.tips[i].selected;
+    renderTips();
+  }
+
+  async function generateLetter() {
+    const btn = document.getElementById('generate-btn');
+    document.getElementById('generate-label').style.display = 'none';
+    document.getElementById('generate-spinner').style.display = '';
+    btn.disabled = true;
+
+    const selectedTipIndices = state.tips.map((t, i) => t.selected ? i : -1).filter(i => i >= 0);
+    const extraContext = document.getElementById('extra-context').value.trim();
+
+    try {
+      const resp = await fetch('/api/generate-letter-web', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cacheId: state.cacheId, selectedTipIndices, extraContext }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Generation failed');
+
+      document.getElementById('letter-text').textContent = data.letter;
+      const box = document.getElementById('letter-box');
+      box.style.display = 'block';
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('package-teaser').style.display = 'block';
+    } catch (e) {
+      alert(e.message || 'Letter generation failed. Please try again.');
+    } finally {
+      document.getElementById('generate-label').style.display = '';
+      document.getElementById('generate-spinner').style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  function copyLetter() {
+    const text = document.getElementById('letter-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const fb = document.getElementById('copy-feedback');
+      fb.classList.add('show');
+      setTimeout(() => fb.classList.remove('show'), 2000);
+    }).catch(() => {
+      // Fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    });
+  }
+
+  function downloadLetter() {
+    const text = document.getElementById('letter-text').textContent;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'application-letter.txt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function showError(msg) {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-state').style.display = 'block';
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  init();
+</script>
+</body>
+</html>

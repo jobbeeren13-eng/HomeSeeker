@@ -41,34 +41,11 @@ const pendingLinkState = new Map(); // chatId -> true, waiting for email input
 const listingCache = new Map();
 let listingCacheId = 0;
 
-// Tip-selection state for interactive AI letter flow
-// key: `${chatId}:${messageId}`, value: { cacheId, tips: [{text, selected}], expiresAt }
-const tipSelectionState = new Map();
-const TIP_SEL_TTL = 4 * 60 * 60 * 1000; // 4 hours
+// Categories that are action items, not letter content — filtered from auto-selected tips
+const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_action']);
 
-// Tip categories that cannot be addressed in a motivation letter (timing/action items)
-const SKIP_TIP_CATEGORIES = new Set(['timing', 'viewing', 'city_action', 'source_action']);
-
-// Short keyword labels for each tip category — max 9 chars so no text wraps in Telegram
-const TIP_KEYWORDS = {
-  contract: 'Contract', energy: 'Energy', guarantor: 'Guarantor',
-  documents: 'Documents', lifestyle: 'Lifestyle', garden: 'Garden',
-  furnished: 'Furnished', expat: 'Expat', 'long-term': 'Long-term',
-  location: 'Location', family: 'Family', general: 'Info',
-};
-
-function buildSelectionKeyboard(cacheId, tips) {
-  const rows = tips.map((t, i) => [{
-    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${TIP_KEYWORDS[t.category] || 'Info'}`,
-    callback_data: `tgl:${i}`,
-  }]);
-  rows.push([{ text: '✉️ Write my letter', callback_data: 'alg' }]);
-  rows.push([{ text: 'Skip', callback_data: `ald:${cacheId}` }]);
-  return { inline_keyboard: rows };
-}
-
-// Shared letter-generation helper used by both ai_letter and alg handlers
-async function generateAndSendLetter(chatId, listing, user, selectedTips, usedIndices) {
+// Shared letter-generation helper
+async function generateAndSendLetter(chatId, listing, user, selectedTips) {
   await bot.sendMessage(chatId, '✍️ Generating your letter…');
   try {
     let letter;
@@ -89,9 +66,6 @@ async function generateAndSendLetter(chatId, listing, user, selectedTips, usedIn
       letter = await generateLetterDirect({ listing, user, selectedTips: selectedTips || [] });
     }
     await bot.sendMessage(chatId, letter);
-    if (usedIndices && usedIndices.length > 0) {
-      await bot.sendMessage(chatId, `_Addressed in letter: ${usedIndices.join(', ')}_`, { parse_mode: 'Markdown' });
-    }
   } catch (err) {
     console.error('[letter] Generation error:', err.message);
     await bot.sendMessage(chatId, 'Sorry, could not generate your letter. Please try again later.');
@@ -127,11 +101,11 @@ function verifyStartPayload(payload) {
  
 const CACHE_TTL_MS = 48 * 60 * 60 * 1000;
 
-function cacheListing(listing) {
+function cacheListing(listing, chatId = null) {
   const id = String(++listingCacheId);
   const expiresAt = Date.now() + CACHE_TTL_MS;
-  listingCache.set(id, { listing, expiresAt });
-  try { persistCacheListing.run(id, JSON.stringify(listing), expiresAt); } catch (_) {}
+  listingCache.set(id, { listing, chatId, expiresAt });
+  try { persistCacheListing.run(id, JSON.stringify({ listing, chatId }), expiresAt); } catch (_) {}
   if (listingCache.size > 1000) {
     const now = Date.now();
     for (const [k, v] of listingCache) {
@@ -145,19 +119,42 @@ function cacheListing(listing) {
   return id;
 }
 
+function _parseStoredEntry(raw) {
+  // Handle both old format (direct listing object) and new format ({ listing, chatId })
+  if (raw && raw.listing && raw.listing.url) return { listing: raw.listing, chatId: raw.chatId || null };
+  return { listing: raw, chatId: null };
+}
+
 function getCachedListing(id) {
   const entry = listingCache.get(id);
   if (entry) {
-    if (entry.expiresAt < Date.now()) { listingCache.delete(id); }
-    else return entry.listing;
+    if (entry.expiresAt < Date.now()) { listingCache.delete(id); return null; }
+    return entry.listing;
   }
-  // Fall back to persistent DB cache (survives restarts)
   try {
     const row = getPersistedCacheListing.get(String(id), Date.now());
     if (row) {
-      const listing = JSON.parse(row.listing_json);
-      listingCache.set(id, { listing, expiresAt: Date.now() + CACHE_TTL_MS });
+      const { listing, chatId } = _parseStoredEntry(JSON.parse(row.listing_json));
+      listingCache.set(id, { listing, chatId, expiresAt: Date.now() + CACHE_TTL_MS });
       return listing;
+    }
+  } catch (_) {}
+  return null;
+}
+
+// Returns { listing, chatId } — used by server.js for the web letter page
+function getCachedEntry(id) {
+  const entry = listingCache.get(id);
+  if (entry) {
+    if (entry.expiresAt < Date.now()) { listingCache.delete(id); return null; }
+    return { listing: entry.listing, chatId: entry.chatId };
+  }
+  try {
+    const row = getPersistedCacheListing.get(String(id), Date.now());
+    if (row) {
+      const { listing, chatId } = _parseStoredEntry(JSON.parse(row.listing_json));
+      listingCache.set(id, { listing, chatId, expiresAt: Date.now() + CACHE_TTL_MS });
+      return { listing, chatId };
     }
   } catch (_) {}
   return null;
@@ -165,8 +162,8 @@ function getCachedListing(id) {
 
 function injectCachedListing(id, listing) {
   const expiresAt = Date.now() + CACHE_TTL_MS;
-  listingCache.set(String(id), { listing, expiresAt });
-  try { persistCacheListing.run(String(id), JSON.stringify(listing), expiresAt); } catch (_) {}
+  listingCache.set(String(id), { listing, chatId: null, expiresAt });
+  try { persistCacheListing.run(String(id), JSON.stringify({ listing, chatId: null }), expiresAt); } catch (_) {}
 }
  
 // Server-side access check — always hits DB, never trusts cached state
@@ -445,88 +442,27 @@ function createBot(useWebhook = false) {
       }
       const user = getUser.get(chatId);
 
-      // Compute tips for the selection UI (recomputed fresh so they match listing context)
+      // Auto-select all letter-safe tips, max 3
       const score = calculateScore(listing, user || {});
       const dealScore = calculateDealScore(listing);
       const { tips } = getImprovementTips(listing, user || {}, score, dealScore);
+      const selectedTips = tips
+        .filter(t => !SKIP_LETTER_CATS.has(t.category))
+        .slice(0, 3)
+        .map(t => t.tip);
 
-      // Filter to only tips that can be addressed in a motivation letter
-      const letterTips = tips.filter(t => !SKIP_TIP_CATEGORIES.has(t.category));
+      await generateAndSendLetter(chatId, listing, user, selectedTips);
 
-      if (!letterTips.length) {
-        // No letter-addressable tips — generate immediately without selection step
-        await generateAndSendLetter(chatId, listing, user, []);
-        return;
-      }
-
-      // Show tip-selection keyboard — only first tip pre-selected
-      const selTips = letterTips.map((t, i) => ({ text: t.tip, selected: i === 0, category: t.category }));
-      const selMsg = await bot.sendMessage(
-        chatId,
-        '✉️ *Select tips for your letter:*',
-        { parse_mode: 'Markdown', reply_markup: buildSelectionKeyboard(cacheId, selTips) }
-      );
-
-      // Store state keyed by chatId:messageId
-      const stateKey = `${chatId}:${selMsg.message_id}`;
-      tipSelectionState.set(stateKey, { cacheId, tips: selTips, expiresAt: Date.now() + TIP_SEL_TTL });
-      // Lazy cleanup of expired states
-      if (tipSelectionState.size > 200) {
-        const now = Date.now();
-        for (const [k, v] of tipSelectionState) { if (v.expiresAt < now) tipSelectionState.delete(k); }
-      }
+      // Offer web customization
+      const letterUrl = `${BASE_URL}/letter?id=${cacheId}`;
+      await bot.sendMessage(chatId, '✏️ Want a more personalised letter? Customise it here:', {
+        reply_markup: {
+          inline_keyboard: [[{ text: 'Open letter generator →', url: letterUrl }]],
+        },
+      });
       return;
     }
 
-    // Toggle a tip checkbox — updates keyboard in-place, no new message
-    if (data.startsWith('tgl:')) {
-      const tipIndex = parseInt(data.split(':')[1]);
-      const stateKey = `${chatId}:${query.message.message_id}`;
-      const state = tipSelectionState.get(stateKey);
-      if (!state || state.expiresAt < Date.now()) return;
-      if (tipIndex >= 0 && tipIndex < state.tips.length) {
-        state.tips[tipIndex].selected = !state.tips[tipIndex].selected;
-        try {
-          await bot.editMessageReplyMarkup(
-            buildSelectionKeyboard(state.cacheId, state.tips),
-            { chat_id: chatId, message_id: query.message.message_id }
-          );
-        } catch (_) {}
-      }
-      return;
-    }
-
-    // Generate letter with selected tips
-    if (data === 'alg') {
-      const stateKey = `${chatId}:${query.message.message_id}`;
-      const state = tipSelectionState.get(stateKey);
-      if (!state || state.expiresAt < Date.now()) {
-        return bot.sendMessage(chatId, '❌ Selection expired. Please tap AI Letter on a fresh alert.');
-      }
-      tipSelectionState.delete(stateKey);
-      const listing = getCachedListing(state.cacheId);
-      if (!listing?.url) {
-        return bot.sendMessage(chatId, '❌ Listing expired. Tap AI Letter on a fresh alert.');
-      }
-      const user = getUser.get(chatId);
-      const selectedTips = state.tips.filter(t => t.selected).map(t => t.text);
-      const usedIndices = state.tips.map((t, i) => t.selected ? i + 1 : null).filter(Boolean);
-      await generateAndSendLetter(chatId, listing, user, selectedTips, usedIndices);
-      return;
-    }
-
-    // Quick letter — bypass tip selection entirely
-    if (data.startsWith('ald:')) {
-      const cacheId = data.slice(4);
-      const listing = getCachedListing(cacheId);
-      if (!listing?.url) {
-        return bot.sendMessage(chatId, '❌ Listing expired. Tap AI Letter on a fresh alert.');
-      }
-      const user = getUser.get(chatId);
-      await generateAndSendLetter(chatId, listing, user, []);
-      return;
-    }
- 
     if (data.startsWith('letter_style:')) {
       const style = data.replace('letter_style:', '');
       const state = letterState.get(chatId);
@@ -776,7 +712,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
 
   const fullText = lines.join('\n');
-  const cacheId = cacheListing(listing);
+  const cacheId = cacheListing(listing, chatId);
  
   const keyboard = {
     inline_keyboard: [
@@ -827,5 +763,5 @@ function processWebhookUpdate(update) {
   if (bot) bot.processUpdate(update);
 }
  
-module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState, generateStartPayload, injectCachedListing };
+module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState, generateStartPayload, injectCachedListing, getCachedEntry };
  

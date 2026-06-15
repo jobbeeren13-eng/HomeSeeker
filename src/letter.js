@@ -216,4 +216,62 @@ async function getAITip(listing, user) {
   }
 }
 
-module.exports = { generateLetter, generateLetterDirect, getAITip, STYLE_LABELS };
+// Generates a full application package: letter + intro + quickFacts + financialSummary
+async function generatePackageDirect({ listing, user = {}, extraContext = '' }) {
+  const naam = (user?.naam || '').trim();
+  const firstName = naam ? naam.split(' ')[0] : '';
+  const inkomen = user?.inkomen || 0;
+  const contract_type = user?.contract_type || 'professional';
+  const profiel_type = user?.profiel_type || 'professional';
+  const address = listing.address || 'the property';
+  const city = formatCity(listing.city);
+  const price = listing.priceNumber || 0;
+  const priceStr = price ? `€${price}` : (listing.price || 'unknown');
+  const incomeRatio = (inkomen > 0 && price > 0) ? (inkomen / price).toFixed(1) : null;
+
+  const systemPrompt = `You generate rental application packages for the Dutch housing market. Return a JSON object with exactly these keys:
+- "letter": English motivation letter, max 150 words, no markdown, no dashes, 3 paragraphs separated by blank lines
+- "intro": 3-sentence personal introduction, first person, max 50 words, copy-paste ready
+- "quickFacts": WhatsApp one-liner, max 25 words, format: "Hi, I'm [name/applicant], [job]. I'd love to view [address]. Available [timeframe]."
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const lines = [];
+  if (naam) lines.push(`Applicant: ${naam}.`);
+  if (inkomen > 0) lines.push(`Monthly income: €${inkomen}, ${contract_type} contract, ${profiel_type}.`);
+  if (incomeRatio) lines.push(`Income/rent ratio: ${incomeRatio}x.`);
+  if (user?.heeft_borg === 'ja') lines.push('Guarantor available if required.');
+  lines.push(`Property: ${address}${city ? `, ${city}` : ''}, ${priceStr}/month.`);
+  if ((listing.description || '').length > 50) lines.push(`Listing notes: ${listing.description.slice(0, 200)}`);
+  if (extraContext) lines.push(`Extra context: ${extraContext}`);
+  lines.push('Generate the JSON package.');
+
+  const message = await callClaude({
+    max_tokens: 900,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  const raw = message.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in package response');
+  const pkg = JSON.parse(jsonMatch[0]);
+
+  const financialSummary = {
+    income: inkomen ? `€${inkomen}/month` : null,
+    ratio: incomeRatio ? `${incomeRatio}x rent` : null,
+    contract: contract_type || null,
+    profile: profiel_type || null,
+    guarantor: user?.heeft_borg === 'ja' ? 'Available' : null,
+    documents: { klaar: 'All ready', bijna: 'Almost ready', bezig: 'In progress', niet: 'Not started' }[user?.application_readiness] || null,
+  };
+
+  return {
+    letter: pkg.letter ? stripMarkdown(pkg.letter) : '',
+    intro: pkg.intro || '',
+    quickFacts: pkg.quickFacts || '',
+    financialSummary,
+  };
+}
+
+module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, STYLE_LABELS };

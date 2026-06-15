@@ -2,11 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview } = require('./src/database');
 const { sendWelcomeEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
-const { createBot, sendAlert, processWebhookUpdate, injectCachedListing } = require('./src/telegram');
+const { createBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
+const { calculateScore, getImprovementTips } = require('./src/score');
+const { calculateDealScore } = require('./src/deal_score');
+const { generateLetterDirect, generatePackageDirect } = require('./src/letter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,6 +46,8 @@ app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'p
 app.get('/cancel', (req, res) => res.sendFile(path.join(__dirname, 'public', 'cancel.html')));
 app.get('/how-scores-work', (req, res) => res.sendFile(path.join(__dirname, 'public', 'how-scores-work.html')));
 app.get('/reviews', (req, res) => res.sendFile(path.join(__dirname, 'public', 'review.html')));
+app.get('/letter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'letter.html')));
+app.get('/apply', (req, res) => res.sendFile(path.join(__dirname, 'public', 'apply.html')));
 
 app.get('/subscribe', async (req, res) => {
   if (!process.env.STRIPE_PRICE_ID || !process.env.STRIPE_SECRET_KEY) {
@@ -271,6 +276,106 @@ app.post('/api/admin/resend-activation', async (req, res) => {
   } catch (err) {
     console.error('[admin] Resend activation error:', err.message);
     res.status(500).json({ error: 'Failed to send email: ' + err.message });
+  }
+});
+
+// ── Letter generator web page API ──────────────────────────────────────
+
+const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_action']);
+
+// Returns listing details + tips for the /letter page
+app.get('/api/letter-data', (req, res) => {
+  const { id } = req.query;
+  if (!id) return res.status(400).json({ error: 'Missing id' });
+  const entry = getCachedEntry(id);
+  if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
+
+  const { listing, chatId } = entry;
+  const user = chatId ? getUser.get(String(chatId)) : null;
+
+  const score = calculateScore(listing, user || {});
+  const dealScore = calculateDealScore(listing);
+  const { tips } = getImprovementTips(listing, user || {}, score, dealScore);
+  const letterTips = tips.filter(t => !SKIP_LETTER_CATS.has(t.category));
+
+  res.json({
+    listing: {
+      address: listing.address, city: listing.city, price: listing.price,
+      priceNumber: listing.priceNumber, area: listing.area, rooms: listing.rooms,
+      image: listing.image, source: listing.source, url: listing.url,
+      energyLabel: listing.energyLabel,
+    },
+    tips: letterTips.map(t => ({ tip: t.tip, category: t.category })),
+    score,
+    dealScore,
+    user: user ? {
+      naam: user.naam, contract_type: user.contract_type,
+      inkomen: user.inkomen, profiel_type: user.profiel_type,
+      heeft_borg: user.heeft_borg, application_readiness: user.application_readiness,
+    } : null,
+  });
+});
+
+// Generates letter from web page selections
+app.post('/api/generate-letter-web', async (req, res) => {
+  const { cacheId, selectedTipIndices = [], extraContext = '' } = req.body;
+  if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
+
+  const entry = getCachedEntry(cacheId);
+  if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
+
+  const { listing, chatId } = entry;
+  const user = chatId ? getUser.get(String(chatId)) : null;
+
+  const score = calculateScore(listing, user || {});
+  const dealScore = calculateDealScore(listing);
+  const { tips } = getImprovementTips(listing, user || {}, score, dealScore);
+  const letterTips = tips.filter(t => !SKIP_LETTER_CATS.has(t.category));
+
+  const selectedTips = (selectedTipIndices || [])
+    .filter(i => i >= 0 && i < letterTips.length)
+    .map(i => letterTips[i].tip);
+  if (extraContext && extraContext.trim()) selectedTips.push(extraContext.trim());
+
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    let letter;
+    if (hetznerUrl && adminKey) {
+      const resp = await fetch(`${hetznerUrl}/api/generate-letter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ listing, user: user || {}, selectedTips }),
+      });
+      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+      letter = (await resp.json()).letter;
+    } else {
+      letter = await generateLetterDirect({ listing, user: user || {}, selectedTips });
+    }
+    res.json({ letter });
+  } catch (err) {
+    console.error('[api/generate-letter-web]', err.message);
+    res.status(500).json({ error: 'Letter generation failed. Please try again.' });
+  }
+});
+
+// Generates full application package (letter + intro + quickFacts + financialSummary)
+app.post('/api/generate-package', async (req, res) => {
+  const { cacheId, extraContext = '' } = req.body;
+  if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
+
+  const entry = getCachedEntry(cacheId);
+  if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
+
+  const { listing, chatId } = entry;
+  const user = chatId ? getUser.get(String(chatId)) : null;
+
+  try {
+    const pkg = await generatePackageDirect({ listing, user: user || {}, extraContext });
+    res.json(pkg);
+  } catch (err) {
+    console.error('[api/generate-package]', err.message);
+    res.status(500).json({ error: 'Package generation failed. Please try again.' });
   }
 });
 

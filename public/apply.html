@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Package — HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+
+    .page { max-width: 680px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    /* Hero */
+    .page-hero { text-align: center; margin-bottom: 40px; }
+    .page-hero h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .page-hero p { color: var(--muted); font-size: 14px; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+    /* Listing mini card */
+    .listing-mini { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; margin-bottom: 32px; display: flex; gap: 14px; align-items: center; }
+    .listing-mini img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; background: var(--bg3); flex-shrink: 0; }
+    .listing-mini-text strong { display: block; font-size: 14px; font-weight: 700; }
+    .listing-mini-text span { font-size: 12px; color: var(--muted); }
+
+    /* Steps */
+    .steps { display: flex; gap: 6px; margin-bottom: 32px; }
+    .step-dot { flex: 1; height: 3px; border-radius: 3px; background: var(--border); transition: background .3s; }
+    .step-dot.active { background: var(--green); }
+
+    /* Card */
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; }
+    .card-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+    .card-text { font-size: 14px; line-height: 1.8; white-space: pre-wrap; color: var(--text); }
+    .card-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .copy-feedback { font-size: 11px; color: var(--green); margin-left: 6px; opacity: 0; transition: opacity .3s; }
+    .copy-feedback.show { opacity: 1; }
+
+    /* Financial summary */
+    .fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .fin-row { background: var(--bg3); border-radius: 8px; padding: 12px 14px; }
+    .fin-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+    .fin-value { font-size: 15px; font-weight: 700; }
+    .fin-value.green { color: var(--green); }
+
+    /* Context input */
+    .context-box {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; color: var(--text); font-family: inherit; font-size: 14px;
+      line-height: 1.6; resize: vertical; min-height: 80px; transition: border-color .15s; margin-bottom: 16px;
+    }
+    .context-box:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    .context-box::placeholder { color: var(--muted); }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%; background: var(--green); color: #000; font-family: inherit;
+      font-size: 15px; font-weight: 700; padding: 15px 24px; border: none; border-radius: 10px;
+      cursor: pointer; transition: opacity .2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;
+    }
+    .btn-primary:hover { opacity: .9; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-sm {
+      background: var(--bg3); color: var(--text); font-family: inherit; font-size: 12px;
+      font-weight: 600; padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+      cursor: pointer; transition: border-color .15s; white-space: nowrap;
+    }
+    .btn-sm:hover { border-color: rgba(255,255,255,0.2); }
+    .back-link { display: inline-block; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 24px; }
+    .back-link:hover { color: var(--text); }
+
+    /* Spinner */
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* States */
+    .loading-state, .error-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .error-state { color: #ff6b6b; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 480px) { .fin-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">HomeSeeker</a>
+  <span style="font-size:13px;color:var(--muted)">Application Package</span>
+</nav>
+
+<div class="page">
+  <a href="#" id="back-link" class="back-link">← Back to letter</a>
+
+  <div id="loading-state" class="loading-state">
+    <div style="font-size:28px;margin-bottom:12px">📦</div>
+    <div>Loading listing…</div>
+  </div>
+
+  <div id="error-state" class="error-state hidden">
+    <div style="font-size:28px;margin-bottom:12px">⚠️</div>
+    <div id="error-msg">Something went wrong.</div>
+  </div>
+
+  <div id="setup-view" class="hidden">
+    <div class="page-hero">
+      <h1>Full Application Package</h1>
+      <p>Get a complete application in one click: motivation letter, personal intro, WhatsApp message, and financial summary.</p>
+    </div>
+
+    <div class="listing-mini" id="listing-mini">
+      <img id="mini-img" src="" alt="" />
+      <div class="listing-mini-text">
+        <strong id="mini-address"></strong>
+        <span id="mini-meta"></span>
+      </div>
+    </div>
+
+    <h2 style="font-size:15px;font-weight:700;margin-bottom:8px">Add context <span style="font-weight:400;color:var(--muted);font-size:13px">(optional)</span></h2>
+    <textarea id="extra-context" class="context-box" placeholder="Your move-in date, employer, why this location, anything extra to personalise the package…"></textarea>
+
+    <button class="btn-primary" id="generate-btn" onclick="generatePackage()">
+      <span id="gen-label">🚀 Generate my application package</span>
+      <span id="gen-spinner" class="spinner hidden"></span>
+    </button>
+  </div>
+
+  <div id="result-view" class="hidden">
+    <div class="listing-mini" id="listing-mini-2">
+      <img id="mini-img-2" src="" alt="" />
+      <div class="listing-mini-text">
+        <strong id="mini-address-2"></strong>
+        <span id="mini-meta-2"></span>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step-dot active"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot active"></div>
+    </div>
+
+    <!-- Letter -->
+    <div class="card">
+      <div class="card-label">✉️ Motivation letter</div>
+      <div class="card-text" id="res-letter"></div>
+      <div class="card-actions">
+        <button class="btn-sm" onclick="copySection('res-letter', 'cp-letter')">📋 Copy<span class="copy-feedback" id="cp-letter"></span></button>
+        <button class="btn-sm" onclick="downloadSection('res-letter', 'motivation-letter.txt')">⬇ .txt</button>
+      </div>
+    </div>
+
+    <!-- Intro -->
+    <div class="card">
+      <div class="card-label">👋 Personal introduction</div>
+      <div class="card-text" id="res-intro"></div>
+      <div class="card-actions">
+        <button class="btn-sm" onclick="copySection('res-intro', 'cp-intro')">📋 Copy<span class="copy-feedback" id="cp-intro"></span></button>
+      </div>
+    </div>
+
+    <!-- WhatsApp -->
+    <div class="card">
+      <div class="card-label">💬 WhatsApp one-liner</div>
+      <div class="card-text" id="res-quick"></div>
+      <div class="card-actions">
+        <button class="btn-sm" onclick="copySection('res-quick', 'cp-quick')">📋 Copy<span class="copy-feedback" id="cp-quick"></span></button>
+        <button class="btn-sm" onclick="whatsappShare()">Open WhatsApp →</button>
+      </div>
+    </div>
+
+    <!-- Financial summary -->
+    <div class="card">
+      <div class="card-label">💰 Financial snapshot</div>
+      <div class="fin-grid" id="fin-grid"></div>
+    </div>
+
+    <button class="btn-primary" onclick="regenerate()" style="margin-top:8px;background:var(--bg2);color:var(--text);border:1px solid var(--border)">
+      ↺ Regenerate
+    </button>
+  </div>
+</div>
+
+<script>
+  const cityFmt = c => c ? c.replace(/-/g, ' ').replace(/\b\w/g, x => x.toUpperCase()) : '';
+
+  let state = { cacheId: null, listing: null, pkg: null };
+
+  async function init() {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!id) return showError('No listing ID in URL.');
+    state.cacheId = id;
+    document.getElementById('back-link').href = `/letter?id=${id}`;
+
+    try {
+      const resp = await fetch(`/api/letter-data?id=${encodeURIComponent(id)}`);
+      if (!resp.ok) { const e = await resp.json().catch(() => ({})); return showError(e.error || 'Listing not found.'); }
+      const data = await resp.json();
+      state.listing = data.listing;
+      populateListing(data.listing);
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('setup-view').classList.remove('hidden');
+    } catch (e) {
+      showError('Failed to load. Check your connection.');
+    }
+  }
+
+  function populateListing(listing) {
+    const addr = listing.address || 'Listing';
+    const meta = [cityFmt(listing.city), listing.priceNumber ? `€${listing.priceNumber}/mo` : listing.price].filter(Boolean).join(' · ');
+
+    ['', '-2'].forEach(sfx => {
+      const img = document.getElementById(`mini-img${sfx}`);
+      if (listing.image && listing.image.startsWith('http')) {
+        img.src = listing.image;
+        img.onerror = () => { img.style.display = 'none'; };
+      } else { img.style.display = 'none'; }
+      document.getElementById(`mini-address${sfx}`).textContent = addr;
+      document.getElementById(`mini-meta${sfx}`).textContent = meta;
+    });
+  }
+
+  async function generatePackage() {
+    const btn = document.getElementById('generate-btn');
+    document.getElementById('gen-label').classList.add('hidden');
+    document.getElementById('gen-spinner').classList.remove('hidden');
+    btn.disabled = true;
+
+    const extraContext = document.getElementById('extra-context').value.trim();
+    try {
+      const resp = await fetch('/api/generate-package', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cacheId: state.cacheId, extraContext }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Generation failed');
+      state.pkg = data;
+      renderResults(data);
+    } catch (e) {
+      alert(e.message || 'Generation failed. Please try again.');
+    } finally {
+      document.getElementById('gen-label').classList.remove('hidden');
+      document.getElementById('gen-spinner').classList.add('hidden');
+      btn.disabled = false;
+    }
+  }
+
+  function renderResults({ letter, intro, quickFacts, financialSummary }) {
+    document.getElementById('res-letter').textContent = letter;
+    document.getElementById('res-intro').textContent = intro;
+    document.getElementById('res-quick').textContent = quickFacts;
+
+    // Financial grid
+    const fin = financialSummary || {};
+    const rows = [
+      ['Monthly income', fin.income, fin.income ? 'green' : ''],
+      ['Income/rent ratio', fin.ratio, ''],
+      ['Employment', fin.contract, ''],
+      ['Profile', fin.profile, ''],
+      ['Guarantor', fin.guarantor, fin.guarantor ? 'green' : ''],
+      ['Documents', fin.documents, fin.documents === 'All ready' ? 'green' : ''],
+    ].filter(r => r[1]);
+
+    const grid = document.getElementById('fin-grid');
+    grid.innerHTML = rows.map(([label, value, cls]) => `
+      <div class="fin-row">
+        <div class="fin-label">${label}</div>
+        <div class="fin-value ${cls}">${value}</div>
+      </div>`).join('');
+
+    document.getElementById('setup-view').classList.add('hidden');
+    document.getElementById('result-view').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function regenerate() {
+    document.getElementById('result-view').classList.add('hidden');
+    document.getElementById('setup-view').classList.remove('hidden');
+  }
+
+  function copySection(elId, feedbackId) {
+    const text = document.getElementById(elId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const fb = document.getElementById(feedbackId);
+      fb.textContent = ' Copied!';
+      fb.classList.add('show');
+      setTimeout(() => fb.classList.remove('show'), 2000);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    });
+  }
+
+  function downloadSection(elId, filename) {
+    const text = document.getElementById(elId).textContent;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  function whatsappShare() {
+    const text = document.getElementById('res-quick').textContent;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  }
+
+  function showError(msg) {
+    document.getElementById('loading-state').classList.add('hidden');
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-state').classList.remove('hidden');
+  }
+
+  init();
+</script>
+</body>
+</html>
