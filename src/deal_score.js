@@ -33,7 +33,7 @@ function detectPriceDrop(text) {
 
 function estimateAreaFromRooms(rooms) {
   const r = rooms || 0;
-  if (r <= 0) return 50;
+  if (r <= 0) return 30;
   if (r === 1) return 25;
   if (r === 2) return 45;
   if (r === 3) return 65;
@@ -42,7 +42,7 @@ function estimateAreaFromRooms(rooms) {
 }
 
 function hasComparisonData(listing) {
-  return !!(listing.priceNumber > 0 && (listing.area > 0 || listing.rooms > 0) && listing.city);
+  return !!(listing.priceNumber > 0 && listing.city);
 }
 
 function calculateDealScore(listing) {

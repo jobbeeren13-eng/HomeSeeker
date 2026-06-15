@@ -534,6 +534,41 @@ async function scrapeKamernet() {
   return newCount;
 }
 
+async function fetchHousingAnywhereDescription(url) {
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!resp.ok) return '';
+    const html = await resp.text();
+    // Try __NEXT_DATA__ for structured description (HA uses Next.js)
+    const nextDataM = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+    if (nextDataM) {
+      try {
+        const data = JSON.parse(nextDataM[1]);
+        const desc = data?.props?.pageProps?.listing?.description
+                  || data?.props?.pageProps?.room?.description
+                  || data?.props?.pageProps?.unit?.description
+                  || data?.props?.pageProps?.unitType?.description
+                  || data?.props?.pageProps?.initialData?.listing?.description
+                  || '';
+        if (desc && String(desc).trim().length > 20) return String(desc).slice(0, 600).trim();
+      } catch {}
+    }
+    // Fall back to meta description
+    const metaM = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
+               || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
+    return metaM ? metaM[1].trim() : '';
+  } catch {
+    return '';
+  }
+}
+
 // HousingAnywhere — plain HTML scraping, listings visible without auth
 function toHACitySlug(city) {
   return city.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-');
@@ -637,7 +672,7 @@ async function scrapeHousingAnywhere() {
     const CONCURRENCY = 2;
     for (let i = 0; i < needsDesc.length; i += CONCURRENCY) {
       await Promise.allSettled(needsDesc.slice(i, i + CONCURRENCY).map(async url => {
-        const desc = await fetchDescriptionFromMeta(url);
+        const desc = await fetchHousingAnywhereDescription(url);
         if (desc) updateListingDescription.run(desc, url);
       }));
       await new Promise(r => setTimeout(r, 800));

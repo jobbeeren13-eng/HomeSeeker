@@ -46,12 +46,20 @@ let listingCacheId = 0;
 const tipSelectionState = new Map();
 const TIP_SEL_TTL = 4 * 60 * 60 * 1000; // 4 hours
 
-const BUTTON_MAX = 28; // total chars per button — fits one line in Telegram without wrapping
+// Tip categories that cannot be addressed in a motivation letter (timing/action items)
+const SKIP_TIP_CATEGORIES = new Set(['timing', 'viewing', 'city_action', 'source_action']);
+
+// Short keyword labels for each tip category — max 9 chars so no text wraps in Telegram
+const TIP_KEYWORDS = {
+  contract: 'Contract', energy: 'Energy', guarantor: 'Guarantor',
+  documents: 'Documents', lifestyle: 'Lifestyle', garden: 'Garden',
+  furnished: 'Furnished', expat: 'Expat', 'long-term': 'Long-term',
+  location: 'Location', family: 'Family', general: 'Info',
+};
 
 function buildSelectionKeyboard(cacheId, tips) {
-  const tipLen = BUTTON_MAX - 5; // "☑ 1. " prefix = 5 chars, leaving 23 for tip text
   const rows = tips.map((t, i) => [{
-    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${t.text.substring(0, tipLen).padEnd(tipLen)}`,
+    text: `${t.selected ? '☑' : '☐'} ${i + 1}. ${TIP_KEYWORDS[t.category] || 'Info'}`,
     callback_data: `tgl:${i}`,
   }]);
   rows.push([{ text: '✉️ Write my letter', callback_data: 'alg' }]);
@@ -442,14 +450,17 @@ function createBot(useWebhook = false) {
       const dealScore = calculateDealScore(listing);
       const { tips } = getImprovementTips(listing, user || {}, score, dealScore);
 
-      if (!tips.length) {
-        // No tips available — generate immediately without selection step
+      // Filter to only tips that can be addressed in a motivation letter
+      const letterTips = tips.filter(t => !SKIP_TIP_CATEGORIES.has(t.category));
+
+      if (!letterTips.length) {
+        // No letter-addressable tips — generate immediately without selection step
         await generateAndSendLetter(chatId, listing, user, []);
         return;
       }
 
       // Show tip-selection keyboard — only first tip pre-selected
-      const selTips = tips.map((t, i) => ({ text: t.tip, selected: i === 0 }));
+      const selTips = letterTips.map((t, i) => ({ text: t.tip, selected: i === 0, category: t.category }));
       const selMsg = await bot.sendMessage(
         chatId,
         '✉️ *Select tips for your letter:*',
