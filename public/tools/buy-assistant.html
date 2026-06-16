@@ -3,272 +3,406 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Buying Assistant - HomeSeeker</title>
+<title>AI Buyer Assistant - HomeSeeker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root { --green:#00e5a0;--bg:#0a0a0a;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3; }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
-  header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
-  header a{color:var(--muted);text-decoration:none;font-size:14px}
-  header a:hover{color:var(--text)}
-  .header-title{font-size:18px;font-weight:700}
-  .header-title span{color:var(--green)}
-  .container{max-width:860px;margin:0 auto;padding:32px 20px 100px}
-  h1{font-size:26px;font-weight:700;margin-bottom:6px}
-  h1 span{color:var(--green)}
-  .subtitle{color:var(--muted);font-size:15px;margin-bottom:28px}
-  .tab-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:24px;scrollbar-width:none}
-  .tab-bar::-webkit-scrollbar{display:none}
-  .tab-btn{flex-shrink:0;padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
-  .tab-btn:hover{border-color:rgba(255,255,255,0.15);color:var(--text)}
-  .tab-btn.active{background:var(--green);border-color:var(--green);color:#080b0f;font-weight:700}
-  .panel{display:none}
-  .panel.active{display:block}
-  .form-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
-  .form-card h2{font-size:16px;font-weight:600;margin-bottom:6px}
-  .form-card .desc{font-size:13px;color:var(--muted);margin-bottom:18px}
-  .field{margin-bottom:14px}
-  .field label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
-  .char-count{font-size:12px;color:var(--muted)}
-  .field input,.field textarea,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:10px 14px;outline:none;transition:border-color .15s}
-  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green)}
-  .field textarea{resize:vertical;min-height:100px}
-  .btn{background:var(--green);color:#080b0f;font-family:inherit;font-size:14px;font-weight:700;padding:11px 24px;border:none;border-radius:9px;cursor:pointer;transition:opacity .15s}
-  .btn:hover{opacity:.88}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-  .btn-example{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:13px;font-weight:500;padding:8px 14px;border-radius:7px;cursor:pointer;transition:all .15s}
-  .btn-example:hover{border-color:rgba(0,229,160,0.4);color:var(--green)}
-  .response-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-top:20px;display:none}
-  .response-card.visible{display:block}
-  .response-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
-  .response-header h3{font-size:15px;font-weight:600}
-  .resp-actions{display:flex;gap:8px}
-  .copy-btn,.followup-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s}
-  .copy-btn:hover,.followup-btn:hover{border-color:var(--green);color:var(--green)}
-  .copy-btn.copied{color:var(--green);border-color:var(--green)}
-  .response-body{font-size:14px;line-height:1.75;color:var(--text)}
-  .response-body h2{font-size:15px;font-weight:700;color:var(--green);margin-top:20px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-  .response-body h2:first-child{margin-top:0}
-  .response-body ul{padding-left:20px;margin:6px 0 14px}
-  .response-body ol{padding-left:20px;margin:6px 0 14px}
-  .response-body li{margin-bottom:5px}
-  .response-body p{margin-bottom:10px}
-  .response-body strong{color:var(--text);font-weight:700}
-  .spinner{display:none;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin-left:12px}
-  .spinner.visible{display:inline-block}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .btn-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .error-msg{color:#ff6b6b;font-size:13px;margin-top:10px;display:none}
-  .error-msg.visible{display:block}
-  footer{text-align:center;padding:24px;font-size:12px;color:var(--muted)}
+  :root {
+    --green: #00c896;
+    --green-dim: rgba(0,200,150,0.10);
+    --bg: #0a0a0a;
+    --bg2: #0f1318;
+    --bg3: #141920;
+    --border: rgba(255,255,255,0.08);
+    --muted: #7a8494;
+    --text: #e8edf3;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; height: 56px;
+    background: rgba(10,10,10,0.94); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site-logo { font-size: 15px; font-weight: 800; letter-spacing: 1.5px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+  .site-header-right { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+  .breadcrumb { padding: 12px 28px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .breadcrumb a { color: var(--muted); text-decoration: none; transition: color .15s; }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb .sep { margin: 0 6px; color: rgba(255,255,255,0.2); }
+
+  .container { max-width: 1160px; margin: 0 auto; padding: 28px 28px 80px; }
+  .page-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .page-title span { color: var(--green); }
+  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+
+  .tab-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 20px; scrollbar-width: none; }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
+  .tab-btn:hover { border-color: rgba(255,255,255,0.18); color: var(--text); }
+  .tab-btn.active { background: var(--green); border-color: var(--green); color: #080b0f; font-weight: 700; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-grid { display: grid; grid-template-columns: 40% 1fr; gap: 20px; align-items: start; }
+
+  .form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+  .form-card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .form-card .desc { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+  .field { margin-bottom: 13px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  .char-count { font-size: 11px; }
+  .field input, .field textarea, .field select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; padding: 9px 12px; outline: none; transition: border-color .15s; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); }
+  .field textarea { resize: vertical; min-height: 90px; }
+  .example-link { display: inline-block; color: var(--green); font-size: 12px; font-weight: 500; cursor: pointer; margin-bottom: 14px; background: none; border: none; font-family: inherit; padding: 0; text-decoration: none; }
+  .example-link:hover { text-decoration: underline; }
+  .btn-submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--green); color: #080b0f; font-family: inherit; font-size: 14px; font-weight: 700; padding: 12px; border: none; border-radius: 9px; cursor: pointer; transition: opacity .15s; }
+  .btn-submit:hover:not(:disabled) { opacity: .88; }
+  .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-spinner { width: 14px; height: 14px; border: 2px solid rgba(8,11,15,0.3); border-top-color: #080b0f; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-msg { color: #ff6b6b; font-size: 13px; margin-top: 10px; display: none; }
+  .error-msg.visible { display: block; }
+
+  .output-col { min-height: 200px; }
+
+  .output-empty { border: 2px dashed rgba(255,255,255,0.07); border-radius: 14px; padding: 48px 24px; text-align: center; color: var(--muted); }
+  .output-empty .empty-icon { font-size: 32px; margin-bottom: 12px; }
+  .output-empty p { font-size: 13px; line-height: 1.6; max-width: 240px; margin: 0 auto; }
+
+  .skeleton { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; display: none; }
+  .skel-bar { height: 13px; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 12px; position: relative; overflow: hidden; }
+  .skel-bar::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent); transform: translateX(-100%); animation: shimmer 1.4s infinite; }
+  @keyframes shimmer { to { transform: translateX(100%); } }
+  .skel-bar:nth-child(2) { width: 75%; }
+  .skel-bar:nth-child(3) { width: 55%; }
+
+  .response-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; display: none; }
+  .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .response-header h3 { font-size: 14px; font-weight: 700; }
+  .resp-actions { display: flex; gap: 8px; }
+  .copy-btn, .followup-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--muted); font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+  .copy-btn:hover, .followup-btn:hover { border-color: var(--green); color: var(--green); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+  .response-body { font-size: 13px; line-height: 1.75; color: var(--text); }
+  .response-body h2 { font-size: 14px; font-weight: 700; color: var(--green); margin-top: 18px; margin-bottom: 7px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .response-body h2:first-child { margin-top: 0; }
+  .response-body ul, .response-body ol { padding-left: 18px; margin: 5px 0 12px; }
+  .response-body li { margin-bottom: 4px; }
+  .response-body p { margin-bottom: 9px; }
+  .response-body strong { color: var(--text); font-weight: 700; }
+
+  .help-section { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .help-section h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .help-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .help-link { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none; transition: all .15s; background: var(--bg2); }
+  .help-link:hover { border-color: rgba(0,200,150,0.35); color: var(--green); }
+
+  @media (max-width: 768px) {
+    .container { padding: 20px 16px 60px; }
+    .site-header { padding: 0 16px; }
+    .breadcrumb { padding: 10px 16px; }
+    .panel-grid { grid-template-columns: 1fr; }
+    .output-col { order: -1; }
+    .output-empty { padding: 28px 20px; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <div style="font-size:13px;color:var(--muted)"><a href="/" style="color:var(--muted);text-decoration:none">HOMESEEKER</a><span style="margin:0 6px;color:var(--border)">›</span><a href="/guide/buy" style="color:var(--muted);text-decoration:none">Buyer Guide</a><span style="margin:0 6px;color:var(--border)">›</span>AI Buying Assistant</div>
+
+<header class="site-header">
+  <a class="site-logo" href="/">HomeSeeker</a>
+  <span class="site-header-right">AI Buyer Assistant</span>
 </header>
 
+<div class="breadcrumb">
+  <a href="/">HOMESEEKER</a><span class="sep">›</span><a href="/guide/buy">Buyer Guide</a><span class="sep">›</span>AI Buyer Assistant
+</div>
+
 <div class="container">
-  <h1><span>AI</span> Buying Assistant</h1>
-  <p class="subtitle">Five specialist tools to help you afford, analyse, bid on, buy, and check a Dutch property.</p>
+  <div class="page-title"><span>AI</span> Buyer Assistant</div>
+  <p class="page-sub">Five specialist tools to help you afford, analyse, bid on, buy, and check a Dutch property.</p>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab(1,this)">1. Affordability</button>
-    <button class="tab-btn" onclick="switchTab(2,this)">2. Property Analyser</button>
-    <button class="tab-btn" onclick="switchTab(3,this)">3. Bid Strategy</button>
-    <button class="tab-btn" onclick="switchTab(4,this)">4. Legal Steps</button>
-    <button class="tab-btn" onclick="switchTab(5,this)">5. VvE Checker</button>
+    <button class="tab-btn active" onclick="switchTab(1,this)">💰 Affordability</button>
+    <button class="tab-btn" onclick="switchTab(2,this)">🏠 Property Analysis</button>
+    <button class="tab-btn" onclick="switchTab(3,this)">📈 Bid Strategy</button>
+    <button class="tab-btn" onclick="switchTab(4,this)">⚖️ Legal Process</button>
+    <button class="tab-btn" onclick="switchTab(5,this)">🏢 VvE Checker</button>
   </div>
 
-  <!-- Tab 1 -->
+  <!-- Tab 1: Affordability -->
   <div id="panel-1" class="panel active">
-    <div class="form-card">
-      <h2>Affordability Calculator</h2>
-      <p class="desc">Find out exactly what you can buy, what cash you need upfront, and which red flags will block you.</p>
-      <div class="field">
-        <label>Gross annual income</label>
-        <input id="t1-income" type="text" placeholder="e.g. €68,000 gross per year. Partner earns €45,000.">
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Affordability Calculator</h2>
+          <p class="desc">Find out exactly what you can buy, what cash you need upfront, and which red flags will block you.</p>
+          <div class="field">
+            <label>Gross annual income</label>
+            <input id="t1-income" type="text" placeholder="e.g. €68,000 gross per year. Partner earns €45,000.">
+          </div>
+          <div class="field">
+            <label>Contract type</label>
+            <select id="t1-contract">
+              <option value="permanent">Permanent (vast contract)</option>
+              <option value="temporary">Temporary (tijdelijk)</option>
+              <option value="zzp">Self-employed (ZZP)</option>
+              <option value="expat 30%">Expat ruling (30% ruling)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Own savings available</label>
+            <input id="t1-savings" type="text" placeholder="e.g. €65,000 savings, no other debts">
+          </div>
+          <div class="field">
+            <label>Target city and price range</label>
+            <input id="t1-target" type="text" placeholder="e.g. Rotterdam, looking at €350,000 – €400,000 apartments">
+          </div>
+          <button class="example-link" onclick="fillExample(1)">Try an example →</button>
+          <button class="btn-submit" id="btn-1" onclick="submit(1)">Get advice →</button>
+          <div class="error-msg" id="err-1"></div>
+        </div>
       </div>
-      <div class="field">
-        <label>Contract type</label>
-        <select id="t1-contract">
-          <option value="permanent">Permanent (vast contract)</option>
-          <option value="temporary">Temporary (tijdelijk)</option>
-          <option value="zzp">Self-employed (ZZP)</option>
-          <option value="expat 30%">Expat ruling (30% ruling)</option>
-        </select>
+      <div class="output-col">
+        <div class="output-empty" id="empty-1">
+          <div class="empty-icon">💰</div>
+          <p>Fill in your income and situation — we'll tell you exactly what you can afford and what cash you need.</p>
+        </div>
+        <div class="skeleton" id="skel-1">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-1">
+          <div class="response-header">
+            <h3>Affordability Report</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(1)">Copy</button>
+              <button class="followup-btn" onclick="followUp(1)">Ask a follow-up ↗</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-1"></div>
+        </div>
       </div>
-      <div class="field">
-        <label>Own savings available</label>
-        <input id="t1-savings" type="text" placeholder="e.g. €65,000 savings, no other debts">
-      </div>
-      <div class="field">
-        <label>Target city and price range</label>
-        <input id="t1-target" type="text" placeholder="e.g. Rotterdam, looking at €350,000 - €400,000 apartments">
-      </div>
-      <div class="btn-row">
-        <button class="btn" onclick="submit(1)">Calculate Affordability</button>
-        <button class="btn-example" onclick="fillExample(1)">Try an example</button>
-        <div class="spinner" id="spin-1"></div>
-      </div>
-      <div class="error-msg" id="err-1"></div>
-    </div>
-    <div class="response-card" id="resp-1">
-      <div class="response-header"><h3>Affordability Report</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(1)">Copy</button><button class="followup-btn" onclick="followUp(1)">Follow-up</button></div></div>
-      <div class="response-body" id="body-1"></div>
     </div>
   </div>
 
-  <!-- Tab 2 -->
+  <!-- Tab 2: Property Analysis -->
   <div id="panel-2" class="panel">
-    <div class="form-card">
-      <h2>Property Analyser</h2>
-      <p class="desc">Paste the listing and get price benchmarks, deal flags (erfpacht, energy label, VvE), a max bid, and 5 questions for the agent.</p>
-      <div class="field">
-        <label>Listing details <span class="char-count" id="cc-2-1">0 / 2000</span></label>
-        <textarea id="t2-listing" rows="5" placeholder="85m2 apartment, €425,000 asking price, Amsterdam De Pijp. 3rd floor with lift. Built 1935, ground-lease (erfpacht) canon fixed until 2042. Energy label D. VvE active, 12 apartments in building. Service costs €280/mo. Last sold in 2019 for €310,000." oninput="updateCount(this,'cc-2-1')"></textarea>
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Property Analysis</h2>
+          <p class="desc">Paste the listing and get price benchmarks, deal flags (erfpacht, energy label, VvE), a max bid, and 5 questions for the agent.</p>
+          <div class="field">
+            <label>Listing details <span class="char-count" id="cc-2-1">0 / 2000</span></label>
+            <textarea id="t2-listing" rows="5" placeholder="85m2 apartment, €425,000 asking price, Amsterdam De Pijp. 3rd floor with lift. Built 1935, ground-lease (erfpacht) canon fixed until 2042. Energy label D. VvE active, 12 apartments. Service costs €280/mo." oninput="updateCount(this,'cc-2-1')"></textarea>
+          </div>
+          <div class="field">
+            <label>What concerns you most?</label>
+            <input id="t2-concern" type="text" placeholder="e.g. Erfpacht risk after 2042, energy label impact on mortgage, VvE reserve">
+          </div>
+          <button class="example-link" onclick="fillExample(2)">Try an example →</button>
+          <button class="btn-submit" id="btn-2" onclick="submit(2)">Get advice →</button>
+          <div class="error-msg" id="err-2"></div>
+        </div>
       </div>
-      <div class="field">
-        <label>What concerns you most about this property?</label>
-        <input id="t2-concern" type="text" placeholder="e.g. Erfpacht risk after 2042, high service costs, energy label impact on mortgage">
+      <div class="output-col">
+        <div class="output-empty" id="empty-2">
+          <div class="empty-icon">🏠</div>
+          <p>Paste the listing details and we'll flag the risks, benchmark the price, and tell you what to ask the agent.</p>
+        </div>
+        <div class="skeleton" id="skel-2">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-2">
+          <div class="response-header">
+            <h3>Property Analysis</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(2)">Copy</button>
+              <button class="followup-btn" onclick="followUp(2)">Ask a follow-up ↗</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-2"></div>
+        </div>
       </div>
-      <div class="btn-row">
-        <button class="btn" onclick="submit(2)">Analyse Property</button>
-        <button class="btn-example" onclick="fillExample(2)">Try an example</button>
-        <div class="spinner" id="spin-2"></div>
-      </div>
-      <div class="error-msg" id="err-2"></div>
-    </div>
-    <div class="response-card" id="resp-2">
-      <div class="response-header"><h3>Property Analysis</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(2)">Copy</button><button class="followup-btn" onclick="followUp(2)">Follow-up</button></div></div>
-      <div class="response-body" id="body-2"></div>
     </div>
   </div>
 
-  <!-- Tab 3 -->
+  <!-- Tab 3: Bid Strategy -->
   <div id="panel-3" class="panel">
-    <div class="form-card">
-      <h2>Bid Strategy</h2>
-      <p class="desc">City-specific overbidding data, exact bid amount recommendation, condition waiving rules, and a word-for-word bid letter.</p>
-      <div class="field">
-        <label>Property and asking price</label>
-        <input id="t3-property" type="text" placeholder="e.g. 3-bed house, Leiden, asking €490,000, listed 5 days ago">
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Bid Strategy</h2>
+          <p class="desc">City-specific overbidding data, exact bid amount recommendation, condition waiving rules, and a word-for-word bid letter.</p>
+          <div class="field">
+            <label>Property and asking price</label>
+            <input id="t3-property" type="text" placeholder="e.g. 3-bed house, Leiden, asking €490,000, listed 5 days ago">
+          </div>
+          <div class="field">
+            <label>Your situation <span class="char-count" id="cc-3-1">0 / 2000</span></label>
+            <textarea id="t3-situation" rows="3" placeholder="I have mortgage pre-approval up to €520,000. The property is 1978-built, no major issues visible. I am competing with at least 4 other bidders." oninput="updateCount(this,'cc-3-1')"></textarea>
+          </div>
+          <div class="field">
+            <label>Budget ceiling</label>
+            <input id="t3-budget" type="text" placeholder="e.g. My absolute max is €530,000 all-in">
+          </div>
+          <button class="example-link" onclick="fillExample(3)">Try an example →</button>
+          <button class="btn-submit" id="btn-3" onclick="submit(3)">Get advice →</button>
+          <div class="error-msg" id="err-3"></div>
+        </div>
       </div>
-      <div class="field">
-        <label>Your situation <span class="char-count" id="cc-3-1">0 / 2000</span></label>
-        <textarea id="t3-situation" rows="3" placeholder="I have mortgage pre-approval up to €520,000. I loved the house at viewing. The property is 1978-built, tile roof, no major issues visible. I am competing with at least 4 other bidders according to the agent." oninput="updateCount(this,'cc-3-1')"></textarea>
+      <div class="output-col">
+        <div class="output-empty" id="empty-3">
+          <div class="empty-icon">📈</div>
+          <p>Describe the property and your situation — we'll calculate your bid and write the letter.</p>
+        </div>
+        <div class="skeleton" id="skel-3">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-3">
+          <div class="response-header">
+            <h3>Bid Strategy</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(3)">Copy</button>
+              <button class="followup-btn" onclick="followUp(3)">Ask a follow-up ↗</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-3"></div>
+        </div>
       </div>
-      <div class="field">
-        <label>Budget ceiling</label>
-        <input id="t3-budget" type="text" placeholder="e.g. My absolute max is €530,000 all-in">
-      </div>
-      <div class="btn-row">
-        <button class="btn" onclick="submit(3)">Build My Bid</button>
-        <button class="btn-example" onclick="fillExample(3)">Try an example</button>
-        <div class="spinner" id="spin-3"></div>
-      </div>
-      <div class="error-msg" id="err-3"></div>
-    </div>
-    <div class="response-card" id="resp-3">
-      <div class="response-header"><h3>Bid Strategy</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(3)">Copy</button><button class="followup-btn" onclick="followUp(3)">Follow-up</button></div></div>
-      <div class="response-body" id="body-3"></div>
     </div>
   </div>
 
-  <!-- Tab 4 -->
+  <!-- Tab 4: Legal Process -->
   <div id="panel-4" class="panel">
-    <div class="form-card">
-      <h2>Legal Process Guide</h2>
-      <p class="desc">All 6 steps from bid accepted to keys in hand - including expat-specific mistakes and what to do at each stage.</p>
-      <div class="field">
-        <label>Where are you in the process?</label>
-        <select id="t4-stage">
-          <option value="bid accepted">Bid just accepted</option>
-          <option value="koopovereenkomst">Signing the koopovereenkomst</option>
-          <option value="mortgage">Getting the mortgage</option>
-          <option value="building inspection">Waiting for inspection</option>
-          <option value="notary">Notary appointment coming up</option>
-          <option value="completed">Just completed / post-purchase</option>
-        </select>
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Legal Process Guide</h2>
+          <p class="desc">All 6 steps from bid accepted to keys in hand — including expat-specific mistakes and what to do at each stage.</p>
+          <div class="field">
+            <label>Where are you in the process?</label>
+            <select id="t4-stage">
+              <option value="bid accepted">Bid just accepted</option>
+              <option value="koopovereenkomst">Signing the koopovereenkomst</option>
+              <option value="mortgage">Getting the mortgage</option>
+              <option value="building inspection">Waiting for inspection</option>
+              <option value="notary">Notary appointment coming up</option>
+              <option value="completed">Just completed / post-purchase</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Your situation and concerns <span class="char-count" id="cc-4-1">0 / 2000</span></label>
+            <textarea id="t4-context" rows="3" placeholder="e.g. My bid of €415,000 was accepted on a 1978-built Rotterdam apartment. I am a UK national with a Dutch residence permit. I have 3 days to sign the purchase agreement." oninput="updateCount(this,'cc-4-1')"></textarea>
+          </div>
+          <button class="example-link" onclick="fillExample(4)">Try an example →</button>
+          <button class="btn-submit" id="btn-4" onclick="submit(4)">Get advice →</button>
+          <div class="error-msg" id="err-4"></div>
+        </div>
       </div>
-      <div class="field">
-        <label>Your situation and concerns <span class="char-count" id="cc-4-1">0 / 2000</span></label>
-        <textarea id="t4-context" rows="3" placeholder="e.g. My bid of €415,000 was accepted on a 1978-built Rotterdam apartment. I am a UK national with a Dutch residence permit. My mortgage advisor is arranging ING. I have 3 days to sign the purchase agreement." oninput="updateCount(this,'cc-4-1')"></textarea>
+      <div class="output-col">
+        <div class="output-empty" id="empty-4">
+          <div class="empty-icon">⚖️</div>
+          <p>Tell us where you are in the buying process and we'll guide you through every step.</p>
+        </div>
+        <div class="skeleton" id="skel-4">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-4">
+          <div class="response-header">
+            <h3>Legal Process Guide</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(4)">Copy</button>
+              <button class="followup-btn" onclick="followUp(4)">Ask a follow-up ↗</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-4"></div>
+        </div>
       </div>
-      <div class="btn-row">
-        <button class="btn" onclick="submit(4)">Guide My Legal Steps</button>
-        <button class="btn-example" onclick="fillExample(4)">Try an example</button>
-        <div class="spinner" id="spin-4"></div>
-      </div>
-      <div class="error-msg" id="err-4"></div>
-    </div>
-    <div class="response-card" id="resp-4">
-      <div class="response-header"><h3>Legal Process Guide</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(4)">Copy</button><button class="followup-btn" onclick="followUp(4)">Follow-up</button></div></div>
-      <div class="response-body" id="body-4"></div>
     </div>
   </div>
 
-  <!-- Tab 5 -->
+  <!-- Tab 5: VvE Checker -->
   <div id="panel-5" class="panel">
-    <div class="form-card">
-      <h2>VvE Health Checker</h2>
-      <p class="desc">Check if the apartment owners association (VvE) is healthy or a financial risk. Get a go/no-go recommendation.</p>
-      <div class="field">
-        <label>Paste what you know about the VvE <span class="char-count" id="cc-5-1">0 / 2000</span></label>
-        <textarea id="t5-vve" rows="6" placeholder="Service costs are €285/mo. VvE has 18 apartments. Reserve fund is €22,000. No MJOP available - agent says they will send it later. Building has a flat roof last done in 2010. VvE meets once a year. I cannot get the last 3 years of meeting minutes from the seller." oninput="updateCount(this,'cc-5-1')"></textarea>
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>VvE Health Checker</h2>
+          <p class="desc">Check if the apartment owners association (VvE) is healthy or a financial risk. Get a go/no-go recommendation.</p>
+          <div class="field">
+            <label>Paste what you know about the VvE <span class="char-count" id="cc-5-1">0 / 2000</span></label>
+            <textarea id="t5-vve" rows="6" placeholder="Service costs are €285/mo. VvE has 18 apartments. Reserve fund is €22,000. No MJOP available — agent says they will send it later. Building has a flat roof last done in 2010. VvE meets once a year." oninput="updateCount(this,'cc-5-1')"></textarea>
+          </div>
+          <button class="example-link" onclick="fillExample(5)">Try an example →</button>
+          <button class="btn-submit" id="btn-5" onclick="submit(5)">Get advice →</button>
+          <div class="error-msg" id="err-5"></div>
+        </div>
       </div>
-      <div class="btn-row">
-        <button class="btn" onclick="submit(5)">Check VvE Health</button>
-        <button class="btn-example" onclick="fillExample(5)">Try an example</button>
-        <div class="spinner" id="spin-5"></div>
+      <div class="output-col">
+        <div class="output-empty" id="empty-5">
+          <div class="empty-icon">🏢</div>
+          <p>Paste everything you know about the VvE — we'll give you a health score and go/no-go verdict.</p>
+        </div>
+        <div class="skeleton" id="skel-5">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-5">
+          <div class="response-header">
+            <h3>VvE Health Report</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(5)">Copy</button>
+              <button class="followup-btn" onclick="followUp(5)">Ask a follow-up ↗</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-5"></div>
+        </div>
       </div>
-      <div class="error-msg" id="err-5"></div>
     </div>
-    <div class="response-card" id="resp-5">
-      <div class="response-header"><h3>VvE Health Report</h3><div class="resp-actions"><button class="copy-btn" onclick="copyResp(5)">Copy</button><button class="followup-btn" onclick="followUp(5)">Follow-up</button></div></div>
-      <div class="response-body" id="body-5"></div>
+  </div>
+
+  <div class="help-section">
+    <h3>Need help with something else?</h3>
+    <div class="help-links">
+      <a href="/tools/buyer-letter" class="help-link">✉️ Buyer Intro Letter</a>
+      <a href="/tools/mortgage" class="help-link">🏦 Mortgage Calculator</a>
+      <a href="/tools/bid-advisor" class="help-link">🎯 Bid Advisor</a>
+      <a href="/tools/deal-finder" class="help-link">🏷 Deal Finder</a>
+      <a href="/tools/inspection-advisor" class="help-link">🔎 Inspection Advisor</a>
+      <a href="/tools/erfpacht-checker" class="help-link">🏗 Erfpacht Checker</a>
+      <a href="/tools/agent-scripts" class="help-link">🗣 Agent Scripts</a>
+      <a href="/tools/rent-assistant" class="help-link">🏠 Rental Assistant</a>
     </div>
   </div>
 </div>
-
-<footer>Powered by Claude AI</footer>
 
 <script>
 let chatId = null;
 let listingContext = '';
 const lastResponses = {};
 
-function getParams() {
-  const p = new URLSearchParams(location.search);
-  chatId = p.get('chat_id') || null;
-  const tabParam = parseInt(p.get('tab') || '1', 10);
-  if (tabParam >= 1 && tabParam <= 5) {
-    const tabs = document.querySelectorAll('.tab-btn');
-    if (tabs[tabParam - 1]) switchTab(tabParam, tabs[tabParam - 1]);
-  }
-  const listingId = p.get('listing') || null;
-  if (listingId) {
-    fetch(`/api/cached-listing/${listingId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data && data.listing) {
-          const l = data.listing;
-          listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
-          document.getElementById('t2-listing').value = listingContext.slice(0, 800);
-          updateCount(document.getElementById('t2-listing'), 'cc-2-1');
-        }
-      }).catch(() => {});
-  }
-}
-
 const EXAMPLES = {
   1: {
     income: '€72,000 gross per year. No partner income.',
     contract: 'permanent',
     savings: '€80,000 savings, one car loan at €350/mo remaining for 2 years',
-    target: 'Utrecht, looking at 2-bedroom apartments around €375,000 - €420,000'
+    target: 'Utrecht, looking at 2-bedroom apartments around €375,000 – €420,000'
   },
   2: {
     listing: '78m2 apartment, €395,000 asking price, Amsterdam Bos en Lommer. 2nd floor, no lift. Built 1955, leasehold (erfpacht) with Amsterdam municipality, canon revision due in 2031. Energy label E. Active VvE with 8 apartments. Service costs €195/mo. Listed 8 days ago.',
@@ -276,7 +410,7 @@ const EXAMPLES = {
   },
   3: {
     property: '3-bedroom terraced house, Den Haag Ypenburg, asking €445,000, listed 4 days ago',
-    situation: 'Viewing last Saturday, I loved it. Built 1998, good condition, energy label B. Mortgage approval up to €470,000. The agent told me 5 other parties viewed it. Seller wants to close quickly - they already bought another house.',
+    situation: 'Viewing last Saturday, I loved it. Built 1998, good condition, energy label B. Mortgage approval up to €470,000. The agent told me 5 other parties viewed it. Seller wants to close quickly — they already bought another house.',
     budget: 'Absolute maximum including all costs is €490,000'
   },
   4: {
@@ -284,7 +418,7 @@ const EXAMPLES = {
     context: 'My bid of €388,000 was accepted yesterday on a 1985-built apartment in Amsterdam Oost. I am a German national on a highly-skilled migrant visa (kennismigrant). My employer is a Dutch company. I need to sign the purchase agreement within 3 days but my mortgage advisor is on holiday this week.'
   },
   5: {
-    vve: 'Service costs €240/mo for a 12-apartment building in Rotterdam (1970s). Reserve fund is €18,500 according to the seller. No MJOP document - agent says the VvE is working on it. Building has an asphalt flat roof and the seller mentioned the roof leaked once 3 years ago. VvE meeting minutes from last year show a vote to repaint the hallway but it was postponed due to lack of funds. I cannot get the last 3 years of financial statements.'
+    vve: 'Service costs €240/mo for a 12-apartment building in Rotterdam (1970s). Reserve fund is €18,500 according to the seller. No MJOP document — agent says the VvE is working on it. Building has an asphalt flat roof and the seller mentioned the roof leaked once 3 years ago. VvE meeting minutes from last year show a vote to repaint the hallway but it was postponed due to lack of funds.'
   }
 };
 
@@ -318,6 +452,29 @@ function fillExample(tab) {
 function updateCount(el, ccId) {
   const cc = document.getElementById(ccId);
   if (cc) cc.textContent = `${el.value.length} / 2000`;
+}
+
+function getParams() {
+  const p = new URLSearchParams(location.search);
+  chatId = p.get('chat_id') || null;
+  const tabParam = parseInt(p.get('tab') || '1', 10);
+  if (tabParam >= 1 && tabParam <= 5) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    if (tabs[tabParam - 1]) switchTab(tabParam, tabs[tabParam - 1]);
+  }
+  const listingId = p.get('listing') || null;
+  if (listingId) {
+    fetch(`/api/cached-listing/${listingId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.listing) {
+          const l = data.listing;
+          listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
+          document.getElementById('t2-listing').value = listingContext.slice(0, 800);
+          updateCount(document.getElementById('t2-listing'), 'cc-2-1');
+        }
+      }).catch(() => {});
+  }
 }
 
 let activeTab = 1;
@@ -400,9 +557,12 @@ async function submit(tab) {
 function renderResponse(tab, text) {
   const body = document.getElementById(`body-${tab}`);
   const card = document.getElementById(`resp-${tab}`);
+  const empty = document.getElementById(`empty-${tab}`);
+  const skel = document.getElementById(`skel-${tab}`);
   body.innerHTML = renderMarkdown(text);
-  card.classList.add('visible');
-  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (empty) empty.style.display = 'none';
+  if (skel) skel.style.display = 'none';
+  if (card) card.style.display = 'block';
 }
 
 function renderMarkdown(text) {
@@ -432,9 +592,23 @@ function showErr(tab, msg) {
   el.classList.add('visible');
 }
 function hideErr(tab) { document.getElementById(`err-${tab}`).classList.remove('visible'); }
+
 function setLoading(tab, on) {
-  document.getElementById(`spin-${tab}`).classList.toggle('visible', on);
-  document.querySelectorAll(`#panel-${tab} .btn`).forEach(b => b.disabled = on);
+  const btn = document.getElementById(`btn-${tab}`);
+  const empty = document.getElementById(`empty-${tab}`);
+  const skel = document.getElementById(`skel-${tab}`);
+  const resp = document.getElementById(`resp-${tab}`);
+  if (btn) {
+    btn.disabled = on;
+    btn.innerHTML = on ? '<span class="btn-spinner"></span>Getting advice...' : 'Get advice →';
+  }
+  if (on) {
+    if (empty) empty.style.display = 'none';
+    if (skel) skel.style.display = 'block';
+    if (resp) resp.style.display = 'none';
+  } else {
+    if (skel) skel.style.display = 'none';
+  }
 }
 
 function copyResp(tab) {
