@@ -9,7 +9,7 @@ const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const ADMIN_KEY   = process.env.ADMIN_KEY;
-const { generateLetterDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect } = require('./src/letter');
+const { generateLetterDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect } = require('./src/letter');
 const PORT        = parseInt(process.env.MATCH_NOW_PORT || '3001', 10);
 
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
@@ -251,6 +251,106 @@ app.post('/api/modify-letter', async (req, res) => {
     console.error('[modify-letter] Error:', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// New tool proxies
+app.post('/api/generate-landlord-reply', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { message, userProfile } = req.body;
+  if (!message) return res.status(400).json({ error: 'message required' });
+  try { res.json(await generateLandlordReplyDirect({ message, userProfile: userProfile || {} })); }
+  catch (err) { console.error('[generate-landlord-reply]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-rejection-analysis', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { applications, userProfile } = req.body;
+  if (!applications) return res.status(400).json({ error: 'applications required' });
+  try { res.json(await generateRejectionAnalysisDirect({ applications, userProfile: userProfile || {} })); }
+  catch (err) { console.error('[generate-rejection-analysis]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-reference-letter', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { type, details } = req.body;
+  if (!type || !details) return res.status(400).json({ error: 'type and details required' });
+  try { res.json(await generateReferenceLetterDirect({ type, details })); }
+  catch (err) { console.error('[generate-reference-letter]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-income-explain', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { income, rent, situation } = req.body;
+  if (!income || !rent) return res.status(400).json({ error: 'income and rent required' });
+  try { res.json(await generateIncomeExplainDirect({ income, rent, situation: situation || '' })); }
+  catch (err) { console.error('[generate-income-explain]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-viewing-feedback', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { viewingNotes, userProfile } = req.body;
+  if (!viewingNotes) return res.status(400).json({ error: 'viewingNotes required' });
+  try { res.json(await generateViewingFeedbackDirect({ viewingNotes, userProfile: userProfile || {} })); }
+  catch (err) { console.error('[generate-viewing-feedback]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-tenant-rights', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { question } = req.body;
+  if (!question) return res.status(400).json({ error: 'question required' });
+  try { res.json(await generateTenantRightsAnswerDirect({ question })); }
+  catch (err) { console.error('[generate-tenant-rights]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-deal-explain', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { dealData } = req.body;
+  if (!dealData) return res.status(400).json({ error: 'dealData required' });
+  try { res.json(await generateDealExplainDirect({ dealData })); }
+  catch (err) { console.error('[generate-deal-explain]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-overbid-letter', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { bidDetails, userProfile } = req.body;
+  if (!bidDetails) return res.status(400).json({ error: 'bidDetails required' });
+  try { res.json(await generateOverbidLetterDirect({ bidDetails, userProfile: userProfile || {} })); }
+  catch (err) { console.error('[generate-overbid-letter]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-inspection-advice', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { inspectionText, purchasePrice } = req.body;
+  if (!inspectionText) return res.status(400).json({ error: 'inspectionText required' });
+  try { res.json(await generateInspectionAdviceDirect({ inspectionText, purchasePrice: purchasePrice || 0 })); }
+  catch (err) { console.error('[generate-inspection-advice]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-erfpacht-analysis', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { erfpachtText, purchasePrice, city } = req.body;
+  if (!erfpachtText) return res.status(400).json({ error: 'erfpachtText required' });
+  try { res.json(await generateErfpachtAnalysisDirect({ erfpachtText, purchasePrice: purchasePrice || 0, city: city || '' })); }
+  catch (err) { console.error('[generate-erfpacht-analysis]', err); res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/generate-agent-script', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { situation, context } = req.body;
+  if (!situation) return res.status(400).json({ error: 'situation required' });
+  try { res.json(await generateAgentScriptDirect({ situation, context: context || '' })); }
+  catch (err) { console.error('[generate-agent-script]', err); res.status(500).json({ error: err.message }); }
 });
 
 app.listen(PORT, () => console.log(`[match-now] Listening on port ${PORT}`));

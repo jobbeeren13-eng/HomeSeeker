@@ -9,7 +9,7 @@ const { createBot, sendAlert, processWebhookUpdate, injectCachedListing, getCach
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
-const { generateLetterDirect, generatePackageDirect, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect } = require('./src/letter');
+const { generateLetterDirect, generatePackageDirect, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect } = require('./src/letter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -61,6 +61,17 @@ app.get('/tools/documents', (req, res) => res.sendFile(path.join(__dirname, 'pub
 app.get('/tools/move-in', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'move-in.html')));
 app.get('/tools/rent-assistant', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'rent-assistant.html')));
 app.get('/tools/buy-assistant', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'buy-assistant.html')));
+app.get('/tools/landlord-reply', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'landlord-reply.html')));
+app.get('/tools/rejection-analyser', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'rejection-analyser.html')));
+app.get('/tools/reference-letter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'reference-letter.html')));
+app.get('/tools/income-check', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'income-check.html')));
+app.get('/tools/viewing-feedback', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'viewing-feedback.html')));
+app.get('/tools/tenant-rights', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'tenant-rights.html')));
+app.get('/tools/deal-finder', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'deal-finder.html')));
+app.get('/tools/overbid-calculator', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'overbid-calculator.html')));
+app.get('/tools/inspection-advisor', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'inspection-advisor.html')));
+app.get('/tools/erfpacht-checker', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'erfpacht-checker.html')));
+app.get('/tools/agent-scripts', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'agent-scripts.html')));
 app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 
 app.get('/subscribe', async (req, res) => {
@@ -663,6 +674,131 @@ app.post('/api/buy-assistant', async (req, res) => {
     console.error('[api/buy-assistant]', err.message);
     res.status(500).json({ error: 'Assistant response failed. Please try again.' });
   }
+});
+
+// New tool API endpoints — all proxy to Hetzner with local fallback
+
+async function proxyToHetzner(path, body, directFn) {
+  const hetznerUrl = process.env.HETZNER_URL;
+  const adminKey = process.env.ADMIN_KEY;
+  if (hetznerUrl && adminKey) {
+    const r = await fetch(`${hetznerUrl}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `Hetzner HTTP ${r.status}`);
+    return data;
+  }
+  return await directFn();
+}
+
+app.post('/api/landlord-reply', async (req, res) => {
+  const { message, chatId } = req.body;
+  if (!message || message.length < 5) return res.status(400).json({ error: 'message required' });
+  try {
+    let userProfile = {};
+    if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
+    const data = await proxyToHetzner('/api/generate-landlord-reply', { message, userProfile }, () => generateLandlordReplyDirect({ message, userProfile }));
+    res.json(data);
+  } catch (err) { console.error('[api/landlord-reply]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+});
+
+app.post('/api/rejection-analyser', async (req, res) => {
+  const { applications, chatId } = req.body;
+  if (!applications) return res.status(400).json({ error: 'applications required' });
+  try {
+    let userProfile = {};
+    if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
+    const data = await proxyToHetzner('/api/generate-rejection-analysis', { applications, userProfile }, () => generateRejectionAnalysisDirect({ applications, userProfile }));
+    res.json(data);
+  } catch (err) { console.error('[api/rejection-analyser]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+});
+
+app.post('/api/reference-letter', async (req, res) => {
+  const { type, details } = req.body;
+  if (!type || !details) return res.status(400).json({ error: 'type and details required' });
+  try {
+    const data = await proxyToHetzner('/api/generate-reference-letter', { type, details }, () => generateReferenceLetterDirect({ type, details }));
+    res.json(data);
+  } catch (err) { console.error('[api/reference-letter]', err.message); res.status(500).json({ error: 'Letter generation failed. Please try again.' }); }
+});
+
+app.post('/api/income-explain', async (req, res) => {
+  const { income, rent, situation } = req.body;
+  if (!income || !rent) return res.status(400).json({ error: 'income and rent required' });
+  try {
+    const data = await proxyToHetzner('/api/generate-income-explain', { income, rent, situation: situation || '' }, () => generateIncomeExplainDirect({ income, rent, situation: situation || '' }));
+    res.json(data);
+  } catch (err) { console.error('[api/income-explain]', err.message); res.status(500).json({ error: 'Explanation generation failed. Please try again.' }); }
+});
+
+app.post('/api/viewing-feedback', async (req, res) => {
+  const { viewingNotes, chatId } = req.body;
+  if (!viewingNotes || viewingNotes.length < 20) return res.status(400).json({ error: 'viewingNotes must be at least 20 characters' });
+  try {
+    let userProfile = {};
+    if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
+    const data = await proxyToHetzner('/api/generate-viewing-feedback', { viewingNotes, userProfile }, () => generateViewingFeedbackDirect({ viewingNotes, userProfile }));
+    res.json(data);
+  } catch (err) { console.error('[api/viewing-feedback]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+});
+
+app.post('/api/tenant-rights-question', async (req, res) => {
+  const { question } = req.body;
+  if (!question || question.length < 10) return res.status(400).json({ error: 'question required' });
+  try {
+    const data = await proxyToHetzner('/api/generate-tenant-rights', { question }, () => generateTenantRightsAnswerDirect({ question }));
+    res.json(data);
+  } catch (err) { console.error('[api/tenant-rights-question]', err.message); res.status(500).json({ error: 'Answer generation failed. Please try again.' }); }
+});
+
+app.post('/api/explain-deal', async (req, res) => {
+  const { dealData } = req.body;
+  if (!dealData) return res.status(400).json({ error: 'dealData required' });
+  try {
+    const data = await proxyToHetzner('/api/generate-deal-explain', { dealData }, () => generateDealExplainDirect({ dealData }));
+    res.json(data);
+  } catch (err) { console.error('[api/explain-deal]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+});
+
+app.post('/api/overbid-bid-letter', async (req, res) => {
+  const { bidDetails, chatId } = req.body;
+  if (!bidDetails) return res.status(400).json({ error: 'bidDetails required' });
+  try {
+    let userProfile = {};
+    if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
+    const data = await proxyToHetzner('/api/generate-overbid-letter', { bidDetails, userProfile }, () => generateOverbidLetterDirect({ bidDetails, userProfile }));
+    res.json(data);
+  } catch (err) { console.error('[api/overbid-bid-letter]', err.message); res.status(500).json({ error: 'Letter generation failed. Please try again.' }); }
+});
+
+app.post('/api/inspection-advisor', async (req, res) => {
+  const { inspectionText, purchasePrice } = req.body;
+  if (!inspectionText || inspectionText.length < 20) return res.status(400).json({ error: 'inspectionText must be at least 20 characters' });
+  try {
+    const data = await proxyToHetzner('/api/generate-inspection-advice', { inspectionText, purchasePrice: purchasePrice || 0 }, () => generateInspectionAdviceDirect({ inspectionText, purchasePrice: purchasePrice || 0 }));
+    res.json(data);
+  } catch (err) { console.error('[api/inspection-advisor]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+});
+
+app.post('/api/erfpacht-analysis', async (req, res) => {
+  const { erfpachtText, purchasePrice, city } = req.body;
+  if (!erfpachtText || erfpachtText.length < 20) return res.status(400).json({ error: 'erfpachtText must be at least 20 characters' });
+  try {
+    const data = await proxyToHetzner('/api/generate-erfpacht-analysis', { erfpachtText, purchasePrice: purchasePrice || 0, city: city || '' }, () => generateErfpachtAnalysisDirect({ erfpachtText, purchasePrice: purchasePrice || 0, city: city || '' }));
+    res.json(data);
+  } catch (err) { console.error('[api/erfpacht-analysis]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+});
+
+app.post('/api/agent-script', async (req, res) => {
+  const { situation, context } = req.body;
+  if (!situation || situation.length < 10) return res.status(400).json({ error: 'situation required' });
+  try {
+    const data = await proxyToHetzner('/api/generate-agent-script', { situation, context: context || '' }, () => generateAgentScriptDirect({ situation, context: context || '' }));
+    res.json(data);
+  } catch (err) { console.error('[api/agent-script]', err.message); res.status(500).json({ error: 'Script generation failed. Please try again.' }); }
 });
 
 // Health + watchdog endpoint

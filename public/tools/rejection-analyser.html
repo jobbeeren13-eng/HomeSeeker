@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rejection Analyser - HomeSeeker</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#00e5a0;--bg:#0a0a0a;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
+header{padding:16px 24px;border-bottom:1px solid var(--border)}
+.breadcrumb{font-size:13px;color:var(--muted)}
+.breadcrumb a{color:var(--muted);text-decoration:none}.breadcrumb a:hover{color:var(--text)}
+.breadcrumb span{margin:0 6px}
+.container{max-width:780px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:24px;font-weight:700;margin-bottom:6px}
+h1 span{color:var(--green)}
+.subtitle{color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.6}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+.card h2{font-size:15px;font-weight:600;margin-bottom:4px}
+.card .desc{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field textarea,.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:10px 14px;outline:none;transition:border-color .15s;resize:vertical}
+.field textarea:focus,.field input:focus,.field select:focus{border-color:var(--green)}
+.app-entry{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;position:relative}
+.app-entry h4{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--muted)}
+.rm-btn{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1}
+.rm-btn:hover{color:#ff6b6b}
+.add-btn{background:var(--bg3);border:1px solid var(--border);color:var(--green);font-family:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;width:100%;margin-top:4px;transition:border-color .15s}
+.add-btn:hover{border-color:var(--green)}
+.btn{background:var(--green);color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;padding:11px 24px;border:none;border-radius:9px;cursor:pointer;transition:opacity .15s}
+.btn:hover{opacity:.88}.btn:disabled{opacity:.45;cursor:not-allowed}
+.spinner{display:none;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin-left:10px}
+.spinner.on{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.err{color:#ff6b6b;font-size:13px;margin-top:8px;display:none}.err.on{display:block}
+.result{display:none;margin-top:4px}.result.on{display:block}
+.fix-item{display:flex;gap:14px;padding:14px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;align-items:flex-start}
+.fix-num{width:26px;height:26px;border-radius:50%;background:var(--green);color:#0a0a0a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.fix-body strong{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
+.fix-body span{font-size:13px;color:var(--muted)}
+.impact-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-top:4px}
+.impact-high{background:rgba(255,100,100,0.12);color:#ff6464}
+.impact-medium{background:rgba(255,200,0,0.12);color:#ffc800}
+.impact-low{background:rgba(100,180,255,0.12);color:#6ab4ff}
+.info-block{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:14px;line-height:1.7}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;margin-top:18px}
+.confidence-bar{height:6px;background:var(--border);border-radius:3px;margin-bottom:4px;overflow:hidden}
+.confidence-fill{height:100%;background:var(--green);border-radius:3px;transition:width .6s}
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb">
+    <a href="/">HOMESEEKER</a> › <a href="/#tools">Tools</a> › Rejection Analyser
+  </div>
+</header>
+
+<div class="container">
+  <h1><span>Rejection</span> Analyser</h1>
+  <p class="subtitle">Describe your past application attempts and get a specific diagnosis: what is going wrong, what to fix first, and whether to adjust your search strategy.</p>
+
+  <div class="card">
+    <h2>Your application history</h2>
+    <p class="desc">Add each rejection below. The more detail you provide, the more specific the analysis. If you have 3 or more rejections, the AI will look for a pattern.</p>
+
+    <div id="apps-container">
+      <div class="app-entry" id="app-0">
+        <h4>Application 1</h4>
+        <button class="rm-btn" onclick="removeApp(0)" title="Remove">x</button>
+        <div class="field">
+          <label>Platform and listing details</label>
+          <input type="text" placeholder="e.g. Funda, 2-bed apartment €1,400/mo Amsterdam Oud-West" class="app-platform">
+        </div>
+        <div class="field">
+          <label>Your situation</label>
+          <input type="text" placeholder="e.g. Single, permanent contract, income €4,200/mo, all docs ready" class="app-situation">
+        </div>
+        <div class="field">
+          <label>What happened</label>
+          <select class="app-outcome">
+            <option value="no response">No response at all</option>
+            <option value="rejection after viewing">Rejection after viewing</option>
+            <option value="rejection before viewing">Rejection before viewing - no viewing offered</option>
+            <option value="rejection after sending docs">Rejection after sending documents</option>
+            <option value="ghosted after showing interest">Ghosted after they showed interest</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Response time after applying (if known)</label>
+          <input type="text" placeholder="e.g. Applied within 1 hour, heard back 3 days later">
+        </div>
+      </div>
+    </div>
+
+    <button class="add-btn" onclick="addApp()">+ Add another application</button>
+
+    <div class="field" style="margin-top:16px">
+      <label>Your profile (optional - helps the analysis)</label>
+      <input type="text" id="profile" placeholder="e.g. Expat from UK, ZZP contractor, income €5,000/mo, no guarantor, 1 cat">
+    </div>
+
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn" onclick="analyse()">Analyse my rejections</button>
+      <div class="spinner" id="spin"></div>
+    </div>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="card">
+      <div class="section-label">Most likely reasons</div>
+      <div id="reasons-list"></div>
+
+      <div class="section-label">Fix priority list</div>
+      <div id="fix-list"></div>
+
+      <div id="pattern-block" style="display:none">
+        <div class="section-label">Pattern detected</div>
+        <div class="info-block" id="pattern"></div>
+      </div>
+
+      <div class="section-label">Strategy advice</div>
+      <div class="info-block" id="pivot"></div>
+
+      <div class="section-label">Analysis confidence</div>
+      <div class="confidence-bar"><div class="confidence-fill" id="conf-fill"></div></div>
+      <div style="font-size:12px;color:var(--muted)" id="conf-label"></div>
+    </div>
+    <a href="/tools/rent-assistant" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--green);text-decoration:none;margin-top:8px">Open Rental Assistant for application coaching →</a>
+  </div>
+</div>
+
+<script>
+let appCount = 1;
+
+function addApp() {
+  const idx = appCount++;
+  const div = document.createElement('div');
+  div.className = 'app-entry';
+  div.id = `app-${idx}`;
+  div.innerHTML = `<h4>Application ${idx + 1}</h4>
+    <button class="rm-btn" onclick="removeApp(${idx})" title="Remove">x</button>
+    <div class="field"><label>Platform and listing details</label><input type="text" placeholder="e.g. Pararius, studio €900/mo Rotterdam" class="app-platform"></div>
+    <div class="field"><label>Your situation</label><input type="text" placeholder="e.g. Couple, temporary contract, income €5,000/mo combined" class="app-situation"></div>
+    <div class="field"><label>What happened</label><select class="app-outcome"><option value="no response">No response at all</option><option value="rejection after viewing">Rejection after viewing</option><option value="rejection before viewing">Rejection before viewing</option><option value="rejection after sending docs">Rejection after sending documents</option><option value="ghosted after showing interest">Ghosted after they showed interest</option></select></div>
+    <div class="field"><label>Response time</label><input type="text" placeholder="e.g. Responded within 30 min, rejected 2 days later"></div>`;
+  document.getElementById('apps-container').appendChild(div);
+}
+
+function removeApp(idx) {
+  const el = document.getElementById(`app-${idx}`);
+  if (el && document.querySelectorAll('.app-entry').length > 1) el.remove();
+}
+
+function collectApps() {
+  const entries = document.querySelectorAll('.app-entry');
+  return Array.from(entries).map(e => ({
+    platform: e.querySelector('.app-platform')?.value.trim() || '',
+    situation: e.querySelector('.app-situation')?.value.trim() || '',
+    outcome: e.querySelector('.app-outcome')?.value || '',
+    timing: e.querySelectorAll('input')[1]?.value.trim() || '',
+  })).filter(a => a.platform || a.situation);
+}
+
+async function analyse() {
+  const apps = collectApps();
+  if (!apps.length) { showErr('Please fill in at least one application.'); return; }
+  const profile = document.getElementById('profile').value.trim();
+  hideErr(); setLoading(true);
+  try {
+    const r = await fetch('/api/rejection-analyser', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ applications: apps, userProfile: { user_description: profile } }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Failed');
+    render(d);
+  } catch (e) { showErr(e.message || 'Something went wrong.'); }
+  finally { setLoading(false); }
+}
+
+function render(d) {
+  // Reasons
+  const reasonsEl = document.getElementById('reasons-list');
+  reasonsEl.innerHTML = (d.mostLikelyReasons || []).map(r =>
+    `<div class="info-block" style="margin-bottom:8px;padding:10px 14px;font-size:13px">- ${escHtml(r)}</div>`
+  ).join('');
+
+  // Fix list
+  const fixEl = document.getElementById('fix-list');
+  fixEl.innerHTML = (d.fixPriorityList || []).map((f, i) =>
+    `<div class="fix-item">
+      <div class="fix-num">${i + 1}</div>
+      <div class="fix-body">
+        <strong>${escHtml(f.fix || '')}</strong>
+        <span>${escHtml(f.howToFix || '')}</span>
+        <br><span class="impact-badge impact-${(f.impact || 'low').toLowerCase()}">${(f.impact || 'Low')} impact</span>
+      </div>
+    </div>`
+  ).join('');
+
+  // Pattern
+  if (d.patternFound) {
+    document.getElementById('pattern-block').style.display = 'block';
+    document.getElementById('pattern').textContent = d.patternFound;
+  }
+
+  document.getElementById('pivot').textContent = d.pivotAdvice || '';
+
+  const conf = Math.min(100, Math.max(0, d.confidenceScore || 0));
+  document.getElementById('conf-fill').style.width = conf + '%';
+  document.getElementById('conf-label').textContent = `${conf}% confidence based on the data provided`;
+
+  document.getElementById('result').classList.add('on');
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function escHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showErr(m) { const e = document.getElementById('err'); e.textContent = m; e.classList.add('on'); }
+function hideErr() { document.getElementById('err').classList.remove('on'); }
+function setLoading(on) {
+  document.getElementById('spin').classList.toggle('on', on);
+  document.querySelectorAll('.btn:not(.add-btn)').forEach(b => b.disabled = on);
+}
+</script>
+</body>
+</html>

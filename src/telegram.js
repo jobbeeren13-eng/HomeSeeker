@@ -305,12 +305,13 @@ function createBot(useWebhook = false) {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🤖 Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}` }, { text: '🏡 Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}` }],
-          [{ text: '📖 Rental Guide', url: `${BASE_URL}/guide/rent` }, { text: '🏠 Buyer Guide', url: `${BASE_URL}/guide/buy` }],
-          [{ text: '📄 Lease Review', url: `${BASE_URL}/tools/lease-review` }, { text: '💬 Negotiation Coach', url: `${BASE_URL}/tools/negotiate` }],
-          [{ text: '📋 Documents', url: `${BASE_URL}/tools/documents` }, { text: '🗝 Move-In', url: `${BASE_URL}/tools/move-in` }],
-          [{ text: '✉️ Buyer Letter', url: `${BASE_URL}/tools/buyer-letter` }, { text: '💰 Mortgage Calc', url: `${BASE_URL}/tools/mortgage` }],
-          [{ text: '🎯 Bid Advisor', url: `${BASE_URL}/tools/bid-advisor` }, { text: '⚖️ Legal Process', url: `${BASE_URL}/tools/legal` }],
+          [{ text: '🤖 Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}` }, { text: '💬 Landlord Reply Coach', url: `${BASE_URL}/tools/landlord-reply` }],
+          [{ text: '🔍 Rejection Analyser', url: `${BASE_URL}/tools/rejection-analyser` }, { text: '💰 Income Check', url: `${BASE_URL}/tools/income-check` }],
+          [{ text: '📄 Reference Letters', url: `${BASE_URL}/tools/reference-letter` }, { text: '👁 Viewing Feedback', url: `${BASE_URL}/tools/viewing-feedback` }],
+          [{ text: '⚖️ Tenant Rights', url: `${BASE_URL}/tools/tenant-rights` }, { text: '📖 Rental Guide', url: `${BASE_URL}/guide/rent` }],
+          [{ text: '🏡 Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}` }, { text: '🎯 Deal Finder', url: `${BASE_URL}/tools/deal-finder` }],
+          [{ text: '📈 Overbid Calculator', url: `${BASE_URL}/tools/overbid-calculator` }, { text: '🔎 Inspection Advisor', url: `${BASE_URL}/tools/inspection-advisor` }],
+          [{ text: '🏗 Erfpacht Checker', url: `${BASE_URL}/tools/erfpacht-checker` }, { text: '🗣 Agent Scripts', url: `${BASE_URL}/tools/agent-scripts` }],
         ],
       },
     });
@@ -580,6 +581,28 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (dealScore != null && dealScore < 25) {
     lines.push('');
     lines.push('Priced significantly above market - negotiate or verify what is included in the rent');
+  }
+
+  // Deal score bar for koop listings
+  if (!isHuur && listing.priceNumber && listing.area) {
+    const BUYER_BENCHMARKS = { amsterdam: 6800, utrecht: 5100, rotterdam: 4200, denhaag: 4400, haarlem: 5200, eindhoven: 3800, leiden: 4900, delft: 4600, groningen: 3100, maastricht: 3200 };
+    const cityKey = (listing.city || '').toLowerCase().replace(/[-\s]/g, '');
+    const bench = BUYER_BENCHMARKS[cityKey] || null;
+    if (bench) {
+      const ppm2 = Math.round(listing.priceNumber / listing.area);
+      const diff = (ppm2 - bench) / bench;
+      let buyDealScore = 50;
+      if (diff < -0.15) buyDealScore = 85;
+      else if (diff < -0.05) buyDealScore = 70;
+      else if (diff < 0.10) buyDealScore = 50;
+      else if (diff < 0.20) buyDealScore = 30;
+      else buyDealScore = 15;
+      const dealFillFn = (pct) => pct >= 60 ? '🟩' : pct >= 35 ? '🟨' : '🟥';
+      const dealLabelFn = (pct) => pct >= 65 ? 'Good deal' : pct >= 40 ? 'Fair price' : 'Overpriced';
+      lines.push('');
+      lines.push(`*Deal Score: ${dealLabelFn(buyDealScore)}*`);
+      lines.push(bar(buyDealScore, dealFillFn(buyDealScore)));
+    }
   }
 
   // Warnings

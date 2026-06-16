@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Finder - HomeSeeker</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#00e5a0;--bg:#0a0a0a;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
+header{padding:16px 24px;border-bottom:1px solid var(--border)}
+.breadcrumb{font-size:13px;color:var(--muted)}
+.breadcrumb a{color:var(--muted);text-decoration:none}.breadcrumb a:hover{color:var(--text)}
+.container{max-width:780px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
+.subtitle{color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.6}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+.card h2{font-size:15px;font-weight:600;margin-bottom:4px}
+.card .desc{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:10px 14px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.field-row{grid-template-columns:1fr}}
+.btn{background:var(--green);color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;padding:11px 24px;border:none;border-radius:9px;cursor:pointer;transition:opacity .15s}
+.btn:hover{opacity:.88}.btn:disabled{opacity:.45;cursor:not-allowed}
+.spinner{display:none;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin-left:10px}
+.spinner.on{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.err{color:#ff6b6b;font-size:13px;margin-top:8px;display:none}.err.on{display:block}
+.result{display:none}.result.on{display:block}
+.score-big{text-align:center;padding:28px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:16px}
+.score-num{font-size:64px;font-weight:800;line-height:1}
+.score-label{font-size:14px;color:var(--muted);margin-top:4px}
+.score-bar{height:10px;background:var(--border);border-radius:5px;margin:12px auto;max-width:280px;overflow:hidden}
+.score-fill{height:100%;border-radius:5px;transition:width .8s}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:520px){.grid-3{grid-template-columns:1fr 1fr}}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.stat-box .lbl{font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px}
+.stat-box .val{font-size:16px;font-weight:700;color:var(--green)}
+.stat-box .sub{font-size:11px;color:var(--muted);margin-top:2px}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:18px}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--bg3);border-radius:6px;margin-bottom:4px;font-size:13px}
+.cost-row .k{color:var(--muted)}.cost-row .v{font-weight:600;color:var(--text)}
+.cost-total{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.2)}
+.cost-total .v{color:var(--green);font-size:14px}
+.flag-item{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:8px;margin-bottom:6px;font-size:13px}
+.flag-red{background:rgba(255,100,100,0.06);border:1px solid rgba(255,100,100,0.2)}
+.flag-yellow{background:rgba(255,200,0,0.06);border:1px solid rgba(255,200,0,0.15)}
+.info-block{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7;margin-bottom:12px}
+.negobar-wrap{margin-bottom:12px}
+.negobar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:8px}
+.negobar-fill{height:100%;border-radius:4px;background:var(--green)}
+.ai-verdict{background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7;margin-top:12px;display:none}
+.ai-verdict.on{display:block}
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb">
+    <a href="/">HOMESEEKER</a> › <a href="/#tools">Tools</a> › Deal Finder
+  </div>
+</header>
+
+<div class="container">
+  <h1><span>Deal</span> Finder</h1>
+  <p class="subtitle">Instant deal score for any Dutch property. Enter the listing details to see price vs benchmark, hidden costs, negotiation room, and red flags.</p>
+
+  <div class="card">
+    <h2>Enter listing details</h2>
+    <p class="desc">Fill in what you know. Price and area are enough for a basic score.</p>
+    <div class="field-row">
+      <div class="field"><label>Asking price (EUR)</label><input type="number" id="price" placeholder="e.g. 385000" oninput="calculate()"></div>
+      <div class="field"><label>Area (m2)</label><input type="number" id="area" placeholder="e.g. 85" oninput="calculate()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>City / neighbourhood</label>
+        <select id="city" onchange="calculate()">
+          <option value="">Select city</option>
+          <optgroup label="Amsterdam">
+            <option value="amsterdam-centrum">Amsterdam Centrum</option>
+            <option value="amsterdam-west">Amsterdam West</option>
+            <option value="amsterdam-oost">Amsterdam Oost</option>
+            <option value="amsterdam-zuid">Amsterdam Zuid</option>
+            <option value="amsterdam">Amsterdam (other)</option>
+          </optgroup>
+          <option value="rotterdam-centrum">Rotterdam Centrum</option>
+          <option value="rotterdam-noord">Rotterdam Noord</option>
+          <option value="rotterdam">Rotterdam (other)</option>
+          <option value="utrecht-centrum">Utrecht Centrum</option>
+          <option value="utrecht-west">Utrecht West</option>
+          <option value="utrecht">Utrecht (other)</option>
+          <option value="den-haag-centrum">Den Haag Centrum</option>
+          <option value="den-haag">Den Haag (other)</option>
+          <option value="eindhoven">Eindhoven</option>
+          <option value="haarlem">Haarlem</option>
+          <option value="leiden">Leiden</option>
+          <option value="delft">Delft</option>
+          <option value="groningen">Groningen</option>
+          <option value="maastricht">Maastricht</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Property type</label>
+        <select id="ptype" onchange="calculate()">
+          <option value="apartment">Apartment</option>
+          <option value="house">House</option>
+          <option value="studio">Studio</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Year built (optional)</label>
+        <input type="number" id="year" placeholder="e.g. 1978" oninput="calculate()">
+      </div>
+      <div class="field">
+        <label>Energy label (optional)</label>
+        <select id="elabel" onchange="calculate()">
+          <option value="">Unknown</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="F">F</option>
+          <option value="G">G</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Monthly VvE costs (EUR, apartments only)</label><input type="number" id="vve" placeholder="e.g. 150" oninput="calculate()"></div>
+      <div class="field"><label>Days on market (optional)</label><input type="number" id="days" placeholder="e.g. 14" oninput="calculate()"></div>
+    </div>
+    <div class="field"><label>Is there erfpacht (ground lease)?</label>
+      <select id="erfpacht" onchange="calculate()">
+        <option value="no">No / Not sure</option>
+        <option value="yes">Yes - erfpacht</option>
+      </select>
+    </div>
+
+    <div class="result" id="result-instant">
+      <!-- Calculated results shown here -->
+    </div>
+
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn" onclick="getAIVerdict()">Get AI verdict</button>
+      <div class="spinner" id="spin"></div>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="ai-verdict" id="ai-verdict"></div>
+  </div>
+
+  <a href="/tools/buy-assistant" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--green);text-decoration:none;">Open Buyer Assistant for full property analysis →</a>
+</div>
+
+<script>
+const BENCHMARKS = {
+  'amsterdam-centrum': 9200,
+  'amsterdam-west': 7100,
+  'amsterdam-oost': 7400,
+  'amsterdam-zuid': 8800,
+  'amsterdam': 7000,
+  'rotterdam-centrum': 5100,
+  'rotterdam-noord': 3800,
+  'rotterdam': 4500,
+  'utrecht-centrum': 6200,
+  'utrecht-west': 5400,
+  'utrecht': 5500,
+  'den-haag-centrum': 4800,
+  'den-haag': 4400,
+  'eindhoven': 3800,
+  'haarlem': 5500,
+  'leiden': 5100,
+  'delft': 4700,
+  'groningen': 3200,
+  'maastricht': 3300,
+};
+
+const ENERGY_SCORE = { A: 10, B: 8, C: 5, D: 0, E: -5, F: -10, G: -15 };
+
+let calcData = {};
+
+function calculate() {
+  const price = parseFloat(document.getElementById('price').value) || 0;
+  const area = parseFloat(document.getElementById('area').value) || 0;
+  const city = document.getElementById('city').value;
+  const ptype = document.getElementById('ptype').value;
+  const year = parseInt(document.getElementById('year').value) || 0;
+  const elabel = document.getElementById('elabel').value;
+  const vve = parseFloat(document.getElementById('vve').value) || 0;
+  const days = parseInt(document.getElementById('days').value) || 0;
+  const erfpacht = document.getElementById('erfpacht').value;
+
+  if (!price) { document.getElementById('result-instant').classList.remove('on'); return; }
+
+  const ppm2 = area > 0 ? Math.round(price / area) : 0;
+  const benchmark = BENCHMARKS[city] || null;
+
+  // Deal score
+  let score = 50;
+  let ppm2verdict = null;
+
+  if (benchmark && ppm2 > 0) {
+    const diff = (ppm2 - benchmark) / benchmark;
+    if (diff < -0.15) { score += 25; ppm2verdict = 'Below market'; }
+    else if (diff < -0.05) { score += 12; ppm2verdict = 'Fair price'; }
+    else if (diff < 0.10) { score += 0; ppm2verdict = 'At market'; }
+    else if (diff < 0.20) { score -= 15; ppm2verdict = 'Above market'; }
+    else { score -= 25; ppm2verdict = 'Significantly overpriced'; }
+  }
+
+  // Energy label
+  if (elabel && ENERGY_SCORE[elabel] !== undefined) score += ENERGY_SCORE[elabel];
+
+  // Year built
+  if (year > 0) {
+    if (year < 1960) score -= 10;
+    else if (year < 1970) score -= 5;
+    else if (year > 2010) score += 5;
+  }
+
+  // VvE
+  if (ptype === 'apartment') {
+    if (vve > 400) score -= 10;
+    else if (vve > 250) score -= 5;
+    else if (vve > 0 && vve < 80) score -= 5;
+  }
+
+  // Days on market
+  if (days > 60) score += 15;
+  else if (days > 30) score += 8;
+  else if (days > 21) score += 4;
+
+  // Erfpacht
+  if (erfpacht === 'yes') score -= 20;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  // Hidden costs
+  const transferTax = price * 0.02;
+  const notary = 1500;
+  const advisor = 3000;
+  const valuation = 800;
+  const annualMaint = ptype === 'apartment' ? price * 0.005 : price * 0.01;
+  const annualVve = vve * 12;
+  const totalBuyingCosts = transferTax + notary + advisor + valuation;
+
+  // Negotiation room
+  let negoMin = 0, negoMax = 0;
+  if (days > 60) { negoMin = 5; negoMax = 10; }
+  else if (days > 30) { negoMin = 3; negoMax = 7; }
+  else if (days > 21) { negoMin = 2; negoMax = 5; }
+  else { negoMin = 0; negoMax = 3; }
+  if (benchmark && ppm2 > benchmark * 1.1) { negoMin += 2; negoMax += 4; }
+  if (elabel === 'E' || elabel === 'F' || elabel === 'G') { negoMin += 2; negoMax += 4; }
+
+  // Red flags
+  const flags = [];
+  if (erfpacht === 'yes') flags.push({ level: 'red', text: 'Erfpacht (ground lease) - you do not own the land. Significant hidden risk, check canon revision terms.' });
+  if (elabel === 'F' || elabel === 'G') flags.push({ level: 'red', text: `Energy label ${elabel} - budget EUR 20,000-50,000 for required upgrades. From 2030, renting label E/F/G homes may be restricted.` });
+  if (elabel === 'E') flags.push({ level: 'yellow', text: 'Energy label E - consider negotiating EUR 10,000-20,000 off for insulation upgrades required.' });
+  if (year > 0 && year < 1960) flags.push({ level: 'yellow', text: `Built in ${year} - high maintenance risk. Always get a full building inspection (bouwkundige keuring).` });
+  if (ptype === 'apartment' && vve === 0) flags.push({ level: 'yellow', text: 'No VvE costs entered - verify VvE is active and reserve fund is healthy. Ask for MJOP documents.' });
+  if (ptype === 'apartment' && vve > 0 && vve < 60) flags.push({ level: 'yellow', text: `VvE costs of EUR ${vve}/mo seem low for this building - costs may be deferred and a special levy is likely coming.` });
+  if (benchmark && ppm2 > benchmark * 1.2) flags.push({ level: 'red', text: `Price per m2 (EUR ${ppm2.toLocaleString()}) is more than 20% above the ${city || 'city'} benchmark (EUR ${benchmark.toLocaleString()}). Strong negotiation grounds.` });
+
+  // Store for AI
+  calcData = { price, area, ppm2, city, ptype, year, elabel, vve, days, erfpacht, benchmark, ppm2verdict, score, negoMin, negoMax, flags };
+
+  // Render
+  const scoreColor = score >= 65 ? 'var(--green)' : score >= 40 ? '#ffc800' : '#ff6464';
+  const scoreText = score >= 65 ? 'Good deal' : score >= 40 ? 'Fair price' : 'Overpriced';
+
+  let html = `
+    <div style="text-align:center;padding:24px 0 16px">
+      <div style="font-size:56px;font-weight:800;color:${scoreColor};line-height:1">${score}</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">Deal Score (0-100)</div>
+      <div style="font-size:16px;font-weight:700;margin-top:6px;color:${scoreColor}">${scoreText}</div>
+      <div class="score-bar" style="max-width:220px;margin:10px auto 0"><div class="score-fill" style="width:${score}%;background:${scoreColor}"></div></div>
+    </div>
+    <div class="grid-3">
+      ${ppm2 > 0 ? `<div class="stat-box"><div class="lbl">Price / m2</div><div class="val">EUR ${ppm2.toLocaleString()}</div>${benchmark ? `<div class="sub">Benchmark EUR ${benchmark.toLocaleString()}</div>` : ''}</div>` : ''}
+      ${ppm2verdict ? `<div class="stat-box"><div class="lbl">Vs benchmark</div><div class="val" style="font-size:13px">${ppm2verdict}</div></div>` : ''}
+      <div class="stat-box"><div class="lbl">Negoation room</div><div class="val">${negoMin}-${negoMax}%</div><div class="sub">Est. off asking</div></div>
+    </div>
+
+    <div class="section-label">True cost of ownership</div>
+    <div class="cost-row"><span class="k">Asking price</span><span class="v">EUR ${price.toLocaleString()}</span></div>
+    <div class="cost-row"><span class="k">Transfer tax (2% standard buyer)</span><span class="v">EUR ${Math.round(transferTax).toLocaleString()}</span></div>
+    <div class="cost-row"><span class="k">Notary fees</span><span class="v">EUR ${notary.toLocaleString()}</span></div>
+    <div class="cost-row"><span class="k">Mortgage / purchase advisor</span><span class="v">EUR ${advisor.toLocaleString()}</span></div>
+    <div class="cost-row"><span class="k">Valuation report</span><span class="v">EUR ${valuation.toLocaleString()}</span></div>
+    <div class="cost-row cost-total"><span class="k"><strong>Total buying costs (ex mortgage)</strong></span><span class="v">EUR ${Math.round(totalBuyingCosts).toLocaleString()}</span></div>
+    ${vve > 0 ? `<div class="cost-row"><span class="k">Annual VvE costs</span><span class="v">EUR ${Math.round(annualVve).toLocaleString()}/yr</span></div>` : ''}
+    <div class="cost-row"><span class="k">Est. annual maintenance</span><span class="v">EUR ${Math.round(annualMaint).toLocaleString()}/yr</span></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:6px">Note: transfer tax is 0% if under 35 and first home under EUR 510,000. Verify with your notary.</p>
+  `;
+
+  if (flags.length) {
+    html += `<div class="section-label">Red flags</div>`;
+    html += flags.map(f =>
+      `<div class="flag-item ${f.level === 'red' ? 'flag-red' : 'flag-yellow'}">${f.level === 'red' ? '🔴' : '⚠️'} <span>${f.text}</span></div>`
+    ).join('');
+  }
+
+  document.getElementById('result-instant').innerHTML = html;
+  document.getElementById('result-instant').classList.add('on');
+}
+
+async function getAIVerdict() {
+  if (!calcData.price) { showErr('Please enter the asking price first.'); return; }
+  hideErr(); setLoading(true);
+  try {
+    const r = await fetch('/api/explain-deal', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dealData: calcData }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Failed');
+    const box = document.getElementById('ai-verdict');
+    box.textContent = d.verdict || '';
+    box.classList.add('on');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) { showErr(e.message || 'Something went wrong.'); }
+  finally { setLoading(false); }
+}
+
+function showErr(m) { const e = document.getElementById('err'); e.textContent = m; e.classList.add('on'); }
+function hideErr() { document.getElementById('err').classList.remove('on'); }
+function setLoading(on) {
+  document.getElementById('spin').classList.toggle('on', on);
+  document.querySelectorAll('.btn').forEach(b => b.disabled = on);
+}
+</script>
+</body>
+</html>

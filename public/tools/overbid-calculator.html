@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overbid Calculator - HomeSeeker</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#00e5a0;--bg:#0a0a0a;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
+header{padding:16px 24px;border-bottom:1px solid var(--border)}
+.breadcrumb{font-size:13px;color:var(--muted)}
+.breadcrumb a{color:var(--muted);text-decoration:none}.breadcrumb a:hover{color:var(--text)}
+.container{max-width:760px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
+.subtitle{color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.6}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+.card h2{font-size:15px;font-weight:600;margin-bottom:4px}
+.card .desc{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:10px 14px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.field-row{grid-template-columns:1fr}}
+.btn{background:var(--green);color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;padding:11px 24px;border:none;border-radius:9px;cursor:pointer;transition:opacity .15s}
+.btn:hover{opacity:.88}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-sec{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:13px;padding:11px 20px;border-radius:9px;cursor:pointer;font-weight:600;transition:all .15s}
+.btn-sec:hover{border-color:var(--green);color:var(--green)}
+.spinner{display:none;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin-left:10px}
+.spinner.on{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.err{color:#ff6b6b;font-size:13px;margin-top:8px;display:none}.err.on{display:block}
+.result-instant{display:none}.result-instant.on{display:block}
+.bid-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:520px){.bid-cards{grid-template-columns:1fr}}
+.bid-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.bid-card.recommended{border-color:rgba(0,229,160,0.4);background:rgba(0,229,160,0.05)}
+.bid-card .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
+.bid-card.recommended .label{color:var(--green)}
+.bid-card .amount{font-size:20px;font-weight:800;color:var(--text);margin-bottom:3px}
+.bid-card.recommended .amount{color:var(--green)}
+.bid-card .pct{font-size:12px;color:var(--muted)}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:18px}
+.cond-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px}
+.cond-row .name{font-weight:600}
+.cond-badge-include{color:var(--green);font-size:12px;font-weight:700}
+.cond-badge-waive{color:#ffc800;font-size:12px;font-weight:700}
+.cond-badge-never{color:#ff6464;font-size:12px;font-weight:700}
+.letter-box{background:var(--bg3);border:1px solid rgba(0,229,160,0.2);border-radius:10px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px;display:none}
+.letter-box.on{display:block}
+.copy-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s}
+.copy-btn:hover{border-color:var(--green);color:var(--green)}.copy-btn.copied{color:var(--green);border-color:var(--green)}
+.warning-box{background:rgba(255,200,0,0.06);border:1px solid rgba(255,200,0,0.15);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:12px;color:var(--text)}
+</style>
+</head>
+<body>
+<header>
+  <div class="breadcrumb">
+    <a href="/">HOMESEEKER</a> › <a href="/#tools">Tools</a> › Overbid Calculator
+  </div>
+</header>
+
+<div class="container">
+  <h1><span>Overbid</span> Calculator</h1>
+  <p class="subtitle">The Dutch market requires overbidding in almost every major city. Get your recommended bid range, conditions analysis, and a ready-to-send formal bid letter in Dutch and English.</p>
+
+  <div class="card">
+    <h2>Property details</h2>
+    <div class="field-row">
+      <div class="field"><label>Asking price (EUR)</label><input type="number" id="ask" placeholder="e.g. 425000" oninput="calculate()"></div>
+      <div class="field"><label>Your max budget (EUR)</label><input type="number" id="budget" placeholder="e.g. 480000" oninput="calculate()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>City</label>
+        <select id="city" onchange="calculate()">
+          <option value="">Select city</option>
+          <option value="amsterdam-centrum">Amsterdam Centrum</option>
+          <option value="amsterdam-west">Amsterdam West</option>
+          <option value="amsterdam-oost">Amsterdam Oost</option>
+          <option value="amsterdam-zuid">Amsterdam Zuid</option>
+          <option value="amsterdam">Amsterdam (other)</option>
+          <option value="rotterdam">Rotterdam</option>
+          <option value="utrecht">Utrecht</option>
+          <option value="den-haag">Den Haag</option>
+          <option value="eindhoven">Eindhoven</option>
+          <option value="haarlem">Haarlem</option>
+          <option value="leiden">Leiden</option>
+          <option value="delft">Delft</option>
+          <option value="groningen">Groningen</option>
+          <option value="other">Other / smaller city</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Property type</label>
+        <select id="ptype" onchange="calculate()">
+          <option value="apartment">Apartment</option>
+          <option value="house">House</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Property age (years old)</label><input type="number" id="age" placeholder="e.g. 15" oninput="calculate()"></div>
+      <div class="field"><label>Days on market (optional)</label><input type="number" id="days" placeholder="e.g. 7" oninput="calculate()"></div>
+    </div>
+
+    <div class="result-instant" id="result-instant"></div>
+
+    <div class="section-label" style="margin-top:18px">Generate formal bid letter</div>
+    <div class="field-row">
+      <div class="field"><label>Property address</label><input type="text" id="addr" placeholder="e.g. Prinsengracht 456, Amsterdam"></div>
+      <div class="field"><label>Your name</label><input type="text" id="name" placeholder="e.g. Sarah Johnson"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Preferred transfer date</label><input type="text" id="transfer" placeholder="e.g. 1 September 2025 or flexible"></div>
+      <div class="field"><label>Conditions to include</label>
+        <select id="conditions">
+          <option value="both">Financing + inspection conditions</option>
+          <option value="finance-only">Financing condition only</option>
+          <option value="inspection-only">Inspection condition only</option>
+          <option value="none">No conditions (cash / strong pre-approval)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>One sentence about yourself (optional)</label><input type="text" id="about" placeholder="e.g. We are a young couple looking for our first family home in Amsterdam."></div>
+
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn" onclick="generateLetter()">Generate bid letter</button>
+      <div class="spinner" id="spin"></div>
+    </div>
+    <div class="err" id="err"></div>
+
+    <div class="letter-box" id="letter-nl"></div>
+    <div id="copy-row-nl" style="display:none;margin-bottom:14px">
+      <button class="copy-btn" id="copy-nl" onclick="copyLetter('letter-nl','copy-nl','Copy Dutch')">Copy Dutch letter</button>
+    </div>
+    <div class="letter-box" id="letter-en"></div>
+    <div id="copy-row-en" style="display:none">
+      <button class="copy-btn" id="copy-en" onclick="copyLetter('letter-en','copy-en','Copy English')">Copy English translation</button>
+    </div>
+    <div id="subject-row" style="display:none;margin-top:10px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Email subject (Dutch)</div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px" id="letter-subject"></div>
+    </div>
+  </div>
+
+  <a href="/tools/buy-assistant" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--green);text-decoration:none;">Open Buyer Assistant for full bid strategy →</a>
+</div>
+
+<script>
+const OVERBID_PCT = {
+  'amsterdam-centrum': { min: 15, avg: 18, max: 22 },
+  'amsterdam-west': { min: 10, avg: 14, max: 18 },
+  'amsterdam-oost': { min: 11, avg: 15, max: 19 },
+  'amsterdam-zuid': { min: 13, avg: 17, max: 21 },
+  'amsterdam': { min: 10, avg: 14, max: 18 },
+  'rotterdam': { min: 5, avg: 8, max: 12 },
+  'utrecht': { min: 8, avg: 12, max: 16 },
+  'den-haag': { min: 4, avg: 7, max: 11 },
+  'eindhoven': { min: 5, avg: 9, max: 13 },
+  'haarlem': { min: 10, avg: 13, max: 17 },
+  'leiden': { min: 7, avg: 11, max: 14 },
+  'delft': { min: 6, avg: 10, max: 13 },
+  'groningen': { min: 2, avg: 5, max: 8 },
+  'other': { min: 0, avg: 3, max: 7 },
+};
+
+let calcSnapshot = {};
+
+function calculate() {
+  const ask = parseFloat(document.getElementById('ask').value) || 0;
+  const budget = parseFloat(document.getElementById('budget').value) || 0;
+  const city = document.getElementById('city').value;
+  const ptype = document.getElementById('ptype').value;
+  const age = parseInt(document.getElementById('age').value) || 0;
+  const days = parseInt(document.getElementById('days').value) || 0;
+
+  if (!ask) { document.getElementById('result-instant').classList.remove('on'); return; }
+
+  const pcts = OVERBID_PCT[city] || { min: 0, avg: 4, max: 8 };
+
+  // Adjust for days on market
+  let adjMin = pcts.min, adjAvg = pcts.avg, adjMax = pcts.max;
+  if (days > 30) { adjMin = Math.max(0, adjMin - 4); adjAvg = Math.max(0, adjAvg - 4); adjMax = Math.max(0, adjMax - 3); }
+  else if (days > 14) { adjMin = Math.max(0, adjMin - 2); adjAvg = Math.max(0, adjAvg - 2); }
+
+  const bidLow = Math.round(ask * (1 + adjMin / 100) / 1000) * 1000;
+  const bidMid = Math.round(ask * (1 + adjAvg / 100) / 1000) * 1000;
+  const bidHigh = Math.round(ask * (1 + adjMax / 100) / 1000) * 1000;
+  const bidBudget = budget > 0 ? Math.min(budget, bidHigh) : null;
+
+  // Conditions analysis
+  const needsInspection = age > 20 || ptype === 'house';
+  const needsFinancing = true;
+
+  // If losing to budget
+  const overBudget = budget > 0 && bidMid > budget;
+
+  calcSnapshot = { ask, budget, city, ptype, age, days, bidLow, bidMid, bidHigh, adjMin, adjAvg, adjMax };
+
+  let html = `
+    <div class="bid-cards">
+      <div class="bid-card"><div class="label">Conservative bid</div><div class="amount">EUR ${bidLow.toLocaleString()}</div><div class="pct">+${adjMin}% over asking</div></div>
+      <div class="bid-card recommended"><div class="label">Recommended bid</div><div class="amount">EUR ${bidMid.toLocaleString()}</div><div class="pct">+${adjAvg}% - typical for this city</div></div>
+      <div class="bid-card"><div class="label">Aggressive bid</div><div class="amount">EUR ${bidHigh.toLocaleString()}</div><div class="pct">+${adjMax}% if you really want it</div></div>
+    </div>`;
+
+  if (overBudget) {
+    html += `<div class="warning-box" style="margin-bottom:14px">⚠️ Your budget (EUR ${budget.toLocaleString()}) is below the typical market bid for this city. You may need to adjust your target price or search area.</div>`;
+  }
+
+  html += `<div class="section-label">Conditions analysis</div>
+    <div class="cond-row"><span class="name">Financing condition (voorbehoud financiering)</span><span class="cond-badge-include">INCLUDE</span></div>
+    <div class="cond-row"><span class="name">Building inspection (bouwkundige keuring)</span><span class="${needsInspection ? 'cond-badge-include' : 'cond-badge-waive'}">${needsInspection ? 'INCLUDE - property is over 20 years old' : 'Consider waiving for newer buildings'}</span></div>`;
+
+  html += `<p style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6">Waiving financing condition means if your bank refuses the mortgage, you lose your 10% deposit. Only waive if you have a confirmed mortgage offer.</p>`;
+
+  document.getElementById('result-instant').innerHTML = html;
+  document.getElementById('result-instant').classList.add('on');
+}
+
+async function generateLetter() {
+  const ask = parseFloat(document.getElementById('ask').value) || 0;
+  if (!ask) { showErr('Please enter the asking price first.'); return; }
+  const addr = document.getElementById('addr').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const transfer = document.getElementById('transfer').value.trim();
+  const conditions = document.getElementById('conditions').value;
+  const about = document.getElementById('about').value.trim();
+
+  const bidDetails = {
+    askingPrice: ask,
+    recommendedBid: calcSnapshot.bidMid || Math.round(ask * 1.08),
+    address: addr,
+    buyerName: name,
+    transferDate: transfer,
+    conditions,
+    buyerNote: about,
+    city: document.getElementById('city').value,
+  };
+
+  hideErr(); setLoading(true);
+  try {
+    const r = await fetch('/api/overbid-bid-letter', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bidDetails }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Failed');
+
+    if (d.letterDutch) {
+      document.getElementById('letter-nl').textContent = d.letterDutch;
+      document.getElementById('letter-nl').classList.add('on');
+      document.getElementById('copy-row-nl').style.display = 'block';
+    }
+    if (d.letterEnglish) {
+      document.getElementById('letter-en').textContent = d.letterEnglish;
+      document.getElementById('letter-en').classList.add('on');
+      document.getElementById('copy-row-en').style.display = 'block';
+    }
+    if (d.subject) {
+      document.getElementById('letter-subject').textContent = d.subject;
+      document.getElementById('subject-row').style.display = 'block';
+    }
+    document.getElementById('letter-nl').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) { showErr(e.message || 'Something went wrong.'); }
+  finally { setLoading(false); }
+}
+
+function copyLetter(boxId, btnId, label) {
+  const text = document.getElementById(boxId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.textContent = 'Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {});
+}
+
+function showErr(m) { const e = document.getElementById('err'); e.textContent = m; e.classList.add('on'); }
+function hideErr() { document.getElementById('err').classList.remove('on'); }
+function setLoading(on) {
+  document.getElementById('spin').classList.toggle('on', on);
+  document.querySelectorAll('.btn').forEach(b => b.disabled = on);
+}
+</script>
+</body>
+</html>

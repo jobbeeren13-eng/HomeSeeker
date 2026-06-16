@@ -860,4 +860,285 @@ Rules:
   return stripMarkdown(message.content[0].text);
 }
 
-module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, STYLE_LABELS };
+async function generateLandlordReplyDirect({ message, userProfile = {} }) {
+  const systemPrompt = `You are an expert at decoding landlord and rental agent messages in the Netherlands and writing perfect replies for expat tenants. Return a JSON object with exactly these keys:
+- "translation": if the message is in Dutch, provide an English translation. If already in English, return the original message.
+- "plainExplanation": what this message really means in plain English. What is the landlord actually saying, including any hidden meaning? 2-3 sentences.
+- "intent": one of exactly these values: "Interested", "Stalling", "SoftRejection", "HardRejection", "RequestForInfo", "Scheduling", "NegotiatingTerms"
+- "intentExplanation": one sentence explaining why you classified it this way
+- "shouldReply": true or false - whether replying is worth the tenant's time
+- "reply": if shouldReply is true, a ready-to-copy reply in English. Max 80 words. Professional but human. No opening pleasantry clichés. Gets to the point. If shouldReply is false, explain in one sentence why replying is not advised.
+- "replyDutch": Dutch translation of the reply if shouldReply is true, otherwise null.
+- "urgency": "act-now", "today", "this-week", or "no-action"
+- "urgencyNote": one sentence on what to do and when
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const lines = [`Landlord/agent message:\n"${message.slice(0, 2000)}"`];
+  if (userProfile.naam) lines.push(`Tenant name: ${userProfile.naam}`);
+  if (userProfile.inkomen) lines.push(`Monthly income: EUR ${userProfile.inkomen}`);
+  if (userProfile.contract_type) lines.push(`Contract type: ${userProfile.contract_type}`);
+  lines.push('Analyse this message and return the JSON.');
+
+  const msg = await callClaude({
+    max_tokens: 1500,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in landlord reply response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateRejectionAnalysisDirect({ applications, userProfile = {} }) {
+  const systemPrompt = `You are a Dutch rental market expert who analyses rejection patterns and tells expat tenants exactly what to fix. Return a JSON object with exactly these keys:
+- "mostLikelyReasons": array of 2-4 strings, each a specific likely rejection reason (income gap, response speed, document quality, profile mismatch, letter tone, competition level)
+- "fixPriorityList": array of objects with keys "fix" (what to fix), "howToFix" (one sentence), "impact" ("high", "medium", or "low")  - ordered from most to least impactful. Max 5 items.
+- "patternFound": if 3+ rejections provided, identify the common thread in one sentence. Otherwise null.
+- "pivotAdvice": should they keep applying to similar listings or adjust criteria? 2 sentences.
+- "confidenceScore": 0-100 how confident you are in this analysis based on the data provided
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const appStr = Array.isArray(applications)
+    ? applications.map((a, i) => `Application ${i + 1}: ${JSON.stringify(a)}`).join('\n')
+    : String(applications).slice(0, 3000);
+
+  const lines = [`Past applications/rejections:\n${appStr}`];
+  if (userProfile.inkomen) lines.push(`Monthly income: EUR ${userProfile.inkomen}`);
+  if (userProfile.contract_type) lines.push(`Contract type: ${userProfile.contract_type}`);
+  if (userProfile.profiel_type) lines.push(`Profile: ${userProfile.profiel_type}`);
+  lines.push('Analyse and return the JSON.');
+
+  const msg = await callClaude({
+    max_tokens: 1500,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in rejection analysis response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateReferenceLetterDirect({ type, details }) {
+  const isEmployer = type === 'employer';
+  const systemPrompt = isEmployer
+    ? `You generate professional employer reference letters for Dutch rental applications. Return a JSON object with exactly these keys:
+- "letter": a formal English employer reference letter. Format: company letterhead section (placeholder), date, RE line, body paragraphs, signature block. The letter confirms: employment, income, contract type, and recommendation. Max 250 words. No dashes. Professional business English.
+- "letterDutch": complete Dutch translation of the letter
+- "instructions": 3-step plain English instructions for what the tenant should do with this letter (print, get signed, scan etc.)
+- "subject": email subject line if the tenant is emailing this to their employer
+
+Return only valid JSON. No explanation, no code blocks.`
+    : `You generate professional landlord reference letters for Dutch rental applications. Return a JSON object with exactly these keys:
+- "letter": a friendly English reference letter a previous landlord can sign. Covers: good tenant, no payment issues, property left in good condition, recommendation. Max 200 words. No dashes. Warm professional tone.
+- "letterDutch": complete Dutch translation of the letter
+- "instructions": 3-step plain English instructions for what the tenant should do with this letter
+- "subject": email subject line if the tenant is emailing this to their previous landlord
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const msg = await callClaude({
+    max_tokens: 1500,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: `Generate a ${type} reference letter.\n\nDetails provided:\n${JSON.stringify(details, null, 2)}\n\nReturn the JSON.` }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in reference letter response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateIncomeExplainDirect({ income, rent, situation }) {
+  const systemPrompt = `You are a Dutch rental income advisor. Generate a short, honest explanation an expat can include in their rental application. Return a JSON object with exactly these keys:
+- "explanation": one paragraph (max 80 words) the tenant can paste into their application explaining their income situation. Natural, credible, professional. English only. No dashes.
+- "tip": one sentence of advice about how to present this income situation
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const msg = await callClaude({
+    max_tokens: 600,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: `Income: EUR ${income}/month gross\nRent: EUR ${rent}/month\nSituation: ${situation}\n\nGenerate the explanation JSON.` }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in income explain response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateViewingFeedbackDirect({ viewingNotes, userProfile = {} }) {
+  const systemPrompt = `You are a Dutch rental viewing expert who reads between the lines of landlord behaviour at viewings. Return a JSON object with exactly these keys:
+- "likelihoodScore": 0-100, how likely is this viewing to result in an offer or application request
+- "likelihoodLabel": "Very likely", "Likely", "Uncertain", "Unlikely", or "Very unlikely"
+- "readTheRoom": 3-4 sentence analysis of what the landlord's behaviour signals
+- "nextAction": exact instruction for what the tenant should do RIGHT NOW (within 2 hours of viewing)
+- "followUpMessage": complete ready-to-send follow-up message in English. Max 80 words. Warm but not desperate. Specific reference to the property.
+- "redFlags": array of strings, each a specific red flag from the viewing. Empty array if none.
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const lines = [`Viewing notes:\n${viewingNotes.slice(0, 2000)}`];
+  if (userProfile.naam) lines.push(`Tenant name: ${userProfile.naam}`);
+  lines.push('Analyse and return the JSON.');
+
+  const msg = await callClaude({
+    max_tokens: 1500,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in viewing feedback response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateTenantRightsAnswerDirect({ question }) {
+  const systemPrompt = `You are a Dutch tenant rights expert (Book 7 BW, Huurcommissie, Wet betaalbare huur). Answer questions from expat tenants in plain English. Return a JSON object with exactly these keys:
+- "answer": plain English answer to the question. Specific to Dutch law. Max 250 words. No dashes. No legal jargon without explanation.
+- "whatToDoNext": 2-3 specific action steps
+- "authority": name of the official Dutch authority relevant to this situation (e.g. "Huurcommissie", "Juridisch Loket", "Gemeente")
+- "authorityNote": one sentence on what the authority does and when to contact them
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const msg = await callClaude({
+    max_tokens: 1000,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: `Tenant question: ${question}\n\nReturn the JSON answer.` }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in tenant rights response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateDealExplainDirect({ dealData }) {
+  const systemPrompt = `You are a Dutch property market analyst. Given property data, write a 3-sentence plain English verdict. Return a JSON object with exactly these keys:
+- "verdict": exactly 3 sentences: (1) is this a deal, fair, or overpriced; (2) the single biggest reason why; (3) one specific recommendation.
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const msg = await callClaude({
+    max_tokens: 400,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: `Property data:\n${JSON.stringify(dealData, null, 2)}\n\nReturn the verdict JSON.` }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in deal explain response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateOverbidLetterDirect({ bidDetails, userProfile = {} }) {
+  const systemPrompt = `You write formal bid letters in Dutch (with English translation) for buyers in the Dutch property market. Return a JSON object with exactly these keys:
+- "letterDutch": formal Dutch bid letter. Include: bid amount, conditions (or explicit waiver), preferred transfer date, one sentence about the buyer. Professional, concise. Max 150 words.
+- "letterEnglish": English translation of the letter
+- "subject": Dutch email subject line for the selling agent
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const lines = [`Bid details:\n${JSON.stringify(bidDetails, null, 2)}`];
+  if (userProfile.naam) lines.push(`Buyer name: ${userProfile.naam}`);
+  lines.push('Generate the bid letter JSON.');
+
+  const msg = await callClaude({
+    max_tokens: 1000,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in overbid letter response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateInspectionAdviceDirect({ inspectionText, purchasePrice }) {
+  const systemPrompt = `You are a Dutch building inspection expert and property buyer advisor. Return a JSON object with exactly these keys:
+- "issues": array of objects, each with keys: "issue" (name), "severity" ("Cosmetic", "Minor", "Significant", "Major", "DealBreaker"), "estimatedCostEur" (integer, Dutch 2024 contractor rates), "priorityRepair" (true/false - must fix before move-in)
+- "totalEstimatedCostEur": integer total of all repair costs
+- "renegotiationStrategy": how much to ask off the purchase price (specific amount or percentage), and how to frame the request. 3 sentences.
+- "renegotiationScript": word-for-word script for the conversation with the selling agent. Max 100 words.
+- "walkAwayRecommended": true or false
+- "walkAwayReason": one sentence if walkAwayRecommended is true, otherwise null
+- "priorityRepairs": array of strings, repairs that must be done before moving in
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const msg = await callClaude({
+    max_tokens: 1500,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: `Inspection findings:\n${inspectionText.slice(0, 3000)}\n\nPurchase price: EUR ${purchasePrice}\n\nReturn the analysis JSON.` }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in inspection advice response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateErfpachtAnalysisDirect({ erfpachtText, purchasePrice, city }) {
+  const systemPrompt = `You are a Dutch erfpacht (ground lease) expert. Analyse the erfpacht terms from a purchase contract. Return a JSON object with exactly these keys:
+- "erfpachtType": "eeuwigdurende" (permanent), "tijdelijke" (temporary), or "unknown"
+- "currentCanon": current annual ground rent payment in euros, or null if not mentioned
+- "revisionDate": when the canon is next revised, or null
+- "revisionBasis": "WOZ" (expensive, market value), "CPI" (inflation), "fixed", or "unknown"
+- "estimatedCanonAfterRevision": estimated annual canon after next revision in euros, or null
+- "buyoutRecommended": true or false
+- "estimatedBuyoutCost": rough estimate in euros, or null
+- "mortgageRisk": "Low", "Medium", "High" - how will banks view this for lending
+- "redFlags": array of strings, specific red flags found
+- "verdict": 3-sentence plain English verdict: should they buy, what is the main risk, what to do next
+- "riskLevel": "Low", "Medium", "High", or "Critical"
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const lines = [`Erfpacht terms:\n${erfpachtText.slice(0, 3000)}`];
+  if (purchasePrice) lines.push(`Purchase price: EUR ${purchasePrice}`);
+  if (city) lines.push(`City: ${city}`);
+  lines.push('Return the analysis JSON.');
+
+  const msg = await callClaude({
+    max_tokens: 1500,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: lines.join('\n') }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in erfpacht analysis response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+async function generateAgentScriptDirect({ situation, context }) {
+  const systemPrompt = `You are an expert on dealing with Dutch real estate agents (makelaars). Write word-for-word scripts for expats. Return a JSON object with exactly these keys:
+- "script": complete word-for-word script in English for the described situation. Natural, confident, not desperate. Max 150 words.
+- "scriptDutch": Dutch translation of the script
+- "keyPoints": array of 2-3 strings, the key things to remember in this situation
+- "whatToAvoid": one sentence on the single biggest mistake to avoid
+
+Return only valid JSON. No explanation, no code blocks.`;
+
+  const msg = await callClaude({
+    max_tokens: 1000,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: `Situation: ${situation}\n\nContext: ${context || 'No additional context'}\n\nReturn the script JSON.` }],
+  });
+
+  const raw = msg.content[0].text.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('No JSON in agent script response');
+  return JSON.parse(jsonMatch[0]);
+}
+
+module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, STYLE_LABELS };
