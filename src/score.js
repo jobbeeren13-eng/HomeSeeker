@@ -176,216 +176,133 @@ function fmtEuro(n) {
 function getImprovementTips(listing, user, _currentScore, dealScore) {
   const price = listing.priceNumber || 0;
   const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
-  const cityRaw = (listing.city || '').toLowerCase().replace(/-/g, '');
+  const desc = (listing.description || '').toLowerCase();
+  const source = (listing.source || '').toLowerCase();
 
+  const tips = [];
   const seen = new Set();
-  const landlordTips = [];
-  const financialTips = [];
-  const profileTips  = [];
-  const timingTips   = [];
-  const cityTips     = [];
-  const sourceTips   = [];
-  const fallbackTips = [];
 
-  function add(bucket, tip, category = 'general') {
-    if (tip && !seen.has(tip)) { seen.add(tip); bucket.push({ tip, category }); }
+  function add(tip, category) {
+    if (tips.length >= 5 || !tip || seen.has(tip)) return;
+    seen.add(tip);
+    tips.push({ tip, category });
   }
 
-  // ── AI-GENERATED TIP (pre-computed, highest priority) ────────────────
-  if (listing.aiTip) add(landlordTips, listing.aiTip, 'contract');
-
-  // ── INCOME CROSS-REFERENCE (beats generic income_requirement tip) ────
-  let skipGenericIncomeReq = false;
-  if (inkomen > 0 && price > 0 && listing.description) {
-    const mIncome = listing.description.match(/(\d+)[xX]\s*(?:de\s*)?(?:maand)?huur/i)
-                 || listing.description.match(/(\d+)\s*times.*rent/i)
-                 || listing.description.match(/(\d+)[xX]\s*(?:monthly\s*)?rent/i);
-    if (mIncome) {
-      const mult = parseInt(mIncome[1]);
-      const required = price * mult;
-      const gap = required - inkomen;
-      skipGenericIncomeReq = true;
-      if (gap > 0) {
-        const shortfall = Math.ceil(gap / 100) * 100;
-        add(financialTips, `Landlord requires ${mult}x rent (${fmtEuro(required)}/mo): you are ${fmtEuro(shortfall)}/mo short`, 'guarantor');
-      } else {
-        add(financialTips, `Your income meets the ${mult}x requirement (${fmtEuro(required)}/mo): state this explicitly`, 'contract');
-      }
-    }
-  }
-
-  // ── LANDLORD INTENT TIPS ─────────────────────────────────────────────
-  if (listing.description) {
-    const { tips: descTips } = detectLandlordIntent(listing.description);
-    for (const t of descTips) {
-      if (skipGenericIncomeReq && t.tip && t.tip.toLowerCase().includes('income requirement')) continue;
-      add(landlordTips, t.tip, t.category || 'general');
-    }
-  }
-
-  // ── DEPOSIT TIP ──────────────────────────────────────────────────────
-  if (user.heeft_borg === 'nee' && listing.description) {
-    const hasBorg = /\bborg\b|waarborgsom|\bdeposit\b/i.test(listing.description);
-    if (hasBorg) add(profileTips, 'Deposit required: budget for it and confirm you can pay upfront', 'guarantor');
-  }
-
-  // ── FINANCIAL TIPS ───────────────────────────────────────────────────
-  if (inkomen > 0 && price > 0 && listing.transactionType === 'huur') {
-    const maxHuur = inkomen / 3;
-    const ratio   = price / maxHuur;
-    if (ratio > 1.2) {
-      const multiplier = (inkomen / price).toFixed(1);
-      const gap = Math.ceil((price * 3 - inkomen) / 100) * 100;
-      add(financialTips, `Income at ${multiplier}x rent, need 3x: guarantor earning ${fmtEuro(gap)}/mo closes the gap`, 'guarantor');
-    } else if (ratio > 1.0) {
-      const gap = Math.ceil((price * 3 - inkomen) / 100) * 100;
-      add(financialTips, `Just below 3x threshold: add a co-applicant with ${fmtEuro(gap)}/mo extra income`, 'guarantor');
-    } else if (ratio > 0.85) {
-      add(financialTips, 'Income just meets the limit: mention savings or extra income sources', 'contract');
-    }
-  }
-
-  // ── PRICE VS MARKET ──────────────────────────────────────────────────
-  if (dealScore != null) {
-    if (dealScore < 30) {
-      add(cityTips, 'Priced above market: verify what is included before applying', 'city_action');
-    } else if (dealScore > 70) {
-      add(cityTips, 'Below market price: expect high competition for this listing', 'city_action');
-    }
-  }
-
-  // ── ENERGY LABEL (from listing metadata) ─────────────────────────────
-  const energyLbl = (listing.energyLabel || listing.energy_label || '').toUpperCase().trim();
-  if (energyLbl) {
-    if (/^A/.test(energyLbl)) {
-      add(profileTips, 'Energy label A: low utility costs, roughly €50-100/mo below average homes', 'energy');
-    } else if (energyLbl === 'B') {
-      add(profileTips, 'Energy label B: decent insulation, reasonable heating costs', 'energy');
-    } else if (/^[C-G]/.test(energyLbl)) {
-      add(profileTips, `Energy label ${energyLbl}: budget €100-200/mo extra for utilities`, 'energy');
-    }
-  }
-
-  // ── CONTRACT / PROFILE TIPS ──────────────────────────────────────────
-  if (user.contract_type === 'zzp') {
-    const maxHuur = inkomen > 0 ? inkomen / 3 : 0;
-    if (price > 0 && inkomen > 0 && price > maxHuur) {
-      add(profileTips, 'Freelancer below 3x: provide 3 tax returns and an active client contract', 'contract');
+  // ── FINANCIAL ───────────────────────────────────────────────────────────
+  if (inkomen > 0 && price > 0) {
+    const ratio = inkomen / price;
+    if (ratio >= 4) {
+      add(`Your income is ${ratio.toFixed(1)}x the monthly rent — state this in your opening sentence to immediately qualify yourself`, 'financial');
+    } else if (ratio >= 3.3) {
+      add(`You comfortably meet the 3x rule — open with your gross annual income of ${fmtEuro(inkomen * 12)} to put the landlord at ease immediately`, 'financial');
+    } else if (ratio >= 3.0) {
+      add(`Your ratio of ${ratio.toFixed(1)}x is borderline — lead with your gross annual income of ${fmtEuro(inkomen * 12)} and offer one extra bank statement`, 'financial');
     } else {
-      add(profileTips, 'Freelancer: share 3 years of tax returns to remove the main objection', 'contract');
+      const gap = Math.ceil((price * 3 - inkomen) / 100) * 100;
+      add(`Income at ${ratio.toFixed(1)}x (need 3x): add a guarantor earning ${fmtEuro(gap)}/mo or offer 3 months deposit upfront to close the gap`, 'guarantor');
     }
-  }
-  if (user.contract_type === 'tijdelijk') {
-    add(profileTips, 'Temporary contract: attach an employer letter confirming contract renewal', 'contract');
-  }
-  if (user.contract_type === 'student') {
-    const studentsWelcomeFired = [...seen].some(t => t.startsWith('Students welcome'));
-    if (studentsWelcomeFired) {
-      add(profileTips, 'Student: arrange a guarantor or strong bank statement if possible', 'contract');
-    } else {
-      add(profileTips, 'Student: lead with institution, program, graduation year and guarantor', 'contract');
+    if (dealScore != null && dealScore < 30) {
+      const contractLabel = (user.contract_type === 'vast' || user.contract_type === 'permanent') ? 'permanent contract' : 'stable income';
+      add(`Above-market rent makes your ${contractLabel} your strongest selling point — lead with it explicitly in the first sentence`, 'financial');
     }
   }
 
-  // ── EXPAT-SPECIFIC TIP ───────────────────────────────────────────────
-  if (user.profiel_type === 'expat' || user.expat_status) {
-    add(profileTips, 'Expat applicant: confirm you have or can open a Dutch bank account', 'expat');
+  // ── CONTRACT ─────────────────────────────────────────────────────────────
+  const ct = (user.contract_type || '').toLowerCase();
+  if (ct === 'vast' || ct === 'permanent') {
+    add(`Open with your permanent contract — it is the single biggest reassurance for Dutch landlords and should be your first sentence`, 'contract');
+  } else if (ct === 'tijdelijk' || ct === 'temporary') {
+    add(`Temporary contract: offer 3 months deposit upfront or attach 6 months of bank statements showing consistent income`, 'contract');
+  } else if (ct === 'zzp' || ct === 'freelance') {
+    add(`Freelancer: offer 3 months deposit upfront and include 2 years of tax returns — this removes the main landlord objection before they can raise it`, 'contract');
   }
 
-  // ── DOCUMENT TIPS ────────────────────────────────────────────────────
-  if (user.application_readiness === 'niet') {
-    add(profileTips, 'Prepare your docs first: ID, 3 payslips, employer letter, bank statements', 'documents');
-  } else if (user.application_readiness === 'bezig') {
-    add(profileTips, 'Finish your document pack today: landlords decide within 24-48 hours', 'documents');
-  } else if (user.application_readiness === 'bijna') {
-    add(profileTips, 'Almost ready: gather ID, BSN, 3 payslips, employer letter, bank statements', 'documents');
+  // ── PROFILE / COMPETITION ─────────────────────────────────────────────────
+  if (/expat|international|english only|relocation/.test(desc)) {
+    add(`This landlord uses expat-friendly language — write in English and mention your employer or relocation package in the first paragraph`, 'profile');
+  } else if (/working professional|young professional|werkend professional/.test(desc)) {
+    add(`Listing targets working professionals — lead with your exact job title and employer type in your first sentence`, 'profile');
   }
 
-  // ── TIMING TIPS ──────────────────────────────────────────────────────
+  if (source === 'funda') {
+    add(`Funda listings attract 50+ applications — apply within 30 minutes and follow up with a phone call to the agent the same day`, 'source_action');
+  } else if (source === 'housinganywhere') {
+    add(`Message the landlord in both English and Dutch on HousingAnywhere — bilingual applicants stand out significantly on this platform`, 'source_action');
+  } else if (source === 'kamernet') {
+    add(`Kamernet landlords respond best to warm, personal messages — avoid formal templates and write as if you are messaging a person directly`, 'source_action');
+  }
+
+  // ── TIMING ──────────────────────────────────────────────────────────────
   if (listing.listedAt) {
-    const ageMins = (Date.now() - new Date(listing.listedAt).getTime()) / 60000;
-    if (!isNaN(ageMins) && ageMins >= 0) {
-      if (ageMins < 120) {
-        add(timingTips, 'New listing: apply before the shortlist fills', 'timing');
+    const ageMs = Date.now() - new Date(listing.listedAt).getTime();
+    if (!isNaN(ageMs) && ageMs >= 0) {
+      const ageMins = ageMs / 60000;
+      if (ageMins < 30) {
+        add(`Listed just ${Math.round(ageMins)} minutes ago — you have a narrow window before the inbox fills, apply right now`, 'timing');
+      } else if (ageMins < 120) {
+        add(`Listed ${Math.round(ageMins)} minutes ago — most shortlists form in the first 2 hours, send your application now`, 'timing');
       } else if (ageMins < 1440) {
-        add(timingTips, 'Listed today: competition is building, apply now', 'timing');
+        add(`${Math.round(ageMins / 60)} hours old — competition is already building, apply today with your full document pack attached`, 'timing');
+      } else if (ageMins < 3 * 24 * 60) {
+        add(`2-3 days old — use the extra time to write a more specific letter than the applicants who rushed in day one`, 'timing');
+      } else if (ageMins < 14 * 24 * 60) {
+        add(`Listed ${Math.round(ageMins / (24 * 60))} days ago — still active means a selective landlord; address their stated requirements directly in your letter`, 'timing');
       } else {
-        add(timingTips, 'Listing has been up a while: make your intro count', 'timing');
+        add(`Over 2 weeks on market — this gives you negotiation leverage: ask if the landlord is open to a lower rent or a flexible start date`, 'timing');
       }
     }
   }
 
-  // ── CITY COMPETITION TIPS ────────────────────────────────────────────
-  if (cityRaw.includes('amsterdam')) {
-    if (price > 0 && price < 1800) {
-      add(cityTips, 'Amsterdam under €1,800: average 57 applicants per listing, apply within the hour', 'city_action');
-    } else {
-      add(cityTips, 'Amsterdam: landlords choose within 24 hours, send your personal intro today', 'city_action');
-    }
-  } else if (cityRaw.includes('utrecht')) {
-    add(cityTips, 'Utrecht: landlords shortlist within 24-48 hours, apply today and request a viewing', 'city_action');
-  } else if (cityRaw.includes('haarlem')) {
-    add(cityTips, 'Haarlem: very limited supply, treat this as a top-priority application', 'city_action');
-  } else if (cityRaw.includes('rotterdam')) {
-    add(cityTips, 'Rotterdam: fast market, respond today with your document pack ready', 'city_action');
-  } else if (cityRaw.includes('leiden') || cityRaw.includes('delft')) {
-    add(cityTips, 'Student city: high competition, a personal concise intro is essential', 'city_action');
-  } else if (cityRaw.includes('eindhoven')) {
-    add(cityTips, 'Eindhoven: tech market, mention ASML/IMEC/Philips ties if relevant', 'city_action');
+  // ── PROPERTY ─────────────────────────────────────────────────────────────
+  if (/\btuin\b|garden/.test(desc)) {
+    add(`Property has a garden — mention you are happy to maintain it yourself to differentiate from applicants who may not want that responsibility`, 'property');
+  }
+  if (/parkeerplaats|parking|garage/.test(desc)) {
+    add(`Parking available — clearly state whether you need the parking space or not, as landlords need to know who has access`, 'property');
+  }
+  if (/geen huisdieren|no pets|no animals/.test(desc)) {
+    add(`No-pets clause in listing — proactively confirm you have no pets in your message, do not wait for them to ask`, 'property');
   }
 
-  // ── SOURCE-SPECIFIC TIPS ─────────────────────────────────────────────
-  if (listing.source === 'housinganywhere') {
-    add(sourceTips, 'Message the landlord directly on HousingAnywhere before applying', 'source_action');
-  } else if (listing.source === 'kamernet') {
-    add(sourceTips, 'Personalized intro messages get higher response rates on Kamernet', 'source_action');
+  const energyLbl = (listing.energyLabel || listing.energy_label || '').toUpperCase().trim();
+  if (/^[AB]/.test(energyLbl)) {
+    add(`Energy label ${energyLbl}: mention the low utility costs to show you understand the full value — saves roughly €80-120/mo vs. a lower-rated home`, 'energy');
+  } else if (/^[DEFG]/.test(energyLbl)) {
+    add(`Energy label ${energyLbl} means higher bills — budget €150-200/mo extra for utilities and use this to negotiate a lower base rent`, 'energy');
   }
 
-  // ── MERGE: priority order ────────────────────────────────────────────
-  const all = [];
-  for (const t of landlordTips) { if (all.length >= 5) break; all.push(t); }
-  for (const t of financialTips) { if (all.length >= 5) break; all.push(t); }
-  for (const t of [...profileTips, ...timingTips, ...cityTips, ...sourceTips]) { if (all.length >= 5) break; all.push(t); }
-
-  // ── DEDUP: compare full tip text ─────────────────────────────────────
-  const seen2 = new Set();
-  const deduped = [];
-  for (const t of all) {
-    const key = t.tip.toLowerCase().trim();
-    if (!seen2.has(key)) { seen2.add(key); deduped.push(t); }
+  if (/gemeubileerd|fully furnished|furnished/.test(desc)) {
+    add(`Furnished listing — ask for an inventory list before signing so both parties agree on exactly what is included`, 'property');
+  }
+  if (/inschrijving|gemeentelijke registratie|brp registratie/.test(desc)) {
+    add(`Registration (BRP) appears possible here — confirm this explicitly in your letter, it is a key requirement for expats and permit holders`, 'property');
   }
 
-  // ── UNIVERSAL POOL: always pad to exactly 5 tips ─────────────────────
-  const UNIVERSAL_POOL = [
-    { tip: 'Respond within the hour - landlords shortlist fast', category: 'timing' },
-    { tip: 'Mention your move-in date is flexible if possible', category: 'general' },
-    { tip: 'Attach all documents in one PDF, not separate files', category: 'documents' },
-    { tip: 'Include a short personal intro in your first message', category: 'general' },
-    { tip: 'Ask for a viewing slot within 24 hours of applying', category: 'timing' },
-    { tip: 'Confirm you have no pets if the listing does not mention them', category: 'lifestyle' },
-    { tip: 'Mention if you have a guarantor available', category: 'guarantor' },
-    { tip: 'State your employment situation clearly upfront', category: 'contract' },
-    { tip: 'Offer to do a video call if in-person viewing is not immediately possible', category: 'general' },
-    { tip: 'Follow up once after 48 hours if you have not heard back', category: 'timing' },
+  // ── DOCUMENTS ────────────────────────────────────────────────────────────
+  if (user.application_readiness === 'niet') {
+    add(`Start collecting your documents today — ID, last 3 payslips, employer statement, and 3 months of bank statements. Landlords decide within 24-48 hours`, 'documents');
+  } else if (user.application_readiness === 'bezig' || user.application_readiness === 'bijna') {
+    add(`Finish your document pack today and include the line "I can send all documents within the hour" — this alone closes many applications`, 'documents');
+  } else if (user.application_readiness === 'klaar') {
+    add(`Documents ready: say so explicitly — "All documents including ID, payslips, and employer letter are ready to send immediately"`, 'documents');
+  }
+
+  // ── UNIVERSAL FALLBACK POOL ───────────────────────────────────────────────
+  const FALLBACK = [
+    { tip: 'Call the agent or landlord after applying — a brief phone call triples callback rate compared to email alone', category: 'general' },
+    { tip: 'Send your application between 8am and 10am on a weekday — landlords check email in the morning and respond faster', category: 'timing' },
+    { tip: 'Address the landlord or agent by name if you can find it — personalisation increases response rates noticeably', category: 'general' },
+    { tip: 'Include your intended tenancy length or move-out date — it removes uncertainty for the landlord about your plans', category: 'general' },
+    { tip: 'Offer a video call if an in-person viewing is not immediately possible — it shows initiative and commitment', category: 'general' },
+    { tip: 'If relocating from another city or country, name your reason — landlords appreciate context and it makes your timeline make sense', category: 'profile' },
   ];
-  for (const u of UNIVERSAL_POOL) {
-    if (deduped.length >= 5) break;
-    const key = u.tip.toLowerCase().trim();
-    if (!seen2.has(key)) { seen2.add(key); deduped.push(u); }
+
+  for (const f of FALLBACK) {
+    if (tips.length >= 5) break;
+    if (!seen.has(f.tip)) { seen.add(f.tip); tips.push(f); }
   }
 
-  // ── URGENCY TIP: strong match on fresh listing ───────────────────────
-  const ageMs = listing.listedAt ? Date.now() - new Date(listing.listedAt).getTime() : null;
-  const isFresh = ageMs !== null && !isNaN(ageMs) && ageMs < 2 * 60 * 60 * 1000;
-  if (isFresh && _currentScore >= 80) {
-    const urgencyTip = { tip: 'This is a strong match and a fresh listing - apply in the next hour before the shortlist fills', category: 'timing' };
-    const urgencyKey = urgencyTip.tip.toLowerCase().trim();
-    const filtered = deduped.filter(t => t.tip.toLowerCase().trim() !== urgencyKey);
-    filtered.unshift(urgencyTip);
-    return { tips: filtered.slice(0, 5) };
-  }
-
-  return { tips: deduped.slice(0, 5) };
+  return { tips: tips.slice(0, 5) };
 }
 
 // ─────────────────────────────────────────────

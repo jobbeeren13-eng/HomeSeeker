@@ -62,11 +62,11 @@ function verifyStartPayload(payload) {
  
 const CACHE_TTL_MS = 48 * 60 * 60 * 1000;
 
-function cacheListing(listing, chatId = null) {
+function cacheListing(listing, chatId = null, score = null, dealScore = null) {
   const id = String(++listingCacheId);
   const expiresAt = Date.now() + CACHE_TTL_MS;
-  listingCache.set(id, { listing, chatId, expiresAt });
-  try { persistCacheListing.run(id, JSON.stringify({ listing, chatId }), expiresAt); } catch (_) {}
+  listingCache.set(id, { listing, chatId, score, dealScore, expiresAt });
+  try { persistCacheListing.run(id, JSON.stringify({ listing, chatId, score, dealScore }), expiresAt); } catch (_) {}
   if (listingCache.size > 1000) {
     const now = Date.now();
     for (const [k, v] of listingCache) {
@@ -103,19 +103,22 @@ function getCachedListing(id) {
   return null;
 }
 
-// Returns { listing, chatId } — used by server.js for the web letter page
+// Returns { listing, chatId, score, dealScore } — used by server.js for the web letter page
 function getCachedEntry(id) {
   const entry = listingCache.get(id);
   if (entry) {
     if (entry.expiresAt < Date.now()) { listingCache.delete(id); return null; }
-    return { listing: entry.listing, chatId: entry.chatId };
+    return { listing: entry.listing, chatId: entry.chatId, score: entry.score || null, dealScore: entry.dealScore || null };
   }
   try {
     const row = getPersistedCacheListing.get(String(id), Date.now());
     if (row) {
-      const { listing, chatId } = _parseStoredEntry(JSON.parse(row.listing_json));
-      listingCache.set(id, { listing, chatId, expiresAt: Date.now() + CACHE_TTL_MS });
-      return { listing, chatId };
+      const parsed = JSON.parse(row.listing_json);
+      const { listing, chatId } = _parseStoredEntry(parsed);
+      const score = parsed.score || null;
+      const dealScore = parsed.dealScore || null;
+      listingCache.set(id, { listing, chatId, score, dealScore, expiresAt: Date.now() + CACHE_TTL_MS });
+      return { listing, chatId, score, dealScore };
     }
   } catch (_) {}
   return null;
@@ -577,12 +580,6 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore, dealFill(dealScore)));
 
-  // Expensive market warning
-  if (dealScore != null && dealScore < 25) {
-    lines.push('');
-    lines.push('Priced significantly above market - negotiate or verify what is included in the rent');
-  }
-
   // Deal score bar for koop listings
   if (!isHuur && listing.priceNumber && listing.area) {
     const BUYER_BENCHMARKS = { amsterdam: 6800, utrecht: 5100, rotterdam: 4200, denhaag: 4400, haarlem: 5200, eindhoven: 3800, leiden: 4900, delft: 4600, groningen: 3100, maastricht: 3200 };
@@ -616,8 +613,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     if (isHuur) {
       const { tips } = getImprovementTips(listing, user, score, dealScore);
       lines.push('');
-      lines.push('*Tips:*');
-      tips.slice(0, 5).forEach((t, i) => { lines.push(''); lines.push(`${i + 1}. ${t.tip}`); });
+      tips.slice(0, 5).forEach((t, i) => { lines.push(''); lines.push(`*${i + 1}.* ${t.tip}`); });
     } else {
       // Buyer-specific tips for koop listings
       const buyerTips = [];
@@ -668,7 +664,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
 
   const fullText = lines.join('\n');
-  const cacheId = cacheListing(listing, chatId);
+  const cacheId = cacheListing(listing, chatId, score, dealScore);
  
   const keyboard = {
     inline_keyboard: [

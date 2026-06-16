@@ -10,7 +10,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #0a0a0a; --bg2: #0f1318;
       --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -100,6 +100,22 @@
     .btn-modify:hover { border-color: rgba(0,229,160,0.4); color: var(--green); }
     .btn-modify:disabled { opacity: .4; cursor: not-allowed; }
 
+    /* More help section */
+    .more-help {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px 24px; margin-top: 20px; display: none;
+    }
+    .more-help h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .more-help p { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+    .more-help-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-help {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--bg3); border: 1px solid rgba(0,229,160,0.25);
+      color: var(--green); font-family: inherit; font-size: 13px; font-weight: 600;
+      padding: 10px 16px; border-radius: 8px; text-decoration: none; transition: background .15s;
+    }
+    .btn-help:hover { background: rgba(0,229,160,0.08); }
+
     /* Apply package teaser */
     .package-teaser {
       background: linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,229,160,0.02));
@@ -132,10 +148,9 @@
 </head>
 <body>
 
-<nav>
-  <a href="/" class="logo">HomeSeeker</a>
-  <span style="font-size:13px;color:var(--muted)">Letter Generator</span>
-</nav>
+<header style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center">
+  <div style="font-size:13px;color:var(--muted)"><a href="/" style="color:var(--muted);text-decoration:none">HOMESEEKER</a><span style="margin:0 6px;color:var(--border)">›</span>Letter Generator</div>
+</header>
 
 <div class="page">
 
@@ -207,6 +222,17 @@
       <a href="#" id="package-link" class="btn-package">Create full package →</a>
     </div>
 
+    <!-- More help section -->
+    <div class="more-help" id="more-help">
+      <h3>Want more help with this application?</h3>
+      <p>Use our AI tools to get coaching, prepare for the viewing, or decode a landlord reply.</p>
+      <div class="more-help-buttons">
+        <a href="#" id="help-coach" class="btn-help">Coach me on this application</a>
+        <a href="#" id="help-viewing" class="btn-help">Prep for the viewing</a>
+        <a href="#" id="help-reply" class="btn-help">Decode a landlord reply</a>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -227,7 +253,7 @@
     { tip: 'Your move-in timeline and document readiness', category: 'documents' },
   ];
 
-  let state = { tips: [], cacheId: null, listing: null };
+  let state = { tips: [], cacheId: null, listing: null, chatId: null };
 
   async function init() {
     const params = new URLSearchParams(location.search);
@@ -250,10 +276,11 @@
     }
   }
 
-  function render({ listing, tips, score, dealScore }) {
+  function render({ listing, tips, score, dealScore, chatId }) {
     document.getElementById('loading-state').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
     state.listing = listing;
+    state.chatId = chatId || null;
 
     // Listing card
     const img = document.getElementById('listing-img');
@@ -328,6 +355,7 @@
 
       showLetter(data.letter);
       document.getElementById('package-teaser').style.display = 'block';
+      showMoreHelp();
     } catch (e) {
       alert(e.message || 'Letter generation failed. Please try again.');
     } finally {
@@ -407,6 +435,19 @@
     a.download = 'application-letter.txt';
     a.click();
     URL.revokeObjectURL(a.href);
+  }
+
+  function showMoreHelp() {
+    const el = document.getElementById('more-help');
+    if (!el) return;
+    const cacheId = state.cacheId;
+    const chatId = state.chatId;
+    const base = '/tools/rent-assistant';
+    const qs = chatId ? `chat_id=${chatId}&listing=${cacheId}` : `listing=${cacheId}`;
+    document.getElementById('help-coach').href = `${base}?${qs}&tab=1`;
+    document.getElementById('help-viewing').href = `${base}?${qs}&tab=2`;
+    document.getElementById('help-reply').href = chatId ? `/tools/landlord-reply?chat_id=${chatId}` : '/tools/landlord-reply';
+    el.style.display = 'block';
   }
 
   function showError(msg) {

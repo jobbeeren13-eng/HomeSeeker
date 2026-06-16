@@ -236,7 +236,32 @@
 <footer>Powered by Claude AI</footer>
 
 <script>
+let chatId = null;
+let listingContext = '';
 const lastResponses = {};
+
+function getParams() {
+  const p = new URLSearchParams(location.search);
+  chatId = p.get('chat_id') || null;
+  const tabParam = parseInt(p.get('tab') || '1', 10);
+  if (tabParam >= 1 && tabParam <= 5) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    if (tabs[tabParam - 1]) switchTab(tabParam, tabs[tabParam - 1]);
+  }
+  const listingId = p.get('listing') || null;
+  if (listingId) {
+    fetch(`/api/cached-listing/${listingId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.listing) {
+          const l = data.listing;
+          listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
+          document.getElementById('t2-listing').value = listingContext.slice(0, 800);
+          updateCount(document.getElementById('t2-listing'), 'cc-2-1');
+        }
+      }).catch(() => {});
+  }
+}
 
 const EXAMPLES = {
   1: {
@@ -432,6 +457,8 @@ function followUp(tab) {
   el.focus();
   el.setSelectionRange(el.value.length, el.value.length);
 }
+
+getParams();
 </script>
 </body>
 </html>

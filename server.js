@@ -322,11 +322,11 @@ app.get('/api/letter-data', (req, res) => {
   const entry = getCachedEntry(id);
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
 
-  const { listing, chatId } = entry;
+  const { listing, chatId, score: cachedScore, dealScore: cachedDealScore } = entry;
   const user = chatId ? getUser.get(String(chatId)) : null;
 
-  const score = calculateScore(listing, user || {});
-  const dealScore = calculateDealScore(listing);
+  const score = cachedScore !== null ? cachedScore : calculateScore(listing, user || {});
+  const dealScore = cachedDealScore !== null ? cachedDealScore : calculateDealScore(listing);
   const { tips } = getImprovementTips(listing, user || {}, score, dealScore);
   const letterTips = tips.filter(t => !SKIP_LETTER_CATS.has(t.category));
 
@@ -340,6 +340,7 @@ app.get('/api/letter-data', (req, res) => {
     tips: letterTips.map(t => ({ tip: t.tip, category: t.category })),
     score,
     dealScore,
+    chatId: chatId || null,
     user: user ? {
       naam: user.naam, contract_type: user.contract_type,
       inkomen: user.inkomen, profiel_type: user.profiel_type,

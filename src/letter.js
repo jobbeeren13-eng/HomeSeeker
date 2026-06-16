@@ -118,11 +118,11 @@ async function generateLetterDirect({ listing, user, selectedTips = [] }) {
 
 Dear landlord,
 
-[Paragraph 1: Who you are, your employment, income mentioned once naturally. 2-3 sentences.]
+[Paragraph 1: Open with a specific observation about this property or address. Do not start with "I am writing to" or any generic phrase. 2-3 sentences.]
 
-[Paragraph 2: Why this specific property or location. Show you read the listing. 2 sentences.]
+[Paragraph 2: Your employment, contract type, and exact gross monthly income stated once. 2 sentences.]
 
-[Paragraph 3: Practical: move-in availability, long-term intention, documents ready. 2 sentences.]
+[Paragraph 3: One specific detail from the listing description that shows you read it carefully. Close with viewing availability and document readiness: "I am available for a viewing from [nearest plausible date] onward and can provide all documents within the hour." 2-3 sentences.]
 
 Kind regards,
 [First name]
@@ -133,12 +133,13 @@ Absolute rules:
 - No dashes anywhere
 - No markdown or bold text
 - Never use: reliable, responsible, delighted, ideal, perfect, pleased, I hope, I would love, I am writing to
-- Mention income once only
+- Never start two consecutive sentences with "I"
+- Mention income exactly once with the number
 - NEVER invent or assume any details not explicitly provided in the user profile
 - NEVER mention an employer name unless it appears in the user description
 - NEVER mention a guarantor unless explicitly stated in the user profile
 - If information is missing, leave it out — do not guess or fabricate
-- Max 150 words
+- Max 180 words
 - Sound like a real person wrote this quickly at their desk`;
 
   const lines = [];
@@ -155,7 +156,7 @@ Absolute rules:
     const tipsStr = selectedTips.slice(0, 3).join(' | ');
     lines.push(`Weave in these points naturally (one sentence each, never list them): ${tipsStr}`);
   }
-  lines.push(`Write naturally. No AI phrases. No dashes. Max 150 words. Use the exact structure from the system prompt.`);
+  lines.push(`Write naturally. No AI phrases. No dashes. Max 180 words. Use the exact structure from the system prompt.`);
   if (noName) lines.push(`Sign off with "Kind regards," only (no name).`);
   else lines.push(`Sign off with just the first name: ${firstName}.`);
 

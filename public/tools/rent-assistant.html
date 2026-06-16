@@ -286,6 +286,11 @@ function updateCount(el, ccId) {
 function getParams() {
   const p = new URLSearchParams(location.search);
   chatId = p.get('chat_id') || null;
+  const tabParam = parseInt(p.get('tab') || '1', 10);
+  if (tabParam >= 1 && tabParam <= 5) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    if (tabs[tabParam - 1]) switchTab(tabParam, tabs[tabParam - 1]);
+  }
   const listingId = p.get('listing') || null;
   if (listingId) {
     fetch(`/api/cached-listing/${listingId}`)
