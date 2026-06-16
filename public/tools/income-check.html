@@ -116,9 +116,10 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
       <input type="text" id="situation" placeholder="e.g. I work for a US company, paid in USD, using the 30% ruling. Income varies but averaged EUR 5,500 over the last 6 months.">
     </div>
     <div>
-      <button class="btn" onclick="getExplain()">Generate explanation</button>
+      <button class="btn" id="explain-btn" onclick="getExplain()">Generate explanation</button>
       <div class="spinner" id="spin-ex"></div>
     </div>
+    <p id="explain-err" style="color:#ff6b6b;font-size:13px;margin-top:8px;display:none"></p>
     <div class="explain-box" id="explain-result"></div>
     <button class="copy-btn" id="copy-explain" onclick="copyExplain()" style="display:none">Copy explanation</button>
     <p id="explain-tip" style="font-size:13px;color:var(--muted);margin-top:8px;display:none"></p>
@@ -200,9 +201,11 @@ async function getExplain() {
   const income = document.getElementById('income').value.trim();
   const rent = document.getElementById('rent').value.trim();
   const situation = document.getElementById('situation').value.trim();
-  if (!income || !rent) { alert('Please enter your income and rent first.'); return; }
+  const errEl = document.getElementById('explain-err');
+  errEl.style.display = 'none';
+  if (!income || !rent) { errEl.textContent = 'Please enter your income and rent first.'; errEl.style.display = 'block'; return; }
   document.getElementById('spin-ex').classList.add('on');
-  document.querySelector('[onclick="getExplain()"]').disabled = true;
+  document.getElementById('explain-btn').disabled = true;
   try {
     const r = await fetch('/api/income-explain', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -219,10 +222,10 @@ async function getExplain() {
       tip.textContent = 'Tip: ' + d.tip;
       tip.style.display = 'block';
     }
-  } catch (e) { alert(e.message || 'Something went wrong.'); }
+  } catch (e) { errEl.textContent = e.message || 'Something went wrong.'; errEl.style.display = 'block'; }
   finally {
     document.getElementById('spin-ex').classList.remove('on');
-    document.querySelector('[onclick="getExplain()"]').disabled = false;
+    document.getElementById('explain-btn').disabled = false;
   }
 }
 

@@ -460,11 +460,15 @@
   }
 
   async function updateStatus(url, status) {
-    await fetch('/api/application-status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, listing_url: url, status }),
-    });
+    try {
+      await fetch('/api/application-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, listing_url: url, status }),
+      });
+    } catch (e) {
+      console.error('[updateStatus] failed:', e.message);
+    }
   }
 
   function cap(s) { return s ? s.replace(/\b\w/g, c => c.toUpperCase()) : ''; }

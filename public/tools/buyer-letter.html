@@ -10,7 +10,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #0a0a0a; --bg2: #0f1318;
       --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -70,10 +70,9 @@
 </head>
 <body>
 
-<nav>
-  <a href="/" class="logo">HomeSeeker</a>
-  <span style="font-size:13px;color:var(--muted)">Buyer Letter</span>
-</nav>
+<header style="padding:16px 24px;border-bottom:1px solid var(--border)">
+  <div style="font-size:13px;color:var(--muted)"><a href="/" style="color:var(--muted);text-decoration:none">HOMESEEKER</a><span style="margin:0 6px;color:var(--border)">›</span><a href="/guide/buy" style="color:var(--muted);text-decoration:none">Buyer Guide</a><span style="margin:0 6px;color:var(--border)">›</span>Buyer Intro Letter</div>
+</header>
 
 <div class="page">
   <a href="/guide/buy" class="back-link">← Buyer Guide</a>

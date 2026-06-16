@@ -306,6 +306,13 @@ app.post('/api/admin/resend-activation', async (req, res) => {
 
 // ── Letter generator web page API ──────────────────────────────────────
 
+// Returns raw listing for rent-assistant / buy-assistant context loading
+app.get('/api/cached-listing/:id', (req, res) => {
+  const entry = getCachedEntry(req.params.id);
+  if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
+  res.json({ listing: entry.listing });
+});
+
 const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_action']);
 
 // Returns listing details + tips for the /letter page
