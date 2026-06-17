@@ -10,7 +10,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #0a0a0a; --bg2: #0f1318;
+      --green: #00c896; --green-dim: rgba(0,200,150,0.10); --bg: #0a0a0a; --bg2: #0f1318;
       --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -31,7 +31,7 @@
       padding: 14px 16px; color: var(--text); font-family: inherit; font-size: 14px;
       line-height: 1.6; resize: vertical; transition: border-color .15s;
     }
-    textarea:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    textarea:focus { outline: none; border-color: rgba(0,200,150,0.4); }
     textarea::placeholder { color: var(--muted); }
     .char-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
@@ -56,7 +56,7 @@
     .flags { display: flex; flex-direction: column; gap: 10px; }
     .flag { border-radius: 10px; padding: 14px 16px; border: 1px solid; }
     .flag-warn { background: rgba(255,179,71,0.07); border-color: rgba(255,179,71,0.25); }
-    .flag-ok { background: rgba(0,229,160,0.05); border-color: rgba(0,229,160,0.2); }
+    .flag-ok { background: rgba(0,200,150,0.05); border-color: rgba(0,200,150,0.2); }
     .flag-info { background: var(--bg2); border-color: var(--border); }
     .flag-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
     .flag-warn .flag-label { color: #ffb347; }
@@ -70,9 +70,9 @@
     .copy-feedback.show { opacity: 1; }
 
     .guide-link { display: flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; text-decoration: none; color: var(--text); font-size: 13px; margin-top: 20px; transition: border-color .15s; }
-    .guide-link:hover { border-color: rgba(0,229,160,0.3); }
+    .guide-link:hover { border-color: rgba(0,200,150,0.3); }
 
-    .info-box { background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.18); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: var(--text); line-height: 1.6; }
+    .info-box { background: rgba(0,200,150,0.06); border: 1px solid rgba(0,200,150,0.18); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: var(--text); line-height: 1.6; }
   </style>
 </head>
 <body>

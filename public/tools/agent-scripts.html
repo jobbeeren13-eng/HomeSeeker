@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <title>Agent Scripts - HomeSeeker</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--green:#00e5a0;--bg:#0a0a0a;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3}
+:root{--green:#00c896;--bg:#0a0a0a;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
 header{padding:16px 24px;border-bottom:1px solid var(--border)}
@@ -18,13 +18,13 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
 .section-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
 .section-card h2{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text)}
 .section-card .context{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}
-.script-block{background:var(--bg3);border:1px solid rgba(0,229,160,0.15);border-radius:10px;padding:16px;margin-bottom:10px;font-size:14px;line-height:1.8;position:relative}
+.script-block{background:var(--bg3);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:16px;margin-bottom:10px;font-size:14px;line-height:1.8;position:relative}
 .script-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:8px}
 .script-text{color:var(--text)}
 .script-text em{color:var(--muted);font-style:normal}
 .copy-btn{position:absolute;top:12px;right:12px;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;transition:all .15s}
 .copy-btn:hover{border-color:var(--green);color:var(--green)}.copy-btn.copied{color:var(--green);border-color:var(--green)}
-.tip-box{background:rgba(0,229,160,0.04);border:1px solid rgba(0,229,160,0.1);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;margin-bottom:8px}
+.tip-box{background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.1);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;margin-bottom:8px}
 .tip-box strong{color:var(--green)}
 .avoid-box{background:rgba(255,100,100,0.05);border:1px solid rgba(255,100,100,0.15);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:12px}
 .avoid-box strong{color:#ff6464}
@@ -44,7 +44,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
 .btn-row{display:flex;align-items:center;gap:12px}
 .err{color:#ff6b6b;font-size:13px;margin-top:8px;display:none}.err.on{display:block}
 .ai-result{display:none;margin-top:14px}.ai-result.on{display:block}
-.result-script{background:var(--bg3);border:1px solid rgba(0,229,160,0.2);border-radius:10px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px}
+.result-script{background:var(--bg3);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px}
 </style>
 </head>
 <body>

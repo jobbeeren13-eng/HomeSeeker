@@ -10,7 +10,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #0a0a0a; --bg2: #0f1318;
+      --green: #00c896; --green-dim: rgba(0,200,150,0.10); --bg: #0a0a0a; --bg2: #0f1318;
       --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -40,7 +40,7 @@
     .cost-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
     /* Calculator */
-    .calculator { background: var(--bg2); border: 1px solid rgba(0,229,160,0.2); border-radius: 16px; padding: 28px; }
+    .calculator { background: var(--bg2); border: 1px solid rgba(0,200,150,0.2); border-radius: 16px; padding: 28px; }
     .calc-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
     .calc-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
@@ -52,7 +52,7 @@
     }
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-    input[type="number"]:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    input[type="number"]:focus { outline: none; border-color: rgba(0,200,150,0.4); }
     .input-prefix { position: relative; }
     .input-prefix::before { content: '€'; position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; }
     .input-prefix input { padding-left: 28px; }
@@ -70,7 +70,7 @@
     .results-box.visible { display: block; }
 
     .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
-    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,229,160,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
+    .tool-link { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid rgba(0,200,150,0.25); border-radius: 10px; padding: 12px 18px; text-decoration: none; color: var(--green); font-size: 14px; font-weight: 600; transition: background .15s; }
     .tool-link:hover { background: var(--green-dim); }
 
     @media (max-width: 600px) {

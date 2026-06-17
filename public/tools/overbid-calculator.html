@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 <title>Overbid Calculator - HomeSeeker</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--green:#00e5a0;--bg:#0a0a0a;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3}
+:root{--green:#00c896;--bg:#0a0a0a;--bg2:#0f1318;--bg3:#141920;--border:rgba(255,255,255,0.07);--muted:#7a8494;--text:#e8edf3}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh}
 header{padding:16px 24px;border-bottom:1px solid var(--border)}
@@ -37,7 +37,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
 .bid-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
 @media(max-width:520px){.bid-cards{grid-template-columns:1fr}}
 .bid-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
-.bid-card.recommended{border-color:rgba(0,229,160,0.4);background:rgba(0,229,160,0.05)}
+.bid-card.recommended{border-color:rgba(0,200,150,0.4);background:rgba(0,200,150,0.05)}
 .bid-card .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
 .bid-card.recommended .label{color:var(--green)}
 .bid-card .amount{font-size:20px;font-weight:800;color:var(--text);margin-bottom:3px}
@@ -49,7 +49,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
 .cond-badge-include{color:var(--green);font-size:12px;font-weight:700}
 .cond-badge-waive{color:#ffc800;font-size:12px;font-weight:700}
 .cond-badge-never{color:#ff6464;font-size:12px;font-weight:700}
-.letter-box{background:var(--bg3);border:1px solid rgba(0,229,160,0.2);border-radius:10px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px;display:none}
+.letter-box{background:var(--bg3);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px;display:none}
 .letter-box.on{display:block}
 .copy-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s}
 .copy-btn:hover{border-color:var(--green);color:var(--green)}.copy-btn.copied{color:var(--green);border-color:var(--green)}

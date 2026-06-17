@@ -10,7 +10,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #0a0a0a; --bg2: #0f1318;
+      --green: #00c896; --green-dim: rgba(0,200,150,0.10); --bg: #0a0a0a; --bg2: #0f1318;
       --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -30,7 +30,7 @@
     .listing-meta { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
     .score-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-    .badge-green { background: rgba(0,229,160,0.12); color: var(--green); }
+    .badge-green { background: rgba(0,200,150,0.12); color: var(--green); }
     .badge-blue  { background: rgba(100,180,255,0.12); color: #6ab4ff; }
     .badge-yellow{ background: rgba(255,200,60,0.12); color: #ffc83c; }
 
@@ -46,7 +46,7 @@
       padding: 14px 16px; display: flex; align-items: flex-start; gap: 14px;
       cursor: pointer; transition: border-color .15s, background .15s; user-select: none;
     }
-    .tip-card.selected { border-color: var(--green); background: rgba(0,229,160,0.05); }
+    .tip-card.selected { border-color: var(--green); background: rgba(0,200,150,0.05); }
     .tip-check {
       width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border);
       flex-shrink: 0; display: flex; align-items: center; justify-content: center;
@@ -63,7 +63,7 @@
       padding: 14px 16px; color: var(--text); font-family: inherit; font-size: 14px;
       line-height: 1.6; resize: vertical; min-height: 90px; transition: border-color .15s;
     }
-    .context-box:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    .context-box:focus { outline: none; border-color: rgba(0,200,150,0.4); }
     .context-box::placeholder { color: var(--muted); }
 
     /* Buttons */
@@ -97,7 +97,7 @@
     .word-count.warn { color: #ffb347; font-weight: 600; }
     .letter-modify { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
     .btn-modify { background: var(--bg3); border: 1px solid var(--border); color: var(--muted); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all .15s; }
-    .btn-modify:hover { border-color: rgba(0,229,160,0.4); color: var(--green); }
+    .btn-modify:hover { border-color: rgba(0,200,150,0.4); color: var(--green); }
     .btn-modify:disabled { opacity: .4; cursor: not-allowed; }
 
     /* More help section */
@@ -110,26 +110,26 @@
     .more-help-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
     .btn-help {
       display: inline-flex; align-items: center; gap: 6px;
-      background: var(--bg3); border: 1px solid rgba(0,229,160,0.25);
+      background: var(--bg3); border: 1px solid rgba(0,200,150,0.25);
       color: var(--green); font-family: inherit; font-size: 13px; font-weight: 600;
       padding: 10px 16px; border-radius: 8px; text-decoration: none; transition: background .15s;
     }
-    .btn-help:hover { background: rgba(0,229,160,0.08); }
+    .btn-help:hover { background: rgba(0,200,150,0.08); }
 
     /* Apply package teaser */
     .package-teaser {
-      background: linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,229,160,0.02));
-      border: 1px solid rgba(0,229,160,0.2); border-radius: 14px; padding: 20px 24px;
+      background: linear-gradient(135deg, rgba(0,200,150,0.08), rgba(0,200,150,0.02));
+      border: 1px solid rgba(0,200,150,0.2); border-radius: 14px; padding: 20px 24px;
       margin-top: 24px; display: none;
     }
     .package-teaser h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
     .package-teaser p { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
     .btn-package {
-      display: inline-block; background: transparent; color: var(--green); border: 1px solid rgba(0,229,160,0.4);
+      display: inline-block; background: transparent; color: var(--green); border: 1px solid rgba(0,200,150,0.4);
       font-family: inherit; font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 8px;
       cursor: pointer; text-decoration: none; transition: background .15s;
     }
-    .btn-package:hover { background: rgba(0,229,160,0.08); }
+    .btn-package:hover { background: rgba(0,200,150,0.08); }
 
     /* Spinner */
     .spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #000; border-radius: 50%; animation: spin .7s linear infinite; }

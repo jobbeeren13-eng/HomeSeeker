@@ -10,7 +10,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #00e5a0; --green-dim: rgba(0,229,160,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --green: #00c896; --green-dim: rgba(0,200,150,0.10); --bg: #080b0f; --bg2: #0f1318;
       --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -36,7 +36,7 @@
     .status-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
     .status-applied { background: rgba(106,180,255,0.15); color: #6ab4ff; }
     .status-viewing { background: rgba(255,179,71,0.15); color: #ffb347; }
-    .status-accepted { background: rgba(0,229,160,0.15); color: var(--green); }
+    .status-accepted { background: rgba(0,200,150,0.15); color: var(--green); }
     .status-rejected { background: rgba(255,107,107,0.15); color: #ff6b6b; }
 
     /* Listing rows */
@@ -53,12 +53,12 @@
 
     /* Status selector */
     .status-select { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 5px; background: var(--bg3); border: 1px solid var(--border); color: var(--text); font-family: inherit; cursor: pointer; }
-    .status-select:focus { outline: none; border-color: rgba(0,229,160,0.4); }
+    .status-select:focus { outline: none; border-color: rgba(0,200,150,0.4); }
 
     /* Tools grid */
     .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .tool-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; transition: border-color .15s; }
-    .tool-card:hover { border-color: rgba(0,229,160,0.3); }
+    .tool-card:hover { border-color: rgba(0,200,150,0.3); }
     .tool-icon { font-size: 22px; }
     .tool-name { font-size: 12px; font-weight: 700; color: var(--text); }
 
@@ -79,7 +79,7 @@
     .journey-step:last-child::after { display: none; }
     .journey-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--bg3); border: 2px solid var(--border); margin: 0 auto 6px; position: relative; z-index: 1; }
     .journey-step.done .journey-dot { background: var(--green); border-color: var(--green); }
-    .journey-step.active .journey-dot { background: rgba(0,229,160,0.15); border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,229,160,0.12); }
+    .journey-step.active .journey-dot { background: rgba(0,200,150,0.15); border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,150,0.12); }
     .journey-step-name { font-size: 11px; color: var(--muted); font-weight: 500; }
     .journey-step.active .journey-step-name { color: var(--green); font-weight: 700; }
     .journey-step.done .journey-step-name { color: var(--text); }
@@ -91,14 +91,14 @@
     .stat-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* Next action card */
-    .next-action { background: rgba(0,229,160,0.06); border: 1px solid rgba(0,229,160,0.18); border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 14px; }
+    .next-action { background: rgba(0,200,150,0.06); border: 1px solid rgba(0,200,150,0.18); border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 14px; }
     .next-action-icon { font-size: 22px; flex-shrink: 0; }
     .next-action-title { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 3px; }
     .next-action-desc { font-size: 13px; color: var(--text); line-height: 1.5; }
 
     /* Notes field */
     .notes-field { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: inherit; font-size: 12px; padding: 6px 10px; margin-top: 6px; resize: none; outline: none; transition: border-color .15s; }
-    .notes-field:focus { border-color: rgba(0,229,160,0.4); }
+    .notes-field:focus { border-color: rgba(0,200,150,0.4); }
     .notes-saved { font-size: 11px; color: var(--green); margin-top: 3px; display: none; }
 
     /* Export */
