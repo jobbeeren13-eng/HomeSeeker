@@ -143,6 +143,7 @@
     <button class="tab-btn" onclick="switchTab(3,this)">💬 Negotiation</button>
     <button class="tab-btn" onclick="switchTab(4,this)">📄 Lease Review</button>
     <button class="tab-btn" onclick="switchTab(5,this)">📦 Move-In</button>
+    <button class="tab-btn" onclick="switchTab(6,this)">✉️ Letter</button>
   </div>
 
   <!-- Tab 1: Application Coach -->
@@ -395,6 +396,57 @@
     </div>
   </div>
 
+  <!-- Tab 6: Letter -->
+  <div id="panel-6" class="panel">
+    <div id="lt-no-listing" style="display:none">
+      <div class="output-empty" style="max-width:480px">
+        <div class="empty-icon">✉️</div>
+        <p>No listing linked. Open from a Telegram alert, or visit <a href="/letter" style="color:var(--green)">the letter page</a> directly.</p>
+      </div>
+    </div>
+    <div id="lt-loading">
+      <div class="skeleton" style="display:block"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+    </div>
+    <div id="lt-form" class="panel-grid" style="display:none">
+      <div class="form-card">
+        <h2>Application Letter</h2>
+        <p class="desc">Personalised rental application letter based on your profile.</p>
+        <div id="lt-listing-card" style="display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;color:var(--muted)"></div>
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600;margin-bottom:8px">Include in letter</div>
+          <div id="lt-tips"></div>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Extra context <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">(optional)</span></label>
+          <textarea id="lt-extra" style="min-height:70px"></textarea>
+        </div>
+        <button class="btn-submit" id="lt-gen-btn" onclick="ltGenerate()">✉️ Generate letter</button>
+        <div class="error-msg" id="lt-err"></div>
+      </div>
+      <div class="output-col">
+        <div class="output-empty" id="lt-empty">
+          <div class="empty-icon">✉️</div>
+          <p>Your personalised application letter will appear here.</p>
+        </div>
+        <div class="skeleton" id="lt-skel" style="display:none"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+        <div id="lt-letter-box" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">✉️ Your letter</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="copy-btn" id="lt-copy-btn" onclick="ltCopy()">Copy</button>
+              <button class="copy-btn" onclick="ltDownload()">.txt</button>
+              <button class="copy-btn" onclick="ltWhatsApp()">WhatsApp</button>
+              <button class="copy-btn" onclick="ltModify('shorter')">Shorter</button>
+              <button class="copy-btn" onclick="ltModify('personal')">More personal</button>
+            </div>
+          </div>
+          <div id="lt-letter-text" style="font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+          <div id="lt-word-count" style="font-size:11px;color:var(--muted);margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="help-section">
     <h3>Need help with something else?</h3>
     <div class="help-links">
@@ -434,7 +486,7 @@ function getParams() {
   const p = new URLSearchParams(location.search);
   chatId = p.get('chat_id') || null;
   const tabParam = parseInt(p.get('tab') || '1', 10);
-  if (tabParam >= 1 && tabParam <= 5) {
+  if (tabParam >= 1 && tabParam <= 6) {
     const tabs = document.querySelectorAll('.tab-btn');
     if (tabs[tabParam - 1]) switchTab(tabParam, tabs[tabParam - 1]);
   }
@@ -447,7 +499,7 @@ function getParams() {
           const l = data.listing;
           listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
           const badge = document.getElementById('listing-badge');
-          badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong> — ${l.price || ''}`;
+          badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong>${l.price ? ' · ' + l.price : ''}`;
           badge.classList.add('visible');
           document.getElementById('t1-listing').value = listingContext.slice(0, 800);
           updateCount(document.getElementById('t1-listing'), 'cc-1-1');
@@ -463,6 +515,7 @@ function switchTab(n, btn) {
   document.getElementById(`panel-${n}`).classList.add('active');
   btn.classList.add('active');
   activeTab = n;
+  if (n === 6) initLetterTab();
 }
 
 function buildMessage(tab) {
@@ -618,6 +671,146 @@ function followUp(tab) {
   el.value = 'Following up on the above: ';
   el.focus();
   el.setSelectionRange(el.value.length, el.value.length);
+}
+
+const ltEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const ltState = { loaded: false, cacheId: null, tips: [], letter: '' };
+
+function initLetterTab() {
+  if (ltState.loaded) return;
+  ltState.loaded = true;
+  const cacheId = new URLSearchParams(location.search).get('listing');
+  if (!cacheId) {
+    document.getElementById('lt-loading').style.display = 'none';
+    document.getElementById('lt-no-listing').style.display = 'block';
+    return;
+  }
+  ltState.cacheId = cacheId;
+  fetch(`/api/letter-data?id=${encodeURIComponent(cacheId)}`)
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(data => {
+      document.getElementById('lt-loading').style.display = 'none';
+      const l = data.listing || {};
+      const card = document.getElementById('lt-listing-card');
+      card.innerHTML = `<strong style="color:var(--text)">${ltEsc(l.address || l.url || 'Property')}</strong> ${l.price ? '&middot; ' + ltEsc(l.price) : ''} ${l.city ? '&middot; ' + ltEsc(l.city) : ''}`;
+      card.style.display = 'block';
+      const FIXED = [
+        { tip: 'Why this specific home appeals to you', category: 'general' },
+        { tip: 'Your move-in timeline and document readiness', category: 'documents' },
+      ];
+      ltState.tips = [...(data.tips || []), ...FIXED].map(t => ({ ...t, selected: true }));
+      ltRenderTips();
+      document.getElementById('lt-form').style.display = 'grid';
+    })
+    .catch(() => {
+      document.getElementById('lt-loading').style.display = 'none';
+      document.getElementById('lt-no-listing').style.display = 'block';
+    });
+}
+
+function ltRenderTips() {
+  document.getElementById('lt-tips').innerHTML = ltState.tips.map((t, i) =>
+    `<label style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer">
+      <input type="checkbox" ${t.selected ? 'checked' : ''} onchange="ltState.tips[${i}].selected=this.checked" style="margin-top:3px;accent-color:var(--green);flex-shrink:0">
+      <span style="font-size:13px;line-height:1.5">${ltEsc(t.tip)}</span>
+    </label>`
+  ).join('');
+}
+
+async function ltGenerate() {
+  const btn = document.getElementById('lt-gen-btn');
+  document.getElementById('lt-err').classList.remove('visible');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span>Generating...';
+  document.getElementById('lt-empty').style.display = 'none';
+  document.getElementById('lt-skel').style.display = 'block';
+  document.getElementById('lt-letter-box').style.display = 'none';
+  try {
+    const selectedTipTexts = ltState.tips.filter(t => t.selected).map(t => t.tip);
+    const extraContext = document.getElementById('lt-extra').value.trim();
+    const resp = await fetch('/api/generate-letter-web', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cacheId: ltState.cacheId, selectedTipTexts, extraContext }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Generation failed');
+    ltState.letter = data.letter;
+    ltShowLetter(data.letter);
+  } catch (e) {
+    document.getElementById('lt-err').textContent = e.message || 'Letter generation failed. Please try again.';
+    document.getElementById('lt-err').classList.add('visible');
+    document.getElementById('lt-empty').style.display = 'block';
+  } finally {
+    document.getElementById('lt-skel').style.display = 'none';
+    btn.disabled = false;
+    btn.innerHTML = '✉️ Generate letter';
+  }
+}
+
+function ltShowLetter(text) {
+  document.getElementById('lt-letter-text').textContent = text;
+  const words = text.trim().split(/\s+/).length;
+  const wc = document.getElementById('lt-word-count');
+  wc.textContent = `${words} words`;
+  if (words > 250) wc.textContent += ' - this letter may be too long. Use "Shorter" below.';
+  document.getElementById('lt-letter-box').style.display = 'block';
+  document.getElementById('lt-letter-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function ltCopy() {
+  if (!ltState.letter) return;
+  navigator.clipboard.writeText(ltState.letter).then(() => {
+    const btn = document.getElementById('lt-copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {});
+}
+
+function ltDownload() {
+  if (!ltState.letter) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ltState.letter], { type: 'text/plain' }));
+  a.download = 'application-letter.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function ltWhatsApp() {
+  if (!ltState.letter) return;
+  window.open(`https://wa.me/?text=${encodeURIComponent(ltState.letter)}`, '_blank');
+}
+
+async function ltModify(mode) {
+  if (!ltState.letter) return;
+  const btn = document.getElementById('lt-gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span>Revising...';
+  document.getElementById('lt-skel').style.display = 'block';
+  document.getElementById('lt-letter-box').style.display = 'none';
+  const instruction = mode === 'shorter'
+    ? 'Make this letter shorter. Aim for 120 words maximum.'
+    : 'Make this letter more personal. Add one genuine sentence about what specifically appeals about this home.';
+  try {
+    const resp = await fetch('/api/generate-letter-web', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cacheId: ltState.cacheId, selectedTipTexts: [], extraContext: `${instruction}\n\nOriginal letter:\n${ltState.letter}` }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Revision failed');
+    ltState.letter = data.letter;
+    ltShowLetter(data.letter);
+  } catch (e) {
+    document.getElementById('lt-err').textContent = e.message || 'Revision failed.';
+    document.getElementById('lt-err').classList.add('visible');
+    document.getElementById('lt-letter-box').style.display = 'block';
+  } finally {
+    document.getElementById('lt-skel').style.display = 'none';
+    btn.disabled = false;
+    btn.innerHTML = '✉️ Generate letter';
+  }
 }
 
 getParams();

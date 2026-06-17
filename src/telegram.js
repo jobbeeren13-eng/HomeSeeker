@@ -568,7 +568,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   // Profile mismatch BEFORE scores so it is seen immediately
   if (conflicts.length > 0) {
     lines.push('');
-    lines.push('⛔ *Possible profile mismatch — read landlord requirements carefully*');
+    lines.push('⛔ *Possible profile mismatch. Read landlord requirements carefully.*');
   }
 
   // Scores
@@ -666,18 +666,29 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const fullText = lines.join('\n');
   const cacheId = cacheListing(listing, chatId, score, dealScore);
  
-  const keyboard = {
+  const keyboard = isHuur ? {
     inline_keyboard: [
       [
         { text: 'View listing', url: listing.url },
-        isHuur
-          ? { text: 'AI Letter', callback_data: `ai_letter:${cacheId}` }
-          : { text: '🏡 Buyer Tools', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}&listing=${cacheId}` },
+        { text: 'AI Letter', callback_data: `ai_letter:${cacheId}` },
       ],
       [
+        { text: 'AI Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}&listing=${cacheId}` },
         { text: 'Share', callback_data: `share:${cacheId}` },
-        { text: 'Unsubscribe', callback_data: 'unsubscribe' },
       ],
+      [{ text: 'Unsubscribe', callback_data: 'unsubscribe' }],
+    ],
+  } : {
+    inline_keyboard: [
+      [
+        { text: 'View listing', url: listing.url },
+        { text: 'AI Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}&listing=${cacheId}` },
+      ],
+      [
+        { text: 'Deal Score', url: `${BASE_URL}/tools/deal-finder?chat_id=${chatId}` },
+        { text: 'Share', callback_data: `share:${cacheId}` },
+      ],
+      [{ text: 'Unsubscribe', callback_data: 'unsubscribe' }],
     ],
   };
  

@@ -351,7 +351,7 @@ app.get('/api/letter-data', (req, res) => {
 
 // Generates letter from web page selections
 app.post('/api/generate-letter-web', async (req, res) => {
-  const { cacheId, selectedTipIndices = [], extraContext = '' } = req.body;
+  const { cacheId, selectedTipTexts = [], extraContext = '' } = req.body;
   if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
 
   const entry = getCachedEntry(cacheId);
@@ -360,14 +360,7 @@ app.post('/api/generate-letter-web', async (req, res) => {
   const { listing, chatId } = entry;
   const user = chatId ? getUser.get(String(chatId)) : null;
 
-  const score = calculateScore(listing, user || {});
-  const dealScore = calculateDealScore(listing);
-  const { tips } = getImprovementTips(listing, user || {}, score, dealScore);
-  const letterTips = tips.filter(t => !SKIP_LETTER_CATS.has(t.category));
-
-  const selectedTips = (selectedTipIndices || [])
-    .filter(i => i >= 0 && i < letterTips.length)
-    .map(i => letterTips[i].tip);
+  const selectedTips = [...(selectedTipTexts || [])];
   if (extraContext && extraContext.trim()) selectedTips.push(extraContext.trim());
 
   try {

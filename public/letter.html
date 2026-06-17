@@ -188,7 +188,7 @@
     <section>
       <h2>Add personal context <span style="font-weight:400;color:var(--muted);font-size:14px">(optional)</span></h2>
       <p class="section-sub">Anything specific about you, your move-in date, or why you want this home.</p>
-      <textarea id="extra-context" class="context-box" placeholder="E.g. I work at ASML and need to be in Eindhoven by September. I have my documents ready and can view this week."></textarea>
+      <textarea id="extra-context" class="context-box"></textarea>
     </section>
 
     <!-- Generate -->
@@ -341,14 +341,14 @@
     document.getElementById('generate-spinner').style.display = '';
     btn.disabled = true;
 
-    const selectedTipIndices = state.tips.map((t, i) => t.selected ? i : -1).filter(i => i >= 0);
+    const selectedTipTexts = state.tips.filter(t => t.selected).map(t => t.tip);
     const extraContext = document.getElementById('extra-context').value.trim();
 
     try {
       const resp = await fetch('/api/generate-letter-web', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cacheId: state.cacheId, selectedTipIndices, extraContext }),
+        body: JSON.stringify({ cacheId: state.cacheId, selectedTipTexts, extraContext }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'Generation failed');

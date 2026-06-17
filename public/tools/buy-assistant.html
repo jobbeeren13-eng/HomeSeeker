@@ -143,6 +143,7 @@
     <button class="tab-btn" onclick="switchTab(3,this)">📈 Bid Strategy</button>
     <button class="tab-btn" onclick="switchTab(4,this)">⚖️ Legal Process</button>
     <button class="tab-btn" onclick="switchTab(5,this)">🏢 VvE Checker</button>
+    <button class="tab-btn" onclick="switchTab(6,this)">✉️ Buyer Letter</button>
   </div>
 
   <!-- Tab 1: Affordability -->
@@ -416,6 +417,72 @@
     </div>
   </div>
 
+  <!-- Tab 6: Buyer Letter -->
+  <div id="panel-6" class="panel">
+    <div id="bl-loading">
+      <div class="skeleton" style="display:block"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+    </div>
+    <div id="bl-form" class="panel-grid" style="display:none">
+      <div class="form-card">
+        <h2>Buyer Intro Letter</h2>
+        <p class="desc">A personal introduction to the selling agent. A well-written letter can tip the balance when bids are close.</p>
+        <div id="bl-listing-card" style="display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;color:var(--muted)"></div>
+        <div class="field">
+          <label>Property address *</label>
+          <input type="text" id="bl-address" placeholder="e.g. Prinsengracht 123">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field">
+            <label>City</label>
+            <input type="text" id="bl-city" placeholder="e.g. Amsterdam">
+          </div>
+          <div class="field">
+            <label>Asking price</label>
+            <input type="text" id="bl-price" placeholder="e.g. €450,000">
+          </div>
+        </div>
+        <div class="field">
+          <label>Why do you want this property? *</label>
+          <textarea id="bl-why" style="min-height:90px" placeholder="Garden, location, layout, proximity to work..."></textarea>
+        </div>
+        <div class="field">
+          <label>Your situation <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">(optional)</span></label>
+          <textarea id="bl-situation" style="min-height:70px" placeholder="Employment, how long in NL, stable income..."></textarea>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Offer intent</label>
+          <select id="bl-intent">
+            <option value="">Select...</option>
+            <option value="bidding at asking price">Bidding at asking price</option>
+            <option value="bidding above asking price and prepared to move fast">Bidding above asking price</option>
+            <option value="pre-approved for a mortgage and ready to proceed quickly">Pre-approved mortgage, ready to proceed</option>
+            <option value="exploring and planning to make a serious offer after a viewing">Exploring, serious offer after viewing</option>
+          </select>
+        </div>
+        <button class="btn-submit" id="bl-gen-btn" onclick="blGenerate()">✉️ Generate letter</button>
+        <div class="error-msg" id="bl-err"></div>
+      </div>
+      <div class="output-col">
+        <div class="output-empty" id="bl-empty">
+          <div class="empty-icon">✉️</div>
+          <p>Your buyer introduction letter will appear here.</p>
+        </div>
+        <div class="skeleton" id="bl-skel" style="display:none"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+        <div id="bl-letter-box" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">✉️ Your letter</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="copy-btn" id="bl-copy-btn" onclick="blCopy()">Copy</button>
+              <button class="copy-btn" onclick="blDownload()">.txt</button>
+              <button class="copy-btn" onclick="blRegenerate()">&#8634; Regenerate</button>
+            </div>
+          </div>
+          <div id="bl-letter-text" style="font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="help-section">
     <h3>Need help with something else?</h3>
     <div class="help-links">
@@ -455,7 +522,7 @@ function getParams() {
   const p = new URLSearchParams(location.search);
   chatId = p.get('chat_id') || null;
   const tabParam = parseInt(p.get('tab') || '1', 10);
-  if (tabParam >= 1 && tabParam <= 5) {
+  if (tabParam >= 1 && tabParam <= 6) {
     const tabs = document.querySelectorAll('.tab-btn');
     if (tabs[tabParam - 1]) switchTab(tabParam, tabs[tabParam - 1]);
   }
@@ -469,7 +536,7 @@ function getParams() {
           listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
           const badge = document.getElementById('listing-badge');
           if (badge) {
-            badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong> — ${l.price || ''}`;
+            badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong>${l.price ? ' · ' + l.price : ''}`;
             badge.classList.add('visible');
           }
           document.getElementById('t2-listing').value = listingContext.slice(0, 800);
@@ -486,6 +553,7 @@ function switchTab(n, btn) {
   document.getElementById(`panel-${n}`).classList.add('active');
   btn.classList.add('active');
   activeTab = n;
+  if (n === 6) initBuyLetterTab();
 }
 
 const CONTRACT_LABELS = {
@@ -652,6 +720,111 @@ function followUp(tab) {
   el.value = 'Following up on the above: ';
   el.focus();
   el.setSelectionRange(el.value.length, el.value.length);
+}
+
+const blState = { loaded: false, letter: '' };
+
+function initBuyLetterTab() {
+  if (blState.loaded) return;
+  blState.loaded = true;
+  const cacheId = new URLSearchParams(location.search).get('listing');
+  if (!cacheId) {
+    document.getElementById('bl-loading').style.display = 'none';
+    document.getElementById('bl-form').style.display = 'grid';
+    return;
+  }
+  fetch(`/api/cached-listing/${encodeURIComponent(cacheId)}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data && data.listing) {
+        const l = data.listing;
+        if (l.address) document.getElementById('bl-address').value = l.address;
+        if (l.city) document.getElementById('bl-city').value = l.city;
+        if (l.price) document.getElementById('bl-price').value = l.price;
+        const card = document.getElementById('bl-listing-card');
+        card.innerHTML = `<strong style="color:var(--text)">${l.address || l.url || 'Property'}</strong>${l.price ? ' &middot; ' + l.price : ''}${l.city ? ' &middot; ' + l.city : ''}`;
+        card.style.display = 'block';
+      }
+    })
+    .catch(() => {})
+    .finally(() => {
+      document.getElementById('bl-loading').style.display = 'none';
+      document.getElementById('bl-form').style.display = 'grid';
+    });
+}
+
+async function blGenerate() {
+  const address = document.getElementById('bl-address').value.trim();
+  if (!address) {
+    document.getElementById('bl-err').textContent = 'Property address is required.';
+    document.getElementById('bl-err').classList.add('visible');
+    return;
+  }
+  const whyLove = document.getElementById('bl-why').value.trim();
+  if (!whyLove) {
+    document.getElementById('bl-err').textContent = 'Please describe why you want this property.';
+    document.getElementById('bl-err').classList.add('visible');
+    return;
+  }
+  document.getElementById('bl-err').classList.remove('visible');
+  const btn = document.getElementById('bl-gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span>Generating...';
+  document.getElementById('bl-empty').style.display = 'none';
+  document.getElementById('bl-skel').style.display = 'block';
+  document.getElementById('bl-letter-box').style.display = 'none';
+  try {
+    const resp = await fetch('/api/buyer-letter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        houseAddress: address,
+        houseCity: document.getElementById('bl-city').value.trim(),
+        housePrice: document.getElementById('bl-price').value.trim(),
+        whyLove,
+        situation: document.getElementById('bl-situation').value.trim(),
+        offerIntent: document.getElementById('bl-intent').value,
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Generation failed');
+    blState.letter = data.letter;
+    document.getElementById('bl-letter-text').textContent = data.letter;
+    document.getElementById('bl-letter-box').style.display = 'block';
+    document.getElementById('bl-letter-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) {
+    document.getElementById('bl-err').textContent = e.message || 'Letter generation failed. Please try again.';
+    document.getElementById('bl-err').classList.add('visible');
+    document.getElementById('bl-empty').style.display = 'block';
+  } finally {
+    document.getElementById('bl-skel').style.display = 'none';
+    btn.disabled = false;
+    btn.innerHTML = '✉️ Generate letter';
+  }
+}
+
+function blCopy() {
+  if (!blState.letter) return;
+  navigator.clipboard.writeText(blState.letter).then(() => {
+    const btn = document.getElementById('bl-copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {});
+}
+
+function blDownload() {
+  if (!blState.letter) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([blState.letter], { type: 'text/plain' }));
+  a.download = 'buyer-letter.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function blRegenerate() {
+  document.getElementById('bl-letter-box').style.display = 'none';
+  blGenerate();
 }
 
 getParams();
