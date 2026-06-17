@@ -65,8 +65,9 @@
   .field input, .field textarea, .field select { width: 100%; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.6; padding: 12px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
   .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,150,0.1); }
   .field textarea { resize: vertical; min-height: 120px; }
-  .example-link { display: inline-block; color: var(--green); font-size: 12px; font-weight: 500; cursor: pointer; margin-bottom: 14px; background: none; border: none; font-family: inherit; padding: 0; text-decoration: underline; }
-  .example-link:hover { opacity: .75; }
+  .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; font-family: inherit; padding: 0; margin-left: 4px; flex-shrink: 0; transition: border-color .15s, color .15s; }
+  .info-btn:hover { border-color: var(--green); color: var(--green); }
+  .field-hint { display: none; font-size: 12px; color: var(--muted); background: rgba(0,200,150,0.04); border-left: 2px solid var(--green); padding: 8px 10px; border-radius: 0 6px 6px 0; margin-bottom: 8px; line-height: 1.5; }
   .btn-submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; background: var(--green); color: #0a0a0a; font-family: inherit; font-size: 15px; font-weight: 700; padding: 0 16px; border: none; border-radius: 10px; cursor: pointer; transition: background .15s; }
   .btn-submit:hover:not(:disabled) { background: #00b386; }
   .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
@@ -152,14 +153,19 @@
           <h2>Application Coach</h2>
           <p class="desc">Paste the listing and get a strategy, first contact message, and document order tailored to this landlord.</p>
           <div class="field">
-            <label>Listing description <span class="char-count" id="cc-1-1">0 / 2000</span></label>
-            <textarea id="t1-listing" rows="5" placeholder="2-bedroom apartment, €1,450/mo, Amsterdam Oud-West. Description says: working professionals preferred, no students, registration possible. Available from 1 August." oninput="updateCount(this,'cc-1-1')"></textarea>
+            <div class="field-wrap">
+              <label>Listing description <button class="info-btn" data-hint="Paste the listing text or describe the property — address, price, what the landlord is looking for, platform it is on.">ⓘ</button> <span class="char-count" id="cc-1-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t1-listing" rows="5" oninput="updateCount(this,'cc-1-1')"></textarea>
+            </div>
           </div>
           <div class="field">
-            <label>Your goal for this application</label>
-            <input id="t1-goal" type="text" placeholder="e.g. Stand out from many applicants, move-in by July 1">
+            <div class="field-wrap">
+              <label>Your goal for this application <button class="info-btn" data-hint="What matters most to you — moving in quickly, beating many applicants, a specific move-in date? The clearer this is, the better the strategy.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t1-goal" type="text">
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(1)">Try an example →</button>
           <button class="btn-submit" id="btn-1" onclick="submit(1)">Get advice →</button>
           <div class="error-msg" id="err-1"></div>
         </div>
@@ -196,14 +202,19 @@
           <h2>Viewing Preparation</h2>
           <p class="desc">Get 10 tailored questions, a physical inspection checklist, and exactly how to stand out from other viewers.</p>
           <div class="field">
-            <label>Property description <span class="char-count" id="cc-2-1">0 / 2000</span></label>
-            <textarea id="t2-listing" rows="4" placeholder="75m2 apartment, 3rd floor, no lift, €1,350/mo, service costs €110/mo, central Utrecht. Energy label B, furnished. Building 1960s." oninput="updateCount(this,'cc-2-1')"></textarea>
+            <div class="field-wrap">
+              <label>Property description <button class="info-btn" data-hint="Include size, floor, energy label, building era, furnishing, and service costs — anything on the listing that might affect what you check.">ⓘ</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t2-listing" rows="4" oninput="updateCount(this,'cc-2-1')"></textarea>
+            </div>
           </div>
           <div class="field">
-            <label>Main concern or what you want to check</label>
-            <input id="t2-goal" type="text" placeholder="e.g. Damp problems, noisy neighbours, hidden costs">
+            <div class="field-wrap">
+              <label>Main concern or what you want to check <button class="info-btn" data-hint="Damp, noise, heating, service costs, building maintenance? Tell us what worries you and we'll focus the checklist there.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t2-goal" type="text">
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(2)">Try an example →</button>
           <button class="btn-submit" id="btn-2" onclick="submit(2)">Get advice →</button>
           <div class="error-msg" id="err-2"></div>
         </div>
@@ -240,14 +251,19 @@
           <h2>Negotiation Scripts</h2>
           <p class="desc">Honest market assessment plus word-for-word scripts for rent, lease terms, and repairs.</p>
           <div class="field">
-            <label>What do you want to negotiate?</label>
-            <input id="t3-goal" type="text" placeholder="e.g. Lower rent by €100/mo, remove no-pets clause, get kitchen repainted before move-in">
+            <div class="field-wrap">
+              <label>What do you want to negotiate? <button class="info-btn" data-hint="Be specific: lower rent by €X, remove a clause, get repairs done, extend the lease term. One clear ask works better than several vague ones.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t3-goal" type="text">
+            </div>
           </div>
           <div class="field">
-            <label>Your situation <span class="char-count" id="cc-3-1">0 / 2000</span></label>
-            <textarea id="t3-situation" rows="3" placeholder="The apartment at Keizersgracht has been on Pararius for 3 weeks. I have all docs ready and can move in immediately. I found comparable listings nearby for €200 less." oninput="updateCount(this,'cc-3-1')"></textarea>
+            <div class="field-wrap">
+              <label>Your situation <button class="info-btn" data-hint="How long has the listing been up? Do you have comparable prices? Can you move in quickly? Any of these are leverage — include them.">ⓘ</button> <span class="char-count" id="cc-3-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t3-situation" rows="3" oninput="updateCount(this,'cc-3-1')"></textarea>
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(3)">Try an example →</button>
           <button class="btn-submit" id="btn-3" onclick="submit(3)">Get advice →</button>
           <div class="error-msg" id="err-3"></div>
         </div>
@@ -284,10 +300,12 @@
           <h2>Lease Review</h2>
           <p class="desc">Paste your lease and get a clause-by-clause RAG analysis, your Dutch law rights, and what to ask the landlord to change.</p>
           <div class="field">
-            <label>Paste your lease text <span class="char-count" id="cc-4-1">0 / 2000</span></label>
-            <textarea id="t4-lease" rows="9" placeholder="Paste the full lease or the key clauses you want checked. Example clauses: deposit amount, notice period, rent increase method, maintenance responsibilities, service costs, subletting rules..." oninput="updateCount(this,'cc-4-1')"></textarea>
+            <div class="field-wrap">
+              <label>Paste your lease text <button class="info-btn" data-hint="Paste the full lease or just the clauses you are unsure about — deposit, notice period, rent increases, maintenance, service costs, subletting, and registration rules are the most important.">ⓘ</button> <span class="char-count" id="cc-4-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t4-lease" rows="9" oninput="updateCount(this,'cc-4-1')"></textarea>
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(4)">Try an example →</button>
           <button class="btn-submit" id="btn-4" onclick="submit(4)">Get advice →</button>
           <div class="error-msg" id="err-4"></div>
         </div>
@@ -324,23 +342,31 @@
           <h2>Move-In Checklist</h2>
           <p class="desc">Get a room-by-room checklist, meter reading instructions, gemeente registration steps, and a template email to your landlord.</p>
           <div class="field">
-            <label>Property type</label>
-            <select id="t5-type">
-              <option value="apartment">Apartment</option>
-              <option value="house">House (eengezinswoning)</option>
-              <option value="studio">Studio</option>
-              <option value="shared room">Shared house (room)</option>
-            </select>
+            <div class="field-wrap">
+              <label>Property type <button class="info-btn" data-hint="The checklist adapts to property type — a shared house has different move-in steps than an apartment or full house.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <select id="t5-type">
+                <option value="apartment">Apartment</option>
+                <option value="house">House (eengezinswoning)</option>
+                <option value="studio">Studio</option>
+                <option value="shared room">Shared house (room)</option>
+              </select>
+            </div>
           </div>
           <div class="field">
-            <label>Rooms</label>
-            <input id="t5-rooms" type="text" placeholder="e.g. 2 bedrooms, 1 bathroom, open kitchen, living room, storage room, balcony">
+            <div class="field-wrap">
+              <label>Rooms <button class="info-btn" data-hint="List every room you will be checking — bedrooms, bathrooms, kitchen, hallway, balcony, storage, basement. We use this to build your room-by-room checklist.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t5-rooms" type="text">
+            </div>
           </div>
           <div class="field">
-            <label>Anything special about your move? <span class="char-count" id="cc-5-1">0 / 2000</span></label>
-            <textarea id="t5-extra" rows="2" placeholder="e.g. Moving from Germany, first time in the Netherlands, need gemeente registration within 5 days for my work permit." oninput="updateCount(this,'cc-5-1')"></textarea>
+            <div class="field-wrap">
+              <label>Anything special about your move? <button class="info-btn" data-hint="Moving from abroad? Need BSN or gemeente registration urgently? First time renting in the Netherlands? Mention it so we can include the right administrative steps.">ⓘ</button> <span class="char-count" id="cc-5-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t5-extra" rows="2" oninput="updateCount(this,'cc-5-1')"></textarea>
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(5)">Try an example →</button>
           <button class="btn-submit" id="btn-5" onclick="submit(5)">Get advice →</button>
           <div class="error-msg" id="err-5"></div>
         </div>
@@ -389,54 +415,15 @@ let chatId = null;
 let listingContext = '';
 const lastResponses = {};
 
-const EXAMPLES = {
-  1: {
-    listing: '2-bedroom apartment, 78m2, €1,450/mo + €120 service costs, Amsterdam Oud-West. Ground floor. Energy label C. Description: working professionals preferred, no students, no pets. Registration (BRP) possible. Available from 1 August. Building managed by Van der Linden Vastgoed.',
-    goal: 'Stand out from many applicants — I have all my docs ready and a permanent contract at ASML'
-  },
-  2: {
-    listing: '65m2 apartment, 3rd floor, no lift, €1,200/mo, service costs €95/mo, Rotterdam Kralingen. 1970s building, energy label D, partially furnished, 1 bedroom, small balcony. VvE active.',
-    goal: 'Worried about energy costs and whether the building is well-maintained'
-  },
-  3: {
-    goal: 'Ask for €100/mo rent reduction',
-    situation: 'The apartment at Keizersgracht 234 has been on Pararius for 4 weeks. Asking rent is €1,600/mo. I found 3 comparable apartments on the same canal for €1,450–1,500. I have a permanent contract, all docs ready, and can move in immediately. I am a quiet single professional.'
-  },
-  4: {
-    lease: 'RENTAL AGREEMENT\nRent: €1,350 per month\nDeposit: 3 months rent (€4,050)\nLease start: 1 September 2024\nFixed term: 12 months, then month-to-month\nNotice period: 2 months for tenant, 1 month for landlord\nRent increase: 8% annually at landlord\'s discretion\nMaintenance: All repairs under €500 are tenant\'s responsibility\nService costs: €150/mo all-in (internet, water, general cleaning)\nSubletting: Not permitted under any circumstances\nPets: Not allowed without written permission\nRegistration: Tenant may not register at this address with the gemeente\nKey clause: If property is sold, tenant must vacate within 60 days'
-  },
-  5: {
-    type: 'apartment',
-    rooms: '2 bedrooms, 1 bathroom, open kitchen/living room, hallway, small storage room, ground floor with small terrace',
-    extra: 'Moving from the UK, first apartment in the Netherlands, need BSN registration, no furniture so everything is new'
-  }
-};
-
-function fillExample(tab) {
-  const ex = EXAMPLES[tab];
-  if (!ex) return;
-  if (tab === 1) {
-    document.getElementById('t1-listing').value = ex.listing;
-    document.getElementById('t1-goal').value = ex.goal;
-    updateCount(document.getElementById('t1-listing'), 'cc-1-1');
-  } else if (tab === 2) {
-    document.getElementById('t2-listing').value = ex.listing;
-    document.getElementById('t2-goal').value = ex.goal;
-    updateCount(document.getElementById('t2-listing'), 'cc-2-1');
-  } else if (tab === 3) {
-    document.getElementById('t3-goal').value = ex.goal;
-    document.getElementById('t3-situation').value = ex.situation;
-    updateCount(document.getElementById('t3-situation'), 'cc-3-1');
-  } else if (tab === 4) {
-    document.getElementById('t4-lease').value = ex.lease;
-    updateCount(document.getElementById('t4-lease'), 'cc-4-1');
-  } else if (tab === 5) {
-    document.getElementById('t5-type').value = ex.type;
-    document.getElementById('t5-rooms').value = ex.rooms;
-    document.getElementById('t5-extra').value = ex.extra;
-    updateCount(document.getElementById('t5-extra'), 'cc-5-1');
-  }
-}
+document.querySelectorAll('.info-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    const hint = btn.closest('.field-wrap').querySelector('.field-hint');
+    const isOpen = hint.style.display === 'block';
+    hint.style.display = isOpen ? 'none' : 'block';
+    hint.textContent = btn.dataset.hint;
+  });
+});
 
 function updateCount(el, ccId) {
   const cc = document.getElementById(ccId);

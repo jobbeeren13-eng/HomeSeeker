@@ -60,8 +60,9 @@
   .field input, .field textarea, .field select { width: 100%; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.6; padding: 12px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
   .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,150,0.1); }
   .field textarea { resize: vertical; min-height: 120px; }
-  .example-link { display: inline-block; color: var(--green); font-size: 12px; font-weight: 500; cursor: pointer; margin-bottom: 14px; background: none; border: none; font-family: inherit; padding: 0; text-decoration: underline; }
-  .example-link:hover { opacity: .75; }
+  .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; font-family: inherit; padding: 0; margin-left: 4px; flex-shrink: 0; transition: border-color .15s, color .15s; }
+  .info-btn:hover { border-color: var(--green); color: var(--green); }
+  .field-hint { display: none; font-size: 12px; color: var(--muted); background: rgba(0,200,150,0.04); border-left: 2px solid var(--green); padding: 8px 10px; border-radius: 0 6px 6px 0; margin-bottom: 8px; line-height: 1.5; }
   .btn-submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; background: var(--green); color: #0a0a0a; font-family: inherit; font-size: 15px; font-weight: 700; padding: 0 16px; border: none; border-radius: 10px; cursor: pointer; transition: background .15s; }
   .btn-submit:hover:not(:disabled) { background: #00b386; }
   .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
@@ -152,27 +153,38 @@
           <h2>Affordability Calculator</h2>
           <p class="desc">Find out exactly what you can buy, what cash you need upfront, and which red flags will block you.</p>
           <div class="field">
-            <label>Gross annual income</label>
-            <input id="t1-income" type="text" placeholder="e.g. €68,000 gross per year. Partner earns €45,000.">
+            <div class="field-wrap">
+              <label>Gross annual income <button class="info-btn" data-hint="Enter your gross (pre-tax) annual income. Include a partner's income if they will be on the mortgage. The calculator uses Dutch mortgage rules.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t1-income" type="text">
+            </div>
           </div>
           <div class="field">
-            <label>Contract type</label>
-            <select id="t1-contract">
-              <option value="permanent">Permanent (vast contract)</option>
-              <option value="temporary">Temporary (tijdelijk)</option>
-              <option value="zzp">Self-employed (ZZP)</option>
-              <option value="expat 30%">Expat ruling (30% ruling)</option>
-            </select>
+            <div class="field-wrap">
+              <label>Contract type <button class="info-btn" data-hint="Permanent contracts get the highest mortgage multiple. ZZP (self-employed) requires 3 years of accounts. Expat 30% ruling affects how income is counted.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <select id="t1-contract">
+                <option value="permanent">Permanent (vast contract)</option>
+                <option value="temporary">Temporary (tijdelijk)</option>
+                <option value="zzp">Self-employed (ZZP)</option>
+                <option value="expat 30%">Expat ruling (30% ruling)</option>
+              </select>
+            </div>
           </div>
           <div class="field">
-            <label>Own savings available</label>
-            <input id="t1-savings" type="text" placeholder="e.g. €65,000 savings, no other debts">
+            <div class="field-wrap">
+              <label>Own savings available <button class="info-btn" data-hint="Include all savings you can use. Mention any debts (car loans, student loans) — these reduce what you can borrow. You need roughly 5–6% of the purchase price in cash on top of the mortgage.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t1-savings" type="text">
+            </div>
           </div>
           <div class="field">
-            <label>Target city and price range</label>
-            <input id="t1-target" type="text" placeholder="e.g. Rotterdam, looking at €350,000 – €400,000 apartments">
+            <div class="field-wrap">
+              <label>Target city and price range <button class="info-btn" data-hint="City matters because transaction costs and market conditions vary. Include both the city and the price range you are looking at.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t1-target" type="text">
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(1)">Try an example →</button>
           <button class="btn-submit" id="btn-1" onclick="submit(1)">Get advice →</button>
           <div class="error-msg" id="err-1"></div>
         </div>
@@ -209,14 +221,19 @@
           <h2>Property Analysis</h2>
           <p class="desc">Paste the listing and get price benchmarks, deal flags (erfpacht, energy label, VvE), a max bid, and 5 questions for the agent.</p>
           <div class="field">
-            <label>Listing details <span class="char-count" id="cc-2-1">0 / 2000</span></label>
-            <textarea id="t2-listing" rows="5" placeholder="85m2 apartment, €425,000 asking price, Amsterdam De Pijp. 3rd floor with lift. Built 1935, ground-lease (erfpacht) canon fixed until 2042. Energy label D. VvE active, 12 apartments. Service costs €280/mo." oninput="updateCount(this,'cc-2-1')"></textarea>
+            <div class="field-wrap">
+              <label>Listing details <button class="info-btn" data-hint="Paste the listing or describe it — size, price, city, floor, build year, energy label, leasehold (erfpacht), VvE costs, and anything else notable.">ⓘ</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t2-listing" rows="5" oninput="updateCount(this,'cc-2-1')"></textarea>
+            </div>
           </div>
           <div class="field">
-            <label>What concerns you most?</label>
-            <input id="t2-concern" type="text" placeholder="e.g. Erfpacht risk after 2042, energy label impact on mortgage, VvE reserve">
+            <div class="field-wrap">
+              <label>What concerns you most? <button class="info-btn" data-hint="Erfpacht (leasehold), energy label impact on mortgage, VvE health, hidden renovation costs? Name it and we'll focus the analysis there.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t2-concern" type="text">
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(2)">Try an example →</button>
           <button class="btn-submit" id="btn-2" onclick="submit(2)">Get advice →</button>
           <div class="error-msg" id="err-2"></div>
         </div>
@@ -253,18 +270,26 @@
           <h2>Bid Strategy</h2>
           <p class="desc">City-specific overbidding data, exact bid amount recommendation, condition waiving rules, and a word-for-word bid letter.</p>
           <div class="field">
-            <label>Property and asking price</label>
-            <input id="t3-property" type="text" placeholder="e.g. 3-bed house, Leiden, asking €490,000, listed 5 days ago">
+            <div class="field-wrap">
+              <label>Property and asking price <button class="info-btn" data-hint="Include property type, city, asking price, and how long it has been listed. These feed into the overbidding percentage calculation.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t3-property" type="text">
+            </div>
           </div>
           <div class="field">
-            <label>Your situation <span class="char-count" id="cc-3-1">0 / 2000</span></label>
-            <textarea id="t3-situation" rows="3" placeholder="I have mortgage pre-approval up to €520,000. The property is 1978-built, no major issues visible. I am competing with at least 4 other bidders." oninput="updateCount(this,'cc-3-1')"></textarea>
+            <div class="field-wrap">
+              <label>Your situation <button class="info-btn" data-hint="Do you have mortgage pre-approval? How many other bidders are there? What condition is the property in? All of this shapes the recommended bid amount.">ⓘ</button> <span class="char-count" id="cc-3-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t3-situation" rows="3" oninput="updateCount(this,'cc-3-1')"></textarea>
+            </div>
           </div>
           <div class="field">
-            <label>Budget ceiling</label>
-            <input id="t3-budget" type="text" placeholder="e.g. My absolute max is €530,000 all-in">
+            <div class="field-wrap">
+              <label>Budget ceiling <button class="info-btn" data-hint="Your absolute maximum including all purchase costs (transfer tax, notary, advisor fees). We will not recommend a bid above this.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <input id="t3-budget" type="text">
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(3)">Try an example →</button>
           <button class="btn-submit" id="btn-3" onclick="submit(3)">Get advice →</button>
           <div class="error-msg" id="err-3"></div>
         </div>
@@ -301,21 +326,26 @@
           <h2>Legal Process Guide</h2>
           <p class="desc">All 6 steps from bid accepted to keys in hand — including expat-specific mistakes and what to do at each stage.</p>
           <div class="field">
-            <label>Where are you in the process?</label>
-            <select id="t4-stage">
-              <option value="bid accepted">Bid just accepted</option>
-              <option value="koopovereenkomst">Signing the koopovereenkomst</option>
-              <option value="mortgage">Getting the mortgage</option>
-              <option value="building inspection">Waiting for inspection</option>
-              <option value="notary">Notary appointment coming up</option>
-              <option value="completed">Just completed / post-purchase</option>
-            </select>
+            <div class="field-wrap">
+              <label>Where are you in the process? <button class="info-btn" data-hint="Select the step you are at right now. The guide adapts to give you the most relevant next actions and expat-specific warnings for that exact stage.">ⓘ</button></label>
+              <div class="field-hint"></div>
+              <select id="t4-stage">
+                <option value="bid accepted">Bid just accepted</option>
+                <option value="koopovereenkomst">Signing the koopovereenkomst</option>
+                <option value="mortgage">Getting the mortgage</option>
+                <option value="building inspection">Waiting for inspection</option>
+                <option value="notary">Notary appointment coming up</option>
+                <option value="completed">Just completed / post-purchase</option>
+              </select>
+            </div>
           </div>
           <div class="field">
-            <label>Your situation and concerns <span class="char-count" id="cc-4-1">0 / 2000</span></label>
-            <textarea id="t4-context" rows="3" placeholder="e.g. My bid of €415,000 was accepted on a 1978-built Rotterdam apartment. I am a UK national with a Dutch residence permit. I have 3 days to sign the purchase agreement." oninput="updateCount(this,'cc-4-1')"></textarea>
+            <div class="field-wrap">
+              <label>Your situation and concerns <button class="info-btn" data-hint="Nationality, visa type, purchase price, timeline pressures, anything unusual about the property or deal — include what is most relevant to your situation.">ⓘ</button> <span class="char-count" id="cc-4-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t4-context" rows="3" oninput="updateCount(this,'cc-4-1')"></textarea>
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(4)">Try an example →</button>
           <button class="btn-submit" id="btn-4" onclick="submit(4)">Get advice →</button>
           <div class="error-msg" id="err-4"></div>
         </div>
@@ -352,10 +382,12 @@
           <h2>VvE Health Checker</h2>
           <p class="desc">Check if the apartment owners association (VvE) is healthy or a financial risk. Get a go/no-go recommendation.</p>
           <div class="field">
-            <label>Paste what you know about the VvE <span class="char-count" id="cc-5-1">0 / 2000</span></label>
-            <textarea id="t5-vve" rows="6" placeholder="Service costs are €285/mo. VvE has 18 apartments. Reserve fund is €22,000. No MJOP available — agent says they will send it later. Building has a flat roof last done in 2010. VvE meets once a year." oninput="updateCount(this,'cc-5-1')"></textarea>
+            <div class="field-wrap">
+              <label>Paste what you know about the VvE <button class="info-btn" data-hint="Include monthly service costs, number of apartments, reserve fund size, whether an MJOP (maintenance plan) exists, building age, any known issues. Even partial info gives useful results.">ⓘ</button> <span class="char-count" id="cc-5-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t5-vve" rows="6" oninput="updateCount(this,'cc-5-1')"></textarea>
+            </div>
           </div>
-          <button class="example-link" onclick="fillExample(5)">Try an example →</button>
           <button class="btn-submit" id="btn-5" onclick="submit(5)">Get advice →</button>
           <div class="error-msg" id="err-5"></div>
         </div>
@@ -404,57 +436,15 @@ let chatId = null;
 let listingContext = '';
 const lastResponses = {};
 
-const EXAMPLES = {
-  1: {
-    income: '€72,000 gross per year. No partner income.',
-    contract: 'permanent',
-    savings: '€80,000 savings, one car loan at €350/mo remaining for 2 years',
-    target: 'Utrecht, looking at 2-bedroom apartments around €375,000 – €420,000'
-  },
-  2: {
-    listing: '78m2 apartment, €395,000 asking price, Amsterdam Bos en Lommer. 2nd floor, no lift. Built 1955, leasehold (erfpacht) with Amsterdam municipality, canon revision due in 2031. Energy label E. Active VvE with 8 apartments. Service costs €195/mo. Listed 8 days ago.',
-    concern: 'Erfpacht revision risk in 2031, energy label E impact on mortgage, whether the VvE reserve is adequate for a 1955 building'
-  },
-  3: {
-    property: '3-bedroom terraced house, Den Haag Ypenburg, asking €445,000, listed 4 days ago',
-    situation: 'Viewing last Saturday, I loved it. Built 1998, good condition, energy label B. Mortgage approval up to €470,000. The agent told me 5 other parties viewed it. Seller wants to close quickly — they already bought another house.',
-    budget: 'Absolute maximum including all costs is €490,000'
-  },
-  4: {
-    stage: 'bid accepted',
-    context: 'My bid of €388,000 was accepted yesterday on a 1985-built apartment in Amsterdam Oost. I am a German national on a highly-skilled migrant visa (kennismigrant). My employer is a Dutch company. I need to sign the purchase agreement within 3 days but my mortgage advisor is on holiday this week.'
-  },
-  5: {
-    vve: 'Service costs €240/mo for a 12-apartment building in Rotterdam (1970s). Reserve fund is €18,500 according to the seller. No MJOP document — agent says the VvE is working on it. Building has an asphalt flat roof and the seller mentioned the roof leaked once 3 years ago. VvE meeting minutes from last year show a vote to repaint the hallway but it was postponed due to lack of funds.'
-  }
-};
-
-function fillExample(tab) {
-  const ex = EXAMPLES[tab];
-  if (!ex) return;
-  if (tab === 1) {
-    document.getElementById('t1-income').value = ex.income;
-    document.getElementById('t1-contract').value = ex.contract;
-    document.getElementById('t1-savings').value = ex.savings;
-    document.getElementById('t1-target').value = ex.target;
-  } else if (tab === 2) {
-    document.getElementById('t2-listing').value = ex.listing;
-    document.getElementById('t2-concern').value = ex.concern;
-    updateCount(document.getElementById('t2-listing'), 'cc-2-1');
-  } else if (tab === 3) {
-    document.getElementById('t3-property').value = ex.property;
-    document.getElementById('t3-situation').value = ex.situation;
-    document.getElementById('t3-budget').value = ex.budget;
-    updateCount(document.getElementById('t3-situation'), 'cc-3-1');
-  } else if (tab === 4) {
-    document.getElementById('t4-stage').value = ex.stage;
-    document.getElementById('t4-context').value = ex.context;
-    updateCount(document.getElementById('t4-context'), 'cc-4-1');
-  } else if (tab === 5) {
-    document.getElementById('t5-vve').value = ex.vve;
-    updateCount(document.getElementById('t5-vve'), 'cc-5-1');
-  }
-}
+document.querySelectorAll('.info-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    const hint = btn.closest('.field-wrap').querySelector('.field-hint');
+    const isOpen = hint.style.display === 'block';
+    hint.style.display = isOpen ? 'none' : 'block';
+    hint.textContent = btn.dataset.hint;
+  });
+});
 
 function updateCount(el, ccId) {
   const cc = document.getElementById(ccId);
