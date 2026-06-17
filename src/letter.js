@@ -138,7 +138,7 @@ Absolute rules:
 - NEVER invent or assume any details not explicitly provided in the user profile
 - NEVER mention an employer name unless it appears in the user description
 - NEVER mention a guarantor unless explicitly stated in the user profile
-- If information is missing, leave it out — do not guess or fabricate
+- If information is missing, leave it out - do not guess or fabricate
 - Max 180 words
 - Sound like a real person wrote this quickly at their desk`;
 

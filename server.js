@@ -86,7 +86,7 @@ app.get('/subscribe', async (req, res) => {
     res.redirect(303, session.url);
   } catch (err) {
     console.error('[stripe] Checkout error:', err.message);
-    res.status(500).send('Error creating checkout session. Please try again.');
+    res.status(500).send('Error creating checkout session. Try again in a moment.');
   }
 });
 
@@ -95,7 +95,7 @@ app.get('/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 's
 app.post('/api/filters', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!checkFilterRateLimit(clientIp)) {
-    return res.status(429).json({ error: 'Too many requests - please wait before submitting again' });
+    return res.status(429).json({ error: 'Too many requests. Wait a moment and try again.' });
   }
   try {
     const b = req.body;
@@ -157,8 +157,8 @@ app.post('/api/filters', async (req, res) => {
 });
 
 app.post('/webhook/telegram', (req, res) => {
-  processWebhookUpdate(req.body);
   res.sendStatus(200);
+  try { processWebhookUpdate(req.body); } catch (err) { console.error('[webhook/telegram]', err.message); }
 });
 
 app.post('/webhook/stripe', async (req, res) => {
@@ -185,7 +185,7 @@ app.post('/api/cancel', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('[cancel] Error:', err.message);
-    res.status(500).json({ error: 'Failed to cancel subscription. Please contact support@homeseeker.dev' });
+    res.status(500).json({ error: 'Failed to cancel subscription. Contact support@homeseeker.dev' });
   }
 });
 
@@ -292,7 +292,7 @@ app.post('/api/admin/resend-activation', async (req, res) => {
   }
 
   if (!user) return res.status(404).json({ error: 'User not found' });
-  if (!user.stripe_customer_id) return res.status(400).json({ error: 'User has no Stripe customer ID — cannot generate activation link' });
+  if (!user.stripe_customer_id) return res.status(400).json({ error: 'User has no Stripe customer ID - cannot generate activation link' });
 
   try {
     await sendWelcomeEmail(user.email, user.naam || '', user.stripe_customer_id);
@@ -308,9 +308,14 @@ app.post('/api/admin/resend-activation', async (req, res) => {
 
 // Returns raw listing for rent-assistant / buy-assistant context loading
 app.get('/api/cached-listing/:id', (req, res) => {
-  const entry = getCachedEntry(req.params.id);
-  if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
-  res.json({ listing: entry.listing });
+  try {
+    const entry = getCachedEntry(req.params.id);
+    if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
+    res.json({ listing: entry.listing });
+  } catch (err) {
+    console.error('[api/cached-listing]', err.message);
+    res.status(500).json({ error: 'Could not load listing' });
+  }
 });
 
 const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_action']);
@@ -381,7 +386,7 @@ app.post('/api/generate-letter-web', async (req, res) => {
     res.json({ letter });
   } catch (err) {
     console.error('[api/generate-letter-web]', err.message);
-    res.status(500).json({ error: 'Letter generation failed. Please try again.' });
+    res.status(500).json({ error: 'Letter generation failed. Try again in a moment.' });
   }
 });
 
@@ -414,7 +419,7 @@ app.post('/api/generate-package', async (req, res) => {
     res.json(pkg);
   } catch (err) {
     console.error('[api/generate-package]', err.message);
-    res.status(500).json({ error: 'Package generation failed. Please try again.' });
+    res.status(500).json({ error: 'Package generation failed. Try again in a moment.' });
   }
 });
 
@@ -459,37 +464,52 @@ app.get('/api/admin/db-status', (req, res) => {
 app.get('/api/dashboard', (req, res) => {
   const { chat_id } = req.query;
   if (!chat_id) return res.status(400).json({ error: 'chat_id required' });
-  const user = getUser.get(String(chat_id));
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  const favorites = getFavorites.all(String(chat_id));
-  const tracker = getApplicationTracker.all(String(chat_id));
-  res.json({
-    user: { naam: user.naam, email: user.email, locatie: user.locatie, type: user.type, betaald: user.betaald, actief: user.actief },
-    favorites: favorites.map(f => { try { return { url: f.listing_url, listing: JSON.parse(f.listing_json), addedAt: f.added_at }; } catch { return { url: f.listing_url, listing: {}, addedAt: f.added_at }; } }),
-    tracker: tracker.map(t => ({ url: t.listing_url, address: t.listing_address, price: t.listing_price, image: t.listing_image, status: t.status, notes: t.notes, updatedAt: t.updated_at })),
-  });
+  try {
+    const user = getUser.get(String(chat_id));
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const favorites = getFavorites.all(String(chat_id));
+    const tracker = getApplicationTracker.all(String(chat_id));
+    res.json({
+      user: { naam: user.naam, email: user.email, locatie: user.locatie, type: user.type, betaald: user.betaald, actief: user.actief },
+      favorites: favorites.map(f => { try { return { url: f.listing_url, listing: JSON.parse(f.listing_json), addedAt: f.added_at }; } catch { return { url: f.listing_url, listing: {}, addedAt: f.added_at }; } }),
+      tracker: tracker.map(t => ({ url: t.listing_url, address: t.listing_address, price: t.listing_price, image: t.listing_image, status: t.status, notes: t.notes, updatedAt: t.updated_at })),
+    });
+  } catch (err) {
+    console.error('[api/dashboard]', err.message);
+    res.status(500).json({ error: 'Could not load dashboard' });
+  }
 });
 
 app.post('/api/favorites', (req, res) => {
   const { chat_id, listing_url, listing, action } = req.body;
   if (!chat_id || !listing_url) return res.status(400).json({ error: 'chat_id and listing_url required' });
-  if (action === 'remove') {
-    removeFavorite.run(String(chat_id), listing_url);
-  } else {
-    addFavorite.run(String(chat_id), listing_url, JSON.stringify(listing || {}));
+  try {
+    if (action === 'remove') {
+      removeFavorite.run(String(chat_id), listing_url);
+    } else {
+      addFavorite.run(String(chat_id), listing_url, JSON.stringify(listing || {}));
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[api/favorites]', err.message);
+    res.status(500).json({ error: 'Could not update favorites' });
   }
-  res.json({ ok: true });
 });
 
 app.post('/api/application-status', (req, res) => {
   const { chat_id, listing_url, listing_address, listing_price, listing_image, status, notes } = req.body;
   if (!chat_id || !listing_url) return res.status(400).json({ error: 'chat_id and listing_url required' });
-  if (!status) {
-    removeApplicationStatus.run(String(chat_id), listing_url);
-  } else {
-    upsertApplicationStatus.run(String(chat_id), listing_url, listing_address || '', listing_price || '', listing_image || '', status, notes || '');
+  try {
+    if (!status) {
+      removeApplicationStatus.run(String(chat_id), listing_url);
+    } else {
+      upsertApplicationStatus.run(String(chat_id), listing_url, listing_address || '', listing_price || '', listing_image || '', status, notes || '');
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[api/application-status]', err.message);
+    res.status(500).json({ error: 'Could not update application status' });
   }
-  res.json({ ok: true });
 });
 
 // AI buyer letter — proxies to Hetzner (ANTHROPIC_API_KEY lives there)
@@ -514,7 +534,7 @@ app.post('/api/buyer-letter', async (req, res) => {
     res.json({ letter });
   } catch (err) {
     console.error('[api/buyer-letter]', err.message);
-    res.status(500).json({ error: 'Letter generation failed. Please try again.' });
+    res.status(500).json({ error: 'Letter generation failed. Try again in a moment.' });
   }
 });
 
@@ -539,7 +559,7 @@ app.post('/api/lease-review', async (req, res) => {
     return res.json(result);
   } catch (err) {
     console.error('[api/lease-review]', err.message);
-    res.status(500).json({ error: 'Lease review failed. Please try again.' });
+    res.status(500).json({ error: 'Lease review failed. Try again in a moment.' });
   }
 });
 
@@ -564,7 +584,7 @@ app.post('/api/negotiate', async (req, res) => {
     return res.json(result);
   } catch (err) {
     console.error('[api/negotiate]', err.message);
-    res.status(500).json({ error: 'Negotiation strategy generation failed. Please try again.' });
+    res.status(500).json({ error: 'Negotiation strategy generation failed. Try again in a moment.' });
   }
 });
 
@@ -590,7 +610,7 @@ app.post('/api/bid-advisor', async (req, res) => {
     res.json(advice);
   } catch (err) {
     console.error('[api/bid-advisor]', err.message);
-    res.status(500).json({ error: 'Bid advice generation failed. Please try again.' });
+    res.status(500).json({ error: 'Bid advice generation failed. Try again in a moment.' });
   }
 });
 
@@ -615,7 +635,7 @@ app.post('/api/modify-letter-web', async (req, res) => {
     return res.json({ letter: modified });
   } catch (err) {
     console.error('[api/modify-letter-web]', err.message);
-    res.status(500).json({ error: 'Letter modification failed. Please try again.' });
+    res.status(500).json({ error: 'Letter modification failed. Try again in a moment.' });
   }
 });
 
@@ -644,7 +664,7 @@ app.post('/api/rent-assistant', async (req, res) => {
     return res.json(result);
   } catch (err) {
     console.error('[api/rent-assistant]', err.message);
-    res.status(500).json({ error: 'Assistant response failed. Please try again.' });
+    res.status(500).json({ error: 'Assistant response failed. Try again in a moment.' });
   }
 });
 
@@ -673,7 +693,7 @@ app.post('/api/buy-assistant', async (req, res) => {
     return res.json(result);
   } catch (err) {
     console.error('[api/buy-assistant]', err.message);
-    res.status(500).json({ error: 'Assistant response failed. Please try again.' });
+    res.status(500).json({ error: 'Assistant response failed. Try again in a moment.' });
   }
 });
 
@@ -683,14 +703,21 @@ async function proxyToHetzner(path, body, directFn) {
   const hetznerUrl = process.env.HETZNER_URL;
   const adminKey = process.env.ADMIN_KEY;
   if (hetznerUrl && adminKey) {
-    const r = await fetch(`${hetznerUrl}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-      body: JSON.stringify(body),
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || `Hetzner HTTP ${r.status}`);
-    return data;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 25000);
+    try {
+      const r = await fetch(`${hetznerUrl}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `Hetzner HTTP ${r.status}`);
+      return data;
+    } finally {
+      clearTimeout(timer);
+    }
   }
   return await directFn();
 }
@@ -703,7 +730,7 @@ app.post('/api/landlord-reply', async (req, res) => {
     if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
     const data = await proxyToHetzner('/api/generate-landlord-reply', { message, userProfile }, () => generateLandlordReplyDirect({ message, userProfile }));
     res.json(data);
-  } catch (err) { console.error('[api/landlord-reply]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+  } catch (err) { console.error('[api/landlord-reply]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
 });
 
 app.post('/api/rejection-analyser', async (req, res) => {
@@ -714,7 +741,7 @@ app.post('/api/rejection-analyser', async (req, res) => {
     if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
     const data = await proxyToHetzner('/api/generate-rejection-analysis', { applications, userProfile }, () => generateRejectionAnalysisDirect({ applications, userProfile }));
     res.json(data);
-  } catch (err) { console.error('[api/rejection-analyser]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+  } catch (err) { console.error('[api/rejection-analyser]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
 });
 
 app.post('/api/reference-letter', async (req, res) => {
@@ -723,7 +750,7 @@ app.post('/api/reference-letter', async (req, res) => {
   try {
     const data = await proxyToHetzner('/api/generate-reference-letter', { type, details }, () => generateReferenceLetterDirect({ type, details }));
     res.json(data);
-  } catch (err) { console.error('[api/reference-letter]', err.message); res.status(500).json({ error: 'Letter generation failed. Please try again.' }); }
+  } catch (err) { console.error('[api/reference-letter]', err.message); res.status(500).json({ error: 'Letter generation failed. Try again in a moment.' }); }
 });
 
 app.post('/api/income-explain', async (req, res) => {
@@ -732,7 +759,7 @@ app.post('/api/income-explain', async (req, res) => {
   try {
     const data = await proxyToHetzner('/api/generate-income-explain', { income, rent, situation: situation || '' }, () => generateIncomeExplainDirect({ income, rent, situation: situation || '' }));
     res.json(data);
-  } catch (err) { console.error('[api/income-explain]', err.message); res.status(500).json({ error: 'Explanation generation failed. Please try again.' }); }
+  } catch (err) { console.error('[api/income-explain]', err.message); res.status(500).json({ error: 'Explanation generation failed. Try again in a moment.' }); }
 });
 
 app.post('/api/viewing-feedback', async (req, res) => {
@@ -743,7 +770,7 @@ app.post('/api/viewing-feedback', async (req, res) => {
     if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
     const data = await proxyToHetzner('/api/generate-viewing-feedback', { viewingNotes, userProfile }, () => generateViewingFeedbackDirect({ viewingNotes, userProfile }));
     res.json(data);
-  } catch (err) { console.error('[api/viewing-feedback]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+  } catch (err) { console.error('[api/viewing-feedback]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
 });
 
 app.post('/api/tenant-rights-question', async (req, res) => {
@@ -752,7 +779,7 @@ app.post('/api/tenant-rights-question', async (req, res) => {
   try {
     const data = await proxyToHetzner('/api/generate-tenant-rights', { question }, () => generateTenantRightsAnswerDirect({ question }));
     res.json(data);
-  } catch (err) { console.error('[api/tenant-rights-question]', err.message); res.status(500).json({ error: 'Answer generation failed. Please try again.' }); }
+  } catch (err) { console.error('[api/tenant-rights-question]', err.message); res.status(500).json({ error: 'Answer generation failed. Try again in a moment.' }); }
 });
 
 app.post('/api/explain-deal', async (req, res) => {
@@ -761,7 +788,7 @@ app.post('/api/explain-deal', async (req, res) => {
   try {
     const data = await proxyToHetzner('/api/generate-deal-explain', { dealData }, () => generateDealExplainDirect({ dealData }));
     res.json(data);
-  } catch (err) { console.error('[api/explain-deal]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+  } catch (err) { console.error('[api/explain-deal]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
 });
 
 app.post('/api/overbid-bid-letter', async (req, res) => {
@@ -772,7 +799,7 @@ app.post('/api/overbid-bid-letter', async (req, res) => {
     if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
     const data = await proxyToHetzner('/api/generate-overbid-letter', { bidDetails, userProfile }, () => generateOverbidLetterDirect({ bidDetails, userProfile }));
     res.json(data);
-  } catch (err) { console.error('[api/overbid-bid-letter]', err.message); res.status(500).json({ error: 'Letter generation failed. Please try again.' }); }
+  } catch (err) { console.error('[api/overbid-bid-letter]', err.message); res.status(500).json({ error: 'Letter generation failed. Try again in a moment.' }); }
 });
 
 app.post('/api/inspection-advisor', async (req, res) => {
@@ -781,7 +808,7 @@ app.post('/api/inspection-advisor', async (req, res) => {
   try {
     const data = await proxyToHetzner('/api/generate-inspection-advice', { inspectionText, purchasePrice: purchasePrice || 0 }, () => generateInspectionAdviceDirect({ inspectionText, purchasePrice: purchasePrice || 0 }));
     res.json(data);
-  } catch (err) { console.error('[api/inspection-advisor]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+  } catch (err) { console.error('[api/inspection-advisor]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
 });
 
 app.post('/api/erfpacht-analysis', async (req, res) => {
@@ -790,7 +817,7 @@ app.post('/api/erfpacht-analysis', async (req, res) => {
   try {
     const data = await proxyToHetzner('/api/generate-erfpacht-analysis', { erfpachtText, purchasePrice: purchasePrice || 0, city: city || '' }, () => generateErfpachtAnalysisDirect({ erfpachtText, purchasePrice: purchasePrice || 0, city: city || '' }));
     res.json(data);
-  } catch (err) { console.error('[api/erfpacht-analysis]', err.message); res.status(500).json({ error: 'Analysis failed. Please try again.' }); }
+  } catch (err) { console.error('[api/erfpacht-analysis]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
 });
 
 app.post('/api/agent-script', async (req, res) => {
@@ -799,7 +826,7 @@ app.post('/api/agent-script', async (req, res) => {
   try {
     const data = await proxyToHetzner('/api/generate-agent-script', { situation, context: context || '' }, () => generateAgentScriptDirect({ situation, context: context || '' }));
     res.json(data);
-  } catch (err) { console.error('[api/agent-script]', err.message); res.status(500).json({ error: 'Script generation failed. Please try again.' }); }
+  } catch (err) { console.error('[api/agent-script]', err.message); res.status(500).json({ error: 'Script generation failed. Try again in a moment.' }); }
 });
 
 // Health + watchdog endpoint
@@ -843,6 +870,11 @@ if (useWebhook) {
     }
   }
 }
+
+app.use((err, _req, res, _next) => {
+  console.error('[server] Unhandled error:', err.message);
+  res.status(500).json({ error: 'Request failed. Try again or contact support@homeseeker.dev' });
+});
 
 app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);

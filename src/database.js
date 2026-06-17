@@ -166,6 +166,11 @@ try {
  
 db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_listing_cache_expires ON listing_cache(expires_at)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_customer_id)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_sent_listings_chat_id ON sent_listings(chat_id)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_favorites_chat_id ON favorites(chat_id)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_application_tracker_chat_id ON application_tracker(chat_id)`);
 
 // Startup health check — log path and user count so resets are immediately visible in logs
 {

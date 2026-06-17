@@ -642,17 +642,17 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     let verdict = '';
     const isJustListed = ageMs !== null && !isNaN(ageMs) && ageMs < 60 * 60 * 1000;
     if (score >= 80 && isJustListed) {
-      verdict = 'Top match and just listed - apply immediately, do not wait.';
+      verdict = 'Strong match on a fresh listing. Apply now.';
     } else if (score >= 80) {
-      verdict = 'Strong match: apply today, you have a real chance.';
+      verdict = 'Strong match. Worth a serious application.';
     } else if (score >= 65) {
-      verdict = 'Good match: worth a strong application.';
+      verdict = 'Good match. A strong application gives you a real chance.';
     } else if (score >= 50) {
-      verdict = 'Decent match: apply with a guarantor or strong intro.';
+      verdict = 'Decent match. Address the gaps above before applying.';
     } else if (score >= 35) {
-      verdict = 'Weak match: address the gaps above before applying.';
+      verdict = 'Weak match. Significant barriers - read the tips carefully.';
     } else {
-      verdict = 'Very weak match: significant barriers to this listing.';
+      verdict = 'Very weak match. The gaps above make this a long shot.';
     }
     lines.push('');
     lines.push(verdict);
@@ -693,7 +693,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   let sent = false;
   if (hasRealImage) {
     try {
-      await _bot.sendPhoto(chatId, listing.image, {
+      await sendWithRetry(_bot, 'sendPhoto', chatId, listing.image, {
         caption: fullText,
         parse_mode: 'Markdown',
         reply_markup: keyboard,
@@ -704,7 +704,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   if (!sent) {
     try {
-      await _bot.sendMessage(chatId, fullText, {
+      await sendWithRetry(_bot, 'sendMessage', chatId, fullText, {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
         disable_web_page_preview: true,
@@ -716,8 +716,24 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   return cacheId;
 }
 
+async function sendWithRetry(_bot, method, ...args) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await _bot[method](...args);
+    } catch (err) {
+      if (err.code === 429 && attempt < 2) {
+        const retryAfter = ((err.response?.body?.parameters?.retry_after) || 5) * 1000;
+        await new Promise(r => setTimeout(r, retryAfter));
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
 function processWebhookUpdate(update) {
-  if (bot) bot.processUpdate(update);
+  if (!bot) return;
+  try { bot.processUpdate(update); } catch (err) { console.error('[telegram] processWebhookUpdate error:', err.message); }
 }
  
 module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState, generateStartPayload, injectCachedListing, getCachedEntry };
