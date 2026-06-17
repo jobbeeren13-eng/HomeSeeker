@@ -528,16 +528,11 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
 
   const lines = [];
-  const freshnessStr = listingAgeStr(listing);
 
-  // Line 1: source badge + transaction type
-  const typeLabel = listing.transactionType === 'huur' ? '🏠 Rental' : '🏡 For sale';
-  lines.push(`${getPlatformBadge(listing.source)} · ${typeLabel}`);
+  // Line 1: source badge (platform only)
+  lines.push(getPlatformBadge(listing.source));
 
-  // Line 2: freshness (always show if available)
-  if (freshnessStr) lines.push(`⏱ *${freshnessStr}*`);
-
-  // Line 3: address + city, bold
+  // Line 2: address + city, bold
   const cityStr = cityDisplay || listing.city || '';
   lines.push(`📍 *${address}${cityStr ? ', ' + cityStr : ''}*`);
 
