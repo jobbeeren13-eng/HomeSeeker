@@ -40,30 +40,30 @@
   .page-title span { color: var(--green); }
   .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
 
-  .tab-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 20px; scrollbar-width: none; }
+  .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .tab-bar::-webkit-scrollbar { display: none; }
-  .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
-  .tab-btn:hover { border-color: rgba(255,255,255,0.18); color: var(--text); }
-  .tab-btn.active { background: var(--green); border-color: var(--green); color: #080b0f; font-weight: 700; }
+  .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
+  .tab-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+  .tab-btn.active { background: var(--green); border-color: var(--green); color: #0a0a0a; font-weight: 600; }
 
   .panel { display: none; }
   .panel.active { display: block; }
 
-  .panel-grid { display: grid; grid-template-columns: 40% 1fr; gap: 20px; align-items: start; }
+  .panel-grid { display: grid; grid-template-columns: 38% 1fr; gap: 20px; align-items: start; }
 
-  .form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+  .form-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; }
   .form-card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
   .form-card .desc { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
-  .field { margin-bottom: 13px; }
-  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
-  .char-count { font-size: 11px; }
-  .field input, .field textarea, .field select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; padding: 9px 12px; outline: none; transition: border-color .15s; }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); }
-  .field textarea { resize: vertical; min-height: 90px; }
-  .example-link { display: inline-block; color: var(--green); font-size: 12px; font-weight: 500; cursor: pointer; margin-bottom: 14px; background: none; border: none; font-family: inherit; padding: 0; text-decoration: none; }
-  .example-link:hover { text-decoration: underline; }
-  .btn-submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--green); color: #080b0f; font-family: inherit; font-size: 14px; font-weight: 700; padding: 12px; border: none; border-radius: 9px; cursor: pointer; transition: opacity .15s; }
-  .btn-submit:hover:not(:disabled) { opacity: .88; }
+  .field { margin-bottom: 14px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
+  .char-count { font-size: 11px; text-transform: none; letter-spacing: 0; }
+  .field input, .field textarea, .field select { width: 100%; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.6; padding: 12px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,150,0.1); }
+  .field textarea { resize: vertical; min-height: 120px; }
+  .example-link { display: inline-block; color: var(--green); font-size: 12px; font-weight: 500; cursor: pointer; margin-bottom: 14px; background: none; border: none; font-family: inherit; padding: 0; text-decoration: underline; }
+  .example-link:hover { opacity: .75; }
+  .btn-submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; background: var(--green); color: #0a0a0a; font-family: inherit; font-size: 15px; font-weight: 700; padding: 0 16px; border: none; border-radius: 10px; cursor: pointer; transition: background .15s; }
+  .btn-submit:hover:not(:disabled) { background: #00b386; }
   .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
   .btn-spinner { width: 14px; height: 14px; border: 2px solid rgba(8,11,15,0.3); border-top-color: #080b0f; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -104,6 +104,11 @@
   .help-link { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none; transition: all .15s; background: var(--bg2); }
   .help-link:hover { border-color: rgba(0,200,150,0.35); color: var(--green); }
 
+  .listing-badge { background: rgba(0,200,150,0.04); border: 1px solid rgba(0,200,150,0.15); border-radius: 8px; padding: 8px 14px; font-size: 13px; color: var(--muted); margin-bottom: 16px; display: none; gap: 8px; align-items: center; }
+  .listing-badge.visible { display: flex; }
+  .listing-badge strong { color: var(--text); }
+  .listing-badge-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
   @media (max-width: 768px) {
     .container { padding: 20px 16px 60px; }
     .site-header { padding: 0 16px; }
@@ -128,6 +133,8 @@
 <div class="container">
   <div class="page-title"><span>AI</span> Buyer Assistant</div>
   <p class="page-sub">Five specialist tools to help you afford, analyse, bid on, buy, and check a Dutch property.</p>
+
+  <div id="listing-badge" class="listing-badge"></div>
 
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab(1,this)">💰 Affordability</button>
@@ -470,6 +477,11 @@ function getParams() {
         if (data && data.listing) {
           const l = data.listing;
           listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
+          const badge = document.getElementById('listing-badge');
+          if (badge) {
+            badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong> — ${l.price || ''}`;
+            badge.classList.add('visible');
+          }
           document.getElementById('t2-listing').value = listingContext.slice(0, 800);
           updateCount(document.getElementById('t2-listing'), 'cc-2-1');
         }
@@ -486,6 +498,13 @@ function switchTab(n, btn) {
   activeTab = n;
 }
 
+const CONTRACT_LABELS = {
+  permanent: 'Permanent Dutch contract (vast)',
+  temporary: 'Temporary contract (tijdelijk)',
+  zzp: 'Self-employed / ZZP',
+  'expat 30%': 'Expat with 30% ruling',
+};
+
 function buildMessage(tab) {
   switch (tab) {
     case 1: {
@@ -494,25 +513,38 @@ function buildMessage(tab) {
       const savings = document.getElementById('t1-savings').value.trim();
       const target = document.getElementById('t1-target').value.trim();
       if (!income) return null;
-      return `Income: ${income}\nContract type: ${contract}\nSavings: ${savings || 'not specified'}\nTarget: ${target || 'not specified'}`;
+      const parts = [
+        `Gross annual income: ${income}.`,
+        `Employment type: ${CONTRACT_LABELS[contract] || contract}.`,
+      ];
+      if (savings) parts.push(`Own funds / savings: ${savings}.`);
+      if (target) parts.push(`Target city and price range: ${target}.`);
+      return parts.join('\n');
     }
     case 2: {
       const listing = document.getElementById('t2-listing').value.trim();
       const concern = document.getElementById('t2-concern').value.trim();
       if (!listing) return null;
-      return `${listing}${concern ? '\n\nMain concern: ' + concern : ''}`;
+      const parts = [`Property listing: ${listing}`];
+      if (concern) parts.push(`Main concern: ${concern}`);
+      return parts.join('\n\n');
     }
     case 3: {
       const property = document.getElementById('t3-property').value.trim();
       const situation = document.getElementById('t3-situation').value.trim();
       const budget = document.getElementById('t3-budget').value.trim();
       if (!property) return null;
-      return `Property: ${property}\n\nSituation: ${situation || 'not provided'}\n\nBudget ceiling: ${budget || 'not specified'}`;
+      const parts = [`Property and asking price: ${property}`];
+      if (situation) parts.push(`Buyer situation: ${situation}`);
+      if (budget) parts.push(`Budget ceiling: ${budget}`);
+      return parts.join('\n\n');
     }
     case 4: {
       const stage = document.getElementById('t4-stage').value;
       const context = document.getElementById('t4-context').value.trim();
-      return `Stage: ${stage}${context ? '\n\nContext: ' + context : ''}`;
+      const parts = [`Current stage: ${stage}`];
+      if (context) parts.push(`Context and concerns: ${context}`);
+      return parts.join('\n\n');
     }
     case 5: {
       const vve = document.getElementById('t5-vve').value.trim();

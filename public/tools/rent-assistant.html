@@ -40,34 +40,35 @@
   .page-title span { color: var(--green); }
   .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
 
-  .listing-badge { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--muted); margin-bottom: 16px; display: none; gap: 8px; align-items: center; }
+  .listing-badge { background: rgba(0,200,150,0.04); border: 1px solid rgba(0,200,150,0.15); border-radius: 8px; padding: 8px 14px; font-size: 13px; color: var(--muted); margin-bottom: 16px; display: none; gap: 8px; align-items: center; }
   .listing-badge.visible { display: flex; }
   .listing-badge strong { color: var(--text); }
+  .listing-badge-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
 
-  .tab-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 20px; scrollbar-width: none; }
+  .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .tab-bar::-webkit-scrollbar { display: none; }
-  .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
-  .tab-btn:hover { border-color: rgba(255,255,255,0.18); color: var(--text); }
-  .tab-btn.active { background: var(--green); border-color: var(--green); color: #080b0f; font-weight: 700; }
+  .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
+  .tab-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+  .tab-btn.active { background: var(--green); border-color: var(--green); color: #0a0a0a; font-weight: 600; }
 
   .panel { display: none; }
   .panel.active { display: block; }
 
-  .panel-grid { display: grid; grid-template-columns: 40% 1fr; gap: 20px; align-items: start; }
+  .panel-grid { display: grid; grid-template-columns: 38% 1fr; gap: 20px; align-items: start; }
 
-  .form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+  .form-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; }
   .form-card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
   .form-card .desc { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
-  .field { margin-bottom: 13px; }
-  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
-  .char-count { font-size: 11px; }
-  .field input, .field textarea, .field select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 13px; padding: 9px 12px; outline: none; transition: border-color .15s; }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); }
-  .field textarea { resize: vertical; min-height: 90px; }
-  .example-link { display: inline-block; color: var(--green); font-size: 12px; font-weight: 500; cursor: pointer; margin-bottom: 14px; background: none; border: none; font-family: inherit; padding: 0; text-decoration: none; }
-  .example-link:hover { text-decoration: underline; }
-  .btn-submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--green); color: #080b0f; font-family: inherit; font-size: 14px; font-weight: 700; padding: 12px; border: none; border-radius: 9px; cursor: pointer; transition: opacity .15s; }
-  .btn-submit:hover:not(:disabled) { opacity: .88; }
+  .field { margin-bottom: 14px; }
+  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
+  .char-count { font-size: 11px; text-transform: none; letter-spacing: 0; }
+  .field input, .field textarea, .field select { width: 100%; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.6; padding: 12px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,150,0.1); }
+  .field textarea { resize: vertical; min-height: 120px; }
+  .example-link { display: inline-block; color: var(--green); font-size: 12px; font-weight: 500; cursor: pointer; margin-bottom: 14px; background: none; border: none; font-family: inherit; padding: 0; text-decoration: underline; }
+  .example-link:hover { opacity: .75; }
+  .btn-submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; background: var(--green); color: #0a0a0a; font-family: inherit; font-size: 15px; font-weight: 700; padding: 0 16px; border: none; border-radius: 10px; cursor: pointer; transition: background .15s; }
+  .btn-submit:hover:not(:disabled) { background: #00b386; }
   .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
   .btn-spinner { width: 14px; height: 14px; border: 2px solid rgba(8,11,15,0.3); border-top-color: #080b0f; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -459,7 +460,7 @@ function getParams() {
           const l = data.listing;
           listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
           const badge = document.getElementById('listing-badge');
-          badge.innerHTML = `<strong>Listing loaded:</strong> ${l.address || l.url} — ${l.price || ''}`;
+          badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong> — ${l.price || ''}`;
           badge.classList.add('visible');
           document.getElementById('t1-listing').value = listingContext.slice(0, 800);
           updateCount(document.getElementById('t1-listing'), 'cc-1-1');
@@ -483,19 +484,26 @@ function buildMessage(tab) {
       const listing = document.getElementById('t1-listing').value.trim();
       const goal = document.getElementById('t1-goal').value.trim();
       if (!listing && !listingContext) return null;
-      return `${goal ? 'Goal: ' + goal + '\n\n' : ''}Listing: ${listing || listingContext}`;
+      const parts = [];
+      if (goal) parts.push(`Application goal: ${goal}`);
+      parts.push(`Listing description: ${listing || listingContext}`);
+      return parts.join('\n\n');
     }
     case 2: {
       const listing = document.getElementById('t2-listing').value.trim() || listingContext;
       const concern = document.getElementById('t2-goal').value.trim();
       if (!listing) return null;
-      return `Property: ${listing}${concern ? '\n\nMain concern: ' + concern : ''}`;
+      const parts = [`Property: ${listing}`];
+      if (concern) parts.push(`Main concern: ${concern}`);
+      return parts.join('\n\n');
     }
     case 3: {
       const goal = document.getElementById('t3-goal').value.trim();
       const situation = document.getElementById('t3-situation').value.trim();
       if (!goal) return null;
-      return `Negotiation goal: ${goal}${situation ? '\n\nSituation: ' + situation : ''}`;
+      const parts = [`Goal: ${goal}`];
+      if (situation) parts.push(`Situation: ${situation}`);
+      return parts.join('\n\n');
     }
     case 4: {
       const lease = document.getElementById('t4-lease').value.trim();
@@ -506,7 +514,9 @@ function buildMessage(tab) {
       const type = document.getElementById('t5-type').value;
       const rooms = document.getElementById('t5-rooms').value.trim();
       const extra = document.getElementById('t5-extra').value.trim();
-      return `Property type: ${type}. Rooms: ${rooms || 'standard layout'}.${extra ? ' Additional context: ' + extra : ''}`;
+      const parts = [`Property type: ${type}.`, `Rooms: ${rooms || 'standard layout'}.`];
+      if (extra) parts.push(`Additional context: ${extra}`);
+      return parts.join(' ');
     }
     default: return null;
   }
