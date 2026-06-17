@@ -79,7 +79,7 @@ function calcTimingAdvantage(listing) {
   if (isNaN(ageMs)) return { score: 60, label: 'Unknown', detail: 'Listing age unknown' };
   const ageMins = ageMs / 60000;
   let score, detail;
-  if (ageMins <= 30) { score = 100; detail = 'Just listed: apply in the next 30 minutes'; }
+  if (ageMins <= 30) { score = 100; detail = 'Just listed: apply immediately before competition builds'; }
   else if (ageMins <= 120) { score = 100; detail = 'New listing: apply immediately'; }
   else if (ageMins <= 1440) { score = 55; detail = 'Listed today: competition is building'; }
   else { score = 10; detail = 'Listing is older: very competitive'; }
@@ -238,17 +238,17 @@ function getImprovementTips(listing, user, _currentScore, dealScore) {
     if (!isNaN(ageMs) && ageMs >= 0) {
       const ageMins = ageMs / 60000;
       if (ageMins < 30) {
-        add(`Listed just ${Math.round(ageMins)} minutes ago — you have a narrow window before the inbox fills, apply right now`, 'timing');
+        add(`This is a fresh listing — apply before the shortlist fills. Landlords often stop reading applications within hours.`, 'timing');
       } else if (ageMins < 120) {
-        add(`Listed ${Math.round(ageMins)} minutes ago — most shortlists form in the first 2 hours, send your application now`, 'timing');
+        add(`You are among the first to see this — send your application now and follow up by phone the same day.`, 'timing');
       } else if (ageMins < 1440) {
-        add(`${Math.round(ageMins / 60)} hours old — competition is already building, apply today with your full document pack attached`, 'timing');
+        add(`This listing has had time to attract applications — make yours stand out by calling the agency directly after sending.`, 'timing');
       } else if (ageMins < 3 * 24 * 60) {
-        add(`2-3 days old — use the extra time to write a more specific letter than the applicants who rushed in day one`, 'timing');
+        add(`This listing has been available for a while — the landlord may be more selective or had a previous deal fall through. Apply with a strong intro and offer to sign quickly.`, 'timing');
       } else if (ageMins < 14 * 24 * 60) {
-        add(`Listed ${Math.round(ageMins / (24 * 60))} days ago — still active means a selective landlord; address their stated requirements directly in your letter`, 'timing');
+        add(`This listing has been available for a while — the landlord may be more selective or had a previous deal fall through. Apply with a strong intro and offer to sign quickly.`, 'timing');
       } else {
-        add(`Over 2 weeks on market — this gives you negotiation leverage: ask if the landlord is open to a lower rent or a flexible start date`, 'timing');
+        add(`This listing has been on the market longer than average — you may have more room to negotiate. Mention you are ready to sign immediately.`, 'timing');
       }
     }
   }
