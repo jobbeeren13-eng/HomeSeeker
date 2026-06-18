@@ -123,7 +123,7 @@
     </div>
 
     <h2 style="font-size:15px;font-weight:700;margin-bottom:8px">Add context <span style="font-weight:400;color:var(--muted);font-size:13px">(optional)</span></h2>
-    <textarea id="extra-context" class="context-box" placeholder="Your move-in date, employer, why this location, anything extra to personalise the package…"></textarea>
+    <textarea id="extra-context" class="context-box"></textarea>
 
     <button class="btn-primary" id="generate-btn" onclick="generatePackage()">
       <span id="gen-label">🚀 Generate my application package</span>
@@ -246,7 +246,7 @@
       state.pkg = data;
       renderResults(data);
     } catch (e) {
-      alert(e.message || 'Generation failed. Please try again.');
+      showError(e.message || 'Generation failed. Please try again.');
     } finally {
       document.getElementById('gen-label').classList.remove('hidden');
       document.getElementById('gen-spinner').classList.add('hidden');

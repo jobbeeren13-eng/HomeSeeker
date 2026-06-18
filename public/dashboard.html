@@ -10,7 +10,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green: #00c896; --green-dim: rgba(0,200,150,0.10); --bg: #080b0f; --bg2: #0f1318;
+      --green: #00c896; --green-dim: rgba(0,200,150,0.10); --bg: #0a0a0a; --bg2: #0f1318;
       --bg3: #141920; --border: rgba(255,255,255,0.07); --text: #eef0f3; --muted: #7a8494;
     }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -390,7 +390,7 @@
           </div>
         </div>
         <div style="padding-left:58px">
-          <textarea class="notes-field" rows="2" placeholder="Add notes (viewings, landlord info, impressions)..." data-url="${esc(t.url)}" onblur="saveNote(this)">${esc(savedNote)}</textarea>
+          <textarea class="notes-field" rows="2" data-url="${esc(t.url)}" onblur="saveNote(this)">${esc(savedNote)}</textarea>
           <div class="notes-saved" id="ns-${urlKey}">Saved</div>
         </div>`;
       list.appendChild(row);

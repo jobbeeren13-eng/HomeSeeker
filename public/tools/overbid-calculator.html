@@ -70,8 +70,8 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
   <div class="card">
     <h2>Property details</h2>
     <div class="field-row">
-      <div class="field"><label>Asking price (EUR)</label><input type="number" id="ask" placeholder="e.g. 425000" oninput="calculate()"></div>
-      <div class="field"><label>Your max budget (EUR)</label><input type="number" id="budget" placeholder="e.g. 480000" oninput="calculate()"></div>
+      <div class="field"><label>Asking price (EUR)</label><input type="number" id="ask" oninput="calculate()"></div>
+      <div class="field"><label>Your max budget (EUR)</label><input type="number" id="budget" oninput="calculate()"></div>
     </div>
     <div class="field-row">
       <div class="field">
@@ -103,19 +103,19 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
       </div>
     </div>
     <div class="field-row">
-      <div class="field"><label>Property age (years old)</label><input type="number" id="age" placeholder="e.g. 15" oninput="calculate()"></div>
-      <div class="field"><label>Days on market (optional)</label><input type="number" id="days" placeholder="e.g. 7" oninput="calculate()"></div>
+      <div class="field"><label>Property age (years old)</label><input type="number" id="age" oninput="calculate()"></div>
+      <div class="field"><label>Days on market (optional)</label><input type="number" id="days" oninput="calculate()"></div>
     </div>
 
     <div class="result-instant" id="result-instant"></div>
 
     <div class="section-label" style="margin-top:18px">Generate formal bid letter</div>
     <div class="field-row">
-      <div class="field"><label>Property address</label><input type="text" id="addr" placeholder="e.g. Prinsengracht 456, Amsterdam"></div>
-      <div class="field"><label>Your name</label><input type="text" id="name" placeholder="e.g. Sarah Johnson"></div>
+      <div class="field"><label>Property address</label><input type="text" id="addr"></div>
+      <div class="field"><label>Your name</label><input type="text" id="name"></div>
     </div>
     <div class="field-row">
-      <div class="field"><label>Preferred transfer date</label><input type="text" id="transfer" placeholder="e.g. 1 September 2025 or flexible"></div>
+      <div class="field"><label>Preferred transfer date</label><input type="text" id="transfer"></div>
       <div class="field"><label>Conditions to include</label>
         <select id="conditions">
           <option value="both">Financing + inspection conditions</option>
@@ -125,7 +125,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
         </select>
       </div>
     </div>
-    <div class="field"><label>One sentence about yourself (optional)</label><input type="text" id="about" placeholder="e.g. We are a young couple looking for our first family home in Amsterdam."></div>
+    <div class="field"><label>One sentence about yourself (optional)</label><input type="text" id="about"></div>
 
     <div class="btn-row" style="margin-top:4px">
       <button class="btn" onclick="generateLetter()">Generate bid letter</button>

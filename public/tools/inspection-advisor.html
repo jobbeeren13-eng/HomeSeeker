@@ -68,20 +68,11 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
     <p class="desc">Paste the key findings from your bouwkundige keuring (building inspection report). You can paste the Dutch text directly - the AI understands both languages.</p>
     <div class="field">
       <label>Purchase price (EUR)</label>
-      <input type="number" id="price" placeholder="e.g. 395000">
+      <input type="number" id="price">
     </div>
     <div class="field">
       <label>Inspection report findings</label>
-      <textarea id="findings" rows="10" placeholder="Paste the inspection findings here. For example:
-- Roof: Several missing roof tiles, estimated replacement needed within 2-3 years
-- Foundation: No structural issues found
-- Electrical: Old fuse box, does not meet current standards, replacement recommended
-- Basement: Signs of historical moisture, current treatment adequate
-- Windows: Single glazing throughout, poor energy performance
-- Central heating: Boiler from 2006, near end of lifespan, replacement likely within 2 years
-- Bathroom: Grout around shower tray showing signs of wear, reseal required
-
-Or paste the Dutch text directly from your inspection report."></textarea>
+      <textarea id="findings" rows="10"></textarea>
     </div>
     <div class="btn-row">
       <button class="btn" onclick="analyse()">Analyse inspection</button>

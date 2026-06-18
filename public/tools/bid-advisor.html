@@ -116,12 +116,12 @@
       <div>
         <label for="listing-price">Asking price *</label>
         <div class="price-input">
-          <input type="number" id="listing-price" placeholder="450000" min="0" oninput="updatePpm2()" />
+          <input type="number" id="listing-price" min="0" oninput="updatePpm2()" />
         </div>
       </div>
       <div>
         <label for="area-m2">Property area (m²) <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-        <input type="number" id="area-m2" placeholder="85" min="0" oninput="updatePpm2()" />
+        <input type="number" id="area-m2" min="0" oninput="updatePpm2()" />
       </div>
     </div>
   </div>
@@ -149,23 +149,24 @@
 
   <div class="form-section">
     <label for="neighborhood">Location / neighborhood *</label>
-    <input type="text" id="neighborhood" placeholder="e.g. Amsterdam Zuid, Utrecht Oost, Eindhoven city centre" />
+    <input type="text" id="neighborhood" />
   </div>
 
   <div class="form-section">
     <label for="situation">Your situation <span style="font-weight:400;color:var(--muted)">(optional but improves advice)</span></label>
-    <textarea id="situation" placeholder="e.g. First-time buyer, pre-approved mortgage up to €500k, flexible move-in date, have a buying agent, planning to waive the financing condition"></textarea>
+    <textarea id="situation"></textarea>
   </div>
 
   <div class="form-section">
     <label for="extra-context">Extra context <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-    <textarea id="extra-context" placeholder="e.g. Property has been on market for 6 weeks, reduced from €480k, no viewings on the listing page yet, similar house sold last month for €430k"></textarea>
+    <textarea id="extra-context"></textarea>
   </div>
 
   <button class="btn-primary" id="generate-btn" onclick="generateAdvice()">
     <span id="gen-label">🎯 Get my bid strategy</span>
     <span id="gen-spinner" class="spinner" style="display:none"></span>
   </button>
+  <div id="error-msg" style="color:#ff6b6b;font-size:13px;margin-top:10px;display:none"></div>
 
   <div class="results" id="results">
 
@@ -235,11 +236,18 @@
     document.getElementById('ppm2-signal').textContent = signal;
   }
 
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.style.display = 'block';
+  }
+  function clearError() { document.getElementById('error-msg').style.display = 'none'; }
+
   async function generateAdvice() {
+    clearError();
     const price = document.getElementById('listing-price').value.trim();
     const neighborhood = document.getElementById('neighborhood').value.trim();
-    if (!price) { alert('Asking price is required.'); return; }
-    if (!neighborhood) { alert('Location is required.'); return; }
+    if (!price) { showError('Asking price is required.'); return; }
+    if (!neighborhood) { showError('Location is required.'); return; }
 
     const btn = document.getElementById('generate-btn');
     document.getElementById('gen-label').style.display = 'none';
@@ -262,7 +270,7 @@
       if (!resp.ok) throw new Error(data.error || 'Failed');
       renderResults(data);
     } catch (e) {
-      alert(e.message || 'Advice generation failed. Please try again.');
+      showError(e.message || 'Advice generation failed. Please try again.');
     } finally {
       document.getElementById('gen-label').style.display = '';
       document.getElementById('gen-spinner').style.display = 'none';

@@ -18,14 +18,14 @@ const SOURCE_BADGES = {
 };
 
 const SOURCE_PLACEHOLDERS = {
-  funda: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Funda',
-  kamernet: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Kamernet',
-  housinganywhere: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=HousingAnywhere',
-  pararius: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Pararius',
-  huurwoningen: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Huurwoningen',
-  jaap: 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=Jaap',
+  funda: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Funda',
+  kamernet: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Kamernet',
+  housinganywhere: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=HousingAnywhere',
+  pararius: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Pararius',
+  huurwoningen: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Huurwoningen',
+  jaap: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Jaap',
 };
-const GENERIC_PLACEHOLDER = 'https://via.placeholder.com/800x400/0a0a0a/00e5a0?text=HomeSeeker';
+const GENERIC_PLACEHOLDER = 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=HomeSeeker';
 
 let bot = null;
 const letterState = new Map();
@@ -67,12 +67,12 @@ function cacheListing(listing, chatId = null, score = null, dealScore = null) {
   const expiresAt = Date.now() + CACHE_TTL_MS;
   listingCache.set(id, { listing, chatId, score, dealScore, expiresAt });
   try { persistCacheListing.run(id, JSON.stringify({ listing, chatId, score, dealScore }), expiresAt); } catch (_) {}
-  if (listingCache.size > 1000) {
+  if (listingCache.size >= 500) {
     const now = Date.now();
     for (const [k, v] of listingCache) {
       if (v.expiresAt < now) listingCache.delete(k);
     }
-    if (listingCache.size > 500) {
+    if (listingCache.size >= 500) {
       const oldest = listingCache.keys().next().value;
       listingCache.delete(oldest);
     }

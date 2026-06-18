@@ -87,29 +87,29 @@
     <div class="field-row">
       <div>
         <label for="house-address">Property address *</label>
-        <input type="text" id="house-address" placeholder="e.g. Prinsengracht 123" />
+        <input type="text" id="house-address" />
       </div>
       <div>
         <label for="house-city">City</label>
-        <input type="text" id="house-city" placeholder="e.g. Amsterdam" />
+        <input type="text" id="house-city" />
       </div>
     </div>
   </div>
 
   <div class="form-section">
     <label for="house-price">Asking price</label>
-    <input type="text" id="house-price" placeholder="e.g. €450,000" />
+    <input type="text" id="house-price" />
   </div>
 
   <div class="form-section">
     <label for="why-love">Why do you want this property? *</label>
-    <textarea id="why-love" placeholder="What specifically attracted you to this home  -  the garden, the location, the layout, proximity to work or school, the neighbourhood..."></textarea>
+    <textarea id="why-love"></textarea>
     <div class="char-hint">Be specific. Generic answers produce generic letters.</div>
   </div>
 
   <div class="form-section">
     <label for="situation">Your situation</label>
-    <textarea id="situation" placeholder="e.g. I work at ASML in Eindhoven as a software engineer. I moved to the Netherlands 2 years ago and have stable income. Currently renting in the city centre."></textarea>
+    <textarea id="situation"></textarea>
   </div>
 
   <div class="form-section">
@@ -125,13 +125,14 @@
 
   <div class="form-section">
     <label for="extra-context">Anything else to include <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-    <textarea id="extra-context" placeholder="e.g. Move-in date, family situation, any conditions you plan to waive, Dutch language skills..."></textarea>
+    <textarea id="extra-context"></textarea>
   </div>
 
   <button class="btn-primary" id="generate-btn" onclick="generateLetter()">
     <span id="gen-label">✉️ Generate my letter</span>
     <span id="gen-spinner" class="spinner" style="display:none"></span>
   </button>
+  <div id="error-msg" style="color:#ff6b6b;font-size:13px;margin-top:10px;display:none"></div>
 
   <div class="letter-box" id="letter-box">
     <div class="letter-header">
@@ -155,11 +156,18 @@
 </div>
 
 <script>
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.style.display = 'block';
+  }
+  function clearError() { document.getElementById('error-msg').style.display = 'none'; }
+
   async function generateLetter() {
+    clearError();
     const address = document.getElementById('house-address').value.trim();
-    if (!address) { alert('Property address is required.'); return; }
+    if (!address) { showError('Property address is required.'); return; }
     const whyLove = document.getElementById('why-love').value.trim();
-    if (!whyLove) { alert('Please describe why you want this property.'); return; }
+    if (!whyLove) { showError('Please describe why you want this property.'); return; }
 
     const btn = document.getElementById('generate-btn');
     document.getElementById('gen-label').style.display = 'none';
@@ -187,7 +195,7 @@
       box.style.display = 'block';
       box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (e) {
-      alert(e.message || 'Letter generation failed. Please try again.');
+      showError(e.message || 'Letter generation failed. Please try again.');
     } finally {
       document.getElementById('gen-label').style.display = '';
       document.getElementById('gen-spinner').style.display = 'none';

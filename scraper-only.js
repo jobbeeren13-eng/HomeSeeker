@@ -4,7 +4,7 @@ const cron = require('node-cron');
 const TelegramBot = require('node-telegram-bot-api');
 const { scrapeListings, markListingsAsSent, rowToListing } = require('./src/scraper');
 const { findMatches, findMatchesForUser } = require('./src/matcher');
-const { getRecentListings } = require('./src/database');
+const { getRecentListings, markListingSent } = require('./src/database');
 const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
@@ -35,6 +35,7 @@ async function dispatchAlerts(matches) {
 
       const cacheId = await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user, bot);
       sentUrls.push(listing.url);
+      markListingSent.run(listing.url, user.chat_id);
       if (cacheId) {
         fetch(`${RAILWAY_URL}/api/cache-listing`, {
           method: 'POST',

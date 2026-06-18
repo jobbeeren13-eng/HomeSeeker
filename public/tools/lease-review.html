@@ -96,19 +96,20 @@
 
   <div class="form-section">
     <label for="lease-text">Lease clauses to review *</label>
-    <textarea id="lease-text" rows="10" placeholder="Paste the relevant clauses from your lease here. You can paste the full lease or specific sections you want explained  -  Dutch or English both work.&#10;&#10;Example:&#10;Artikel 5: Huurder is verplicht de woning te gebruiken als woonruimte en mag de woning niet onderverhuren zonder schriftelijke toestemming van verhuurder.&#10;&#10;Artikel 8: De huurprijs wordt jaarlijks verhoogd met maximaal het inflatiepercentage + 3%."></textarea>
+    <textarea id="lease-text" rows="10"></textarea>
     <div class="char-hint">Minimum 50 characters. More context gives better results.</div>
   </div>
 
   <div class="form-section">
     <label for="context">Your situation <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-    <textarea id="context" rows="3" placeholder="e.g. I have a cat. I plan to work from home. I may want to sublet a room in the future. I am on a temporary work permit."></textarea>
+    <textarea id="context" rows="3"></textarea>
   </div>
 
   <button class="btn-primary" id="generate-btn" onclick="reviewLease()">
     <span id="gen-label">📄 Review my lease</span>
     <span id="gen-spinner" class="spinner" style="display:none"></span>
   </button>
+  <div id="error-msg" style="color:#ff6b6b;font-size:13px;margin-top:10px;display:none"></div>
 
   <div class="results" id="results">
     <div class="summary-card">
@@ -138,9 +139,16 @@
 </div>
 
 <script>
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.style.display = 'block';
+  }
+  function clearError() { document.getElementById('error-msg').style.display = 'none'; }
+
   async function reviewLease() {
+    clearError();
     const text = document.getElementById('lease-text').value.trim();
-    if (text.length < 50) { alert('Please paste at least 50 characters of lease text.'); return; }
+    if (text.length < 50) { showError('Please paste at least 50 characters of lease text.'); return; }
 
     const btn = document.getElementById('generate-btn');
     document.getElementById('gen-label').style.display = 'none';
@@ -161,7 +169,7 @@
       if (!resp.ok) throw new Error(data.error || 'Review failed');
       renderResults(data);
     } catch (e) {
-      alert(e.message || 'Lease review failed. Please try again.');
+      showError(e.message || 'Lease review failed. Please try again.');
     } finally {
       document.getElementById('gen-label').style.display = '';
       document.getElementById('gen-spinner').style.display = 'none';

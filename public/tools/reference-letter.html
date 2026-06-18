@@ -69,8 +69,8 @@ h1 span{color:var(--green)}
       <h2>Employer reference letter</h2>
       <p class="desc">A formal letter your employer can sign confirming your employment, income, and contract type. You provide this to landlords as proof of employment.</p>
       <div class="field-row">
-        <div class="field"><label>Company name</label><input type="text" id="e-company" placeholder="e.g. ASML Netherlands B.V."></div>
-        <div class="field"><label>Your job title</label><input type="text" id="e-title" placeholder="e.g. Software Engineer"></div>
+        <div class="field"><label>Company name</label><input type="text" id="e-company"></div>
+        <div class="field"><label>Your job title</label><input type="text" id="e-title"></div>
       </div>
       <div class="field-row">
         <div class="field">
@@ -81,11 +81,11 @@ h1 span{color:var(--green)}
             <option value="freelance / ZZP">Freelance / ZZP</option>
           </select>
         </div>
-        <div class="field"><label>Gross monthly salary (EUR)</label><input type="number" id="e-salary" placeholder="e.g. 4500"></div>
+        <div class="field"><label>Gross monthly salary (EUR)</label><input type="number" id="e-salary"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Employment start date</label><input type="text" id="e-start" placeholder="e.g. 1 March 2023"></div>
-        <div class="field"><label>HR contact person (optional)</label><input type="text" id="e-hr" placeholder="e.g. Sarah de Vries, HR Manager"></div>
+        <div class="field"><label>Employment start date</label><input type="text" id="e-start"></div>
+        <div class="field"><label>HR contact person (optional)</label><input type="text" id="e-hr"></div>
       </div>
       <div class="btn-row">
         <button class="btn" onclick="generate('employer')">Generate letter</button>
@@ -124,14 +124,14 @@ h1 span{color:var(--green)}
       <h2>Previous landlord reference letter</h2>
       <p class="desc">A letter your previous landlord can sign confirming you were a good tenant. Landlords in the Netherlands place significant weight on this.</p>
       <div class="field-row">
-        <div class="field"><label>Previous landlord name</label><input type="text" id="l-name" placeholder="e.g. Jan van der Berg / Property Management BV"></div>
-        <div class="field"><label>Rental address</label><input type="text" id="l-address" placeholder="e.g. Keizersgracht 123, Amsterdam"></div>
+        <div class="field"><label>Previous landlord name</label><input type="text" id="l-name"></div>
+        <div class="field"><label>Rental address</label><input type="text" id="l-address"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Rental period from</label><input type="text" id="l-from" placeholder="e.g. June 2021"></div>
-        <div class="field"><label>Rental period to</label><input type="text" id="l-to" placeholder="e.g. May 2024"></div>
+        <div class="field"><label>Rental period from</label><input type="text" id="l-from"></div>
+        <div class="field"><label>Rental period to</label><input type="text" id="l-to"></div>
       </div>
-      <div class="field"><label>Reason for leaving (optional)</label><input type="text" id="l-reason" placeholder="e.g. Relocating for work, property was sold, end of contract"></div>
+      <div class="field"><label>Reason for leaving (optional)</label><input type="text" id="l-reason"></div>
       <div class="btn-row">
         <button class="btn" onclick="generate('landlord')">Generate letter</button>
         <div class="spinner" id="spin-landlord"></div>

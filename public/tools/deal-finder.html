@@ -74,8 +74,8 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
     <h2>Enter listing details</h2>
     <p class="desc">Fill in what you know. Price and area are enough for a basic score.</p>
     <div class="field-row">
-      <div class="field"><label>Asking price (EUR)</label><input type="number" id="price" placeholder="e.g. 385000" oninput="calculate()"></div>
-      <div class="field"><label>Area (m2)</label><input type="number" id="area" placeholder="e.g. 85" oninput="calculate()"></div>
+      <div class="field"><label>Asking price (EUR)</label><input type="number" id="price" oninput="calculate()"></div>
+      <div class="field"><label>Area (m2)</label><input type="number" id="area" oninput="calculate()"></div>
     </div>
     <div class="field-row">
       <div class="field">
@@ -117,7 +117,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
     <div class="field-row">
       <div class="field">
         <label>Year built (optional)</label>
-        <input type="number" id="year" placeholder="e.g. 1978" oninput="calculate()">
+        <input type="number" id="year" oninput="calculate()">
       </div>
       <div class="field">
         <label>Energy label (optional)</label>
@@ -134,8 +134,8 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
       </div>
     </div>
     <div class="field-row">
-      <div class="field"><label>Monthly VvE costs (EUR, apartments only)</label><input type="number" id="vve" placeholder="e.g. 150" oninput="calculate()"></div>
-      <div class="field"><label>Days on market (optional)</label><input type="number" id="days" placeholder="e.g. 14" oninput="calculate()"></div>
+      <div class="field"><label>Monthly VvE costs (EUR, apartments only)</label><input type="number" id="vve" oninput="calculate()"></div>
+      <div class="field"><label>Days on market (optional)</label><input type="number" id="days" oninput="calculate()"></div>
     </div>
     <div class="field"><label>Is there erfpacht (ground lease)?</label>
       <select id="erfpacht" onchange="calculate()">

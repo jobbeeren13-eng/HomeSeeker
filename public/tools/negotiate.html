@@ -100,23 +100,24 @@
 
   <div class="form-section">
     <label for="property">Property and rent</label>
-    <input type="text" id="property" placeholder="e.g. 2-bedroom apartment in Amsterdam, €1,800/month, private landlord" />
+    <input type="text" id="property" />
   </div>
 
   <div class="form-section">
     <label for="situation">Your situation *</label>
-    <textarea id="situation" rows="4" placeholder="e.g. I have a permanent contract at ASML earning €5,500/month. I am a quiet professional, no pets currently. The listing has been available for 3 weeks. I am a serious candidate and ready to sign quickly."></textarea>
+    <textarea id="situation" rows="4"></textarea>
   </div>
 
   <div class="form-section">
     <label for="extra">Anything else relevant <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-    <textarea id="extra" rows="3" placeholder="e.g. I saw a similar apartment 2 streets away for €150 less. The landlord mentioned they want a stable long-term tenant."></textarea>
+    <textarea id="extra" rows="3"></textarea>
   </div>
 
   <button class="btn-primary" id="generate-btn" onclick="generate()">
     <span id="gen-label">💬 Get my negotiation strategy</span>
     <span id="gen-spinner" class="spinner" style="display:none"></span>
   </button>
+  <div id="error-msg" style="color:#ff6b6b;font-size:13px;margin-top:10px;display:none"></div>
 
   <div class="results" id="results">
     <div class="res-card">
@@ -153,11 +154,18 @@
 </div>
 
 <script>
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.style.display = 'block';
+  }
+  function clearError() { document.getElementById('error-msg').style.display = 'none'; }
+
   async function generate() {
+    clearError();
     const goal = document.getElementById('goal').value;
     const situation = document.getElementById('situation').value.trim();
-    if (!goal) { alert('Please select what you want to negotiate.'); return; }
-    if (situation.length < 20) { alert('Please describe your situation (at least a few words).'); return; }
+    if (!goal) { showError('Please select what you want to negotiate.'); return; }
+    if (situation.length < 20) { showError('Please describe your situation (at least a few words).'); return; }
 
     const btn = document.getElementById('generate-btn');
     document.getElementById('gen-label').style.display = 'none';
@@ -180,7 +188,7 @@
       if (!resp.ok) throw new Error(data.error || 'Failed');
       renderResults(data);
     } catch (e) {
-      alert(e.message || 'Generation failed. Please try again.');
+      showError(e.message || 'Generation failed. Please try again.');
     } finally {
       document.getElementById('gen-label').style.display = '';
       document.getElementById('gen-spinner').style.display = 'none';

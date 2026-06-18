@@ -91,7 +91,6 @@ async function findMatches(listings) {
       const alertCount = userAlertCount.get(user.chat_id) || 0;
       if (alertCount >= MAX_ALERTS_PER_USER_PER_CYCLE) { stats.capped++; userStats.set(user.chat_id, stats); continue; }
 
-      markListingSent.run(listing.url, user.chat_id);
       userAlertCount.set(user.chat_id, alertCount + 1);
       stats.matched++;
       userStats.set(user.chat_id, stats);
@@ -135,7 +134,6 @@ async function findMatchesForUser(listings, chatId) {
     const dLabel = dealLabel(dScore, listing);
     if ((user.deal_min || 0) > 0 && (dScore === null || dScore < user.deal_min)) continue;
 
-    markListingSent.run(listing.url, user.chat_id);
     matches.push({ listing, user, score, label: scoreLabel(score), dealScore: dScore, dealLabel: dLabel });
   }
 

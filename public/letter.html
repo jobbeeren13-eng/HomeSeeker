@@ -357,7 +357,7 @@
       document.getElementById('package-teaser').style.display = 'block';
       showMoreHelp();
     } catch (e) {
-      alert(e.message || 'Letter generation failed. Please try again.');
+      showError(e.message || 'Letter generation failed. Please try again.');
     } finally {
       document.getElementById('generate-label').style.display = '';
       document.getElementById('generate-spinner').style.display = 'none';
@@ -393,7 +393,7 @@
       if (!resp.ok) throw new Error(data.error || 'Modification failed');
       showLetter(data.letter);
     } catch (e) {
-      alert(e.message || 'Modification failed. Please try again.');
+      showError(e.message || 'Modification failed. Please try again.');
     } finally {
       ['btn-shorter', 'btn-personal'].forEach(id => { const b = document.getElementById(id); if (b) b.disabled = false; });
       document.getElementById('generate-label').style.display = '';

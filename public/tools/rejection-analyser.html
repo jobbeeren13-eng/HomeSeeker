@@ -73,11 +73,11 @@ h1 span{color:var(--green)}
         <button class="rm-btn" onclick="removeApp(0)" title="Remove">x</button>
         <div class="field">
           <label>Platform and listing details</label>
-          <input type="text" placeholder="e.g. Funda, 2-bed apartment €1,400/mo Amsterdam Oud-West" class="app-platform">
+          <input type="text" class="app-platform">
         </div>
         <div class="field">
           <label>Your situation</label>
-          <input type="text" placeholder="e.g. Single, permanent contract, income €4,200/mo, all docs ready" class="app-situation">
+          <input type="text" class="app-situation">
         </div>
         <div class="field">
           <label>What happened</label>
@@ -91,7 +91,7 @@ h1 span{color:var(--green)}
         </div>
         <div class="field">
           <label>Response time after applying (if known)</label>
-          <input type="text" placeholder="e.g. Applied within 1 hour, heard back 3 days later">
+          <input type="text">
         </div>
       </div>
     </div>
@@ -100,7 +100,7 @@ h1 span{color:var(--green)}
 
     <div class="field" style="margin-top:16px">
       <label>Your profile (optional - helps the analysis)</label>
-      <input type="text" id="profile" placeholder="e.g. Expat from UK, ZZP contractor, income €5,000/mo, no guarantor, 1 cat">
+      <input type="text" id="profile">
     </div>
 
     <div class="btn-row" style="margin-top:16px">
@@ -144,10 +144,10 @@ function addApp() {
   div.id = `app-${idx}`;
   div.innerHTML = `<h4>Application ${idx + 1}</h4>
     <button class="rm-btn" onclick="removeApp(${idx})" title="Remove">x</button>
-    <div class="field"><label>Platform and listing details</label><input type="text" placeholder="e.g. Pararius, studio €900/mo Rotterdam" class="app-platform"></div>
-    <div class="field"><label>Your situation</label><input type="text" placeholder="e.g. Couple, temporary contract, income €5,000/mo combined" class="app-situation"></div>
+    <div class="field"><label>Platform and listing details</label><input type="text" class="app-platform"></div>
+    <div class="field"><label>Your situation</label><input type="text" class="app-situation"></div>
     <div class="field"><label>What happened</label><select class="app-outcome"><option value="no response">No response at all</option><option value="rejection after viewing">Rejection after viewing</option><option value="rejection before viewing">Rejection before viewing</option><option value="rejection after sending docs">Rejection after sending documents</option><option value="ghosted after showing interest">Ghosted after they showed interest</option></select></div>
-    <div class="field"><label>Response time</label><input type="text" placeholder="e.g. Responded within 30 min, rejected 2 days later"></div>`;
+    <div class="field"><label>Response time</label><input type="text"></div>`;
   document.getElementById('apps-container').appendChild(div);
 }
 

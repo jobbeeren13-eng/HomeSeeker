@@ -373,7 +373,7 @@ app.post('/api/generate-letter-web', async (req, res) => {
     const adminKey = process.env.ADMIN_KEY;
     let letter;
     if (hetznerUrl && adminKey) {
-      const resp = await fetch(`${hetznerUrl}/api/generate-letter`, {
+      const resp = await timedFetch(`${hetznerUrl}/api/generate-letter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ listing, user: user || {}, selectedTips }),
@@ -406,7 +406,7 @@ app.post('/api/generate-package', async (req, res) => {
     const adminKey = process.env.ADMIN_KEY;
     let pkg;
     if (hetznerUrl && adminKey) {
-      const resp = await fetch(`${hetznerUrl}/api/generate-package`, {
+      const resp = await timedFetch(`${hetznerUrl}/api/generate-package`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ listing, user: user || {}, extraContext }),
@@ -521,7 +521,7 @@ app.post('/api/buyer-letter', async (req, res) => {
     const adminKey = process.env.ADMIN_KEY;
     let letter;
     if (hetznerUrl && adminKey) {
-      const resp = await fetch(`${hetznerUrl}/api/generate-buyer-letter`, {
+      const resp = await timedFetch(`${hetznerUrl}/api/generate-buyer-letter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext }),
@@ -546,7 +546,7 @@ app.post('/api/lease-review', async (req, res) => {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
     if (hetznerUrl && adminKey) {
-      const r = await fetch(`${hetznerUrl}/api/generate-lease-review`, {
+      const r = await timedFetch(`${hetznerUrl}/api/generate-lease-review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ leaseText, context }),
@@ -571,7 +571,7 @@ app.post('/api/negotiate', async (req, res) => {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
     if (hetznerUrl && adminKey) {
-      const r = await fetch(`${hetznerUrl}/api/generate-negotiate`, {
+      const r = await timedFetch(`${hetznerUrl}/api/generate-negotiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ goal, property, situation, extraContext }),
@@ -597,7 +597,7 @@ app.post('/api/bid-advisor', async (req, res) => {
     const adminKey = process.env.ADMIN_KEY;
     let advice;
     if (hetznerUrl && adminKey) {
-      const resp = await fetch(`${hetznerUrl}/api/generate-bid-advice`, {
+      const resp = await timedFetch(`${hetznerUrl}/api/generate-bid-advice`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ listingPrice, neighborhood, situation, extraContext }),
@@ -622,7 +622,7 @@ app.post('/api/modify-letter-web', async (req, res) => {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
     if (hetznerUrl && adminKey) {
-      const r = await fetch(`${hetznerUrl}/api/modify-letter`, {
+      const r = await timedFetch(`${hetznerUrl}/api/modify-letter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ letter, instruction }),
@@ -651,7 +651,7 @@ app.post('/api/rent-assistant', async (req, res) => {
       try { user = getUser.get(String(chatId)); } catch (_) {}
     }
     if (hetznerUrl && adminKey) {
-      const r = await fetch(`${hetznerUrl}/api/generate-rent-assistant`, {
+      const r = await timedFetch(`${hetznerUrl}/api/generate-rent-assistant`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ tab, userMessage, user, listingContext }),
@@ -680,7 +680,7 @@ app.post('/api/buy-assistant', async (req, res) => {
       try { user = getUser.get(String(chatId)); } catch (_) {}
     }
     if (hetznerUrl && adminKey) {
-      const r = await fetch(`${hetznerUrl}/api/generate-buy-assistant`, {
+      const r = await timedFetch(`${hetznerUrl}/api/generate-buy-assistant`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
         body: JSON.stringify({ tab, userMessage, user, listingContext }),
@@ -698,6 +698,16 @@ app.post('/api/buy-assistant', async (req, res) => {
 });
 
 // New tool API endpoints — all proxy to Hetzner with local fallback
+
+async function timedFetch(url, options) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 async function proxyToHetzner(path, body, directFn) {
   const hetznerUrl = process.env.HETZNER_URL;

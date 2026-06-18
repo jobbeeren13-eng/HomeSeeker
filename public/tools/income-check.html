@@ -69,17 +69,17 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
     <div class="field-row">
       <div class="field">
         <label>Your gross monthly income (EUR)</label>
-        <input type="number" id="income" placeholder="e.g. 4200" oninput="calculate()">
+        <input type="number" id="income" oninput="calculate()">
       </div>
       <div class="field">
         <label>Partner income (EUR, optional)</label>
-        <input type="number" id="partner" placeholder="e.g. 2800" oninput="calculate()">
+        <input type="number" id="partner" oninput="calculate()">
       </div>
     </div>
     <div class="field-row">
       <div class="field">
         <label>Monthly rent you want to apply for (EUR)</label>
-        <input type="number" id="rent" placeholder="e.g. 1450" oninput="calculate()">
+        <input type="number" id="rent" oninput="calculate()">
       </div>
       <div class="field">
         <label>Contract type</label>
@@ -113,7 +113,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
     <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">If your income is borderline, from a foreign employer, freelance, or otherwise complex - generate a one-paragraph explanation you can paste into your application.</p>
     <div class="field">
       <label>Describe your income situation</label>
-      <input type="text" id="situation" placeholder="e.g. I work for a US company, paid in USD, using the 30% ruling. Income varies but averaged EUR 5,500 over the last 6 months.">
+      <input type="text" id="situation">
     </div>
     <div>
       <button class="btn" id="explain-btn" onclick="getExplain()">Generate explanation</button>
