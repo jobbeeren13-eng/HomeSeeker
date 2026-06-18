@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service - HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #00c896;
+      --bg: #0a0a0a;
+      --bg2: #0f1318;
+      --bg3: #141920;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8edf3;
+      --muted: #7a8494;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .nav-back { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .15s; }
+    .nav-back:hover { color: var(--text); }
+    .content { max-width: 720px; margin: 0 auto; padding: 48px 24px 80px; }
+    h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .updated { color: var(--muted); font-size: 13px; margin-bottom: 40px; }
+    .section { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px; margin-bottom: 16px; }
+    h2 { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    p { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 10px; }
+    p:last-child { margin-bottom: 0; }
+    ul { margin: 8px 0 10px 0; padding: 0; list-style: none; }
+    li { font-size: 14px; color: var(--muted); line-height: 1.75; padding: 4px 0; padding-left: 18px; position: relative; }
+    li::before { content: '·'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    footer { border-top: 1px solid var(--border); padding: 28px 24px; text-align: center; color: var(--muted); font-size: 12px; }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="/">HomeSeeker</a>
+  <a class="nav-back" href="/">← Back to home</a>
+</nav>
+
+<div class="content">
+  <h1>Terms of Service</h1>
+  <p class="updated">Last updated: June 2025</p>
+
+  <div class="section">
+    <h2>1. Service description</h2>
+    <p>HomeSeeker aggregates publicly available property listings from Funda, Kamernet, and HousingAnywhere. We provide AI-powered tools to help users with their housing search. HomeSeeker is not a real estate agent and does not represent landlords, sellers, or buyers.</p>
+  </div>
+
+  <div class="section">
+    <h2>2. Subscription and payment</h2>
+    <ul>
+      <li>€9,99/month incl. 21% VAT after a 7-day free trial</li>
+      <li>Cancel anytime via the /cancel command in Telegram or by emailing <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a></li>
+      <li>Cancellation before day 7 of the trial incurs no charge</li>
+      <li>Refunds are not provided for partial subscription periods</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>3. Acceptable use</h2>
+    <ul>
+      <li>The service is for personal use only</li>
+      <li>Users may not resell, redistribute, or automate access to HomeSeeker's output</li>
+      <li>Users may not use the service for any unlawful purpose</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>4. Intellectual property</h2>
+    <ul>
+      <li>AI-generated letters and advice are provided for personal use</li>
+      <li>Property listing data remains the property of the original platform (Funda, Kamernet, HousingAnywhere)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>5. Limitation of liability</h2>
+    <p>HomeSeeker provides informational tools only. We are not liable for: the outcome of rental or purchase applications, financial decisions made based on our tools, inaccuracies in AI-generated content, or the availability of specific listings. Use of our tools is at your own risk.</p>
+  </div>
+
+  <div class="section">
+    <h2>6. Data and privacy</h2>
+    <p>See our <a href="/privacy">Privacy Policy</a> at homeseeker.dev/privacy.</p>
+  </div>
+
+  <div class="section">
+    <h2>7. Governing law</h2>
+    <p>These terms are governed by Dutch law. Disputes are subject to the jurisdiction of the Dutch courts.</p>
+  </div>
+
+  <div class="section">
+    <h2>8. Contact</h2>
+    <p><a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a></p>
+  </div>
+</div>
+
+<footer>
+  © 2025 HomeSeeker &nbsp;·&nbsp; <a href="/">Home</a> &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a> &nbsp;·&nbsp; <a href="/cancel">Cancel subscription</a> &nbsp;·&nbsp; <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>
+</footer>
+</body>
+</html>

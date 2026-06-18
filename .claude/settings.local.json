@@ -64,7 +64,10 @@
       "Bash(ping -n 2 homeseeker.dev)",
       "WebFetch(domain:homeseeker.dev)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('OK' if d.get\\('response'\\) else 'FAIL'\\); r=d.get\\('response',''\\); print\\(f'Length: {len\\(r\\)}'\\); print\\(r[:300]\\)\")",
-      "Bash(git *)"
+      "Bash(git *)",
+      "PowerShell(cd \"C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\"; $env = Get-Content .env | Where-Object { $_ -match \"^HETZNER_URL=\" }; $env)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('response','ERROR'\\)[:400]\\)\")",
+      "PowerShell(ssh root@167.233.22.64 \"cd /root/HomeSeeker && git pull && pm2 restart scraper --update-env\")"
     ]
   }
 }

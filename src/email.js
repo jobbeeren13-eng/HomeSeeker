@@ -41,8 +41,8 @@ async function sendWelcomeEmail(email, naam, customerId) {
         <p>Good luck with your search! 🏠</p>
         <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>
         <p style="color:#999;font-size:12px">
-          7-day free trial. After your trial, €11.99/month is charged automatically.
-          Cancel anytime before the trial ends by replying to this email.
+          7-day free trial. After your trial, €9,99/month incl. 21% VAT is charged automatically.
+          Cancel anytime before day 7 by replying to this email or via /cancel in Telegram.
         </p>
       </div>
     `,

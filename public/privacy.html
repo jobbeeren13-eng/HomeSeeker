@@ -1,141 +1,126 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HomeSeeker  -  Privacy Policy</title>
+  <title>Privacy Policy - HomeSeeker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --green: #00c896;
       --bg: #0a0a0a;
-      --bg2: #111111;
+      --bg2: #0f1318;
+      --bg3: #141920;
       --border: rgba(255,255,255,0.07);
-      --text: #e8e8e8;
-      --muted: #888;
+      --text: #e8edf3;
+      --muted: #7a8494;
     }
-    body {
-      font-family: 'Outfit', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.8;
-    }
-    header {
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      padding: 18px 40px;
-    }
-    .logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 2px;
-      color: var(--green);
-      text-decoration: none;
-    }
-    .content {
-      max-width: 720px;
-      margin: 60px auto;
-      padding: 0 24px;
-    }
-    h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 52px;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-    .updated {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 48px;
-    }
-    h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin: 40px 0 12px;
-      color: var(--green);
-    }
-    p { margin-bottom: 16px; font-size: 15px; color: #ccc; }
-    ul { margin: 0 0 16px 24px; }
-    li { font-size: 15px; color: #ccc; margin-bottom: 6px; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .nav-back { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .15s; }
+    .nav-back:hover { color: var(--text); }
+    .content { max-width: 720px; margin: 0 auto; padding: 48px 24px 80px; }
+    h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .updated { color: var(--muted); font-size: 13px; margin-bottom: 40px; }
+    .section { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px; margin-bottom: 16px; }
+    h2 { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    p { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 10px; }
+    p:last-child { margin-bottom: 0; }
+    ul { margin: 8px 0 10px 0; padding: 0; list-style: none; }
+    li { font-size: 14px; color: var(--muted); line-height: 1.75; padding: 4px 0; padding-left: 18px; position: relative; }
+    li::before { content: '·'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+    li strong { color: var(--text); font-weight: 600; }
     a { color: var(--green); text-decoration: none; }
     a:hover { text-decoration: underline; }
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-    }
+    footer { border-top: 1px solid var(--border); padding: 28px 24px; text-align: center; color: var(--muted); font-size: 12px; }
+    footer a { color: var(--muted); }
   </style>
 </head>
 <body>
-<header>
-  <a class="logo" href="/">HOMESEEKER</a>
-</header>
+<nav>
+  <a class="logo" href="/">HomeSeeker</a>
+  <a class="nav-back" href="/">← Back to home</a>
+</nav>
 
 <div class="content">
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: May 2025</p>
+  <p class="updated">Last updated: June 2025</p>
 
-  <p>HomeSeeker ("we", "our", "us") is committed to protecting your personal data. This policy explains what we collect, how we use it, and your rights.</p>
+  <div class="section">
+    <h2>1. Who we are</h2>
+    <p>HomeSeeker is operated as an independent service that provides real-time housing alerts and AI-powered application tools for people searching for housing in the Netherlands. For questions about your data, contact <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>.</p>
+  </div>
 
-  <h2>1. What data we collect</h2>
-  <p>When you use HomeSeeker, we collect:</p>
-  <ul>
-    <li><strong>Account data:</strong> name, email address, Telegram chat ID</li>
-    <li><strong>Profile data:</strong> income, document readiness, housing preferences (city, price range, rooms, etc.)</li>
-    <li><strong>Payment data:</strong> Stripe customer ID and subscription ID (we do not store full card details  -  this is handled by Stripe)</li>
-    <li><strong>Usage data:</strong> which listings were sent to you and when</li>
-  </ul>
+  <div class="section">
+    <h2>2. What data we collect and why</h2>
+    <ul>
+      <li><strong>Email address</strong> — to create and manage your account, and to send service emails. Legal basis: performance of contract.</li>
+      <li><strong>Name</strong> — to personalise your experience and AI-generated content. Legal basis: performance of contract.</li>
+      <li><strong>Income, employment type, and housing preferences</strong> — to calculate your Application Score and generate personalised advice. Legal basis: performance of contract.</li>
+      <li><strong>Telegram chat ID</strong> — to send you property alerts via Telegram. Legal basis: performance of contract.</li>
+      <li><strong>Payment data</strong> — processed entirely by Stripe. We do not store card details. Stripe's privacy policy applies to all payment processing.</li>
+      <li><strong>IP address and usage data</strong> — collected automatically for security and service reliability. Legal basis: legitimate interest.</li>
+    </ul>
+  </div>
 
-  <h2>2. How we use your data</h2>
-  <ul>
-    <li>To send you personalised housing alerts via Telegram</li>
-    <li>To calculate your chance score for each listing</li>
-    <li>To manage your subscription via Stripe</li>
-    <li>To generate AI motivation letters on request</li>
-    <li>To send transactional emails (welcome, subscription confirmation)</li>
-  </ul>
-  <p>We do not sell your data to third parties. We do not use your data for advertising.</p>
+  <div class="section">
+    <h2>3. How long we keep your data</h2>
+    <ul>
+      <li><strong>Active subscribers</strong> — data is kept for the duration of your subscription.</li>
+      <li><strong>Cancelled subscribers</strong> — data is deleted within 90 days of cancellation.</li>
+      <li><strong>Payment records</strong> — kept for 7 years as required by Dutch tax law (Belastingdienst).</li>
+    </ul>
+  </div>
 
-  <h2>3. Third-party services</h2>
-  <ul>
-    <li><strong>Stripe</strong>  -  processes payments. Subject to <a href="https://stripe.com/privacy" target="_blank">Stripe's privacy policy</a>.</li>
-    <li><strong>Telegram</strong>  -  delivers alerts. Subject to <a href="https://telegram.org/privacy" target="_blank">Telegram's privacy policy</a>.</li>
-    <li><strong>Apify</strong>  -  scrapes public listing data from housing platforms. No personal data is shared with Apify.</li>
-    <li><strong>Anthropic (Claude)</strong>  -  generates motivation letters from data you provide in the chat. Subject to <a href="https://www.anthropic.com/privacy" target="_blank">Anthropic's privacy policy</a>.</li>
-  </ul>
+  <div class="section">
+    <h2>4. Who we share your data with</h2>
+    <ul>
+      <li><strong>Stripe</strong> — payment processing (USA, under EU Standard Contractual Clauses). <a href="https://stripe.com/privacy" target="_blank">Stripe's privacy policy</a>.</li>
+      <li><strong>Anthropic</strong> — AI response generation. Your property preferences and profile data may be included in prompts sent to Anthropic's API. <a href="https://www.anthropic.com/privacy" target="_blank">Anthropic's privacy policy</a> applies.</li>
+      <li><strong>Railway and Hetzner</strong> — cloud infrastructure providers where your data is stored and processed within the EU or under adequate protection frameworks.</li>
+      <li><strong>Telegram</strong> — delivers alerts to your Telegram account. <a href="https://telegram.org/privacy" target="_blank">Telegram's privacy policy</a> applies.</li>
+    </ul>
+    <p>We do not sell your data to third parties.</p>
+  </div>
 
-  <h2>4. Data storage</h2>
-  <p>Your data is stored in a secure SQLite/PostgreSQL database hosted on Railway.app or Render.com. We retain your data for as long as your account is active. If you cancel your subscription and request deletion, we will remove your data within 30 days.</p>
+  <div class="section">
+    <h2>5. Your rights under AVG/GDPR</h2>
+    <ul>
+      <li><strong>Right to access</strong> — request a copy of your data by emailing support@homeseeker.dev.</li>
+      <li><strong>Right to correction</strong> — update incorrect data via /filters in Telegram.</li>
+      <li><strong>Right to deletion</strong> — email <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a> to delete your account and all associated data.</li>
+      <li><strong>Right to object</strong> — you can object to processing based on legitimate interest.</li>
+      <li><strong>Right to lodge a complaint</strong> — <a href="https://autoriteitpersoonsgegevens.nl" target="_blank">Autoriteit Persoonsgegevens (autoriteitpersoonsgegevens.nl)</a>.</li>
+    </ul>
+  </div>
 
-  <h2>5. Your rights (GDPR)</h2>
-  <p>If you are located in the European Union, you have the following rights:</p>
-  <ul>
-    <li>Right to access your personal data</li>
-    <li>Right to correction of inaccurate data</li>
-    <li>Right to erasure ("right to be forgotten")</li>
-    <li>Right to restriction of processing</li>
-    <li>Right to data portability</li>
-    <li>Right to object to processing</li>
-  </ul>
-  <p>To exercise any of these rights, email us at <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>.</p>
+  <div class="section">
+    <h2>6. Cookies</h2>
+    <p>HomeSeeker does not use tracking cookies or third-party analytics. No cookie consent banner is required.</p>
+  </div>
 
-  <h2>6. Cookies</h2>
-  <p>Our website does not use tracking or advertising cookies. We do not run analytics scripts.</p>
+  <div class="section">
+    <h2>7. Data security</h2>
+    <p>Your data is stored on encrypted infrastructure. We use HTTPS for all data transmission. Sensitive data such as income and profile details is not shared beyond what is necessary to provide the service.</p>
+  </div>
 
-  <h2>7. Changes to this policy</h2>
-  <p>We may update this policy from time to time. We will notify active users of significant changes via email.</p>
+  <div class="section">
+    <h2>8. Changes to this policy</h2>
+    <p>We will notify active subscribers of material changes to this policy via Telegram or email.</p>
+  </div>
 
-  <h2>8. Contact</h2>
-  <p>For any privacy-related questions, contact us at: <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a></p>
+  <div class="section">
+    <h2>9. Contact</h2>
+    <p><a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a></p>
+  </div>
 </div>
 
 <footer>
-  © 2025 HomeSeeker &nbsp;·&nbsp; <a href="/">Back to home</a> &nbsp;·&nbsp; <a href="/cancel">Cancel subscription</a> &nbsp;·&nbsp; <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>
+  © 2025 HomeSeeker &nbsp;·&nbsp; <a href="/">Home</a> &nbsp;·&nbsp; <a href="/terms">Terms of Service</a> &nbsp;·&nbsp; <a href="/cancel">Cancel subscription</a> &nbsp;·&nbsp; <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>
 </footer>
 </body>
 </html>

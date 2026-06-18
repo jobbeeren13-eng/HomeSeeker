@@ -1,4 +1,4 @@
-const Anthropic = require('@anthropic-ai/sdk');
+﻿const Anthropic = require('@anthropic-ai/sdk');
 
 if (!process.env.ANTHROPIC_API_KEY) {
   console.warn('[letter] ANTHROPIC_API_KEY not set — letter generation will fail');
@@ -84,6 +84,7 @@ Rules:
 - End with a concrete request for a viewing
 - Never mention the letter was AI-generated`;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 700,
     system: systemPrompt,
@@ -160,6 +161,7 @@ Absolute rules:
   if (noName) lines.push(`Sign off with "Kind regards," only (no name).`);
   else lines.push(`Sign off with just the first name: ${firstName}.`);
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 500,
     system: systemPrompt,
@@ -194,6 +196,7 @@ async function getAITip(listing, user) {
       user?.contract_type === 'zzp' && 'self-employed',
     ].filter(Boolean).join(', ');
 
+    // User profile data included in prompt - covered under privacy policy section 4
     const msg = await callClaude({
       max_tokens: 80,
       system: 'You advise tenants on rental applications in the Netherlands. Always respond in English only, never Dutch. Give one single actionable tip. Max 12 words. No preamble, no quotes, no dashes. Never use: reliable, highlight, stability, ensure, leverage, demonstrate.',
@@ -247,6 +250,7 @@ Return only valid JSON. No explanation, no code blocks.`;
   if (extraContext) lines.push(`Extra context: ${extraContext}`);
   lines.push('Generate the JSON package.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 900,
     system: systemPrompt,
@@ -308,6 +312,7 @@ Rules:
   if (extraContext) lines.push(`Extra context: ${extraContext}`);
   lines.push('Write the letter. Max 160 words. No dashes. English only. Use the exact structure from the system prompt.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 600,
     system: systemPrompt,
@@ -336,6 +341,7 @@ Return only valid JSON. No explanation, no code blocks, no markdown.`;
   if (extraContext) lines.push(`Additional context: ${extraContext}`);
   lines.push('Generate bid strategy as JSON.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 700,
     system: systemPrompt,
@@ -365,6 +371,7 @@ Return only valid JSON. No explanation, no code blocks, no markdown.`;
   if (context) lines.push(`Tenant situation: ${context}`);
   lines.push('Review this lease and return the JSON analysis.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 1200,
     system: systemPrompt,
@@ -393,6 +400,7 @@ Return only valid JSON. No explanation, no code blocks, no markdown.`;
   if (extraContext) lines.push(`Additional context: ${extraContext}`);
   lines.push('Generate the negotiation strategy as JSON.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 1000,
     system: systemPrompt,
@@ -582,6 +590,7 @@ Plain English only. No em dashes.${userProfile}`,
     ? `Listing context: ${listingContext}\n\nUser input: ${userMessage}`
     : userMessage;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 2500,
     system,
@@ -761,6 +770,7 @@ Plain English only. No em dashes.${userProfile}`,
     ? `Listing context: ${listingContext}\n\nUser input: ${userMessage}`
     : userMessage;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 2500,
     system,
@@ -772,6 +782,7 @@ Plain English only. No em dashes.${userProfile}`,
 
 async function modifyLetterDirect({ letter, instruction }) {
   if (!letter || !instruction) throw new Error('letter and instruction required');
+  // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 500,
     system: `You are an expert at editing rental motivation letters. You receive an existing letter and an editing instruction. Apply the instruction precisely and return only the revised letter text with no explanation.
@@ -810,6 +821,7 @@ Return only valid JSON. No explanation, no code blocks.`;
   if (userProfile.contract_type) lines.push(`Contract type: ${userProfile.contract_type}`);
   lines.push('Analyse this message and return the JSON.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1500,
     system: systemPrompt,
@@ -842,6 +854,7 @@ Return only valid JSON. No explanation, no code blocks.`;
   if (userProfile.profiel_type) lines.push(`Profile: ${userProfile.profiel_type}`);
   lines.push('Analyse and return the JSON.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1500,
     system: systemPrompt,
@@ -872,6 +885,7 @@ Return only valid JSON. No explanation, no code blocks.`
 
 Return only valid JSON. No explanation, no code blocks.`;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1500,
     system: systemPrompt,
@@ -891,6 +905,7 @@ async function generateIncomeExplainDirect({ income, rent, situation }) {
 
 Return only valid JSON. No explanation, no code blocks.`;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 600,
     system: systemPrompt,
@@ -918,6 +933,7 @@ Return only valid JSON. No explanation, no code blocks.`;
   if (userProfile.naam) lines.push(`Tenant name: ${userProfile.naam}`);
   lines.push('Analyse and return the JSON.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1500,
     system: systemPrompt,
@@ -939,6 +955,7 @@ async function generateTenantRightsAnswerDirect({ question }) {
 
 Return only valid JSON. No explanation, no code blocks.`;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1000,
     system: systemPrompt,
@@ -957,6 +974,7 @@ async function generateDealExplainDirect({ dealData }) {
 
 Return only valid JSON. No explanation, no code blocks.`;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 400,
     system: systemPrompt,
@@ -981,6 +999,7 @@ Return only valid JSON. No explanation, no code blocks.`;
   if (userProfile.naam) lines.push(`Buyer name: ${userProfile.naam}`);
   lines.push('Generate the bid letter JSON.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1000,
     system: systemPrompt,
@@ -1005,6 +1024,7 @@ async function generateInspectionAdviceDirect({ inspectionText, purchasePrice })
 
 Return only valid JSON. No explanation, no code blocks.`;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1500,
     system: systemPrompt,
@@ -1038,6 +1058,7 @@ Return only valid JSON. No explanation, no code blocks.`;
   if (city) lines.push(`City: ${city}`);
   lines.push('Return the analysis JSON.');
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1500,
     system: systemPrompt,
@@ -1059,6 +1080,7 @@ async function generateAgentScriptDirect({ situation, context }) {
 
 Return only valid JSON. No explanation, no code blocks.`;
 
+  // User profile data included in prompt - covered under privacy policy section 4
   const msg = await callClaude({
     max_tokens: 1000,
     system: systemPrompt,
