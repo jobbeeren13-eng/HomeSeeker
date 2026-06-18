@@ -189,13 +189,13 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
   if (inkomen > 0 && price > 0) {
     const ratio = inkomen / price;
     if (ratio >= 4) {
-      addTip('financial', `Income is ${ratio.toFixed(1)}x the rent. Open with that number — landlords decide fast.`);
+      addTip('financial', `Income is ${ratio.toFixed(1)}x the rent. Say it first. Landlords decide fast.`);
     } else if (ratio >= 3.3) {
       addTip('financial', `You meet the 3x rule. Start with your annual income of ${fmtEuro(inkomen * 12)}.`);
     } else if (ratio >= 3.0) {
-      addTip('financial', `Income is ${ratio.toFixed(1)}x rent — borderline. Offer an extra bank statement.`);
+      addTip('financial', `Income is ${ratio.toFixed(1)}x rent, borderline. Offer an extra bank statement.`);
     } else {
-      addTip('financial', `Income is below the 3x rule. Offer a guarantor earning ${fmtEuro(price * 3)}/mo or 3 months deposit upfront.`);
+      addTip('financial', `Income below 3x rule. Offer a guarantor earning ${fmtEuro(price * 3)}/mo or 3 months deposit.`);
     }
   }
 
@@ -275,7 +275,7 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
 
   // Fallback padding — high-impact tips, no energy/outdoor
   const FALLBACK = [
-    { tip: 'Call the agent within an hour of applying. Agents who get a call book viewings 3x more.', category: 'fallback' },
+    { tip: 'Call the agent after applying. A call within an hour triples your chances.', category: 'fallback' },
     { tip: 'Say how long you want to stay. Landlords prefer tenants who commit to 2+ years.', category: 'fallback' },
     { tip: "Use the landlord's name if you know it. Personal messages get more replies.", category: 'fallback' },
     { tip: 'Apply between 8am and 10am. Landlords check email early and respond faster.', category: 'fallback' },
@@ -284,9 +284,18 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
     { tip: 'Moving to this city? Say why. Landlords like to know your reason.', category: 'fallback' },
   ];
 
+  function shares3Words(a, b) {
+    const wa = a.toLowerCase().split(/\s+/);
+    const bl = b.toLowerCase();
+    for (let i = 0; i <= wa.length - 3; i++) {
+      if (bl.includes(wa.slice(i, i + 3).join(' '))) return true;
+    }
+    return false;
+  }
+
   for (const f of FALLBACK) {
     if (tips.length >= 5) break;
-    tips.push(f);
+    if (!tips.some(t => shares3Words(f.tip, t.tip))) tips.push(f);
   }
 
   return { tips: tips.slice(0, 5) };
