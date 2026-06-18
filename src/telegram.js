@@ -688,10 +688,12 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   };
  
   const hasRealImage = listing.image && /^https?:\/\//.test(listing.image);
+  console.log('[telegram] alert text length:', fullText.length);
 
-  // Only attempt sendPhoto if there is a real (non-placeholder) image URL
+  // sendPhoto caps captions at 1024 chars — long captions hide keyboard rows.
+  // Only use sendPhoto when text fits; otherwise send image first, then text+keyboard.
   let sent = false;
-  if (hasRealImage) {
+  if (hasRealImage && fullText.length <= 900) {
     try {
       await sendWithRetry(_bot, 'sendPhoto', chatId, listing.image, {
         caption: fullText,
@@ -703,6 +705,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
 
   if (!sent) {
+    if (hasRealImage) {
+      try { await sendWithRetry(_bot, 'sendPhoto', chatId, listing.image, {}); } catch (_) {}
+    }
     try {
       await sendWithRetry(_bot, 'sendMessage', chatId, fullText, {
         parse_mode: 'Markdown',
