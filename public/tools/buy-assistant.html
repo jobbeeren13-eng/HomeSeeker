@@ -35,12 +35,12 @@
   .breadcrumb a:hover { color: var(--text); }
   .breadcrumb .sep { margin: 0 6px; color: rgba(255,255,255,0.2); }
 
-  .container { max-width: 1160px; margin: 0 auto; padding: 28px 28px 80px; }
+  .container { max-width: 920px; margin: 0 auto; padding: 28px 28px 80px; }
   .page-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
   .page-title span { color: var(--green); }
   .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
 
-  .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 28px 12px; margin: 0 -28px 16px; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 56px; z-index: 90; background: rgba(10,10,10,0.97); backdrop-filter: blur(16px); }
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
   .tab-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
@@ -829,6 +829,6 @@ function blRegenerate() {
 
 getParams();
 </script>
-<div style="border-top:1px solid rgba(255,255,255,0.07);padding:16px 24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.3)">AI-generated content is a starting point. Always review and personalise before sending. You are responsible for the accuracy of your application.</div>
+<div style="border-top:1px solid rgba(255,255,255,0.07);padding:16px 24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.3)">AI-generated content is a starting point. Always review and personalise before sending. You are responsible for the accuracy of your application.<br>© 2025 HomeSeeker</div>
 </body>
 </html>

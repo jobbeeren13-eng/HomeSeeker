@@ -665,13 +665,12 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     inline_keyboard: [
       [
         { text: 'View listing', url: listing.url },
-        { text: 'AI Letter', callback_data: `ai_letter:${cacheId}` },
+        { text: 'AI Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}&listing=${cacheId}` },
       ],
       [
-        { text: 'AI Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}&listing=${cacheId}` },
         { text: 'Share', callback_data: `share:${cacheId}` },
+        { text: 'Unsubscribe', callback_data: 'unsubscribe' },
       ],
-      [{ text: 'Unsubscribe', callback_data: 'unsubscribe' }],
     ],
   } : {
     inline_keyboard: [

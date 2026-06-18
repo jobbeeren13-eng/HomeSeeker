@@ -173,175 +173,123 @@ function fmtEuro(n) {
   return '€' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-function getImprovementTips(listing, user, _currentScore, dealScore) {
+function getImprovementTips(listing, user, _currentScore, _dealScore) {
   const price = listing.priceNumber || 0;
   const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
   const desc = (listing.description || '').toLowerCase();
   const source = (listing.source || '').toLowerCase();
 
-  const DEDUP_PHRASES = [
-    'permanent contract', 'annual income', 'income too low', 'income is',
-    'guarantor', 'energy label', 'funda', 'new listing', 'call the ag', 'documents',
-  ];
-
-  function sharesKeyPhrase(a, b) {
-    const al = a.toLowerCase();
-    const bl = b.toLowerCase();
-    return DEDUP_PHRASES.some(p => al.includes(p) && bl.includes(p));
+  // One tip per category; first match wins
+  const byCategory = {};
+  function addTip(category, tip) {
+    if (!byCategory[category]) byCategory[category] = tip;
   }
 
-  function sharesFiveWords(a, b) {
-    const wa = a.toLowerCase().split(/\s+/);
-    const bl = b.toLowerCase();
-    for (let i = 0; i <= wa.length - 5; i++) {
-      if (bl.includes(wa.slice(i, i + 5).join(' '))) return true;
-    }
-    return false;
-  }
-
-  function semanticDedup(arr) {
-    const out = [];
-    for (const candidate of arr) {
-      let dominated = false;
-      const toRemove = [];
-      for (let i = 0; i < out.length; i++) {
-        if (sharesKeyPhrase(candidate.tip, out[i].tip) || sharesFiveWords(candidate.tip, out[i].tip)) {
-          if (candidate.tip.length > out[i].tip.length) {
-            toRemove.push(i);
-          } else {
-            dominated = true;
-            break;
-          }
-        }
-      }
-      if (!dominated) {
-        for (let i = toRemove.length - 1; i >= 0; i--) out.splice(toRemove[i], 1);
-        out.push(candidate);
-      }
-    }
-    return out;
-  }
-
-  const organicTips = [];
-
-  // ── FINANCIAL ───────────────────────────────────────────────────────────
+  // FINANCIAL — priority 1
   if (inkomen > 0 && price > 0) {
     const ratio = inkomen / price;
     if (ratio >= 4) {
-      organicTips.push({ tip: `Your income is ${ratio.toFixed(1)}x the rent. Say it in your first sentence.`, category: 'financial' });
+      addTip('financial', `Income is ${ratio.toFixed(1)}x the rent. Open with that number — landlords decide fast.`);
     } else if (ratio >= 3.3) {
-      organicTips.push({ tip: `You meet the 3x rule. Start with your annual income of ${fmtEuro(inkomen * 12)}.`, category: 'financial' });
+      addTip('financial', `You meet the 3x rule. Start with your annual income of ${fmtEuro(inkomen * 12)}.`);
     } else if (ratio >= 3.0) {
-      organicTips.push({ tip: `Income is ${ratio.toFixed(1)}x rent — borderline. Offer an extra bank statement.`, category: 'financial' });
+      addTip('financial', `Income is ${ratio.toFixed(1)}x rent — borderline. Offer an extra bank statement.`);
     } else {
-      organicTips.push({ tip: `Income too low for 3x rule. Offer a guarantor or 3 months deposit.`, category: 'guarantor' });
-    }
-    if (dealScore != null && dealScore < 30) {
-      const contractLabel = (user.contract_type === 'vast' || user.contract_type === 'permanent') ? 'permanent contract' : 'stable income';
-      organicTips.push({ tip: `Above-market rent. Your ${contractLabel} is a strong point. Say it first.`, category: 'financial' });
+      addTip('financial', `Income is below the 3x rule. Offer a guarantor earning ${fmtEuro(price * 3)}/mo or 3 months deposit upfront.`);
     }
   }
 
-  // ── CONTRACT ─────────────────────────────────────────────────────────────
+  // CONTRACT — priority 2
   const ct = (user.contract_type || '').toLowerCase();
   if (ct === 'vast' || ct === 'permanent') {
-    organicTips.push({ tip: `You have a permanent contract. Say it in your first sentence.`, category: 'contract' });
+    addTip('contract', `Permanent contract: open with it. Landlords decide in the first line who to call.`);
   } else if (ct === 'tijdelijk' || ct === 'temporary') {
-    organicTips.push({ tip: `Temporary contract looks risky. Offer 3 months deposit or extra bank statements.`, category: 'contract' });
+    addTip('contract', `Temporary contract looks risky. Offer 3 months deposit or extra bank statements.`);
   } else if (ct === 'zzp' || ct === 'freelance') {
-    organicTips.push({ tip: `Freelancer: offer 3 months deposit and 2 years of tax returns.`, category: 'contract' });
+    addTip('contract', `Freelancer: offer 3 months deposit and 2 years of tax returns.`);
   }
 
-  // ── PROFILE / COMPETITION ─────────────────────────────────────────────────
+  // DOCUMENTS — priority 3
+  if (user.application_readiness === 'niet') {
+    addTip('documents', `No documents yet. Collect ID, payslips, and bank statements today.`);
+  } else if (user.application_readiness === 'bezig' || user.application_readiness === 'bijna') {
+    addTip('documents', `Finish your documents today. Say you can send them within the hour.`);
+  } else if (user.application_readiness === 'klaar') {
+    addTip('documents', `Documents ready. Say you can send everything within the hour.`);
+  }
+
+  // PROFILE — priority 4
   if (/expat|international|english only|relocation/.test(desc)) {
-    organicTips.push({ tip: `Expat-friendly listing. Write in English and name your employer.`, category: 'profile' });
+    addTip('profile', `Expat-friendly listing. Write in English and name your employer.`);
   } else if (/working professional|young professional|werkend professional/.test(desc)) {
-    organicTips.push({ tip: `Targets working professionals. Start with your job title and employer.`, category: 'profile' });
+    addTip('profile', `This landlord wants working professionals. Your first line: job title, employer, contract type.`);
   }
 
+  // SOURCE — priority 5
+  const sourceCoversUrgency = source === 'funda';
   if (source === 'funda') {
-    organicTips.push({ tip: `Apply fast and call the agent after sending. Funda fills quickly.`, category: 'source_action' });
+    addTip('source', `Apply fast and call the agent after sending. Funda fills quickly.`);
   } else if (source === 'housinganywhere') {
-    organicTips.push({ tip: `Write in English and Dutch. Bilingual applicants stand out on HousingAnywhere.`, category: 'source_action' });
+    addTip('source', `Write in English and Dutch. Bilingual applicants stand out on HousingAnywhere.`);
   } else if (source === 'kamernet') {
-    organicTips.push({ tip: `Kamernet landlords like personal messages. Skip templates and write directly.`, category: 'source_action' });
+    addTip('source', `Kamernet landlords like personal messages. Skip templates and write directly.`);
   }
 
-  // ── TIMING ──────────────────────────────────────────────────────────────
-  if (listing.listedAt) {
+  // TIMING — priority 6; skip if source already covers urgency
+  if (!sourceCoversUrgency && listing.listedAt) {
     const ageMs = Date.now() - new Date(listing.listedAt).getTime();
     if (!isNaN(ageMs) && ageMs >= 0) {
       const ageMins = ageMs / 60000;
       if (ageMins < 30) {
-        organicTips.push({ tip: `New listing. Apply now before the shortlist fills.`, category: 'timing' });
+        addTip('timing', `New listing. Apply now before the shortlist fills.`);
       } else if (ageMins < 120) {
-        organicTips.push({ tip: `You are among the first to see this. Apply and call today.`, category: 'timing' });
+        addTip('timing', `You are among the first to see this. Apply and call today.`);
       } else if (ageMins < 1440) {
-        organicTips.push({ tip: `Competition is building. Call the agency after you send your application.`, category: 'timing' });
+        addTip('timing', `Competition is building. Call the agent after you apply.`);
       } else if (ageMins < 14 * 24 * 60) {
-        organicTips.push({ tip: `Listing has been up a while. Offer to sign quickly.`, category: 'timing' });
+        addTip('timing', `Listing has been up a while. Offer to sign quickly.`);
       } else {
-        organicTips.push({ tip: `On market longer than average. Negotiate and say you can sign now.`, category: 'timing' });
+        addTip('timing', `On market longer than average. Negotiate and say you can sign now.`);
       }
     }
   }
 
-  // ── PROPERTY ─────────────────────────────────────────────────────────────
-  if (/\btuin\b|garden/.test(desc)) {
-    organicTips.push({ tip: `Property has a garden. Say you will take care of it.`, category: 'property' });
-  }
-  if (/parkeerplaats|parking|garage/.test(desc)) {
-    organicTips.push({ tip: `Parking available. Say clearly if you need the spot.`, category: 'property' });
-  }
+  // PROPERTY — priority 7; no garden/outdoor, no energy label
   if (/geen huisdieren|no pets|no animals/.test(desc)) {
-    organicTips.push({ tip: `No pets allowed. Confirm you have no pets in your first message.`, category: 'property' });
+    addTip('property', `No pets allowed. Confirm you have no pets in your first message.`);
+  } else if (/parkeerplaats|parking|garage/.test(desc)) {
+    addTip('property', `Parking available. Say clearly if you need the spot.`);
+  } else if (/inschrijving|gemeentelijke registratie|brp registratie/.test(desc)) {
+    addTip('property', `Address registration possible here. Confirm this in your letter.`);
+  } else if (/gemeubileerd|fully furnished|furnished/.test(desc)) {
+    addTip('property', `Furnished listing. Ask for an inventory list before signing.`);
   }
 
-  const energyLbl = (listing.energyLabel || listing.energy_label || '').toUpperCase().trim();
-  if (/^[AB]/.test(energyLbl)) {
-    organicTips.push({ tip: `Energy label ${energyLbl} saves €80-120/mo. Mention this in your letter.`, category: 'energy' });
-  } else if (/^[DEFG]/.test(energyLbl)) {
-    organicTips.push({ tip: `Energy label ${energyLbl} means higher bills. Budget €150-200/mo extra and negotiate on price.`, category: 'energy' });
+  // Build priority-ordered list (one tip per category)
+  const PRIORITY = ['financial', 'contract', 'documents', 'profile', 'source', 'timing', 'property'];
+  const tips = [];
+  for (const cat of PRIORITY) {
+    if (byCategory[cat]) tips.push({ tip: byCategory[cat], category: cat });
+    if (tips.length >= 5) break;
   }
 
-  if (/gemeubileerd|fully furnished|furnished/.test(desc)) {
-    organicTips.push({ tip: `Furnished listing. Ask for an inventory list before signing.`, category: 'property' });
-  }
-  if (/inschrijving|gemeentelijke registratie|brp registratie/.test(desc)) {
-    organicTips.push({ tip: `Address registration possible here. Confirm this in your letter.`, category: 'property' });
-  }
-
-  // ── DOCUMENTS ────────────────────────────────────────────────────────────
-  if (user.application_readiness === 'niet') {
-    organicTips.push({ tip: `No documents yet. Collect ID, payslips, and bank statements today.`, category: 'documents' });
-  } else if (user.application_readiness === 'bezig' || user.application_readiness === 'bijna') {
-    organicTips.push({ tip: `Finish your documents today. Say you can send them within the hour.`, category: 'documents' });
-  } else if (user.application_readiness === 'klaar') {
-    organicTips.push({ tip: `Documents ready. Say you can send everything within the hour.`, category: 'documents' });
-  }
-
-  // ── SEMANTIC + WORD-OVERLAP DEDUP ────────────────────────────────────────
-  const dedupedTips = semanticDedup(organicTips);
-
-  // ── FALLBACK PADDING ─────────────────────────────────────────────────────
+  // Fallback padding — high-impact tips, no energy/outdoor
   const FALLBACK = [
-    { tip: 'Call the agent after applying. A brief call triples callback rate.', category: 'general' },
-    { tip: 'Apply between 8am and 10am. Landlords check email early and respond faster.', category: 'timing' },
-    { tip: "Use the landlord's name if you know it. It gets more responses.", category: 'general' },
-    { tip: 'Say how long you want to stay. It removes doubt about your plans.', category: 'general' },
-    { tip: 'Offer a video call if you cannot view in person right away.', category: 'general' },
-    { tip: 'Moving to this city? Say why. Landlords like to know your reason.', category: 'profile' },
+    { tip: 'Call the agent within an hour of applying. Agents who get a call book viewings 3x more.', category: 'fallback' },
+    { tip: 'Say how long you want to stay. Landlords prefer tenants who commit to 2+ years.', category: 'fallback' },
+    { tip: "Use the landlord's name if you know it. Personal messages get more replies.", category: 'fallback' },
+    { tip: 'Apply between 8am and 10am. Landlords check email early and respond faster.', category: 'fallback' },
+    { tip: 'Offer a video call if you cannot view in person right away.', category: 'fallback' },
+    { tip: 'Tell them your move-in date. Clarity removes the biggest landlord hesitation.', category: 'fallback' },
+    { tip: 'Moving to this city? Say why. Landlords like to know your reason.', category: 'fallback' },
   ];
 
   for (const f of FALLBACK) {
-    if (dedupedTips.length >= 5) break;
-    const conflicts = dedupedTips.some(t =>
-      sharesKeyPhrase(f.tip, t.tip) || sharesFiveWords(f.tip, t.tip)
-    );
-    if (!conflicts) dedupedTips.push(f);
+    if (tips.length >= 5) break;
+    tips.push(f);
   }
 
-  return { tips: dedupedTips.slice(0, 5) };
+  return { tips: tips.slice(0, 5) };
 }
 
 // ─────────────────────────────────────────────
