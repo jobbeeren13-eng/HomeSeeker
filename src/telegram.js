@@ -66,7 +66,7 @@ function cacheListing(listing, chatId = null, score = null, dealScore = null) {
   const id = String(++listingCacheId);
   const expiresAt = Date.now() + CACHE_TTL_MS;
   listingCache.set(id, { listing, chatId, score, dealScore, expiresAt });
-  try { persistCacheListing.run(id, JSON.stringify({ listing, chatId, score, dealScore }), expiresAt); } catch (_) {}
+  try { persistCacheListing.run(id, JSON.stringify({ listing, chatId, score, dealScore }), expiresAt, score ?? null, dealScore ?? null, chatId ?? null); } catch (_) {}
   if (listingCache.size >= 500) {
     const now = Date.now();
     for (const [k, v] of listingCache) {
@@ -127,7 +127,7 @@ function getCachedEntry(id) {
 function injectCachedListing(id, listing) {
   const expiresAt = Date.now() + CACHE_TTL_MS;
   listingCache.set(String(id), { listing, chatId: null, expiresAt });
-  try { persistCacheListing.run(String(id), JSON.stringify({ listing, chatId: null }), expiresAt); } catch (_) {}
+  try { persistCacheListing.run(String(id), JSON.stringify({ listing, chatId: null }), expiresAt, null, null, null); } catch (_) {}
 }
  
 // Server-side access check — always hits DB, never trusts cached state
@@ -242,12 +242,24 @@ function createBot(useWebhook = false) {
       return;
     }
  
-    // Not linked — prompt for email to self-serve reconnect, or subscribe
+    // Not linked — 3-step onboarding for new users
     pendingLinkState.set(chatId, true);
     await bot.sendMessage(chatId,
-      `👋 Hi! HomeSeeker sends real-time Telegram alerts for Dutch housing listings.\n\n` +
-      `🔗 Start your 7-day free trial:\n👉 https://homeseeker.dev\n\n` +
-      `Already subscribed? Reply with the email address you used when signing up and we'll connect your account instantly.`
+      `👋 *Welcome to HomeSeeker*\n\n` +
+      `We send real-time Telegram alerts the moment a matching Dutch rental appears — before it fills up.\n\n` +
+      `*Step 1 — Start your free trial*\n` +
+      `Visit homeseeker.dev and sign up. No credit card required to start.\n\n` +
+      `*Step 2 — Set your filters*\n` +
+      `Tell us your city, budget, room count, and income. We score every listing against your profile and only alert you on strong matches.\n\n` +
+      `*Step 3 — Get alerts and apply*\n` +
+      `Each alert includes a match score, market value rating, and a direct link to your AI application letter — ready to send in minutes.\n\n` +
+      `Already subscribed? Reply with your email address and we'll connect your account instantly.`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[{ text: '🚀 Start 7-day free trial', url: `${BASE_URL}` }]],
+        },
+      }
     );
   });
  

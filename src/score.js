@@ -252,23 +252,84 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
 
   // ── LAYER 3: GENERAL TIPS — universal best practices ─────────────
 
-  generalTips.push({ tip: 'Send all documents in a single PDF: Firstname_Lastname_Application.pdf. Landlords processing 50+ applications shortlist those who make their job easy.', category: 'general' });
-  generalTips.push({ tip: 'Ask for a viewing within 24 hours in your first message — name specific days you are available. Decisiveness reads as reliability.', category: 'general' });
-  generalTips.push({ tip: 'Write one sentence about why this specific street or neighbourhood suits your daily life. It demonstrates genuine interest in this home, not just any available rental.', category: 'general' });
+  generalTips.push({ tip: 'Send all documents in a single PDF: Firstname_Lastname_Application.pdf. Landlords processing 50+ applications shortlist those who make their job easy.', category: 'general_docs' });
+  generalTips.push({ tip: 'Ask for a viewing within 24 hours in your first message — name specific days you are available. Decisiveness reads as reliability.', category: 'general_timing' });
+  generalTips.push({ tip: 'Write one sentence about why this specific street or neighbourhood suits your daily life. It demonstrates genuine interest in this home, not just any available rental.', category: 'general_personal' });
 
-  // ── BACKWARDS COMPAT: flat deduplicated tips array ───────────────
-  function shares3Words(a, b) {
-    const wa = a.toLowerCase().split(/\s+/);
-    const bl = b.toLowerCase();
-    for (let i = 0; i <= wa.length - 3; i++) {
-      if (bl.includes(wa.slice(i, i + 3).join(' '))) return true;
-    }
-    return false;
-  }
-
+  // ── BACKWARDS COMPAT: flat deduplicated tips array (one per category) ───
+  const usedCategories = new Set();
   const tips = [];
   for (const t of [...listingTips, ...profileTips, ...generalTips]) {
-    if (!tips.some(e => shares3Words(e.tip, t.tip))) tips.push(t);
+    if (!usedCategories.has(t.category)) {
+      usedCategories.add(t.category);
+      tips.push(t);
+    }
+  }
+
+  return { listingTips, profileTips, generalTips, tips };
+}
+
+// ─────────────────────────────────────────────
+// BUYER TIPS — koop listings only
+// ─────────────────────────────────────────────
+
+const CITY_OVERBID = {
+  amsterdam: 17, utrecht: 13, haarlem: 14, leiden: 12, delft: 11,
+  'den-haag': 9, rotterdam: 9, eindhoven: 10, groningen: 5, maastricht: 4, almere: 7,
+};
+
+function getBuyerTips(listing, user) {
+  const price = listing.priceNumber || 0;
+  const desc = (listing.description || '').toLowerCase();
+  const city = (listing.city || '').toLowerCase();
+  const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
+  const listingTips = [];
+  const profileTips = [];
+  const generalTips = [];
+
+  if (/erfpacht/i.test(desc)) {
+    listingTips.push({ tip: 'This property has erfpacht (ground lease). Ask for the current canon amount, the revision date, and whether permanent buyout is possible. Erfpacht significantly affects your mortgage options and long-term cost — most banks are cautious about temporary erfpacht.', category: 'erfpacht' });
+  }
+
+  if (/\bvve\b|servicekosten|appartements?complex|vvE/i.test(desc)) {
+    listingTips.push({ tip: 'This apartment is part of a VvE (owners association). Request the last 3 years of meeting minutes, the reserve fund balance, and the MJOP maintenance plan before bidding. A poorly funded VvE is the most common source of buyer regret in the Netherlands.', category: 'vve' });
+  }
+
+  if (/renovatie|verbouwing|te renoveren|opknapper|klus|fixer/i.test(desc)) {
+    listingTips.push({ tip: 'This property needs renovation. Budget EUR 600-1200/m2 for a complete renovation at current Dutch contractor rates. Always get a building inspection (bouwkundige keuring) before bidding — it gives you grounds to renegotiate or exit the deal.', category: 'renovation' });
+  }
+
+  if (/nieuwbouw|new development|new build|nieuw gebouwd|sleutelklaar/i.test(desc)) {
+    listingTips.push({ tip: 'New construction: transfer tax applies only to the land value, not the construction cost. The price is usually fixed — overbidding is rare. Confirm the completion date and check whether a delay penalty clause protects you if handover is late.', category: 'new_construction' });
+  }
+
+  if (inkomen > 0 && price > 0) {
+    const maxMortgage = Math.round(inkomen * 12 * 4.5 / 1000) * 1000;
+    const buyingCosts = Math.round(price * 0.06 / 100) * 100;
+    const gap = price - maxMortgage;
+    const note = gap > 0
+      ? `Your maximum mortgage (EUR ${maxMortgage.toLocaleString('nl-NL')}) is EUR ${gap.toLocaleString('nl-NL')} below the asking price — you need additional own funds to cover the gap.`
+      : `Your maximum mortgage is approximately EUR ${maxMortgage.toLocaleString('nl-NL')}, which covers this asking price.`;
+    profileTips.push({ tip: `${note} Budget roughly EUR ${buyingCosts.toLocaleString('nl-NL')} in buying costs (transfer tax, notary, inspection, mortgage advisor).`, category: 'mortgage_capacity' });
+  }
+
+  const overbidPct = CITY_OVERBID[city] || 8;
+  if (price > 0) {
+    const recBid = Math.round(price * (1 + overbidPct / 100) / 1000) * 1000;
+    profileTips.push({ tip: `In this city, median overbid is around ${overbidPct}%, suggesting a competitive bid near EUR ${recBid.toLocaleString('nl-NL')}. Same-day bidding and a personal buyer letter attached to your offer increase your win rate.`, category: 'overbid' });
+  }
+
+  generalTips.push({ tip: 'Always include a building inspection clause (bouwkundige keuring) for homes over 20 years old — it costs EUR 400-600 and gives you grounds to renegotiate or withdraw if serious defects are found.', category: 'general' });
+  generalTips.push({ tip: 'Ask when the seller needs to hand over the keys — offering a transfer date that suits them is often more persuasive than a slightly higher bid, especially for owner-occupiers.', category: 'general_timing' });
+  generalTips.push({ tip: 'Attach a brief personal letter to your bid explaining who you are and why you want this specific property. Owner-sellers respond strongly to this — it often tips the decision when bids are close.', category: 'general_letter' });
+
+  const usedCategories = new Set();
+  const tips = [];
+  for (const t of [...listingTips, ...profileTips, ...generalTips]) {
+    if (!usedCategories.has(t.category)) {
+      usedCategories.add(t.category);
+      tips.push(t);
+    }
   }
 
   return { listingTips, profileTips, generalTips, tips };
@@ -661,4 +722,4 @@ function detectLandlordIntent(description) {
   return { signals, tips, warnings };
 }
 
-module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getPillarBreakdown, detectLandlordIntent };
+module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getBuyerTips, getPillarBreakdown, detectLandlordIntent };

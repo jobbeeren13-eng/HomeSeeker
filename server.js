@@ -1,13 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus } = require('./src/database');
 const { sendWelcomeEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
-const { calculateScore, getImprovementTips } = require('./src/score');
+const { calculateScore, getImprovementTips, getBuyerTips } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
 const { generateLetterDirect, generatePackageDirect, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect } = require('./src/letter');
 
@@ -363,7 +364,10 @@ app.get('/api/listing-tips', (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
   const { listing, chatId, score, dealScore } = entry;
   const user = chatId ? getUser.get(String(chatId)) : null;
-  const { listingTips, profileTips, generalTips, tips } = getImprovementTips(listing, user || {});
+  const isKoop = listing.transactionType === 'koop';
+  const { listingTips, profileTips, generalTips, tips } = isKoop
+    ? getBuyerTips(listing, user || {})
+    : getImprovementTips(listing, user || {});
   res.json({
     listingTips: listingTips.map(t => t.tip),
     profileTips: profileTips.map(t => t.tip),
@@ -372,6 +376,7 @@ app.get('/api/listing-tips', (req, res) => {
     listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
     score,
     dealScore,
+    isKoop,
   });
 });
 
@@ -858,6 +863,36 @@ app.post('/api/agent-script', async (req, res) => {
     const data = await proxyToHetzner('/api/generate-agent-script', { situation, context: context || '' }, () => generateAgentScriptDirect({ situation, context: context || '' }));
     res.json(data);
   } catch (err) { console.error('[api/agent-script]', err.message); res.status(500).json({ error: 'Script generation failed. Try again in a moment.' }); }
+});
+
+// ── Daily database backup ────────────────────────────────────────────────
+let lastBackupAt = null;
+let lastBackupStatus = 'never';
+
+async function runDbBackup() {
+  const backupPath = path.join(path.dirname(dbPath), 'homeseeker_backup.db');
+  try {
+    await db.backup(backupPath);
+    lastBackupAt = new Date().toISOString();
+    lastBackupStatus = 'ok';
+    console.log(`[backup] DB backup complete → ${backupPath}`);
+  } catch (err) {
+    lastBackupStatus = `failed: ${err.message}`;
+    console.error('[backup] DB backup failed:', err.message);
+  }
+}
+
+// Run immediately on boot, then every 24 hours
+runDbBackup();
+setInterval(runDbBackup, 24 * 60 * 60 * 1000);
+
+app.get('/admin/backup-status', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const backupPath = path.join(path.dirname(dbPath), 'homeseeker_backup.db');
+  let backupSize = null;
+  try { backupSize = fs.statSync(backupPath).size; } catch (_) {}
+  res.json({ lastBackupAt, lastBackupStatus, backupPath, backupSizeBytes: backupSize, ts: new Date().toISOString() });
 });
 
 // Health + watchdog endpoint

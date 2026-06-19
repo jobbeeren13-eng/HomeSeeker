@@ -380,7 +380,7 @@ async function fetchKamernetDescription(url) {
         const desc = data?.props?.pageProps?.targetPageProps?.listingDetails?.description
                   || data?.props?.pageProps?.listing?.description
                   || '';
-        if (desc) return String(desc).slice(0, 500).trim();
+        if (desc) return String(desc).slice(0, 1500).trim();
       } catch {}
     }
     // Fall back to meta description
@@ -523,7 +523,12 @@ async function scrapeKamernet() {
     for (let i = 0; i < needsDesc.length; i += CONCURRENCY) {
       await Promise.allSettled(needsDesc.slice(i, i + CONCURRENCY).map(async url => {
         const desc = await fetchKamernetDescription(url);
-        if (desc) updateListingDescription.run(desc, url);
+        if (desc) {
+          updateListingDescription.run(desc, url);
+          console.log(`[scraper] Kamernet desc: ${desc.length} chars — ${url.slice(-40)}`);
+        } else {
+          console.log(`[scraper] Kamernet desc: empty — ${url.slice(-40)}`);
+        }
       }));
       await new Promise(r => setTimeout(r, 500));
     }
@@ -565,7 +570,7 @@ async function fetchHousingAnywhereDescription(url) {
                     || (unit.photo && (unit.photo.url || unit.photo.original))
                     || '';
         if (desc && String(desc).trim().length > 20) {
-          return { description: String(desc).slice(0, 600).trim(), image: String(imgUrl || '') };
+          return { description: String(desc).slice(0, 1200).trim(), image: String(imgUrl || '') };
         }
       } catch {}
     }

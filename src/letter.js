@@ -219,7 +219,7 @@ async function getAITip(listing, user) {
     if (!tip || tip.length < 10) return null;
 
     const expiresAt = Date.now() + 48 * 60 * 60 * 1000;
-    try { persistCacheListing.run(cacheKey, JSON.stringify(tip), expiresAt); } catch {}
+    try { persistCacheListing.run(cacheKey, JSON.stringify(tip), expiresAt, null, null, null); } catch {}
 
     return tip;
   } catch (err) {
@@ -624,14 +624,14 @@ Internet: KPN (most reliable), Ziggo (cable, fast), T-Mobile Thuis (good value)
 Renter's insurance: Centraal Beheer, Interpolis, InShared (cheapest)${userProfile}`,
   };
 
-  const system = systems[tabNum] || systems[1];
+  const system = (systems[tabNum] || systems[1]) + '\n\nKeep your response under 500 words. Cover only the most critical points.';
   const content = listingContext
     ? `Listing context: ${listingContext}\n\nUser input: ${userMessage}`
     : userMessage;
 
   // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
-    max_tokens: 2500,
+    max_tokens: 1000,
     system,
     messages: [{ role: 'user', content }],
   });
@@ -782,14 +782,14 @@ Notary does NOT check: reserve fund adequacy, MJOP existence, financial health o
 Your due diligence is the only protection you have. The notary will not save you from a badly-run VvE.${userProfile}`,
   };
 
-  const system = systems[tabNum] || systems[1];
+  const system = (systems[tabNum] || systems[1]) + '\n\nKeep your response under 500 words. Cover only the most critical points.';
   const content = listingContext
     ? `Listing context: ${listingContext}\n\nUser input: ${userMessage}`
     : userMessage;
 
   // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
-    max_tokens: 2500,
+    max_tokens: 1000,
     system,
     messages: [{ role: 'user', content }],
   });

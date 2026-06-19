@@ -167,6 +167,15 @@
 
   <div id="main-content" style="display:none">
 
+    <!-- Redirect banner — links to full AI assistant -->
+    <div id="assistant-banner" style="background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.22);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div style="font-size:13px;color:var(--text);line-height:1.4">
+        <strong style="color:var(--green)">Want more than a letter?</strong>
+        The AI Rental Assistant gives you a full strategy, viewing prep, negotiation scripts, and lease review — all in one place.
+      </div>
+      <a id="assistant-link" href="/tools/rent-assistant" style="flex-shrink:0;background:var(--green);color:#000;font-weight:700;font-size:13px;padding:9px 18px;border-radius:8px;text-decoration:none;white-space:nowrap">Open Assistant</a>
+    </div>
+
     <!-- Listing summary -->
     <div class="listing-card" id="listing-card">
       <img id="listing-img" class="listing-img" src="" alt="" />
@@ -262,6 +271,8 @@
 
     state.cacheId = id;
     document.getElementById('package-link').href = `/apply?id=${id}`;
+    const assistantLink = document.getElementById('assistant-link');
+    if (assistantLink) assistantLink.href = `/tools/rent-assistant?id=${encodeURIComponent(id)}`;
 
     try {
       const resp = await fetch(`/api/letter-data?id=${encodeURIComponent(id)}`);

@@ -133,6 +133,13 @@ try {
     console.log('[db] Migrated document_readiness → application_readiness');
   }
 } catch (e) {}
+
+try {
+  const cacheCols = db.prepare(`PRAGMA table_info(listing_cache)`).all().map(r => r.name);
+  if (!cacheCols.includes('score')) { db.exec(`ALTER TABLE listing_cache ADD COLUMN score INTEGER`); console.log('[db] Added score column to listing_cache'); }
+  if (!cacheCols.includes('deal_score')) { db.exec(`ALTER TABLE listing_cache ADD COLUMN deal_score INTEGER`); console.log('[db] Added deal_score column to listing_cache'); }
+  if (!cacheCols.includes('chat_id')) { db.exec(`ALTER TABLE listing_cache ADD COLUMN chat_id TEXT`); console.log('[db] Added chat_id column to listing_cache'); }
+} catch (e) {}
  
 try {
   const listingCols = db.prepare(`PRAGMA table_info(listings)`).all().map(r => r.name);
@@ -276,7 +283,7 @@ const getApprovedReviews = db.prepare('SELECT id, name, rating, review_text, cre
 const approveReview = db.prepare('UPDATE reviews SET approved = 1 WHERE id = ?');
 
 const persistCacheListing = db.prepare(
-  'INSERT OR REPLACE INTO listing_cache (cache_id, listing_json, expires_at) VALUES (?, ?, ?)'
+  'INSERT OR REPLACE INTO listing_cache (cache_id, listing_json, expires_at, score, deal_score, chat_id) VALUES (?, ?, ?, ?, ?, ?)'
 );
 const getPersistedCacheListing = db.prepare(
   'SELECT listing_json FROM listing_cache WHERE cache_id = ? AND expires_at > ?'

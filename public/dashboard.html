@@ -166,6 +166,19 @@
       </div>
     </div>
 
+    <!-- Empty state: shown when user has no favorites AND no tracker entries -->
+    <div id="empty-state" class="hidden" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:48px 32px;text-align:center;margin-bottom:32px">
+      <div style="font-size:40px;margin-bottom:16px">🏠</div>
+      <div style="font-size:18px;font-weight:800;margin-bottom:8px">Nothing tracked yet</div>
+      <div style="font-size:14px;color:var(--muted);max-width:380px;margin:0 auto 28px;line-height:1.6">
+        Your saved listings and applications will appear here. Start by setting your filters — alerts arrive the moment a match is listed.
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a id="empty-filters-link" href="/filters" style="background:var(--green);color:#000;font-weight:700;font-size:14px;padding:12px 22px;border-radius:9px;text-decoration:none">Set my filters</a>
+        <a href="/how-scores-work" style="background:var(--bg3);color:var(--text);font-weight:600;font-size:14px;padding:12px 22px;border-radius:9px;text-decoration:none;border:1px solid var(--border)">How it works</a>
+      </div>
+    </div>
+
     <div class="dash-grid">
 
       <!-- Saved listings -->
@@ -286,8 +299,21 @@
     renderStats(_tracker, _favorites);
     renderJourney(_tracker);
     renderNextAction(_tracker, _favorites);
+    renderEmptyState(_favorites, _tracker);
     renderFavorites(_favorites);
     renderTracker(_tracker);
+  }
+
+  function renderEmptyState(favorites, tracker) {
+    const el = document.getElementById('empty-state');
+    if (!el) return;
+    if (!favorites.length && !tracker.length) {
+      el.classList.remove('hidden');
+      const link = document.getElementById('empty-filters-link');
+      if (link && chatId) link.href = `/filters?chat_id=${chatId}`;
+    } else {
+      el.classList.add('hidden');
+    }
   }
 
   function renderStats(tracker, favorites) {
