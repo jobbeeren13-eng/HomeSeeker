@@ -806,6 +806,33 @@ function renderTipsList(tips, containerId) {
   ).join('');
 }
 
+function renderStructuredTips(listingTips, profileTips, generalTips, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let html = '';
+  if (!listingTips.length) {
+    html += `<p style="font-style:italic;color:var(--muted);font-size:12px;margin-bottom:10px">No listing-specific signals detected — tips are based on your profile and best practices.</p>`;
+  }
+  const sections = [
+    { label: 'This listing', tips: listingTips, labelColor: '#00c896', badgeBg: 'rgba(0,200,150,0.15)', badgeBorder: 'rgba(0,200,150,0.3)', badgeColor: '#00c896' },
+    { label: 'Your profile', tips: profileTips, labelColor: 'rgba(255,255,255,0.5)', badgeBg: 'rgba(255,255,255,0.1)', badgeBorder: 'rgba(255,255,255,0.2)', badgeColor: 'rgba(255,255,255,0.6)' },
+    { label: 'Always useful', tips: generalTips, labelColor: 'rgba(255,255,255,0.3)', badgeBg: 'rgba(255,255,255,0.06)', badgeBorder: 'rgba(255,255,255,0.12)', badgeColor: 'rgba(255,255,255,0.4)' },
+  ].filter(s => s.tips.length > 0);
+  let globalIdx = 0;
+  sections.forEach((section, si) => {
+    if (si > 0) html += `<div style="height:1px;background:rgba(255,255,255,0.06);margin:12px 0"></div>`;
+    html += `<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:${section.labelColor};font-weight:700;margin-bottom:8px">${ltEsc(section.label)}</div>`;
+    section.tips.forEach((tip, i) => {
+      globalIdx++;
+      const isLast = i === section.tips.length - 1;
+      html += `<div style="display:flex;gap:10px;${!isLast ? 'margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05)' : ''}">` +
+        `<span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:${section.badgeBg};border:1px solid ${section.badgeBorder};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${section.badgeColor};margin-top:2px">${globalIdx}</span>` +
+        `<span style="font-size:13px;line-height:1.55;color:var(--text)">${ltEsc(tip)}</span></div>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
 function ltToggleTips(btn) {
   const content = document.getElementById('lt-tips-content');
   const link = document.getElementById('lt-to-coach');
@@ -864,10 +891,12 @@ function initLetterTab() {
       fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`)
         .then(r => r.ok ? r.json() : null)
         .then(tipsData => {
-          if (!tipsData || !tipsData.tips || !tipsData.tips.length) return;
-          renderTipsList(tipsData.tips, 'lt-tips-content');
+          if (!tipsData) return;
+          const { listingTips = [], profileTips = [], generalTips = [] } = tipsData;
+          if (!listingTips.length && !profileTips.length && !generalTips.length) return;
+          renderStructuredTips(listingTips, profileTips, generalTips, 'lt-tips-content');
           document.getElementById('lt-tips-panel').style.display = 'block';
-          renderTipsList(tipsData.tips, 't2-tips-content');
+          renderStructuredTips(listingTips, profileTips, generalTips, 't2-tips-content');
           const t2Panel = document.getElementById('t2-tips-panel');
           if (t2Panel) t2Panel.style.display = 'block';
         })

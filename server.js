@@ -363,8 +363,11 @@ app.get('/api/listing-tips', (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
   const { listing, chatId, score, dealScore } = entry;
   const user = chatId ? getUser.get(String(chatId)) : null;
-  const { tips } = getImprovementTips(listing, user || {});
+  const { listingTips, profileTips, generalTips, tips } = getImprovementTips(listing, user || {});
   res.json({
+    listingTips: listingTips.map(t => t.tip),
+    profileTips: profileTips.map(t => t.tip),
+    generalTips: generalTips.map(t => t.tip),
     tips: tips.map(t => t.tip),
     listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
     score,
