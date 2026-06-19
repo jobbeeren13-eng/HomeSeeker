@@ -44,14 +44,15 @@
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
   .tab-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
-  .tab-btn.active { background: var(--green); border-color: var(--green); color: #0a0a0a; font-weight: 600; }
+  .tab-btn.active { background: var(--green); border-color: var(--green); color: #0a0a0a; font-weight: 600; box-shadow: 0 0 0 3px rgba(0,200,150,0.15); }
 
   .panel { display: none; }
   .panel.active { display: block; }
 
   .panel-grid { display: grid; grid-template-columns: 38% 1fr; gap: 20px; align-items: start; }
 
-  .form-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; }
+  .form-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; transition: border-left .15s; }
+  .form-card:focus-within { border-left: 2px solid #00c896; }
   .form-card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
   .form-card .desc { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
   .field { margin-bottom: 14px; }
@@ -92,8 +93,8 @@
   .copy-btn:hover, .followup-btn:hover { border-color: var(--green); color: var(--green); }
   .copy-btn.copied { color: var(--green); border-color: var(--green); }
   .response-body { font-size: 13px; line-height: 1.75; color: var(--text); }
-  .response-body h2 { font-size: 14px; font-weight: 700; color: var(--green); margin-top: 18px; margin-bottom: 7px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
-  .response-body h2:first-child { margin-top: 0; }
+  .response-body h2 { font-size: 14px; font-weight: 700; color: var(--green); margin-top: 28px; margin-bottom: 7px; padding-top: 16px; padding-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid var(--border); }
+  .response-body h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
   .response-body ul, .response-body ol { padding-left: 18px; margin: 5px 0 12px; }
   .response-body li { margin-bottom: 4px; }
   .response-body p { margin-bottom: 9px; }
@@ -152,7 +153,7 @@
       <div>
         <div class="form-card">
           <h2>Affordability Calculator</h2>
-          <p class="desc">Find out exactly what you can buy, what cash you need upfront, and which red flags will block you.</p>
+          <p class="desc">Enter your income and savings. Get your exact mortgage ceiling, the cash you need upfront, and which contract types qualify.</p>
           <div class="field">
             <div class="field-wrap">
               <label>Gross annual income <button class="info-btn" data-hint="Enter your gross (pre-tax) annual income. Include a partner's income if they will be on the mortgage. The calculator uses Dutch mortgage rules.">ⓘ</button></label>
@@ -220,7 +221,7 @@
       <div>
         <div class="form-card">
           <h2>Property Analysis</h2>
-          <p class="desc">Paste the listing and get price benchmarks, deal flags (erfpacht, energy label, VvE), a max bid, and 5 questions for the agent.</p>
+          <p class="desc">Paste the listing text. Get price benchmarks, leasehold (erfpacht) risk analysis, energy label impact, and 5 questions for the agent.</p>
           <div class="field">
             <div class="field-wrap">
               <label>Listing details <button class="info-btn" data-hint="Paste the listing or describe it - size, price, city, floor, build year, energy label, leasehold (erfpacht), VvE costs, and anything else notable.">ⓘ</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
@@ -269,7 +270,7 @@
       <div>
         <div class="form-card">
           <h2>Bid Strategy</h2>
-          <p class="desc">City-specific overbidding data, exact bid amount recommendation, condition waiving rules, and a word-for-word bid letter.</p>
+          <p class="desc">Describe the property and your situation. Get a specific bid amount, city-specific overbidding data, and the exact scripts to win.</p>
           <div class="field">
             <div class="field-wrap">
               <label>Property and asking price <button class="info-btn" data-hint="Include property type, city, asking price, and how long it has been listed. These feed into the overbidding percentage calculation.">ⓘ</button></label>
@@ -325,14 +326,14 @@
       <div>
         <div class="form-card">
           <h2>Legal Process Guide</h2>
-          <p class="desc">All 6 steps from bid accepted to keys in hand - including expat-specific mistakes and what to do at each stage.</p>
+          <p class="desc">Select where you are in the process. Get step-by-step guidance, expat-specific warnings, and what to do right now.</p>
           <div class="field">
             <div class="field-wrap">
               <label>Where are you in the process? <button class="info-btn" data-hint="Select the step you are at right now. The guide adapts to give you the most relevant next actions and expat-specific warnings for that exact stage.">ⓘ</button></label>
               <div class="field-hint"></div>
               <select id="t4-stage">
                 <option value="bid accepted">Bid just accepted</option>
-                <option value="koopovereenkomst">Signing the koopovereenkomst</option>
+                <option value="koopovereenkomst">Signing the purchase agreement</option>
                 <option value="mortgage">Getting the mortgage</option>
                 <option value="building inspection">Waiting for inspection</option>
                 <option value="notary">Notary appointment coming up</option>
@@ -381,7 +382,7 @@
       <div>
         <div class="form-card">
           <h2>VvE Health Checker</h2>
-          <p class="desc">Check if the apartment owners association (VvE) is healthy or a financial risk. Get a go/no-go recommendation.</p>
+          <p class="desc">Paste what you know about the VvE. Get a health score, financial risk assessment, and a clear go/no-go recommendation.</p>
           <div class="field">
             <div class="field-wrap">
               <label>Paste what you know about the VvE <button class="info-btn" data-hint="Include monthly service costs, number of apartments, reserve fund size, whether an MJOP (maintenance plan) exists, building age, any known issues. Even partial info gives useful results.">ⓘ</button> <span class="char-count" id="cc-5-1">0 / 2000</span></label>

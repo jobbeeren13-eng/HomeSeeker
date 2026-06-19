@@ -357,7 +357,7 @@ app.get('/api/letter-data', (req, res) => {
 
 // Generates letter from web page selections
 app.post('/api/generate-letter-web', async (req, res) => {
-  const { cacheId, selectedTipTexts = [], extraContext = '' } = req.body;
+  const { cacheId, selectedTipTexts = [], extraContext = '', tone = 'professional' } = req.body;
   if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
 
   const entry = getCachedEntry(cacheId);
@@ -377,12 +377,12 @@ app.post('/api/generate-letter-web', async (req, res) => {
       const resp = await timedFetch(`${hetznerUrl}/api/generate-letter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ listing, user: user || {}, selectedTips }),
+        body: JSON.stringify({ listing, user: user || {}, selectedTips, tone }),
       });
       if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
       letter = (await resp.json()).letter;
     } else {
-      letter = await generateLetterDirect({ listing, user: user || {}, selectedTips });
+      letter = await generateLetterDirect({ listing, user: user || {}, selectedTips, tone });
     }
     res.json({ letter });
   } catch (err) {

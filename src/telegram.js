@@ -603,59 +603,24 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     intent.warnings.forEach(w => lines.push(`⚠️ ${w.label}`));
   }
 
-  // Tips
+  // Combined verdict with single top tip — detailed guidance lives in the assistant
   if (user) {
+    lines.push('');
     if (isHuur) {
       const { tips } = getImprovementTips(listing, user, score, dealScore);
-      lines.push('');
-      tips.slice(0, 5).forEach((t, i) => { lines.push(''); lines.push(`*${i + 1}.* ${t.tip}`); });
+      const topTip = tips.length > 0 ? tips[0].tip : null;
+      let verdictBase, verdictCta;
+      if (score >= 85) { verdictBase = 'Excellent match.'; verdictCta = 'Tap AI Rental Assistant for your full application strategy.'; }
+      else if (score >= 70) { verdictBase = 'Strong match.'; verdictCta = 'Tap AI Rental Assistant for your full application strategy.'; }
+      else if (score >= 55) { verdictBase = 'Good match.'; verdictCta = 'Open the assistant to see how to close the gaps.'; }
+      else if (score >= 40) { verdictBase = 'Possible match.'; verdictCta = 'The assistant shows what to fix before applying.'; }
+      else { verdictBase = 'Weak match.'; verdictCta = 'Significant barriers exist. Open the assistant to understand your options.'; }
+      lines.push(score >= 40 && topTip ? `${verdictBase} ${topTip} ${verdictCta}` : `${verdictBase} ${verdictCta}`);
     } else {
-      // Buyer-specific tips for koop listings
-      const buyerTips = [];
-      if (listing.area && listing.priceNumber) {
-        const ppm2 = Math.round(listing.priceNumber / listing.area);
-        const cityLower = (listing.city || '').toLowerCase().replace(/-/g, '');
-        const BENCHMARKS = { amsterdam: 6800, utrecht: 5100, rotterdam: 4200, denhaag: 4400, haarlem: 5200, eindhoven: 3800, leiden: 4900, delft: 4600, groningen: 3100, maastricht: 3200 };
-        const benchmark = BENCHMARKS[cityLower] || null;
-        if (benchmark && ppm2 > benchmark * 1.10) {
-          buyerTips.push(`At ${ppm2}/m² you are paying above the ${cityStr || 'local'} average - get a valuation before bidding`);
-        } else if (benchmark && ppm2 < benchmark * 0.90) {
-          buyerTips.push(`At ${ppm2}/m² this is below market - move quickly, expect competing bids`);
-        }
-      }
-      const cityLower2 = (listing.city || '').toLowerCase().replace(/-/g, '');
-      const hotBuyerCities = ['amsterdam', 'utrecht', 'haarlem'];
-      if (hotBuyerCities.includes(cityLower2)) {
-        buyerTips.push(`Overbidding is common in ${cityStr || 'this area'} - budget 8-15% above asking`);
-      } else {
-        buyerTips.push('Overbidding of 3-8% is typical in this area - research recent sold prices on Kadaster');
-      }
-      buyerTips.push('Always include financing condition (voorbehoud financiering) and check VvE costs if apartment - can add 200+ euros per month');
-      lines.push('');
-      lines.push('*Buyer Tips:*');
-      buyerTips.slice(0, 3).forEach((t, i) => { lines.push(''); lines.push(`${i + 1}. ${t}`); });
+      if (score >= 80) lines.push('Strong buyer profile for this property. Open the Buyer Assistant for your full strategy.');
+      else if (score >= 60) lines.push('Good buyer profile. Open the Buyer Assistant to prepare your bid.');
+      else lines.push('Review your buyer position. Open the Buyer Assistant to understand your options.');
     }
-  }
-
-  // Verdict
-  if (user) {
-    let verdict = '';
-    const isJustListed = ageMs !== null && !isNaN(ageMs) && ageMs < 60 * 60 * 1000;
-    if (score >= 80 && isJustListed) {
-      verdict = 'Strong match on a fresh listing. Apply now.';
-    } else if (score >= 80) {
-      verdict = 'Strong match. Worth a serious application.';
-    } else if (score >= 65) {
-      verdict = 'Good match. A strong application gives you a real chance.';
-    } else if (score >= 50) {
-      verdict = 'Decent match. Address the gaps above before applying.';
-    } else if (score >= 35) {
-      verdict = 'Weak match. Significant barriers - read the tips carefully.';
-    } else {
-      verdict = 'Very weak match. The gaps above make this a long shot.';
-    }
-    lines.push('');
-    lines.push(verdict);
   }
 
   const fullText = lines.join('\n');

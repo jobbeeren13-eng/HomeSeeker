@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -49,14 +49,15 @@
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
   .tab-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
-  .tab-btn.active { background: var(--green); border-color: var(--green); color: #0a0a0a; font-weight: 600; }
+  .tab-btn.active { background: var(--green); border-color: var(--green); color: #0a0a0a; font-weight: 600; box-shadow: 0 0 0 3px rgba(0,200,150,0.15); }
 
   .panel { display: none; }
   .panel.active { display: block; }
 
   .panel-grid { display: grid; grid-template-columns: 38% 1fr; gap: 20px; align-items: start; }
 
-  .form-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; }
+  .form-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; transition: border-left .15s; }
+  .form-card:focus-within { border-left: 2px solid #00c896; }
   .form-card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
   .form-card .desc { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
   .field { margin-bottom: 14px; }
@@ -97,12 +98,37 @@
   .copy-btn:hover, .followup-btn:hover { border-color: var(--green); color: var(--green); }
   .copy-btn.copied { color: var(--green); border-color: var(--green); }
   .response-body { font-size: 13px; line-height: 1.75; color: var(--text); }
-  .response-body h2 { font-size: 14px; font-weight: 700; color: var(--green); margin-top: 18px; margin-bottom: 7px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
-  .response-body h2:first-child { margin-top: 0; }
+  .response-body h2 { font-size: 14px; font-weight: 700; color: var(--green); margin-top: 28px; margin-bottom: 7px; padding-top: 16px; padding-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid var(--border); }
+  .response-body h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
   .response-body ul, .response-body ol { padding-left: 18px; margin: 5px 0 12px; }
   .response-body li { margin-bottom: 4px; }
   .response-body p { margin-bottom: 9px; }
   .response-body strong { color: var(--text); font-weight: 700; }
+
+  /* Tone selector */
+  .tone-selector { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tone-pill { flex: 1; padding: 9px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; text-align: center; }
+  .tone-pill.active { background: rgba(0,200,150,0.15); border-color: #00c896; color: #00c896; }
+  .tone-pill:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+
+  /* Letter checkboxes */
+  .lt-check-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+  .lt-check-item { display: flex; flex-direction: column; gap: 4px; }
+  .lt-check-label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+  .lt-check-label input[type="checkbox"] { width: 15px; height: 15px; margin-top: 2px; accent-color: #00c896; flex-shrink: 0; cursor: pointer; }
+  .lt-check-text { font-size: 13px; color: #e8edf3; line-height: 1.5; }
+  .lt-check-sub { font-size: 11px; color: rgba(255,255,255,0.35); padding-left: 25px; line-height: 1.4; }
+
+  /* Word count colors */
+  .wc-green { color: var(--green); }
+  .wc-amber { color: #ffb347; }
+  .wc-red { color: #ff6b6b; }
+
+  /* Next steps links */
+  .lt-next-steps { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.07); }
+  .lt-next-steps p { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+  .lt-next-link { display: block; font-size: 13px; color: var(--green); text-decoration: none; padding: 4px 0; transition: opacity .15s; }
+  .lt-next-link:hover { opacity: 0.8; }
 
   .help-section { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
   .help-section h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
@@ -128,279 +154,29 @@
 </header>
 
 <div class="breadcrumb">
-  <a href="/">HOMESEEKER</a><span class="sep">›</span><a href="/guide/rent">Rental Guide</a><span class="sep">›</span>AI Rental Assistant
+  <a href="/">HOMESEEKER</a><span class="sep">&#8250;</span><a href="/guide/rent">Rental Guide</a><span class="sep">&#8250;</span>AI Rental Assistant
 </div>
 
 <div class="container">
   <div class="page-title"><span>AI</span> Rental Assistant</div>
-  <p class="page-sub">Five specialist tools to help you find, view, negotiate, and move into your Dutch rental.</p>
+  <p class="page-sub">Your complete guide to finding and securing a rental in the Netherlands.</p>
 
   <div id="listing-badge" class="listing-badge"></div>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab(1,this)">🎯 Application Coach</button>
-    <button class="tab-btn" onclick="switchTab(2,this)">👁 Viewing Prep</button>
-    <button class="tab-btn" onclick="switchTab(3,this)">💬 Negotiation</button>
-    <button class="tab-btn" onclick="switchTab(4,this)">📄 Lease Review</button>
-    <button class="tab-btn" onclick="switchTab(5,this)">📦 Move-In</button>
-    <button class="tab-btn" onclick="switchTab(6,this)">✉️ Letter</button>
+    <button class="tab-btn active" onclick="switchTab(1,this)">&#x2709;&#xFE0F; Write Letter</button>
+    <button class="tab-btn" onclick="switchTab(2,this)">&#127919; Application Coach</button>
+    <button class="tab-btn" onclick="switchTab(3,this)">&#128065; Viewing Tips</button>
+    <button class="tab-btn" onclick="switchTab(4,this)">&#128172; Negotiation Help</button>
+    <button class="tab-btn" onclick="switchTab(5,this)">&#128196; Check Lease</button>
+    <button class="tab-btn" onclick="switchTab(6,this)">&#128230; Move-In Help</button>
   </div>
 
-  <!-- Tab 1: Application Coach -->
+  <!-- Tab 1: Write Letter -->
   <div id="panel-1" class="panel active">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Application Coach</h2>
-          <p class="desc">Paste the listing and get a strategy, first contact message, and document order tailored to this landlord.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Listing description <button class="info-btn" data-hint="Paste the listing text or describe the property - address, price, what the landlord is looking for, platform it is on.">ⓘ</button> <span class="char-count" id="cc-1-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t1-listing" rows="5" oninput="updateCount(this,'cc-1-1')"></textarea>
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Your goal for this application <button class="info-btn" data-hint="What matters most to you - moving in quickly, beating many applicants, a specific move-in date? The clearer this is, the better the strategy.">ⓘ</button></label>
-              <div class="field-hint"></div>
-              <input id="t1-goal" type="text">
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-1" onclick="submit(1)">Get advice →</button>
-          <div class="error-msg" id="err-1"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-1">
-          <div class="empty-icon">🎯</div>
-          <p>Fill in the listing and your goal, then click "Get advice →" to see your strategy.</p>
-        </div>
-        <div class="skeleton" id="skel-1">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-1">
-          <div class="response-header">
-            <h3>Application Strategy</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(1)">Copy</button>
-              <button class="followup-btn" onclick="followUp(1)">Ask a follow-up ↗</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-1"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 2: Viewing Prep -->
-  <div id="panel-2" class="panel">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Viewing Preparation</h2>
-          <p class="desc">Get 10 tailored questions, a physical inspection checklist, and exactly how to stand out from other viewers.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Property description <button class="info-btn" data-hint="Include size, floor, energy label, building era, furnishing, and service costs - anything on the listing that might affect what you check.">ⓘ</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t2-listing" rows="4" oninput="updateCount(this,'cc-2-1')"></textarea>
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Main concern or what you want to check <button class="info-btn" data-hint="Damp, noise, heating, service costs, building maintenance? Tell us what worries you and we'll focus the checklist there.">ⓘ</button></label>
-              <div class="field-hint"></div>
-              <input id="t2-goal" type="text">
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-2" onclick="submit(2)">Get advice →</button>
-          <div class="error-msg" id="err-2"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-2">
-          <div class="empty-icon">👁</div>
-          <p>Describe the property and we'll prepare your questions, inspection checklist, and how to stand out.</p>
-        </div>
-        <div class="skeleton" id="skel-2">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-2">
-          <div class="response-header">
-            <h3>Viewing Guide</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(2)">Copy</button>
-              <button class="followup-btn" onclick="followUp(2)">Ask a follow-up ↗</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-2"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 3: Negotiation -->
-  <div id="panel-3" class="panel">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Negotiation Scripts</h2>
-          <p class="desc">Honest market assessment plus word-for-word scripts for rent, lease terms, and repairs.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>What do you want to negotiate? <button class="info-btn" data-hint="Be specific: lower rent by €X, remove a clause, get repairs done, extend the lease term. One clear ask works better than several vague ones.">ⓘ</button></label>
-              <div class="field-hint"></div>
-              <input id="t3-goal" type="text">
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Your situation <button class="info-btn" data-hint="How long has the listing been up? Do you have comparable prices? Can you move in quickly? Any of these are leverage - include them.">ⓘ</button> <span class="char-count" id="cc-3-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t3-situation" rows="3" oninput="updateCount(this,'cc-3-1')"></textarea>
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-3" onclick="submit(3)">Get advice →</button>
-          <div class="error-msg" id="err-3"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-3">
-          <div class="empty-icon">💬</div>
-          <p>Describe what you want to negotiate and your leverage - we'll write the word-for-word scripts.</p>
-        </div>
-        <div class="skeleton" id="skel-3">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-3">
-          <div class="response-header">
-            <h3>Negotiation Scripts</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(3)">Copy</button>
-              <button class="followup-btn" onclick="followUp(3)">Ask a follow-up ↗</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-3"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 4: Lease Review -->
-  <div id="panel-4" class="panel">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Lease Review</h2>
-          <p class="desc">Paste your lease and get a clause-by-clause RAG analysis, your Dutch law rights, and what to ask the landlord to change.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Paste your lease text <button class="info-btn" data-hint="Paste the full lease or just the clauses you are unsure about - deposit, notice period, rent increases, maintenance, service costs, subletting, and registration rules are the most important.">ⓘ</button> <span class="char-count" id="cc-4-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t4-lease" rows="9" oninput="updateCount(this,'cc-4-1')"></textarea>
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-4" onclick="submit(4)">Get advice →</button>
-          <div class="error-msg" id="err-4"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-4">
-          <div class="empty-icon">📄</div>
-          <p>Paste your lease text and we'll flag the risky clauses and tell you what to challenge.</p>
-        </div>
-        <div class="skeleton" id="skel-4">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-4">
-          <div class="response-header">
-            <h3>Lease Analysis</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(4)">Copy</button>
-              <button class="followup-btn" onclick="followUp(4)">Ask a follow-up ↗</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-4"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 5: Move-In -->
-  <div id="panel-5" class="panel">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Move-In Checklist</h2>
-          <p class="desc">Get a room-by-room checklist, meter reading instructions, gemeente registration steps, and a template email to your landlord.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Property type <button class="info-btn" data-hint="The checklist adapts to property type - a shared house has different move-in steps than an apartment or full house.">ⓘ</button></label>
-              <div class="field-hint"></div>
-              <select id="t5-type">
-                <option value="apartment">Apartment</option>
-                <option value="house">House (eengezinswoning)</option>
-                <option value="studio">Studio</option>
-                <option value="shared room">Shared house (room)</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Rooms <button class="info-btn" data-hint="List every room you will be checking - bedrooms, bathrooms, kitchen, hallway, balcony, storage, basement. We use this to build your room-by-room checklist.">ⓘ</button></label>
-              <div class="field-hint"></div>
-              <input id="t5-rooms" type="text">
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Anything special about your move? <button class="info-btn" data-hint="Moving from abroad? Need BSN or gemeente registration urgently? First time renting in the Netherlands? Mention it so we can include the right administrative steps.">ⓘ</button> <span class="char-count" id="cc-5-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t5-extra" rows="2" oninput="updateCount(this,'cc-5-1')"></textarea>
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-5" onclick="submit(5)">Get advice →</button>
-          <div class="error-msg" id="err-5"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-5">
-          <div class="empty-icon">📦</div>
-          <p>Tell us about your property and we'll generate your complete room-by-room checklist.</p>
-        </div>
-        <div class="skeleton" id="skel-5">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-5">
-          <div class="response-header">
-            <h3>Move-In Checklist</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(5)">Copy</button>
-              <button class="followup-btn" onclick="followUp(5)">Ask a follow-up ↗</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-5"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 6: Letter -->
-  <div id="panel-6" class="panel">
     <div id="lt-no-listing" style="display:none">
       <div class="output-empty" style="max-width:480px">
-        <div class="empty-icon">✉️</div>
+        <div class="empty-icon">&#x2709;&#xFE0F;</div>
         <p>No listing linked. Open from a Telegram alert, or visit <a href="/letter" style="color:var(--green)">the letter page</a> directly.</p>
       </div>
     </div>
@@ -409,29 +185,71 @@
     </div>
     <div id="lt-form" class="panel-grid" style="display:none">
       <div class="form-card">
-        <h2>Application Letter</h2>
-        <p class="desc">Personalised rental application letter based on your profile.</p>
+        <h2>Write your application letter</h2>
+        <p class="desc">Generate a personalised motivation letter for this listing. Based on your profile and the landlord's requirements.</p>
+
         <div id="lt-listing-card" style="display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;color:var(--muted)"></div>
-        <div style="margin-bottom:16px">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600;margin-bottom:8px">Include in letter</div>
-          <div id="lt-tips"></div>
+
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600;margin-bottom:8px">LETTER TONE</div>
+        <div class="tone-selector">
+          <button class="tone-pill active" onclick="ltSetTone('professional',this)">Professional</button>
+          <button class="tone-pill" onclick="ltSetTone('personal',this)">Personal</button>
+          <button class="tone-pill" onclick="ltSetTone('concise',this)">Concise</button>
         </div>
+
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600;margin-bottom:10px">INCLUDE IN LETTER</div>
+        <div class="lt-check-group">
+          <div class="lt-check-item">
+            <label class="lt-check-label">
+              <input type="checkbox" checked onchange="ltState.checks[0]=this.checked">
+              <span class="lt-check-text">Your income and employment</span>
+            </label>
+            <div class="lt-check-sub">Confirms you meet the financial requirements</div>
+          </div>
+          <div class="lt-check-item">
+            <label class="lt-check-label">
+              <input type="checkbox" checked onchange="ltState.checks[1]=this.checked">
+              <span class="lt-check-text">Why this specific home</span>
+            </label>
+            <div class="lt-check-sub">One sentence about why this property suits your situation</div>
+          </div>
+          <div class="lt-check-item">
+            <label class="lt-check-label">
+              <input type="checkbox" checked onchange="ltState.checks[2]=this.checked">
+              <span class="lt-check-text">Your move-in timeline</span>
+            </label>
+            <div class="lt-check-sub">When you can move in and your flexibility</div>
+          </div>
+          <div class="lt-check-item">
+            <label class="lt-check-label">
+              <input type="checkbox" checked onchange="ltState.checks[3]=this.checked">
+              <span class="lt-check-text">Documents ready</span>
+            </label>
+            <div class="lt-check-sub">Confirm you can send everything immediately</div>
+          </div>
+        </div>
+
         <div class="field" style="margin-bottom:14px">
-          <label>Extra context <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">(optional)</span></label>
-          <textarea id="lt-extra" style="min-height:70px"></textarea>
+          <label>ANYTHING SPECIFIC TO ADD?
+            <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">(optional)</span>
+            <button class="info-btn" data-hint="Any detail that strengthens your case: a connection to the area, a reason for the move, or a specific feature you want highlighted.">&#9432;</button>
+            <span class="char-count" id="lt-cc">0 / 400</span>
+          </label>
+          <textarea id="lt-extra" style="min-height:70px" oninput="updateCount(this,'lt-cc',400)"></textarea>
         </div>
-        <button class="btn-submit" id="lt-gen-btn" onclick="ltGenerate()">✉️ Generate letter</button>
+
+        <button class="btn-submit" id="lt-gen-btn" onclick="ltGenerate()">Generate my letter &#8594;</button>
         <div class="error-msg" id="lt-err"></div>
       </div>
       <div class="output-col">
         <div class="output-empty" id="lt-empty">
-          <div class="empty-icon">✉️</div>
+          <div class="empty-icon">&#x2709;&#xFE0F;</div>
           <p>Your personalised application letter will appear here.</p>
         </div>
         <div class="skeleton" id="lt-skel" style="display:none"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
         <div id="lt-letter-box" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-            <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">✉️ Your letter</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">&#x2709;&#xFE0F; Your letter</span>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="copy-btn" id="lt-copy-btn" onclick="ltCopy()">Copy</button>
               <button class="copy-btn" onclick="ltDownload()">.txt</button>
@@ -441,7 +259,262 @@
             </div>
           </div>
           <div id="lt-letter-text" style="font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
-          <div id="lt-word-count" style="font-size:11px;color:var(--muted);margin-top:12px"></div>
+          <div id="lt-word-count" style="font-size:11px;margin-top:12px"></div>
+          <div class="lt-next-steps">
+            <p>NEXT STEPS</p>
+            <a class="lt-next-link" id="lt-coach-link" href="#">Get your full application strategy &#8594;</a>
+            <a class="lt-next-link" id="lt-viewing-link" href="#">Prepare for the viewing &#8594;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Application Coach -->
+  <div id="panel-2" class="panel">
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Application Coach</h2>
+          <p class="desc">Describe the listing and your situation. Get an honest assessment, a copy-paste first message, and what documents to attach.</p>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Listing description <button class="info-btn" data-hint="Paste the listing text or describe the property - address, price, what the landlord is looking for, platform it is on.">&#9432;</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t2-listing" rows="5" oninput="updateCount(this,'cc-2-1')"></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Your goal for this application <button class="info-btn" data-hint="What matters most to you - moving in quickly, beating many applicants, a specific move-in date? The clearer this is, the better the strategy.">&#9432;</button></label>
+              <div class="field-hint"></div>
+              <input id="t2-goal" type="text">
+            </div>
+          </div>
+          <button class="btn-submit" id="btn-2" onclick="submit(2)">Get advice &#8594;</button>
+          <div class="error-msg" id="err-2"></div>
+        </div>
+      </div>
+      <div class="output-col">
+        <div class="output-empty" id="empty-2">
+          <div class="empty-icon">&#127919;</div>
+          <p>Fill in the listing and your goal, then click "Get advice" to see your strategy.</p>
+        </div>
+        <div class="skeleton" id="skel-2">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-2">
+          <div class="response-header">
+            <h3>Application Strategy</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(2)">Copy</button>
+              <button class="followup-btn" onclick="followUp(2)">Ask a follow-up &#8599;</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Viewing Tips -->
+  <div id="panel-3" class="panel">
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Viewing Tips</h2>
+          <p class="desc">Describe the property. Get 10 questions to ask, what to inspect, what to bring, and how to stand out.</p>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Property description <button class="info-btn" data-hint="Include size, floor, energy label, building era, furnishing, and service costs - anything on the listing that might affect what you check.">&#9432;</button> <span class="char-count" id="cc-3-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t3-listing" rows="4" oninput="updateCount(this,'cc-3-1')"></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Main concern or what you want to check <button class="info-btn" data-hint="Damp, noise, heating, service costs, building maintenance? Tell us what worries you and we'll focus the checklist there.">&#9432;</button></label>
+              <div class="field-hint"></div>
+              <input id="t3-goal" type="text">
+            </div>
+          </div>
+          <button class="btn-submit" id="btn-3" onclick="submit(3)">Get advice &#8594;</button>
+          <div class="error-msg" id="err-3"></div>
+        </div>
+      </div>
+      <div class="output-col">
+        <div class="output-empty" id="empty-3">
+          <div class="empty-icon">&#128065;</div>
+          <p>Describe the property and we'll prepare your questions, inspection checklist, and how to stand out.</p>
+        </div>
+        <div class="skeleton" id="skel-3">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-3">
+          <div class="response-header">
+            <h3>Viewing Guide</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(3)">Copy</button>
+              <button class="followup-btn" onclick="followUp(3)">Ask a follow-up &#8599;</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Negotiation Help -->
+  <div id="panel-4" class="panel">
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Negotiation Help</h2>
+          <p class="desc">Describe your situation. Get honest advice on whether negotiating is realistic, and exact word-for-word scripts to use.</p>
+          <div class="field">
+            <div class="field-wrap">
+              <label>What do you want to negotiate? <button class="info-btn" data-hint="Be specific: lower rent by a set amount, remove a clause, get repairs done, extend the lease term. One clear ask works better than several vague ones.">&#9432;</button></label>
+              <div class="field-hint"></div>
+              <input id="t4-goal" type="text">
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Your situation <button class="info-btn" data-hint="How long has the listing been up? Do you have comparable prices? Can you move in quickly? Any of these are leverage - include them.">&#9432;</button> <span class="char-count" id="cc-4-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t4-situation" rows="3" oninput="updateCount(this,'cc-4-1')"></textarea>
+            </div>
+          </div>
+          <button class="btn-submit" id="btn-4" onclick="submit(4)">Get advice &#8594;</button>
+          <div class="error-msg" id="err-4"></div>
+        </div>
+      </div>
+      <div class="output-col">
+        <div class="output-empty" id="empty-4">
+          <div class="empty-icon">&#128172;</div>
+          <p>Describe what you want to negotiate and your leverage - we'll write the word-for-word scripts.</p>
+        </div>
+        <div class="skeleton" id="skel-4">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-4">
+          <div class="response-header">
+            <h3>Negotiation Scripts</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(4)">Copy</button>
+              <button class="followup-btn" onclick="followUp(4)">Ask a follow-up &#8599;</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 5: Check Lease -->
+  <div id="panel-5" class="panel">
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Check Lease</h2>
+          <p class="desc">Paste any clause or the full contract. Get a plain-English explanation, red flags, and what your rights are under Dutch law.</p>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Paste your lease text <button class="info-btn" data-hint="Paste the full lease or just the clauses you are unsure about - deposit, notice period, rent increases, maintenance, service costs, subletting, and registration rules are the most important.">&#9432;</button> <span class="char-count" id="cc-5-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t5-lease" rows="9" oninput="updateCount(this,'cc-5-1')"></textarea>
+            </div>
+          </div>
+          <button class="btn-submit" id="btn-5" onclick="submit(5)">Get advice &#8594;</button>
+          <div class="error-msg" id="err-5"></div>
+        </div>
+      </div>
+      <div class="output-col">
+        <div class="output-empty" id="empty-5">
+          <div class="empty-icon">&#128196;</div>
+          <p>Paste your lease text and we'll flag the risky clauses and tell you what to challenge.</p>
+        </div>
+        <div class="skeleton" id="skel-5">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-5">
+          <div class="response-header">
+            <h3>Lease Analysis</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(5)">Copy</button>
+              <button class="followup-btn" onclick="followUp(5)">Ask a follow-up &#8599;</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 6: Move-In Help -->
+  <div id="panel-6" class="panel">
+    <div class="panel-grid">
+      <div>
+        <div class="form-card">
+          <h2>Move-In Help</h2>
+          <p class="desc">Select your property type and number of rooms. Get a room-by-room inspection checklist, meter reading instructions, and a template email to your landlord.</p>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Property type <button class="info-btn" data-hint="The checklist adapts to property type - a shared house has different move-in steps than an apartment or full house.">&#9432;</button></label>
+              <div class="field-hint"></div>
+              <select id="t6-type">
+                <option value="apartment">Apartment</option>
+                <option value="house">House</option>
+                <option value="studio">Studio</option>
+                <option value="shared room">Shared house (room)</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Rooms <button class="info-btn" data-hint="List every room you will be checking - bedrooms, bathrooms, kitchen, hallway, balcony, storage, basement. We use this to build your room-by-room checklist.">&#9432;</button></label>
+              <div class="field-hint"></div>
+              <input id="t6-rooms" type="text">
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-wrap">
+              <label>Anything special about your move? <button class="info-btn" data-hint="Moving from abroad? Need BSN or address registration urgently? First time renting in the Netherlands? Mention it so we can include the right administrative steps.">&#9432;</button> <span class="char-count" id="cc-6-1">0 / 2000</span></label>
+              <div class="field-hint"></div>
+              <textarea id="t6-extra" rows="2" oninput="updateCount(this,'cc-6-1')"></textarea>
+            </div>
+          </div>
+          <button class="btn-submit" id="btn-6" onclick="submit(6)">Get advice &#8594;</button>
+          <div class="error-msg" id="err-6"></div>
+        </div>
+      </div>
+      <div class="output-col">
+        <div class="output-empty" id="empty-6">
+          <div class="empty-icon">&#128230;</div>
+          <p>Tell us about your property and we'll generate your complete room-by-room checklist.</p>
+        </div>
+        <div class="skeleton" id="skel-6">
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+          <div class="skel-bar"></div>
+        </div>
+        <div class="response-card" id="resp-6">
+          <div class="response-header">
+            <h3>Move-In Checklist</h3>
+            <div class="resp-actions">
+              <button class="copy-btn" onclick="copyResp(6)">Copy</button>
+              <button class="followup-btn" onclick="followUp(6)">Ask a follow-up &#8599;</button>
+            </div>
+          </div>
+          <div class="response-body" id="body-6"></div>
         </div>
       </div>
     </div>
@@ -450,14 +523,14 @@
   <div class="help-section">
     <h3>Need help with something else?</h3>
     <div class="help-links">
-      <a href="/letter" class="help-link">✉️ AI Motivation Letter</a>
-      <a href="/tools/landlord-reply" class="help-link">💬 Landlord Reply Coach</a>
-      <a href="/tools/rejection-analyser" class="help-link">🔍 Rejection Analyser</a>
-      <a href="/tools/income-check" class="help-link">💰 Income Check</a>
-      <a href="/tools/reference-letter" class="help-link">📄 Reference Letter</a>
-      <a href="/tools/viewing-feedback" class="help-link">👁 Viewing Feedback</a>
-      <a href="/tools/tenant-rights" class="help-link">⚖️ Tenant Rights Guide</a>
-      <a href="/tools/buy-assistant" class="help-link">🏡 Buyer Assistant</a>
+      <a href="/letter" class="help-link">&#x2709;&#xFE0F; AI Motivation Letter</a>
+      <a href="/tools/landlord-reply" class="help-link">&#128172; Landlord Reply Coach</a>
+      <a href="/tools/rejection-analyser" class="help-link">&#128269; Rejection Analyser</a>
+      <a href="/tools/income-check" class="help-link">&#128176; Income Check</a>
+      <a href="/tools/reference-letter" class="help-link">&#128196; Reference Letter</a>
+      <a href="/tools/viewing-feedback" class="help-link">&#128065; Viewing Feedback</a>
+      <a href="/tools/tenant-rights" class="help-link">&#9878;&#65039; Tenant Rights Guide</a>
+      <a href="/tools/buy-assistant" class="help-link">&#127968; Buyer Assistant</a>
     </div>
   </div>
 </div>
@@ -467,19 +540,25 @@ let chatId = null;
 let listingContext = '';
 const lastResponses = {};
 
+// UI tab number to API tab number mapping (Letter tab 1 uses separate API)
+const API_TAB_MAP = { 2: '1', 3: '2', 4: '3', 5: '4', 6: '5' };
+
 document.querySelectorAll('.info-btn').forEach(btn => {
   btn.addEventListener('click', e => {
     e.preventDefault();
-    const hint = btn.closest('.field-wrap').querySelector('.field-hint');
+    const wrap = btn.closest('.field-wrap');
+    if (!wrap) return;
+    const hint = wrap.querySelector('.field-hint');
+    if (!hint) return;
     const isOpen = hint.style.display === 'block';
     hint.style.display = isOpen ? 'none' : 'block';
     hint.textContent = btn.dataset.hint;
   });
 });
 
-function updateCount(el, ccId) {
+function updateCount(el, ccId, max) {
   const cc = document.getElementById(ccId);
-  if (cc) cc.textContent = `${el.value.length} / 2000`;
+  if (cc) cc.textContent = `${el.value.length} / ${max || 2000}`;
 }
 
 function getParams() {
@@ -499,10 +578,10 @@ function getParams() {
           const l = data.listing;
           listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
           const badge = document.getElementById('listing-badge');
-          badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong>${l.price ? ' · ' + l.price : ''}`;
+          badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong>${l.price ? ' &middot; ' + l.price : ''}`;
           badge.classList.add('visible');
-          document.getElementById('t1-listing').value = listingContext.slice(0, 800);
-          updateCount(document.getElementById('t1-listing'), 'cc-1-1');
+          const t2 = document.getElementById('t2-listing');
+          if (t2) { t2.value = listingContext.slice(0, 800); updateCount(t2, 'cc-2-1'); }
         }
       }).catch(() => {});
   }
@@ -515,45 +594,45 @@ function switchTab(n, btn) {
   document.getElementById(`panel-${n}`).classList.add('active');
   btn.classList.add('active');
   activeTab = n;
-  if (n === 6) initLetterTab();
+  if (n === 1) initLetterTab();
 }
 
 function buildMessage(tab) {
   switch (tab) {
-    case 1: {
-      const listing = document.getElementById('t1-listing').value.trim();
-      const goal = document.getElementById('t1-goal').value.trim();
+    case 2: {
+      const listing = document.getElementById('t2-listing').value.trim();
+      const goal = document.getElementById('t2-goal').value.trim();
       if (!listing && !listingContext) return null;
       const parts = [];
       if (goal) parts.push(`Application goal: ${goal}`);
       parts.push(`Listing description: ${listing || listingContext}`);
       return parts.join('\n\n');
     }
-    case 2: {
-      const listing = document.getElementById('t2-listing').value.trim() || listingContext;
-      const concern = document.getElementById('t2-goal').value.trim();
+    case 3: {
+      const listing = document.getElementById('t3-listing').value.trim() || listingContext;
+      const concern = document.getElementById('t3-goal').value.trim();
       if (!listing) return null;
       const parts = [`Property: ${listing}`];
       if (concern) parts.push(`Main concern: ${concern}`);
       return parts.join('\n\n');
     }
-    case 3: {
-      const goal = document.getElementById('t3-goal').value.trim();
-      const situation = document.getElementById('t3-situation').value.trim();
+    case 4: {
+      const goal = document.getElementById('t4-goal').value.trim();
+      const situation = document.getElementById('t4-situation').value.trim();
       if (!goal) return null;
       const parts = [`Goal: ${goal}`];
       if (situation) parts.push(`Situation: ${situation}`);
       return parts.join('\n\n');
     }
-    case 4: {
-      const lease = document.getElementById('t4-lease').value.trim();
+    case 5: {
+      const lease = document.getElementById('t5-lease').value.trim();
       if (!lease || lease.length < 40) return null;
       return lease;
     }
-    case 5: {
-      const type = document.getElementById('t5-type').value;
-      const rooms = document.getElementById('t5-rooms').value.trim();
-      const extra = document.getElementById('t5-extra').value.trim();
+    case 6: {
+      const type = document.getElementById('t6-type').value;
+      const rooms = document.getElementById('t6-rooms').value.trim();
+      const extra = document.getElementById('t6-extra').value.trim();
       const parts = [`Property type: ${type}.`, `Rooms: ${rooms || 'standard layout'}.`];
       if (extra) parts.push(`Additional context: ${extra}`);
       return parts.join(' ');
@@ -563,11 +642,11 @@ function buildMessage(tab) {
 }
 
 const ERRORS = {
-  1: 'Please paste the listing description.',
-  2: 'Please describe the property.',
-  3: 'Please fill in what you want to negotiate.',
-  4: 'Please paste at least 40 characters of lease text.',
-  5: 'Please describe the rooms in the property.',
+  2: 'Please paste the listing description.',
+  3: 'Please describe the property.',
+  4: 'Please fill in what you want to negotiate.',
+  5: 'Please paste at least 40 characters of lease text.',
+  6: 'Please describe the rooms in the property.',
 };
 
 async function submit(tab) {
@@ -576,7 +655,8 @@ async function submit(tab) {
   hideErr(tab);
   setLoading(tab, true);
   try {
-    const body = { tab, userMessage: msg };
+    const apiTab = API_TAB_MAP[tab] || String(tab);
+    const body = { tab: apiTab, userMessage: msg };
     if (chatId) body.chatId = chatId;
     if (listingContext) body.listingContext = listingContext;
     const r = await fetch('/api/rent-assistant', {
@@ -629,10 +709,12 @@ function renderMarkdown(text) {
 
 function showErr(tab, msg) {
   const el = document.getElementById(`err-${tab}`);
-  el.textContent = msg;
-  el.classList.add('visible');
+  if (el) { el.textContent = msg; el.classList.add('visible'); }
 }
-function hideErr(tab) { document.getElementById(`err-${tab}`).classList.remove('visible'); }
+function hideErr(tab) {
+  const el = document.getElementById(`err-${tab}`);
+  if (el) el.classList.remove('visible');
+}
 
 function setLoading(tab, on) {
   const btn = document.getElementById(`btn-${tab}`);
@@ -641,7 +723,7 @@ function setLoading(tab, on) {
   const resp = document.getElementById(`resp-${tab}`);
   if (btn) {
     btn.disabled = on;
-    btn.innerHTML = on ? '<span class="btn-spinner"></span>Getting advice...' : 'Get advice →';
+    btn.innerHTML = on ? '<span class="btn-spinner"></span>Getting advice...' : 'Get advice &#8594;';
   }
   if (on) {
     if (empty) empty.style.display = 'none';
@@ -657,6 +739,7 @@ function copyResp(tab) {
   if (!text) return;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.querySelector(`#resp-${tab} .copy-btn`);
+    if (!btn) return;
     btn.textContent = 'Copied!';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
@@ -664,7 +747,7 @@ function copyResp(tab) {
 }
 
 function followUp(tab) {
-  const fields = { 1: 't1-listing', 2: 't2-listing', 3: 't3-situation', 4: 't4-lease', 5: 't5-extra' };
+  const fields = { 2: 't2-listing', 3: 't3-listing', 4: 't4-situation', 5: 't5-lease', 6: 't6-extra' };
   const fieldId = fields[tab];
   if (!fieldId) return;
   const el = document.getElementById(fieldId);
@@ -673,8 +756,22 @@ function followUp(tab) {
   el.setSelectionRange(el.value.length, el.value.length);
 }
 
+// ─── Letter Tab Logic ───────────────────────────────────────────
 const ltEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const ltState = { loaded: false, cacheId: null, tips: [], letter: '' };
+const ltState = { loaded: false, cacheId: null, letter: '', tone: 'professional', checks: [true, true, true, true] };
+
+const INCLUDE_LABELS = [
+  'Your income and employment - confirm you meet the financial requirements',
+  'Why this specific home - one sentence about why this property suits your situation',
+  'Your move-in timeline - when you can move in and your flexibility',
+  'Documents ready - confirm you can send everything immediately',
+];
+
+function ltSetTone(tone, btn) {
+  ltState.tone = tone;
+  document.querySelectorAll('.tone-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+}
 
 function initLetterTab() {
   if (ltState.loaded) return;
@@ -692,29 +789,34 @@ function initLetterTab() {
       document.getElementById('lt-loading').style.display = 'none';
       const l = data.listing || {};
       const card = document.getElementById('lt-listing-card');
-      card.innerHTML = `<strong style="color:var(--text)">${ltEsc(l.address || l.url || 'Property')}</strong> ${l.price ? '&middot; ' + ltEsc(l.price) : ''} ${l.city ? '&middot; ' + ltEsc(l.city) : ''}`;
+      const price = l.price || (l.priceNumber ? `€${l.priceNumber}/mo` : '');
+      const area = l.area ? `${l.area}m²` : '';
+      const meta = [price, area].filter(Boolean).join(' · ');
+      let cardHtml = `<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${ltEsc(l.address || l.url || 'Property')}</div>`;
+      if (meta) cardHtml += `<div style="font-size:12px;color:var(--muted)">${ltEsc(meta)}</div>`;
+      const score = data.score;
+      const dealScore = data.dealScore;
+      if (score != null || dealScore != null) {
+        cardHtml += '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">';
+        if (score != null) {
+          const scoreLbl = score >= 85 ? 'Excellent' : score >= 70 ? 'Strong' : score >= 50 ? 'Good' : score >= 30 ? 'Fair' : 'Weak';
+          const scoreColor = score >= 70 ? '#00c896' : score >= 40 ? '#ffb347' : '#ff6b6b';
+          cardHtml += `<span style="background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;color:${scoreColor}">Application: ${scoreLbl}</span>`;
+        }
+        if (dealScore != null) {
+          const dealLbl = dealScore >= 60 ? 'Good deal' : dealScore >= 40 ? 'Fair price' : 'Expensive';
+          cardHtml += `<span style="background:rgba(100,180,255,0.08);border:1px solid rgba(100,180,255,0.2);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;color:#6ab4ff">Market: ${dealLbl}</span>`;
+        }
+        cardHtml += '</div>';
+      }
+      card.innerHTML = cardHtml;
       card.style.display = 'block';
-      const FIXED = [
-        { tip: 'Why this specific home appeals to you', category: 'general' },
-        { tip: 'Your move-in timeline and document readiness', category: 'documents' },
-      ];
-      ltState.tips = [...(data.tips || []), ...FIXED].map(t => ({ ...t, selected: true }));
-      ltRenderTips();
       document.getElementById('lt-form').style.display = 'grid';
     })
     .catch(() => {
       document.getElementById('lt-loading').style.display = 'none';
       document.getElementById('lt-no-listing').style.display = 'block';
     });
-}
-
-function ltRenderTips() {
-  document.getElementById('lt-tips').innerHTML = ltState.tips.map((t, i) =>
-    `<label style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer">
-      <input type="checkbox" ${t.selected ? 'checked' : ''} onchange="ltState.tips[${i}].selected=this.checked" style="margin-top:3px;accent-color:var(--green);flex-shrink:0">
-      <span style="font-size:13px;line-height:1.5">${ltEsc(t.tip)}</span>
-    </label>`
-  ).join('');
 }
 
 async function ltGenerate() {
@@ -726,17 +828,18 @@ async function ltGenerate() {
   document.getElementById('lt-skel').style.display = 'block';
   document.getElementById('lt-letter-box').style.display = 'none';
   try {
-    const selectedTipTexts = ltState.tips.filter(t => t.selected).map(t => t.tip);
+    const selectedTipTexts = INCLUDE_LABELS.filter((_, i) => ltState.checks[i]);
     const extraContext = document.getElementById('lt-extra').value.trim();
     const resp = await fetch('/api/generate-letter-web', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cacheId: ltState.cacheId, selectedTipTexts, extraContext }),
+      body: JSON.stringify({ cacheId: ltState.cacheId, selectedTipTexts, extraContext, tone: ltState.tone }),
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error || 'Generation failed');
     ltState.letter = data.letter;
     ltShowLetter(data.letter);
+    ltUpdateNextLinks();
   } catch (e) {
     document.getElementById('lt-err').textContent = e.message || 'Letter generation failed. Please try again.';
     document.getElementById('lt-err').classList.add('visible');
@@ -744,18 +847,31 @@ async function ltGenerate() {
   } finally {
     document.getElementById('lt-skel').style.display = 'none';
     btn.disabled = false;
-    btn.innerHTML = '✉️ Generate letter';
+    btn.innerHTML = 'Generate my letter &#8594;';
   }
 }
 
 function ltShowLetter(text) {
   document.getElementById('lt-letter-text').textContent = text;
-  const words = text.trim().split(/\s+/).length;
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
   const wc = document.getElementById('lt-word-count');
-  wc.textContent = `${words} words`;
-  if (words > 250) wc.textContent += ' - this letter may be too long. Use "Shorter" below.';
+  if (words < 180) {
+    wc.innerHTML = `<span class="wc-green">~${words} words</span>`;
+  } else if (words <= 220) {
+    wc.innerHTML = `<span class="wc-amber">~${words} words</span>`;
+  } else {
+    wc.innerHTML = `<span class="wc-red">~${words} words - Consider the shorter version</span>`;
+  }
   document.getElementById('lt-letter-box').style.display = 'block';
   document.getElementById('lt-letter-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function ltUpdateNextLinks() {
+  const base = window.location.pathname;
+  const chatParam = chatId ? `chat_id=${chatId}&` : '';
+  const listingParam = ltState.cacheId ? `listing=${ltState.cacheId}&` : '';
+  document.getElementById('lt-coach-link').href = `${base}?${chatParam}${listingParam}tab=2`;
+  document.getElementById('lt-viewing-link').href = `${base}?${chatParam}${listingParam}tab=3`;
 }
 
 function ltCopy() {
@@ -790,7 +906,7 @@ async function ltModify(mode) {
   document.getElementById('lt-skel').style.display = 'block';
   document.getElementById('lt-letter-box').style.display = 'none';
   const instruction = mode === 'shorter'
-    ? 'Make this letter shorter. Aim for 120 words maximum.'
+    ? 'Make this letter shorter. Aim for 120 words maximum. Keep the essential points.'
     : 'Make this letter more personal. Add one genuine sentence about what specifically appeals about this home.';
   try {
     const resp = await fetch('/api/generate-letter-web', {
@@ -802,6 +918,7 @@ async function ltModify(mode) {
     if (!resp.ok) throw new Error(data.error || 'Revision failed');
     ltState.letter = data.letter;
     ltShowLetter(data.letter);
+    ltUpdateNextLinks();
   } catch (e) {
     document.getElementById('lt-err').textContent = e.message || 'Revision failed.';
     document.getElementById('lt-err').classList.add('visible');
@@ -809,12 +926,12 @@ async function ltModify(mode) {
   } finally {
     document.getElementById('lt-skel').style.display = 'none';
     btn.disabled = false;
-    btn.innerHTML = '✉️ Generate letter';
+    btn.innerHTML = 'Generate my letter &#8594;';
   }
 }
 
 getParams();
 </script>
-<div style="border-top:1px solid rgba(255,255,255,0.07);padding:16px 24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.3)">AI-generated content is a starting point. Always review and personalise before sending. You are responsible for the accuracy of your application.<br>© 2025 HomeSeeker</div>
+<div style="border-top:1px solid rgba(255,255,255,0.07);padding:16px 24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.3)">AI-generated content is a starting point. Always review and personalise before sending. You are responsible for the accuracy of your application.<br>&copy; 2025 HomeSeeker</div>
 </body>
 </html>

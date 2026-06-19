@@ -97,7 +97,7 @@ Rules:
   return stripMarkdown(message.content[0].text);
 }
 
-async function generateLetterDirect({ listing, user, selectedTips = [] }) {
+async function generateLetterDirect({ listing, user, selectedTips = [], tone = 'professional' }) {
   const rawNaam = (user?.naam || '').trim();
   const noName = !rawNaam || rawNaam.toLowerCase() === 'huurder';
   const naam = noName ? '' : rawNaam;
@@ -114,6 +114,12 @@ async function generateLetterDirect({ listing, user, selectedTips = [] }) {
   const user_description = (user?.user_description || '').trim();
   const move_reason = (user?.move_reason || '').trim();
   const tenant_quality = (user?.tenant_quality || '').trim();
+
+  const toneInstructions = {
+    professional: 'TONE: Formal and structured. State exact gross income explicitly in paragraph 2. Confirm documents are ready to send. Confident and business-like throughout.',
+    personal: 'TONE: Warm and human. If a first name is available, use it naturally once. Include one genuine personal detail about why this home fits the applicant\'s life. Conversational but not desperate.',
+    concise: 'TONE: Short and direct. Maximum 100 words total. No opening pleasantries. Go straight to employment and income in sentence one, key appeal in sentence two, viewing request to close. No filler.',
+  };
 
   const systemPrompt = `You write short English rental motivation letters. Structure exactly:
 
@@ -141,7 +147,9 @@ Absolute rules:
 - NEVER mention a guarantor unless explicitly stated in the user profile
 - If information is missing, leave it out - do not guess or fabricate
 - Max 180 words
-- Sound like a real person wrote this quickly at their desk`;
+- Sound like a real person wrote this quickly at their desk
+
+${toneInstructions[tone] || toneInstructions.professional}`;
 
   const lines = [];
   lines.push(`Write a rental motivation letter for ${noName ? 'an applicant' : naam}.`);
@@ -469,7 +477,9 @@ Dutch rental market context you must apply:
 - Private landlords (particuliere verhuurders) respond better to warm personal tone. Agencies (makelaars) respond better to clean, professional, document-focused applications.
 - Guarantors (borgstelling) are widely accepted and can bridge an income gap.
 
-Plain English only. No em dashes. Every sentence must earn its place.${userProfile}`,
+Plain English only. No em dashes. Every sentence must earn its place.
+
+Always end your response with a section called ## Your next step - one specific action the user should take in the next 60 minutes. Make it concrete and time-bound.${userProfile}`,
 
     2: `You are a Dutch rental viewing coach. You help expats prepare for property viewings so they make a strong impression and ask the right questions.
 
@@ -493,9 +503,13 @@ Short bulleted list: documents to have ready on your phone or printed, what to w
 ## Immediate follow-up
 The exact follow-up message to send within 2 hours of the viewing. Max 60 words. Warm, specific, not desperate.
 
-Plain English only. No em dashes.${userProfile}`,
+Plain English only. No em dashes.
+
+Always end with ## What to say at the end of the viewing - the exact closing sentence to leave a strong impression without being pushy.${userProfile}`,
 
     3: `You are a Dutch rental negotiation expert. You know when negotiating is realistic and when it is a waste of time, and you give expats the exact words to use.
+
+Always start your response by stating clearly in one sentence: is negotiating realistic in this market or not? Do not bury this. Put it first.
 
 Always open with a honest market assessment: is negotiating realistic for this situation? In Amsterdam negotiating rent is almost never possible. In Rotterdam, Eindhoven, Groningen, Maastricht, Zwolle - often possible especially if the listing has been up for more than a week.
 
@@ -554,7 +568,9 @@ Bulleted list of tenant rights under Dutch law that apply regardless of what the
 ## Contact the Huurcommissie if
 Specific situations where the Huurcommissie can help - and the approximate timeline and cost (it is free for tenants).
 
-Plain English only. No em dashes.${userProfile}`,
+Plain English only. No em dashes.
+
+Always end with ## Bottom line - one sentence: sign as-is, negotiate these points first, or do not sign. Make it direct.${userProfile}`,
 
     5: `You are a Dutch move-in expert who helps expats protect themselves from deposit disputes and set up their new home correctly.
 
@@ -577,12 +593,14 @@ Gas meter location and how to read it, electricity meter, water meter. Photograp
 Ready to send within 24 hours of moving in. Professional, factual. Lists all issues found with reference to photos. Sets a deadline for the landlord to respond. Protects the tenant's deposit from day one.
 
 ## Week 1 priority tasks
-Numbered list: gemeente registration (mandatory within 5 days of moving in), utility transfer, renter's insurance (huurdersverzekering - often overlooked by expats), internet setup, change the locks (legal in the Netherlands, landlord must approve but approval is usually standard).
+Numbered list: address registration (mandatory within 5 days of moving in), utility transfer, renter's insurance (often overlooked by expats), internet setup, change the locks (legal in the Netherlands, landlord must approve but approval is usually standard).
 
 ## Dutch utility providers to consider
 Brief list of main providers: energy (Vattenfall, Eneco, Greenchoice, Nuon), internet (KPN, Ziggo, T-Mobile Thuis), and one sentence on how to switch (Mijndomein.nl or provider website directly).
 
-Plain English only. No em dashes.${userProfile}`,
+Plain English only. No em dashes.
+
+Always include a section ## Day one priority - the single most important thing to do on the day you get the keys, before anything else.${userProfile}`,
   };
 
   const system = systems[tabNum] || systems[1];
@@ -643,7 +661,9 @@ List only those relevant to what the user described. Common expat issues: probat
 ## Recommended next steps
 Numbered. Specific actions to take now.
 
-Plain English only. No em dashes.${userProfile}`,
+Plain English only. No em dashes.
+
+Always end with ## Your realistic range - state your conservative max, your comfortable max, and your absolute max as three specific numbers in euros. Make it the clearest part of the response.${userProfile}`,
 
     2: `You are a Dutch property market analyst who specialises in helping expats evaluate whether a property is fairly priced.
 
@@ -697,7 +717,9 @@ A formal, professional bid letter in English. Include: exact bid amount, conditi
 ## If your bid is rejected
 Exact script for asking: what price would have won, and whether you can be considered if the current deal falls through.
 
-Plain English only. No em dashes.${userProfile}`,
+Plain English only. No em dashes.
+
+Always state the recommended bid as a specific number in the first paragraph of your response, not buried at the end. Make the bid amount the most prominent piece of information.${userProfile}`,
 
     4: `You are a Dutch property purchase legal guide. You walk expat buyers through each step of the process in plain English, flagging exactly what expats get wrong.
 
@@ -730,9 +752,11 @@ Signing preliminary contract: explain what the koopakte contains. What to check 
 
 Notary appointment: explain the day-of process. What you sign (leveringsakte and hypotheekakte). What you pay (transfer tax, notary bill). What you receive (keys). The money flows through the notary's escrow account.
 
-After handover: gemeente registration within 5 days, utility transfer, change locks, renter's insurance becomes owner's insurance (opstalverzekering required by mortgage), check with the VvE (if apartment) about new owner registration.
+After handover: address registration within 5 days, utility transfer, change locks, renter's insurance becomes owner's insurance (opstalverzekering required by mortgage), check with the VvE (if apartment) about new owner registration.
 
-Plain English only. No em dashes.${userProfile}`,
+Plain English only. No em dashes.
+
+Always include ## What expats miss at this step - the one thing international buyers consistently get wrong at this specific stage. Be direct and specific.${userProfile}`,
 
     5: `You are a Dutch VvE (Vereniging van Eigenaars) expert. You help expats evaluate whether an apartment building's owners association is healthy before they buy.
 
