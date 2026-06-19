@@ -189,50 +189,50 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
   if (inkomen > 0 && price > 0) {
     const ratio = inkomen / price;
     if (ratio >= 4) {
-      addTip('financial', `Income is ${ratio.toFixed(1)}x the rent. Say it first. Landlords decide fast.`);
+      addTip('financial', `Your income is ${ratio.toFixed(1)}x the rent — lead with this in your first sentence. Landlords shortlist based on income ratio before reading anything else.`);
     } else if (ratio >= 3.3) {
-      addTip('financial', `You meet the 3x rule. Start with your annual income of ${fmtEuro(inkomen * 12)}.`);
+      addTip('financial', `You meet the 3x rule with an annual income of ${fmtEuro(inkomen * 12)} — state this explicitly in your opening message. Landlords see dozens of applications and income confirmation is the first filter they apply.`);
     } else if (ratio >= 3.0) {
-      addTip('financial', `Income is ${ratio.toFixed(1)}x rent, borderline. Offer an extra bank statement.`);
+      addTip('financial', `Your income is borderline at ${ratio.toFixed(1)}x rent — attach an extra 3 months of bank statements alongside your payslips. Landlords on the fence are reassured by additional financial evidence.`);
     } else {
-      addTip('financial', `Income below 3x rule. Offer a guarantor earning ${fmtEuro(price * 3)}/mo or 3 months deposit.`);
+      addTip('financial', `Your income falls short of the standard 3x rule — counter this directly: offer a guarantor earning above ${fmtEuro(price * 3)}/mo or propose 3 months deposit upfront. Landlords with a borderline applicant almost always accept one of these two.`);
     }
   }
 
   // CONTRACT — priority 2
   const ct = (user.contract_type || '').toLowerCase();
   if (ct === 'vast' || ct === 'permanent') {
-    addTip('contract', `Permanent contract: open with it. Landlords decide in the first line who to call.`);
+    addTip('contract', `Lead with your permanent contract in the opening line of your message. Landlords shortlist based on contract type before they even read the rest.`);
   } else if (ct === 'tijdelijk' || ct === 'temporary') {
-    addTip('contract', `Temporary contract looks risky. Offer 3 months deposit or extra bank statements.`);
+    addTip('contract', `Your temporary contract looks risky to landlords — offer 3 months deposit or additional bank statements. This counterbalances the contract concern directly.`);
   } else if (ct === 'zzp' || ct === 'freelance') {
-    addTip('contract', `Freelancer: offer 3 months deposit and 2 years of tax returns.`);
+    addTip('contract', `Offer 3 months deposit upfront and include 2 years of tax returns with your application. Self-employed applicants who prove financial stability this way bypass the contract-type concern.`);
   }
 
   // DOCUMENTS — priority 3
   if (user.application_readiness === 'niet') {
-    addTip('documents', `No documents yet. Collect ID, payslips, and bank statements today.`);
+    addTip('documents', `Collect your ID, last 3 payslips, and 3 months of bank statements today — do not apply until you have these. Applying without documents wastes your opportunity on a listing that only considers complete applications.`);
   } else if (user.application_readiness === 'bezig' || user.application_readiness === 'bijna') {
-    addTip('documents', `Finish your documents today. Say you can send them within the hour.`);
+    addTip('documents', `Finish your document pack today and confirm in your message you can send everything within the hour. Landlords who receive complete documents immediately shortlist the sender.`);
   } else if (user.application_readiness === 'klaar') {
-    addTip('documents', `Documents ready. Say you can send everything within the hour.`);
+    addTip('documents', `State this explicitly in your message: 'I can send payslips, employment contract, and bank statements within the hour of your request.' This one sentence closes more deals than any other.`);
   }
 
   // PROFILE — priority 4
   if (/expat|international|english only|relocation/.test(desc)) {
-    addTip('profile', `Expat-friendly listing. Write in English and name your employer.`);
+    addTip('profile', `Write your application in English and name your employer and contract type in the first sentence. This listing explicitly welcomes internationals, so matching the expected profile makes you stand out.`);
   } else if (/working professional|young professional|werkend professional/.test(desc)) {
-    addTip('profile', `This landlord wants working professionals. Your first line: job title, employer, contract type.`);
+    addTip('profile', `Your first sentence should name your job title, employer, and contract type — landlords filtering for working professionals decide in under 10 seconds.`);
   }
 
   // SOURCE — priority 5
   const sourceCoversUrgency = source === 'funda';
   if (source === 'funda') {
-    addTip('source', `Apply fast and call the agent after sending. Funda fills quickly.`);
+    addTip('source', `Apply within the first hour and call the agency directly after sending your email. Funda listings attract 50–200 applications within 24 hours and the shortlist is often decided before the day is out.`);
   } else if (source === 'housinganywhere') {
-    addTip('source', `Write in English and Dutch. Bilingual applicants stand out on HousingAnywhere.`);
+    addTip('source', `Write your message in both English and Dutch if possible. Bilingual applicants stand out on HousingAnywhere because it signals both language skills and effort.`);
   } else if (source === 'kamernet') {
-    addTip('source', `Kamernet landlords like personal messages. Skip templates and write directly.`);
+    addTip('source', `Skip the template and write a direct, personal message to this landlord. Kamernet landlords read every application themselves and personal outreach converts significantly better.`);
   }
 
   // TIMING — priority 6; skip if source already covers urgency
@@ -241,28 +241,28 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
     if (!isNaN(ageMs) && ageMs >= 0) {
       const ageMins = ageMs / 60000;
       if (ageMins < 30) {
-        addTip('timing', `New listing. Apply now before the shortlist fills.`);
+        addTip('timing', `Apply immediately — this listing went live in the last 30 minutes. Being in the first 10 applications dramatically increases your viewing chances before the shortlist fills.`);
       } else if (ageMins < 120) {
-        addTip('timing', `You are among the first to see this. Apply and call today.`);
+        addTip('timing', `You are among the first applicants on this listing — apply now and call the agent within the hour. Early movers who follow up by phone get viewings at 3x the rate.`);
       } else if (ageMins < 1440) {
-        addTip('timing', `Competition is building. Call the agent after you apply.`);
+        addTip('timing', `Competition is building on this listing — call the agent directly after sending your application. A phone call today separates you from applicants who only email.`);
       } else if (ageMins < 14 * 24 * 60) {
-        addTip('timing', `Listing has been up a while. Offer to sign quickly.`);
+        addTip('timing', `This listing has been up for a while — mention you can sign quickly. Landlords with older listings are often frustrated and respond well to decisive applicants.`);
       } else {
-        addTip('timing', `On market longer than average. Negotiate and say you can sign now.`);
+        addTip('timing', `This property has been on the market longer than average — there is likely a reason. Ask directly at the viewing, and use the listing age as negotiation leverage.`);
       }
     }
   }
 
   // PROPERTY — priority 7; no garden/outdoor, no energy label
   if (/geen huisdieren|no pets|no animals/.test(desc)) {
-    addTip('property', `No pets allowed. Confirm you have no pets in your first message.`);
+    addTip('property', `Confirm in your first message that you have no pets. Landlords who specify this filter applications on it — confirming it directly removes the hesitation.`);
   } else if (/parkeerplaats|parking|garage/.test(desc)) {
-    addTip('property', `Parking available. Say clearly if you need the spot.`);
+    addTip('property', `State clearly in your message whether you need the parking spot. Landlords with parking often receive vague applications and appreciate clarity.`);
   } else if (/inschrijving|gemeentelijke registratie|brp registratie/.test(desc)) {
-    addTip('property', `Address registration possible here. Confirm this in your letter.`);
+    addTip('property', `Confirm in your letter that you need to register at this address. Landlords who allow registration expect this and appreciate it being stated upfront.`);
   } else if (/gemeubileerd|fully furnished|furnished/.test(desc)) {
-    addTip('property', `Furnished listing. Ask for an inventory list before signing.`);
+    addTip('property', `Ask for an inventory list before signing. Furnished lettings lead to the most deposit disputes — having a signed inventory is your protection.`);
   }
 
   // Build priority-ordered list (one tip per category)
@@ -275,13 +275,13 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
 
   // Fallback padding — high-impact tips, no energy/outdoor
   const FALLBACK = [
-    { tip: 'Call the agent after applying. A call within an hour triples your chances.', category: 'fallback' },
-    { tip: 'Say how long you want to stay. Landlords prefer tenants who commit to 2+ years.', category: 'fallback' },
-    { tip: "Use the landlord's name if you know it. Personal messages get more replies.", category: 'fallback' },
-    { tip: 'Apply between 8am and 10am. Landlords check email early and respond faster.', category: 'fallback' },
-    { tip: 'Offer a video call if you cannot view in person right away.', category: 'fallback' },
-    { tip: 'Tell them your move-in date. Clarity removes the biggest landlord hesitation.', category: 'fallback' },
-    { tip: 'Moving to this city? Say why. Landlords like to know your reason.', category: 'fallback' },
+    { tip: 'Call the agency within an hour of sending your application. Agents who speak to a candidate are 3x more likely to schedule a viewing — most applicants never call.', category: 'fallback' },
+    { tip: 'Say explicitly how long you plan to stay — ideally 2 years or more. Landlords value stable tenants above almost everything else, and committing to a longer stay removes their biggest concern.', category: 'fallback' },
+    { tip: "Use the landlord's first name if it appears in the listing. Personal messages that use the recipient's name get meaningfully more replies than generic openings.", category: 'fallback' },
+    { tip: 'Send your application between 8am and 10am on a weekday. Landlords check email early and applications that arrive at the top of the inbox get read first.', category: 'fallback' },
+    { tip: 'Offer a video call if you cannot view in person immediately. Remote applicants who proactively offer this are taken more seriously than those who wait to be asked.', category: 'fallback' },
+    { tip: 'Tell them your exact move-in date and flexibility in the first message. Landlords who post a listing with a specific available date shortlist applicants who match it first.', category: 'fallback' },
+    { tip: 'Mention why you are moving to this city in one sentence. Landlords read between the lines — a clear reason signals stability and reduces the risk they perceive.', category: 'fallback' },
   ];
 
   function shares3Words(a, b) {

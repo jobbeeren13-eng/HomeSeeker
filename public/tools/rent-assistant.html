@@ -190,6 +190,15 @@
 
         <div id="lt-listing-card" style="display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;color:var(--muted)"></div>
 
+        <div id="lt-tips-panel" style="display:none;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.15);border-radius:12px;padding:14px 16px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#00c896;font-weight:700">Your application strategy</span>
+            <button onclick="ltToggleTips(this)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0;line-height:1;font-family:inherit">&#9650;</button>
+          </div>
+          <div id="lt-tips-content"></div>
+          <a href="#" id="lt-to-coach" onclick="switchToCoach(event)" style="display:block;margin-top:10px;font-size:12px;color:#00c896;text-decoration:none">Get your full strategy in Application Coach &#8594;</a>
+        </div>
+
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600;margin-bottom:8px">LETTER TONE</div>
         <div class="tone-selector">
           <button class="tone-pill active" onclick="ltSetTone('professional',this)">Professional</button>
@@ -277,6 +286,13 @@
         <div class="form-card">
           <h2>Application Coach</h2>
           <p class="desc">Describe the listing and your situation. Get an honest assessment, a copy-paste first message, and what documents to attach.</p>
+          <div id="t2-tips-panel" style="display:none;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.15);border-radius:12px;padding:12px 16px;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#00c896;font-weight:700">Your top 5 application tips</span>
+              <button onclick="t2ToggleTips(this)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0;line-height:1;font-family:inherit">Show &#9660;</button>
+            </div>
+            <div id="t2-tips-content" style="display:none;margin-top:10px"></div>
+          </div>
           <div class="field">
             <div class="field-wrap">
               <label>Listing description <button class="info-btn" data-hint="Paste the listing text or describe the property - address, price, what the landlord is looking for, platform it is on.">&#9432;</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
@@ -756,6 +772,13 @@ function followUp(tab) {
   el.setSelectionRange(el.value.length, el.value.length);
 }
 
+function switchToCoach(e) {
+  e.preventDefault();
+  const tabs = document.querySelectorAll('.tab-btn');
+  if (tabs[1]) switchTab(2, tabs[1]);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 // ─── Letter Tab Logic ───────────────────────────────────────────
 const ltEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const ltState = { loaded: false, cacheId: null, letter: '', tone: 'professional', checks: [true, true, true, true] };
@@ -771,6 +794,32 @@ function ltSetTone(tone, btn) {
   ltState.tone = tone;
   document.querySelectorAll('.tone-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
+}
+
+function renderTipsList(tips, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = tips.map((tip, i) =>
+    `<div style="display:flex;gap:10px;${i < tips.length - 1 ? 'margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05)' : ''}">` +
+    `<span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#00c896;margin-top:2px">${i + 1}</span>` +
+    `<span style="font-size:13px;line-height:1.55;color:var(--text)">${ltEsc(tip)}</span></div>`
+  ).join('');
+}
+
+function ltToggleTips(btn) {
+  const content = document.getElementById('lt-tips-content');
+  const link = document.getElementById('lt-to-coach');
+  const open = content.style.display !== 'none';
+  content.style.display = open ? 'none' : 'block';
+  if (link) link.style.display = open ? 'none' : 'block';
+  btn.innerHTML = open ? '&#9660;' : '&#9650;';
+}
+
+function t2ToggleTips(btn) {
+  const content = document.getElementById('t2-tips-content');
+  const open = content.style.display !== 'none';
+  content.style.display = open ? 'none' : 'block';
+  btn.innerHTML = open ? 'Hide &#9650;' : 'Show &#9660;';
 }
 
 function initLetterTab() {
@@ -812,6 +861,17 @@ function initLetterTab() {
       card.innerHTML = cardHtml;
       card.style.display = 'block';
       document.getElementById('lt-form').style.display = 'grid';
+      fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(tipsData => {
+          if (!tipsData || !tipsData.tips || !tipsData.tips.length) return;
+          renderTipsList(tipsData.tips, 'lt-tips-content');
+          document.getElementById('lt-tips-panel').style.display = 'block';
+          renderTipsList(tipsData.tips, 't2-tips-content');
+          const t2Panel = document.getElementById('t2-tips-panel');
+          if (t2Panel) t2Panel.style.display = 'block';
+        })
+        .catch(() => {});
     })
     .catch(() => {
       document.getElementById('lt-loading').style.display = 'none';

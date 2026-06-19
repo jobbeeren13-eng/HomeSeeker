@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
 const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings } = require('./database');
 const { rowToListing } = require('./scraper');
-const { getImprovementTips, detectLandlordIntent } = require('./score');
+const { detectLandlordIntent } = require('./score');
  
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
@@ -603,19 +603,15 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     intent.warnings.forEach(w => lines.push(`⚠️ ${w.label}`));
   }
 
-  // Combined verdict with single top tip — detailed guidance lives in the assistant
+  // Verdict — intelligence lives in the assistant
   if (user) {
     lines.push('');
     if (isHuur) {
-      const { tips } = getImprovementTips(listing, user, score, dealScore);
-      const topTip = tips.length > 0 ? tips[0].tip : null;
-      let verdictBase, verdictCta;
-      if (score >= 85) { verdictBase = 'Excellent match.'; verdictCta = 'Tap AI Rental Assistant for your full application strategy.'; }
-      else if (score >= 70) { verdictBase = 'Strong match.'; verdictCta = 'Tap AI Rental Assistant for your full application strategy.'; }
-      else if (score >= 55) { verdictBase = 'Good match.'; verdictCta = 'Open the assistant to see how to close the gaps.'; }
-      else if (score >= 40) { verdictBase = 'Possible match.'; verdictCta = 'The assistant shows what to fix before applying.'; }
-      else { verdictBase = 'Weak match.'; verdictCta = 'Significant barriers exist. Open the assistant to understand your options.'; }
-      lines.push(score >= 40 && topTip ? `${verdictBase} ${topTip} ${verdictCta}` : `${verdictBase} ${verdictCta}`);
+      if (score >= 85) lines.push('Excellent match. Open the assistant for your full strategy.');
+      else if (score >= 70) lines.push('Strong match. Open the assistant to see your best move.');
+      else if (score >= 55) lines.push('Good match. The assistant shows how to strengthen your application.');
+      else if (score >= 40) lines.push('Possible match. Open the assistant to close the gaps.');
+      else lines.push('Weak match. The assistant explains what is blocking you.');
     } else {
       if (score >= 80) lines.push('Strong buyer profile for this property. Open the Buyer Assistant for your full strategy.');
       else if (score >= 60) lines.push('Good buyer profile. Open the Buyer Assistant to prepare your bid.');

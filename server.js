@@ -355,6 +355,23 @@ app.get('/api/letter-data', (req, res) => {
   });
 });
 
+// Returns all improvement tips for a cached listing (used by assistant panels)
+app.get('/api/listing-tips', (req, res) => {
+  const { id } = req.query;
+  if (!id) return res.status(400).json({ error: 'id required' });
+  const entry = getCachedEntry(id);
+  if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
+  const { listing, chatId, score, dealScore } = entry;
+  const user = chatId ? getUser.get(String(chatId)) : null;
+  const { tips } = getImprovementTips(listing, user || {});
+  res.json({
+    tips: tips.map(t => t.tip),
+    listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
+    score,
+    dealScore,
+  });
+});
+
 // Generates letter from web page selections
 app.post('/api/generate-letter-web', async (req, res) => {
   const { cacheId, selectedTipTexts = [], extraContext = '', tone = 'professional' } = req.body;
