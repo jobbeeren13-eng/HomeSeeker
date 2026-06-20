@@ -35,26 +35,50 @@
   .breadcrumb a:hover { color: var(--text); }
   .breadcrumb .sep { margin: 0 6px; color: rgba(255,255,255,0.2); }
 
-  .container { max-width: 920px; margin: 0 auto; padding: 28px 28px 80px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 20px 80px; }
   .page-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
   .page-title span { color: var(--green); }
-  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
 
-  .listing-badge { background: rgba(0,200,150,0.04); border: 1px solid rgba(0,200,150,0.15); border-radius: 8px; padding: 8px 14px; font-size: 13px; color: var(--muted); margin-bottom: 16px; display: none; gap: 8px; align-items: center; }
-  .listing-badge.visible { display: flex; }
-  .listing-badge strong { color: var(--text); }
-  .listing-badge-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  /* Listing bar */
+  .listing-bar { display: none; align-items: center; gap: 10px; background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 20px; margin-bottom: 12px; font-size: 13px; flex-wrap: wrap; }
+  .listing-bar.visible { display: flex; }
+  .listing-bar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .listing-bar-address { font-weight: 700; color: var(--text); font-size: 13px; }
+  .listing-bar-price { color: var(--muted); font-size: 13px; }
+  .listing-bar-badges { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+  .score-badge { border-radius: 5px; padding: 3px 8px; font-size: 11px; font-weight: 600; }
 
-  .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding: 12px 28px 12px; margin: 0 -28px 16px; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 56px; z-index: 90; background: rgba(10,10,10,0.97); backdrop-filter: blur(16px); }
+  /* Tips panel */
+  .tips-panel { display: none; margin-bottom: 14px; background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
+  .tips-panel.visible { display: block; }
+  .tips-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; user-select: none; }
+  .tips-panel-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green); }
+  .tips-toggle-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 0; font-family: inherit; line-height: 1; }
+  .tips-panel-body { display: none; padding: 0 16px 14px; }
+  .tips-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: rgba(255,255,255,0.3); margin-bottom: 8px; margin-top: 12px; }
+  .tips-section-label:first-child { margin-top: 0; }
+  .tips-scroll-row { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .tips-scroll-row::-webkit-scrollbar { display: none; }
+  .tip-card { flex-shrink: 0; width: 260px; background: #0d1117; border-left: 2px solid; border-radius: 8px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: var(--text); display: flex; gap: 10px; align-items: flex-start; }
+  .tip-card--green { border-left-color: #00c896; }
+  .tip-card--blue { border-left-color: #4d9fff; }
+  .tip-card--gray { border-left-color: rgba(255,255,255,0.2); }
+  .tip-dot { flex-shrink: 0; width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; }
+  .tip-dot--green { background: #00c896; }
+  .tip-dot--blue { background: #4d9fff; }
+  .tip-dot--gray { background: rgba(255,255,255,0.3); }
+
+  .tab-bar { display: flex; gap: 6px; overflow-x: auto; padding: 10px 20px; margin: 0 -20px 14px; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 56px; z-index: 90; background: rgba(10,10,10,0.97); backdrop-filter: blur(16px); }
   .tab-bar::-webkit-scrollbar { display: none; }
-  .tab-btn { flex-shrink: 0; padding: 9px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
+  .tab-btn { flex-shrink: 0; padding: 0 14px; height: 34px; border-radius: 17px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; display: flex; align-items: center; gap: 5px; }
   .tab-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
   .tab-btn.active { background: var(--green); border-color: var(--green); color: #0a0a0a; font-weight: 600; box-shadow: 0 0 0 3px rgba(0,200,150,0.15); }
 
   .panel { display: none; }
   .panel.active { display: block; }
 
-  .panel-grid { display: grid; grid-template-columns: 38% 1fr; gap: 20px; align-items: start; }
+  .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 
   .form-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; transition: border-left .15s; }
   .form-card:focus-within { border-left: 2px solid #00c896; }
@@ -63,7 +87,7 @@
   .field { margin-bottom: 14px; }
   .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
   .char-count { font-size: 11px; text-transform: none; letter-spacing: 0; }
-  .field input, .field textarea, .field select { width: 100%; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.6; padding: 12px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
+  .field input, .field textarea, .field select { width: 100%; background: #0d1117; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.6; padding: 12px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
   .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,150,0.1); }
   .field textarea { resize: vertical; min-height: 120px; }
   .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; font-family: inherit; padding: 0; margin-left: 4px; flex-shrink: 0; transition: border-color .15s, color .15s; }
@@ -80,24 +104,26 @@
   .output-col { min-height: 200px; }
 
   .output-empty { border: 2px dashed rgba(255,255,255,0.07); border-radius: 14px; padding: 48px 24px; text-align: center; color: var(--muted); }
-  .output-empty .empty-icon { font-size: 32px; margin-bottom: 12px; }
-  .output-empty p { font-size: 13px; line-height: 1.6; max-width: 240px; margin: 0 auto; }
+  .output-empty .empty-icon { margin-bottom: 12px; }
+  .output-empty .empty-icon svg { opacity: 0.25; }
+  .output-empty p { font-size: 14px; line-height: 1.75; max-width: 240px; margin: 0 auto; }
 
-  .skeleton { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; display: none; }
+  .skeleton { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 22px; display: none; }
   .skel-bar { height: 13px; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 12px; position: relative; overflow: hidden; }
   .skel-bar::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent); transform: translateX(-100%); animation: shimmer 1.4s infinite; }
   @keyframes shimmer { to { transform: translateX(100%); } }
   .skel-bar:nth-child(2) { width: 75%; }
   .skel-bar:nth-child(3) { width: 55%; }
+  .skel-bar:nth-child(4) { width: 40%; }
 
-  .response-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; display: none; }
+  .response-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 22px; display: none; }
   .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
   .response-header h3 { font-size: 14px; font-weight: 700; }
   .resp-actions { display: flex; gap: 8px; }
   .copy-btn, .followup-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--muted); font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all .15s; }
   .copy-btn:hover, .followup-btn:hover { border-color: var(--green); color: var(--green); }
   .copy-btn.copied { color: var(--green); border-color: var(--green); }
-  .response-body { font-size: 13px; line-height: 1.75; color: var(--text); }
+  .response-body { font-size: 14px; line-height: 1.75; color: var(--text); }
   .response-body h2 { font-size: 14px; font-weight: 700; color: var(--green); margin-top: 28px; margin-bottom: 7px; padding-top: 16px; padding-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid var(--border); }
   .response-body h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
   .response-body ul, .response-body ol { padding-left: 18px; margin: 5px 0 12px; }
@@ -137,12 +163,16 @@
   .help-link:hover { border-color: rgba(0,200,150,0.35); color: var(--green); }
 
   @media (max-width: 768px) {
-    .container { padding: 20px 16px 60px; }
+    .container { padding: 16px 16px 80px; }
     .site-header { padding: 0 16px; }
     .breadcrumb { padding: 10px 16px; }
+    .tab-bar { padding: 10px 16px; margin: 0 -16px 14px; }
     .panel-grid { grid-template-columns: 1fr; }
     .output-col { order: -1; }
     .output-empty { padding: 28px 20px; }
+    .tips-scroll-row { flex-direction: column; }
+    .tip-card { width: 100%; }
+    .btn-submit { position: sticky; bottom: 16px; z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
   }
 </style>
 </head>
@@ -161,15 +191,20 @@
   <div class="page-title"><span>AI</span> Rental Assistant</div>
   <p class="page-sub">Your complete guide to finding and securing a rental in the Netherlands.</p>
 
-  <div id="listing-badge" class="listing-badge"></div>
+  <div id="listing-bar" class="listing-bar">
+    <span class="listing-bar-dot"></span>
+    <span class="listing-bar-address" id="listing-bar-address"></span>
+    <span class="listing-bar-price" id="listing-bar-price"></span>
+    <div class="listing-bar-badges" id="listing-bar-badges"></div>
+  </div>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab(1,this)">&#x2709;&#xFE0F; Write Letter</button>
-    <button class="tab-btn" onclick="switchTab(2,this)">&#127919; Application Coach</button>
-    <button class="tab-btn" onclick="switchTab(3,this)">&#128065; Viewing Tips</button>
-    <button class="tab-btn" onclick="switchTab(4,this)">&#128172; Negotiation Help</button>
-    <button class="tab-btn" onclick="switchTab(5,this)">&#128196; Check Lease</button>
-    <button class="tab-btn" onclick="switchTab(6,this)">&#128230; Move-In Help</button>
+    <button class="tab-btn active" onclick="switchTab(1,this)">&#x2709;&#xFE0F; Letter</button>
+    <button class="tab-btn" onclick="switchTab(2,this)">&#127919; Coach</button>
+    <button class="tab-btn" onclick="switchTab(3,this)">&#128065; Viewing</button>
+    <button class="tab-btn" onclick="switchTab(4,this)">&#128172; Negotiate</button>
+    <button class="tab-btn" onclick="switchTab(5,this)">&#128196; Lease</button>
+    <button class="tab-btn" onclick="switchTab(6,this)">&#128230; Move-In</button>
   </div>
 
   <!-- Tab 1: Write Letter -->
@@ -181,23 +216,20 @@
       </div>
     </div>
     <div id="lt-loading">
-      <div class="skeleton" style="display:block"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+      <div class="skeleton" style="display:block"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
     </div>
-    <div id="lt-form" class="panel-grid" style="display:none">
+    <div id="lt-form" style="display:none">
+      <div id="lt-tips-panel" class="tips-panel">
+        <div class="tips-panel-header" onclick="ltToggleTips()">
+          <span class="tips-panel-title" id="lt-tips-title">Your application tips</span>
+          <button class="tips-toggle-btn" id="lt-tips-toggle">Show &#9660;</button>
+        </div>
+        <div class="tips-panel-body" id="lt-tips-content"></div>
+      </div>
+      <div class="panel-grid">
       <div class="form-card">
         <h2>Write your application letter</h2>
         <p class="desc">Generate a personalised motivation letter for this listing. Based on your profile and the landlord's requirements.</p>
-
-        <div id="lt-listing-card" style="display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;color:var(--muted)"></div>
-
-        <div id="lt-tips-panel" style="display:none;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.15);border-radius:12px;padding:14px 16px;margin-bottom:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#00c896;font-weight:700">Your application strategy</span>
-            <button onclick="ltToggleTips(this)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0;line-height:1;font-family:inherit">&#9650;</button>
-          </div>
-          <div id="lt-tips-content"></div>
-          <a href="#" id="lt-to-coach" onclick="switchToCoach(event)" style="display:block;margin-top:10px;font-size:12px;color:#00c896;text-decoration:none">Get your full strategy in Application Coach &#8594;</a>
-        </div>
 
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600;margin-bottom:8px">LETTER TONE</div>
         <div class="tone-selector">
@@ -252,10 +284,10 @@
       </div>
       <div class="output-col">
         <div class="output-empty" id="lt-empty">
-          <div class="empty-icon">&#x2709;&#xFE0F;</div>
+          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
           <p>Your personalised application letter will appear here.</p>
         </div>
-        <div class="skeleton" id="lt-skel" style="display:none"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+        <div class="skeleton" id="lt-skel" style="display:none"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
         <div id="lt-letter-box" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
             <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">&#x2709;&#xFE0F; Your letter</span>
@@ -276,23 +308,24 @@
           </div>
         </div>
       </div>
-    </div>
+      </div><!-- /panel-grid -->
+    </div><!-- /lt-form -->
   </div>
 
   <!-- Tab 2: Application Coach -->
   <div id="panel-2" class="panel">
+    <div id="t2-tips-panel" class="tips-panel">
+      <div class="tips-panel-header" onclick="t2ToggleTips()">
+        <span class="tips-panel-title" id="t2-tips-title">Your application tips</span>
+        <button class="tips-toggle-btn" id="t2-tips-toggle">Show &#9660;</button>
+      </div>
+      <div class="tips-panel-body" id="t2-tips-content"></div>
+    </div>
     <div class="panel-grid">
       <div>
         <div class="form-card">
           <h2>Application Coach</h2>
           <p class="desc">Describe the listing and your situation. Get an honest assessment, a copy-paste first message, and what documents to attach.</p>
-          <div id="t2-tips-panel" style="display:none;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.15);border-radius:12px;padding:12px 16px;margin-bottom:16px">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#00c896;font-weight:700">Your top 5 application tips</span>
-              <button onclick="t2ToggleTips(this)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0;line-height:1;font-family:inherit">Show &#9660;</button>
-            </div>
-            <div id="t2-tips-content" style="display:none;margin-top:10px"></div>
-          </div>
           <div class="field">
             <div class="field-wrap">
               <label>Listing description <button class="info-btn" data-hint="Paste the listing text or describe the property - address, price, what the landlord is looking for, platform it is on.">&#9432;</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
@@ -313,10 +346,11 @@
       </div>
       <div class="output-col">
         <div class="output-empty" id="empty-2">
-          <div class="empty-icon">&#127919;</div>
+          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
           <p>Fill in the listing and your goal, then click "Get advice" to see your strategy.</p>
         </div>
         <div class="skeleton" id="skel-2">
+          <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
@@ -332,7 +366,7 @@
           <div class="response-body" id="body-2"></div>
         </div>
       </div>
-    </div>
+    </div><!-- /panel-grid -->
   </div>
 
   <!-- Tab 3: Viewing Tips -->
@@ -362,10 +396,11 @@
       </div>
       <div class="output-col">
         <div class="output-empty" id="empty-3">
-          <div class="empty-icon">&#128065;</div>
+          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
           <p>Describe the property and we'll prepare your questions, inspection checklist, and how to stand out.</p>
         </div>
         <div class="skeleton" id="skel-3">
+          <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
@@ -411,10 +446,11 @@
       </div>
       <div class="output-col">
         <div class="output-empty" id="empty-4">
-          <div class="empty-icon">&#128172;</div>
+          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
           <p>Describe what you want to negotiate and your leverage - we'll write the word-for-word scripts.</p>
         </div>
         <div class="skeleton" id="skel-4">
+          <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
@@ -453,10 +489,11 @@
       </div>
       <div class="output-col">
         <div class="output-empty" id="empty-5">
-          <div class="empty-icon">&#128196;</div>
+          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
           <p>Paste your lease text and we'll flag the risky clauses and tell you what to challenge.</p>
         </div>
         <div class="skeleton" id="skel-5">
+          <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
@@ -514,10 +551,11 @@
       </div>
       <div class="output-col">
         <div class="output-empty" id="empty-6">
-          <div class="empty-icon">&#128230;</div>
+          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
           <p>Tell us about your property and we'll generate your complete room-by-room checklist.</p>
         </div>
         <div class="skeleton" id="skel-6">
+          <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
           <div class="skel-bar"></div>
@@ -593,9 +631,12 @@ function getParams() {
         if (data && data.listing) {
           const l = data.listing;
           listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
-          const badge = document.getElementById('listing-badge');
-          badge.innerHTML = `<span class="listing-badge-dot"></span>Advising on: <strong>${l.address || l.url}</strong>${l.price ? ' &middot; ' + l.price : ''}`;
-          badge.classList.add('visible');
+          const bar = document.getElementById('listing-bar');
+          if (bar) {
+            document.getElementById('listing-bar-address').textContent = l.address || l.url || 'Property';
+            if (l.price) document.getElementById('listing-bar-price').textContent = '· ' + l.price;
+            bar.classList.add('visible');
+          }
           const t2 = document.getElementById('t2-listing');
           if (t2) { t2.value = listingContext.slice(0, 800); updateCount(t2, 'cc-2-1'); }
         }
@@ -796,57 +837,45 @@ function ltSetTone(tone, btn) {
   btn.classList.add('active');
 }
 
-function renderTipsList(tips, containerId) {
+function renderStructuredTips(listingTips, profileTips, generalTips, containerId, titleId) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  el.innerHTML = tips.map((tip, i) =>
-    `<div style="display:flex;gap:10px;${i < tips.length - 1 ? 'margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05)' : ''}">` +
-    `<span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#00c896;margin-top:2px">${i + 1}</span>` +
-    `<span style="font-size:13px;line-height:1.55;color:var(--text)">${ltEsc(tip)}</span></div>`
-  ).join('');
-}
-
-function renderStructuredTips(listingTips, profileTips, generalTips, containerId) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  let html = '';
-  if (!listingTips.length) {
-    html += `<p style="font-style:italic;color:var(--muted);font-size:12px;margin-bottom:10px">No listing-specific signals detected — tips are based on your profile and best practices.</p>`;
+  const total = listingTips.length + profileTips.length + generalTips.length;
+  if (titleId) {
+    const titleEl = document.getElementById(titleId);
+    if (titleEl) titleEl.textContent = `Your application tips (${total})`;
   }
   const sections = [
-    { label: 'This listing', tips: listingTips, labelColor: '#00c896', badgeBg: 'rgba(0,200,150,0.15)', badgeBorder: 'rgba(0,200,150,0.3)', badgeColor: '#00c896' },
-    { label: 'Your profile', tips: profileTips, labelColor: 'rgba(255,255,255,0.5)', badgeBg: 'rgba(255,255,255,0.1)', badgeBorder: 'rgba(255,255,255,0.2)', badgeColor: 'rgba(255,255,255,0.6)' },
-    { label: 'Always useful', tips: generalTips, labelColor: 'rgba(255,255,255,0.3)', badgeBg: 'rgba(255,255,255,0.06)', badgeBorder: 'rgba(255,255,255,0.12)', badgeColor: 'rgba(255,255,255,0.4)' },
+    { label: 'From this listing', tips: listingTips, cardClass: 'tip-card--green', dotClass: 'tip-dot--green' },
+    { label: 'From your profile', tips: profileTips, cardClass: 'tip-card--blue', dotClass: 'tip-dot--blue' },
+    { label: 'Best practice', tips: generalTips, cardClass: 'tip-card--gray', dotClass: 'tip-dot--gray' },
   ].filter(s => s.tips.length > 0);
-  let globalIdx = 0;
-  sections.forEach((section, si) => {
-    if (si > 0) html += `<div style="height:1px;background:rgba(255,255,255,0.06);margin:12px 0"></div>`;
-    html += `<div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:${section.labelColor};font-weight:700;margin-bottom:8px">${ltEsc(section.label)}</div>`;
-    section.tips.forEach((tip, i) => {
-      globalIdx++;
-      const isLast = i === section.tips.length - 1;
-      html += `<div style="display:flex;gap:10px;${!isLast ? 'margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05)' : ''}">` +
-        `<span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:${section.badgeBg};border:1px solid ${section.badgeBorder};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${section.badgeColor};margin-top:2px">${globalIdx}</span>` +
-        `<span style="font-size:13px;line-height:1.55;color:var(--text)">${ltEsc(tip)}</span></div>`;
+  let html = '';
+  sections.forEach(section => {
+    html += `<div class="tips-section-label">${ltEsc(section.label)}</div>`;
+    html += `<div class="tips-scroll-row">`;
+    section.tips.forEach(tip => {
+      html += `<div class="tip-card ${section.cardClass}"><span class="tip-dot ${section.dotClass}"></span><span>${ltEsc(tip)}</span></div>`;
     });
+    html += `</div>`;
   });
   el.innerHTML = html;
 }
 
-function ltToggleTips(btn) {
-  const content = document.getElementById('lt-tips-content');
-  const link = document.getElementById('lt-to-coach');
-  const open = content.style.display !== 'none';
-  content.style.display = open ? 'none' : 'block';
-  if (link) link.style.display = open ? 'none' : 'block';
-  btn.innerHTML = open ? '&#9660;' : '&#9650;';
+function ltToggleTips() {
+  const body = document.getElementById('lt-tips-content');
+  const btn = document.getElementById('lt-tips-toggle');
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  btn.innerHTML = open ? 'Show &#9660;' : 'Hide &#9650;';
 }
 
-function t2ToggleTips(btn) {
-  const content = document.getElementById('t2-tips-content');
-  const open = content.style.display !== 'none';
-  content.style.display = open ? 'none' : 'block';
-  btn.innerHTML = open ? 'Hide &#9650;' : 'Show &#9660;';
+function t2ToggleTips() {
+  const body = document.getElementById('t2-tips-content');
+  const btn = document.getElementById('t2-tips-toggle');
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  btn.innerHTML = open ? 'Show &#9660;' : 'Hide &#9650;';
 }
 
 function initLetterTab() {
@@ -864,41 +893,39 @@ function initLetterTab() {
     .then(data => {
       document.getElementById('lt-loading').style.display = 'none';
       const l = data.listing || {};
-      const card = document.getElementById('lt-listing-card');
-      const price = l.price || (l.priceNumber ? `€${l.priceNumber}/mo` : '');
-      const area = l.area ? `${l.area}m²` : '';
-      const meta = [price, area].filter(Boolean).join(' · ');
-      let cardHtml = `<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${ltEsc(l.address || l.url || 'Property')}</div>`;
-      if (meta) cardHtml += `<div style="font-size:12px;color:var(--muted)">${ltEsc(meta)}</div>`;
       const score = data.score;
       const dealScore = data.dealScore;
-      if (score != null || dealScore != null) {
-        cardHtml += '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">';
-        if (score != null) {
-          const scoreLbl = score >= 85 ? 'Excellent' : score >= 70 ? 'Strong' : score >= 50 ? 'Good' : score >= 30 ? 'Fair' : 'Weak';
-          const scoreColor = score >= 70 ? '#00c896' : score >= 40 ? '#ffb347' : '#ff6b6b';
-          cardHtml += `<span style="background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;color:${scoreColor}">Application: ${scoreLbl}</span>`;
+      const bar = document.getElementById('listing-bar');
+      if (bar && (l.address || l.url)) {
+        document.getElementById('listing-bar-address').textContent = l.address || l.url || 'Property';
+        if (l.price) document.getElementById('listing-bar-price').textContent = '· ' + l.price;
+        const badges = document.getElementById('listing-bar-badges');
+        if (badges) {
+          let badgeHtml = '';
+          if (score != null) {
+            const scoreLbl = score >= 85 ? 'Excellent' : score >= 70 ? 'Strong' : score >= 50 ? 'Good' : score >= 30 ? 'Fair' : 'Weak';
+            const scoreColor = score >= 70 ? '#00c896' : score >= 40 ? '#ffb347' : '#ff6b6b';
+            badgeHtml += `<span class="score-badge" style="background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);color:${scoreColor}">Application: ${scoreLbl}</span>`;
+          }
+          if (dealScore != null) {
+            const dealLbl = dealScore >= 60 ? 'Good deal' : dealScore >= 40 ? 'Fair price' : 'Expensive';
+            badgeHtml += `<span class="score-badge" style="background:rgba(100,180,255,0.08);border:1px solid rgba(100,180,255,0.2);color:#6ab4ff">Market: ${dealLbl}</span>`;
+          }
+          badges.innerHTML = badgeHtml;
         }
-        if (dealScore != null) {
-          const dealLbl = dealScore >= 60 ? 'Good deal' : dealScore >= 40 ? 'Fair price' : 'Expensive';
-          cardHtml += `<span style="background:rgba(100,180,255,0.08);border:1px solid rgba(100,180,255,0.2);border-radius:5px;padding:3px 8px;font-size:11px;font-weight:600;color:#6ab4ff">Market: ${dealLbl}</span>`;
-        }
-        cardHtml += '</div>';
+        bar.classList.add('visible');
       }
-      card.innerHTML = cardHtml;
-      card.style.display = 'block';
-      document.getElementById('lt-form').style.display = 'grid';
+      document.getElementById('lt-form').style.display = 'block';
       fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`)
         .then(r => r.ok ? r.json() : null)
         .then(tipsData => {
           if (!tipsData) return;
           const { listingTips = [], profileTips = [], generalTips = [] } = tipsData;
           if (!listingTips.length && !profileTips.length && !generalTips.length) return;
-          renderStructuredTips(listingTips, profileTips, generalTips, 'lt-tips-content');
-          document.getElementById('lt-tips-panel').style.display = 'block';
-          renderStructuredTips(listingTips, profileTips, generalTips, 't2-tips-content');
-          const t2Panel = document.getElementById('t2-tips-panel');
-          if (t2Panel) t2Panel.style.display = 'block';
+          renderStructuredTips(listingTips, profileTips, generalTips, 'lt-tips-content', 'lt-tips-title');
+          document.getElementById('lt-tips-panel').classList.add('visible');
+          renderStructuredTips(listingTips, profileTips, generalTips, 't2-tips-content', 't2-tips-title');
+          document.getElementById('t2-tips-panel').classList.add('visible');
         })
         .catch(() => {});
     })
