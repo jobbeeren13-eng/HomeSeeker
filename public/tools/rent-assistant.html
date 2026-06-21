@@ -7,595 +7,526 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --green: #00c896;
-    --green-dim: rgba(0,200,150,0.10);
-    --bg: #0a0a0a;
-    --bg2: #0f1318;
-    --bg3: #141920;
-    --border: rgba(255,255,255,0.08);
-    --muted: #7a8494;
-    --text: #e8edf3;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+:root {
+  --green: #00c896;
+  --bg: #0a0a0a;
+  --border: rgba(255,255,255,0.08);
+  --text: #e8edf3;
+  --sw: 200px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
 
-  .site-header {
-    position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 28px; height: 56px;
-    background: rgba(10,10,10,0.94); backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-  }
-  .site-logo { font-size: 15px; font-weight: 800; letter-spacing: 1.5px; color: var(--green); text-decoration: none; text-transform: uppercase; }
-  .site-header-right { font-size: 13px; color: var(--muted); font-weight: 500; }
+.site-header{position:fixed;top:0;left:0;right:0;z-index:200;height:52px;display:flex;align-items:center;padding:0 24px;background:rgba(10,10,10,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.site-logo{font-size:14px;font-weight:800;letter-spacing:2px;color:var(--green);text-decoration:none;text-transform:uppercase}
 
-  .breadcrumb { padding: 12px 28px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
-  .breadcrumb a { color: var(--muted); text-decoration: none; transition: color .15s; }
-  .breadcrumb a:hover { color: var(--text); }
-  .breadcrumb .sep { margin: 0 6px; color: rgba(255,255,255,0.2); }
+.sidebar{position:fixed;top:52px;left:0;bottom:0;width:var(--sw);background:#0a0a0a;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sidebar-listing{display:none;margin:14px 14px 0;padding:10px 12px;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:8px;font-size:12px}
+.sl-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle;flex-shrink:0}
+.sl-address{color:rgba(255,255,255,0.75);font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.sl-price{color:rgba(255,255,255,0.4);font-size:11px}
+.sl-score{margin-top:5px;font-size:11px;font-weight:600;line-height:1.5}
+.sidebar-nav{flex:1;padding:14px 0}
+.nav-item{display:block;width:100%;padding:10px 20px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);background:none;border:none;border-left:2px solid transparent;text-align:left;cursor:pointer;font-family:inherit;transition:color .12s,background .12s;white-space:nowrap}
+.nav-item:hover{color:rgba(255,255,255,0.75)}
+.nav-item.active{color:#fff;background:rgba(255,255,255,0.03);border-left-color:var(--green);padding-left:18px}
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 20px 20px 80px; }
-  .page-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
-  .page-title span { color: var(--green); }
-  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+.main{margin-left:var(--sw);padding:32px 40px 80px;margin-top:52px;min-height:calc(100vh - 52px)}
+.main-inner{max-width:1000px}
 
-  /* Listing bar */
-  .listing-bar { display: none; align-items: center; gap: 10px; background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 20px; margin-bottom: 12px; font-size: 13px; flex-wrap: wrap; }
-  .listing-bar.visible { display: flex; }
-  .listing-bar-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-  .listing-bar-address { font-weight: 700; color: var(--text); font-size: 13px; }
-  .listing-bar-price { color: var(--muted); font-size: 13px; }
-  .listing-bar-badges { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
-  .score-badge { border-radius: 5px; padding: 3px 8px; font-size: 11px; font-weight: 600; }
+.panel-header{margin-bottom:18px}
+.panel-header h1{font-size:22px;font-weight:700;margin-bottom:4px}
+.panel-header p{font-size:13px;color:rgba(255,255,255,0.4)}
+.panel-divider{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 20px}
 
-  /* Tips panel */
-  .tips-panel { display: none; margin-bottom: 14px; background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
-  .tips-panel.visible { display: block; }
-  .tips-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; user-select: none; }
-  .tips-panel-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--green); }
-  .tips-toggle-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 0; font-family: inherit; line-height: 1; }
-  .tips-panel-body { display: none; padding: 0 16px 14px; }
-  .tips-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: rgba(255,255,255,0.3); margin-bottom: 8px; margin-top: 12px; }
-  .tips-section-label:first-child { margin-top: 0; }
-  .tips-scroll-row { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
-  .tips-scroll-row::-webkit-scrollbar { display: none; }
-  .tip-card { flex-shrink: 0; width: 260px; background: #0d1117; border-left: 2px solid; border-radius: 8px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: var(--text); display: flex; gap: 10px; align-items: flex-start; }
-  .tip-card--green { border-left-color: #00c896; }
-  .tip-card--blue { border-left-color: #4d9fff; }
-  .tip-card--gray { border-left-color: rgba(255,255,255,0.2); }
-  .tip-dot { flex-shrink: 0; width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; }
-  .tip-dot--green { background: #00c896; }
-  .tip-dot--blue { background: #4d9fff; }
-  .tip-dot--gray { background: rgba(255,255,255,0.3); }
+.tips-panel{display:none;border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:20px;overflow:hidden}
+.tips-panel.visible{display:block}
+.tips-panel-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;cursor:pointer;user-select:none}
+.tips-panel-title{font-size:12px;color:rgba(255,255,255,0.5)}
+.tips-toggle-btn{font-size:12px;color:var(--green);background:none;border:none;cursor:pointer;font-family:inherit;padding:0}
+.tips-body{display:none;border-top:1px solid rgba(255,255,255,0.06)}
+.tip-section-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.25);padding:10px 16px 4px}
+.tip-row{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tip-row:last-child{border-bottom:none}
+.tip-dot{flex-shrink:0;width:5px;height:5px;border-radius:50%;margin-top:5px}
+.tip-text{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6}
 
-  .tab-bar { display: flex; gap: 6px; overflow-x: auto; padding: 10px 20px; margin: 0 -20px 14px; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 56px; z-index: 90; background: rgba(10,10,10,0.97); backdrop-filter: blur(16px); }
-  .tab-bar::-webkit-scrollbar { display: none; }
-  .tab-btn { flex-shrink: 0; padding: 0 14px; height: 34px; border-radius: 17px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; display: flex; align-items: center; gap: 5px; }
-  .tab-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
-  .tab-btn.active { background: var(--green); border-color: var(--green); color: #0a0a0a; font-weight: 600; box-shadow: 0 0 0 3px rgba(0,200,150,0.15); }
+.content-grid{display:grid;grid-template-columns:44fr 56fr;gap:24px;align-items:start}
 
-  .panel { display: none; }
-  .panel.active { display: block; }
+.input-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px}
+.field{margin-bottom:14px}
+.field label{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-weight:600;flex-wrap:wrap;gap:4px}
+.char-count{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400}
+.field input,.field textarea,.field select{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;line-height:1.6;padding:10px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,200,150,0.08)}
+.field textarea{resize:vertical;min-height:100px}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.info-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.3);font-size:9px;cursor:pointer;font-family:inherit;padding:0;margin-left:4px;flex-shrink:0;transition:border-color .15s,color .15s}
+.info-btn:hover{border-color:var(--green);color:var(--green)}
+.field-hint{display:none;font-size:12px;color:rgba(255,255,255,0.45);background:rgba(0,200,150,0.04);border-left:2px solid var(--green);padding:8px 10px;border-radius:0 6px 6px 0;margin-bottom:8px;line-height:1.5}
+.btn-submit{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:44px;background:var(--green);color:#0a0a0a;font-family:inherit;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:background .15s}
+.btn-submit:hover:not(:disabled){background:#00b386}
+.btn-submit:disabled{opacity:.45;cursor:not-allowed}
+.btn-spinner{width:13px;height:13px;border:2px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-msg{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
+.error-msg.visible{display:block}
 
-  .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.tone-group{display:flex;gap:6px;margin-bottom:14px}
+.tone-btn{flex:1;height:34px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.tone-btn.active{background:rgba(0,200,150,0.12);border-color:var(--green);color:var(--green)}
+.tone-btn:hover:not(.active){color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.2)}
 
-  .form-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; transition: border-left .15s; }
-  .form-card:focus-within { border-left: 2px solid #00c896; }
-  .form-card h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .form-card .desc { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
-  .field { margin-bottom: 14px; }
-  .field label { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 6px; }
-  .char-count { font-size: 11px; text-transform: none; letter-spacing: 0; }
-  .field input, .field textarea, .field select { width: 100%; background: #0d1117; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 14px; line-height: 1.6; padding: 12px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,200,150,0.1); }
-  .field textarea { resize: vertical; min-height: 120px; }
-  .info-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; font-family: inherit; padding: 0; margin-left: 4px; flex-shrink: 0; transition: border-color .15s, color .15s; }
-  .info-btn:hover { border-color: var(--green); color: var(--green); }
-  .field-hint { display: none; font-size: 12px; color: var(--muted); background: rgba(0,200,150,0.04); border-left: 2px solid var(--green); padding: 8px 10px; border-radius: 0 6px 6px 0; margin-bottom: 8px; line-height: 1.5; }
-  .btn-submit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px; background: var(--green); color: #0a0a0a; font-family: inherit; font-size: 15px; font-weight: 700; padding: 0 16px; border: none; border-radius: 10px; cursor: pointer; transition: background .15s; }
-  .btn-submit:hover:not(:disabled) { background: #00b386; }
-  .btn-submit:disabled { opacity: .45; cursor: not-allowed; }
-  .btn-spinner { width: 14px; height: 14px; border: 2px solid rgba(10,10,10,0.3); border-top-color: #0a0a0a; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error-msg { color: #ff6b6b; font-size: 13px; margin-top: 10px; display: none; }
-  .error-msg.visible { display: block; }
+.lt-check-group{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.lt-check-label{display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;color:var(--text);line-height:1.5}
+.lt-check-label input[type="checkbox"]{width:14px;height:14px;margin-top:2px;accent-color:var(--green);flex-shrink:0}
+.lt-check-sub{font-size:11px;color:rgba(255,255,255,0.3);padding-left:22px;line-height:1.4;margin-top:2px}
 
-  .output-col { min-height: 200px; }
+.output-empty{border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:48px 24px;text-align:center}
+.output-empty svg{opacity:.5;margin:0 auto 12px;display:block}
+.output-empty p{font-size:13px;line-height:1.6;max-width:220px;margin:0 auto;color:rgba(255,255,255,0.25)}
 
-  .output-empty { border: 2px dashed rgba(255,255,255,0.07); border-radius: 14px; padding: 48px 24px; text-align: center; color: var(--muted); }
-  .output-empty .empty-icon { margin-bottom: 12px; }
-  .output-empty .empty-icon svg { opacity: 0.25; }
-  .output-empty p { font-size: 14px; line-height: 1.75; max-width: 240px; margin: 0 auto; }
+.skeleton{background:#111318;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;display:none}
+.skel-bar{height:12px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:12px;position:relative;overflow:hidden}
+.skel-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);transform:translateX(-100%);animation:shimmer 1.4s infinite}
+@keyframes shimmer{to{transform:translateX(100%)}}
+.skel-bar:nth-child(2){width:75%}
+.skel-bar:nth-child(3){width:55%}
 
-  .skeleton { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 22px; display: none; }
-  .skel-bar { height: 13px; background: rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 12px; position: relative; overflow: hidden; }
-  .skel-bar::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent); transform: translateX(-100%); animation: shimmer 1.4s infinite; }
-  @keyframes shimmer { to { transform: translateX(100%); } }
-  .skel-bar:nth-child(2) { width: 75%; }
-  .skel-bar:nth-child(3) { width: 55%; }
-  .skel-bar:nth-child(4) { width: 40%; }
+.response-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;display:none}
+.response-body{font-size:13px;line-height:1.75;color:rgba(255,255,255,0.8)}
+.response-body h2{font-size:13px;font-weight:600;color:#fff;margin-top:16px;margin-bottom:6px}
+.response-body h2:first-child{margin-top:0}
+.response-body ul,.response-body ol{padding-left:14px;margin:4px 0 10px}
+.response-body li{margin-bottom:4px}
+.response-body ul li::marker{color:var(--green)}
+.response-body p{margin-bottom:8px}
+.response-body strong{color:var(--text);font-weight:600}
 
-  .response-card { background: #111318; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 22px; display: none; }
-  .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
-  .response-header h3 { font-size: 14px; font-weight: 700; }
-  .resp-actions { display: flex; gap: 8px; }
-  .copy-btn, .followup-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--muted); font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all .15s; }
-  .copy-btn:hover, .followup-btn:hover { border-color: var(--green); color: var(--green); }
-  .copy-btn.copied { color: var(--green); border-color: var(--green); }
-  .response-body { font-size: 14px; line-height: 1.75; color: var(--text); }
-  .response-body h2 { font-size: 14px; font-weight: 700; color: var(--green); margin-top: 28px; margin-bottom: 7px; padding-top: 16px; padding-bottom: 4px; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid var(--border); }
-  .response-body h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
-  .response-body ul, .response-body ol { padding-left: 18px; margin: 5px 0 12px; }
-  .response-body li { margin-bottom: 4px; }
-  .response-body p { margin-bottom: 9px; }
-  .response-body strong { color: var(--text); font-weight: 700; }
+.resp-actions-row{display:none;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.resp-action-btn{height:32px;padding:0 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.4);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
+.resp-action-btn:hover{border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.7)}
+.resp-action-btn.copied{border-color:var(--green);color:var(--green)}
 
-  /* Tone selector */
-  .tone-selector { display: flex; gap: 8px; margin-bottom: 14px; }
-  .tone-pill { flex: 1; padding: 9px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.4); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; text-align: center; }
-  .tone-pill.active { background: rgba(0,200,150,0.15); border-color: #00c896; color: #00c896; }
-  .tone-pill:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+.letter-box{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;display:none}
+.letter-text{font-size:13px;line-height:1.8;white-space:pre-wrap;color:rgba(255,255,255,0.8)}
+.letter-meta{font-size:11px;margin-top:10px;color:rgba(255,255,255,0.3)}
+.wc-green{color:var(--green)}.wc-amber{color:#ffb347}.wc-red{color:#ff6b6b}
+.lt-next-steps{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)}
+.lt-next-steps p{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.25);margin-bottom:8px}
+.lt-next-link{display:block;font-size:12px;color:var(--green);text-decoration:none;padding:3px 0;opacity:.8;transition:opacity .15s}
+.lt-next-link:hover{opacity:1}
 
-  /* Letter checkboxes */
-  .lt-check-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
-  .lt-check-item { display: flex; flex-direction: column; gap: 4px; }
-  .lt-check-label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
-  .lt-check-label input[type="checkbox"] { width: 15px; height: 15px; margin-top: 2px; accent-color: #00c896; flex-shrink: 0; cursor: pointer; }
-  .lt-check-text { font-size: 13px; color: #e8edf3; line-height: 1.5; }
-  .lt-check-sub { font-size: 11px; color: rgba(255,255,255,0.35); padding-left: 25px; line-height: 1.4; }
+.panel{display:none}
+.panel.active{display:block}
 
-  /* Word count colors */
-  .wc-green { color: var(--green); }
-  .wc-amber { color: #ffb347; }
-  .wc-red { color: #ff6b6b; }
+.mobile-nav{display:none;position:sticky;top:52px;z-index:90;padding:10px 16px;background:rgba(10,10,10,0.97);border-bottom:1px solid var(--border)}
+.mobile-dropdown-btn{width:100%;background:#111318;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer}
+.mobile-dropdown-chevron{color:rgba(255,255,255,0.4);font-size:10px}
 
-  /* Next steps links */
-  .lt-next-steps { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.07); }
-  .lt-next-steps p { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
-  .lt-next-link { display: block; font-size: 13px; color: var(--green); text-decoration: none; padding: 4px 0; transition: opacity .15s; }
-  .lt-next-link:hover { opacity: 0.8; }
+.bs-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300}
+.bs-sheet{position:fixed;bottom:0;left:0;right:0;background:#111318;border-radius:16px 16px 0 0;border-top:1px solid var(--border);z-index:301;transform:translateY(100%);transition:transform .25s ease;padding-bottom:env(safe-area-inset-bottom,16px)}
+.bs-sheet.open{transform:translateY(0)}
+.bs-handle{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:12px auto 16px}
+.bs-section-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.25);padding:0 20px 10px}
+.bs-item{display:block;width:100%;background:none;border:none;text-align:left;padding:12px 20px;font-family:inherit;font-size:14px;color:rgba(255,255,255,0.55);cursor:pointer;transition:color .12s}
+.bs-item:hover{color:rgba(255,255,255,0.85)}
+.bs-item.active{color:#fff;font-weight:600}
 
-  .help-section { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
-  .help-section h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
-  .help-links { display: flex; flex-wrap: wrap; gap: 8px; }
-  .help-link { display: inline-block; padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--muted); text-decoration: none; transition: all .15s; background: var(--bg2); }
-  .help-link:hover { border-color: rgba(0,200,150,0.35); color: var(--green); }
+.help-section{margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.06)}
+.help-section h3{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:12px}
+.help-links{display:flex;flex-wrap:wrap;gap:8px}
+.help-link{padding:6px 12px;border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;transition:all .15s;background:#0f1318}
+.help-link:hover{border-color:rgba(0,200,150,0.3);color:var(--green)}
 
-  @media (max-width: 768px) {
-    .container { padding: 16px 16px 80px; }
-    .site-header { padding: 0 16px; }
-    .breadcrumb { padding: 10px 16px; }
-    .tab-bar { padding: 10px 16px; margin: 0 -16px 14px; }
-    .panel-grid { grid-template-columns: 1fr; }
-    .output-col { order: -1; }
-    .output-empty { padding: 28px 20px; }
-    .tips-scroll-row { flex-direction: column; }
-    .tip-card { width: 100%; }
-    .btn-submit { position: sticky; bottom: 16px; z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-  }
+.footer{border-top:1px solid rgba(255,255,255,0.06);padding:14px 24px;text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:40px}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .mobile-nav{display:block}
+  .main{margin-left:0;padding:16px 16px 80px}
+  .content-grid{grid-template-columns:1fr}
+  .output-col{order:-1}
+  .output-empty{padding:28px 16px}
+  .btn-submit{position:sticky;bottom:16px;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+}
 </style>
 </head>
 <body>
 
 <header class="site-header">
-  <a class="site-logo" href="/">HomeSeeker</a>
-  <span class="site-header-right">AI Rental Assistant</span>
+  <a class="site-logo" href="/">Homeseeker</a>
 </header>
 
-<div class="breadcrumb">
-  <a href="/">HOMESEEKER</a><span class="sep">&#8250;</span><a href="/guide/rent">Rental Guide</a><span class="sep">&#8250;</span>AI Rental Assistant
+<aside class="sidebar">
+  <div id="sidebar-listing" class="sidebar-listing"></div>
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-tab="1" onclick="switchTab(1)">Letter</button>
+    <button class="nav-item" data-tab="2" onclick="switchTab(2)">Application Coach</button>
+    <button class="nav-item" data-tab="3" onclick="switchTab(3)">Viewing Tips</button>
+    <button class="nav-item" data-tab="4" onclick="switchTab(4)">Negotiation</button>
+    <button class="nav-item" data-tab="5" onclick="switchTab(5)">Lease Review</button>
+    <button class="nav-item" data-tab="6" onclick="switchTab(6)">Move-In</button>
+  </nav>
+</aside>
+
+<div class="mobile-nav">
+  <button class="mobile-dropdown-btn" onclick="openBottomSheet()">
+    <span id="mobile-tab-label">Letter</span>
+    <span class="mobile-dropdown-chevron">&#9660;</span>
+  </button>
 </div>
 
-<div class="container">
-  <div class="page-title"><span>AI</span> Rental Assistant</div>
-  <p class="page-sub">Your complete guide to finding and securing a rental in the Netherlands.</p>
+<div class="bs-overlay" id="bs-overlay" onclick="closeBottomSheet()"></div>
+<div class="bs-sheet" id="bs-sheet">
+  <div class="bs-handle"></div>
+  <div class="bs-section-title">Select tool</div>
+  <button class="bs-item active" data-tab="1" onclick="switchTab(1);closeBottomSheet()">Letter</button>
+  <button class="bs-item" data-tab="2" onclick="switchTab(2);closeBottomSheet()">Application Coach</button>
+  <button class="bs-item" data-tab="3" onclick="switchTab(3);closeBottomSheet()">Viewing Tips</button>
+  <button class="bs-item" data-tab="4" onclick="switchTab(4);closeBottomSheet()">Negotiation</button>
+  <button class="bs-item" data-tab="5" onclick="switchTab(5);closeBottomSheet()">Lease Review</button>
+  <button class="bs-item" data-tab="6" onclick="switchTab(6);closeBottomSheet()">Move-In</button>
+</div>
 
-  <div id="listing-bar" class="listing-bar">
-    <span class="listing-bar-dot"></span>
-    <span class="listing-bar-address" id="listing-bar-address"></span>
-    <span class="listing-bar-price" id="listing-bar-price"></span>
-    <div class="listing-bar-badges" id="listing-bar-badges"></div>
+<main class="main">
+<div class="main-inner">
+
+<!-- Panel 1: Letter -->
+<div id="panel-1" class="panel active">
+  <div class="panel-header">
+    <h1>Application Letter</h1>
+    <p>Generate a personalised motivation letter based on your profile and the listing.</p>
   </div>
+  <hr class="panel-divider">
 
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab(1,this)">&#x2709;&#xFE0F; Letter</button>
-    <button class="tab-btn" onclick="switchTab(2,this)">&#127919; Coach</button>
-    <button class="tab-btn" onclick="switchTab(3,this)">&#128065; Viewing</button>
-    <button class="tab-btn" onclick="switchTab(4,this)">&#128172; Negotiate</button>
-    <button class="tab-btn" onclick="switchTab(5,this)">&#128196; Lease</button>
-    <button class="tab-btn" onclick="switchTab(6,this)">&#128230; Move-In</button>
+  <div id="lt-no-listing" style="display:none">
+    <div class="output-empty" style="max-width:480px">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <p>No listing linked. Open from a Telegram alert, or visit <a href="/letter" style="color:var(--green)">the letter page</a> directly.</p>
+    </div>
   </div>
-
-  <!-- Tab 1: Write Letter -->
-  <div id="panel-1" class="panel active">
-    <div id="lt-no-listing" style="display:none">
-      <div class="output-empty" style="max-width:480px">
-        <div class="empty-icon">&#x2709;&#xFE0F;</div>
-        <p>No listing linked. Open from a Telegram alert, or visit <a href="/letter" style="color:var(--green)">the letter page</a> directly.</p>
+  <div id="lt-loading">
+    <div class="skeleton" style="display:block"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+  </div>
+  <div id="lt-form" style="display:none">
+    <div id="lt-tips-panel" class="tips-panel">
+      <div class="tips-panel-header" onclick="ltToggleTips()">
+        <span class="tips-panel-title" id="lt-tips-title">Application tips</span>
+        <button class="tips-toggle-btn" id="lt-tips-toggle">Show</button>
       </div>
+      <div class="tips-body" id="lt-tips-content"></div>
     </div>
-    <div id="lt-loading">
-      <div class="skeleton" style="display:block"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
-    </div>
-    <div id="lt-form" style="display:none">
-      <div id="lt-tips-panel" class="tips-panel">
-        <div class="tips-panel-header" onclick="ltToggleTips()">
-          <span class="tips-panel-title" id="lt-tips-title">Your application tips</span>
-          <button class="tips-toggle-btn" id="lt-tips-toggle">Show &#9660;</button>
-        </div>
-        <div class="tips-panel-body" id="lt-tips-content"></div>
-      </div>
-      <div class="panel-grid">
-      <div class="form-card">
-        <h2>Write your application letter</h2>
-        <p class="desc">Generate a personalised motivation letter for this listing. Based on your profile and the landlord's requirements.</p>
-
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600;margin-bottom:8px">LETTER TONE</div>
-        <div class="tone-selector">
-          <button class="tone-pill active" onclick="ltSetTone('professional',this)">Professional</button>
-          <button class="tone-pill" onclick="ltSetTone('personal',this)">Personal</button>
-          <button class="tone-pill" onclick="ltSetTone('concise',this)">Concise</button>
-        </div>
-
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);font-weight:600;margin-bottom:10px">INCLUDE IN LETTER</div>
-        <div class="lt-check-group">
-          <div class="lt-check-item">
-            <label class="lt-check-label">
-              <input type="checkbox" checked onchange="ltState.checks[0]=this.checked">
-              <span class="lt-check-text">Your income and employment</span>
-            </label>
-            <div class="lt-check-sub">Confirms you meet the financial requirements</div>
-          </div>
-          <div class="lt-check-item">
-            <label class="lt-check-label">
-              <input type="checkbox" checked onchange="ltState.checks[1]=this.checked">
-              <span class="lt-check-text">Why this specific home</span>
-            </label>
-            <div class="lt-check-sub">One sentence about why this property suits your situation</div>
-          </div>
-          <div class="lt-check-item">
-            <label class="lt-check-label">
-              <input type="checkbox" checked onchange="ltState.checks[2]=this.checked">
-              <span class="lt-check-text">Your move-in timeline</span>
-            </label>
-            <div class="lt-check-sub">When you can move in and your flexibility</div>
-          </div>
-          <div class="lt-check-item">
-            <label class="lt-check-label">
-              <input type="checkbox" checked onchange="ltState.checks[3]=this.checked">
-              <span class="lt-check-text">Documents ready</span>
-            </label>
-            <div class="lt-check-sub">Confirm you can send everything immediately</div>
+    <div class="content-grid">
+      <div class="input-card">
+        <div class="field" style="margin-bottom:10px">
+          <label>Letter tone</label>
+          <div class="tone-group">
+            <button class="tone-btn active" onclick="ltSetTone('professional',this)">Professional</button>
+            <button class="tone-btn" onclick="ltSetTone('personal',this)">Personal</button>
+            <button class="tone-btn" onclick="ltSetTone('concise',this)">Concise</button>
           </div>
         </div>
-
-        <div class="field" style="margin-bottom:14px">
-          <label>ANYTHING SPECIFIC TO ADD?
-            <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">(optional)</span>
-            <button class="info-btn" data-hint="Any detail that strengthens your case: a connection to the area, a reason for the move, or a specific feature you want highlighted.">&#9432;</button>
+        <div class="field" style="margin-bottom:10px">
+          <label>Include in letter</label>
+          <div class="lt-check-group">
+            <div>
+              <label class="lt-check-label"><input type="checkbox" checked onchange="ltState.checks[0]=this.checked"> Your income and employment</label>
+              <div class="lt-check-sub">Confirms you meet the financial requirements</div>
+            </div>
+            <div>
+              <label class="lt-check-label"><input type="checkbox" checked onchange="ltState.checks[1]=this.checked"> Why this specific home</label>
+              <div class="lt-check-sub">One sentence about why this property suits you</div>
+            </div>
+            <div>
+              <label class="lt-check-label"><input type="checkbox" checked onchange="ltState.checks[2]=this.checked"> Your move-in timeline</label>
+              <div class="lt-check-sub">When you can move in and your flexibility</div>
+            </div>
+            <div>
+              <label class="lt-check-label"><input type="checkbox" checked onchange="ltState.checks[3]=this.checked"> Documents ready</label>
+              <div class="lt-check-sub">Confirm you can send everything immediately</div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Anything specific to add? <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)">(optional)</span>
+            <button class="info-btn" data-hint="Any detail that strengthens your case: a connection to the area, a reason for the move, or a specific feature you want highlighted.">i</button>
             <span class="char-count" id="lt-cc">0 / 400</span>
           </label>
           <textarea id="lt-extra" style="min-height:70px" oninput="updateCount(this,'lt-cc',400)"></textarea>
         </div>
-
-        <button class="btn-submit" id="lt-gen-btn" onclick="ltGenerate()">Generate my letter &#8594;</button>
+        <button class="btn-submit" id="lt-gen-btn" onclick="ltGenerate()">Generate letter</button>
         <div class="error-msg" id="lt-err"></div>
       </div>
       <div class="output-col">
         <div class="output-empty" id="lt-empty">
-          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
           <p>Your personalised application letter will appear here.</p>
         </div>
-        <div class="skeleton" id="lt-skel" style="display:none"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
-        <div id="lt-letter-box" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-            <span style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green)">&#x2709;&#xFE0F; Your letter</span>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="copy-btn" id="lt-copy-btn" onclick="ltCopy()">Copy</button>
-              <button class="copy-btn" onclick="ltDownload()">.txt</button>
-              <button class="copy-btn" onclick="ltWhatsApp()">WhatsApp</button>
-              <button class="copy-btn" onclick="ltModify('shorter')">Shorter</button>
-              <button class="copy-btn" onclick="ltModify('personal')">More personal</button>
-            </div>
-          </div>
-          <div id="lt-letter-text" style="font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
-          <div id="lt-word-count" style="font-size:11px;margin-top:12px"></div>
+        <div class="skeleton" id="lt-skel"></div>
+        <div class="letter-box" id="lt-letter-box">
+          <div id="lt-letter-text" class="letter-text"></div>
+          <div id="lt-word-count" class="letter-meta"></div>
           <div class="lt-next-steps">
-            <p>NEXT STEPS</p>
-            <a class="lt-next-link" id="lt-coach-link" href="#">Get your full application strategy &#8594;</a>
-            <a class="lt-next-link" id="lt-viewing-link" href="#">Prepare for the viewing &#8594;</a>
+            <p>Next steps</p>
+            <a class="lt-next-link" id="lt-coach-link" href="#">Get your full application strategy</a>
+            <a class="lt-next-link" id="lt-viewing-link" href="#">Prepare for the viewing</a>
           </div>
+        </div>
+        <div class="resp-actions-row" id="lt-actions-row">
+          <button class="resp-action-btn" id="lt-copy-btn" onclick="ltCopy()">Copy</button>
+          <button class="resp-action-btn" onclick="ltDownload()">.txt</button>
+          <button class="resp-action-btn" onclick="ltWhatsApp()">WhatsApp</button>
+          <button class="resp-action-btn" onclick="ltModify('shorter')">Shorter</button>
+          <button class="resp-action-btn" onclick="ltModify('personal')">More personal</button>
         </div>
       </div>
-      </div><!-- /panel-grid -->
-    </div><!-- /lt-form -->
-  </div>
-
-  <!-- Tab 2: Application Coach -->
-  <div id="panel-2" class="panel">
-    <div id="t2-tips-panel" class="tips-panel">
-      <div class="tips-panel-header" onclick="t2ToggleTips()">
-        <span class="tips-panel-title" id="t2-tips-title">Your application tips</span>
-        <button class="tips-toggle-btn" id="t2-tips-toggle">Show &#9660;</button>
-      </div>
-      <div class="tips-panel-body" id="t2-tips-content"></div>
-    </div>
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Application Coach</h2>
-          <p class="desc">Describe the listing and your situation. Get an honest assessment, a copy-paste first message, and what documents to attach.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Listing description <button class="info-btn" data-hint="Paste the listing text or describe the property - address, price, what the landlord is looking for, platform it is on.">&#9432;</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t2-listing" rows="5" oninput="updateCount(this,'cc-2-1')"></textarea>
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Your goal for this application <button class="info-btn" data-hint="What matters most to you - moving in quickly, beating many applicants, a specific move-in date? The clearer this is, the better the strategy.">&#9432;</button></label>
-              <div class="field-hint"></div>
-              <input id="t2-goal" type="text">
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-2" onclick="submit(2)">Get advice &#8594;</button>
-          <div class="error-msg" id="err-2"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-2">
-          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
-          <p>Fill in the listing and your goal, then click "Get advice" to see your strategy.</p>
-        </div>
-        <div class="skeleton" id="skel-2">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-2">
-          <div class="response-header">
-            <h3>Application Strategy</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(2)">Copy</button>
-              <button class="followup-btn" onclick="followUp(2)">Ask a follow-up &#8599;</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-2"></div>
-        </div>
-      </div>
-    </div><!-- /panel-grid -->
-  </div>
-
-  <!-- Tab 3: Viewing Tips -->
-  <div id="panel-3" class="panel">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Viewing Tips</h2>
-          <p class="desc">Describe the property. Get 10 questions to ask, what to inspect, what to bring, and how to stand out.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Property description <button class="info-btn" data-hint="Include size, floor, energy label, building era, furnishing, and service costs - anything on the listing that might affect what you check.">&#9432;</button> <span class="char-count" id="cc-3-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t3-listing" rows="4" oninput="updateCount(this,'cc-3-1')"></textarea>
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Main concern or what you want to check <button class="info-btn" data-hint="Damp, noise, heating, service costs, building maintenance? Tell us what worries you and we'll focus the checklist there.">&#9432;</button></label>
-              <div class="field-hint"></div>
-              <input id="t3-goal" type="text">
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-3" onclick="submit(3)">Get advice &#8594;</button>
-          <div class="error-msg" id="err-3"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-3">
-          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
-          <p>Describe the property and we'll prepare your questions, inspection checklist, and how to stand out.</p>
-        </div>
-        <div class="skeleton" id="skel-3">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-3">
-          <div class="response-header">
-            <h3>Viewing Guide</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(3)">Copy</button>
-              <button class="followup-btn" onclick="followUp(3)">Ask a follow-up &#8599;</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-3"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 4: Negotiation Help -->
-  <div id="panel-4" class="panel">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Negotiation Help</h2>
-          <p class="desc">Describe your situation. Get honest advice on whether negotiating is realistic, and exact word-for-word scripts to use.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>What do you want to negotiate? <button class="info-btn" data-hint="Be specific: lower rent by a set amount, remove a clause, get repairs done, extend the lease term. One clear ask works better than several vague ones.">&#9432;</button></label>
-              <div class="field-hint"></div>
-              <input id="t4-goal" type="text">
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Your situation <button class="info-btn" data-hint="How long has the listing been up? Do you have comparable prices? Can you move in quickly? Any of these are leverage - include them.">&#9432;</button> <span class="char-count" id="cc-4-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t4-situation" rows="3" oninput="updateCount(this,'cc-4-1')"></textarea>
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-4" onclick="submit(4)">Get advice &#8594;</button>
-          <div class="error-msg" id="err-4"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-4">
-          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
-          <p>Describe what you want to negotiate and your leverage - we'll write the word-for-word scripts.</p>
-        </div>
-        <div class="skeleton" id="skel-4">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-4">
-          <div class="response-header">
-            <h3>Negotiation Scripts</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(4)">Copy</button>
-              <button class="followup-btn" onclick="followUp(4)">Ask a follow-up &#8599;</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-4"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 5: Check Lease -->
-  <div id="panel-5" class="panel">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Check Lease</h2>
-          <p class="desc">Paste any clause or the full contract. Get a plain-English explanation, red flags, and what your rights are under Dutch law.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Paste your lease text <button class="info-btn" data-hint="Paste the full lease or just the clauses you are unsure about - deposit, notice period, rent increases, maintenance, service costs, subletting, and registration rules are the most important.">&#9432;</button> <span class="char-count" id="cc-5-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t5-lease" rows="9" oninput="updateCount(this,'cc-5-1')"></textarea>
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-5" onclick="submit(5)">Get advice &#8594;</button>
-          <div class="error-msg" id="err-5"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-5">
-          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
-          <p>Paste your lease text and we'll flag the risky clauses and tell you what to challenge.</p>
-        </div>
-        <div class="skeleton" id="skel-5">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-5">
-          <div class="response-header">
-            <h3>Lease Analysis</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(5)">Copy</button>
-              <button class="followup-btn" onclick="followUp(5)">Ask a follow-up &#8599;</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-5"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 6: Move-In Help -->
-  <div id="panel-6" class="panel">
-    <div class="panel-grid">
-      <div>
-        <div class="form-card">
-          <h2>Move-In Help</h2>
-          <p class="desc">Select your property type and number of rooms. Get a room-by-room inspection checklist, meter reading instructions, and a template email to your landlord.</p>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Property type <button class="info-btn" data-hint="The checklist adapts to property type - a shared house has different move-in steps than an apartment or full house.">&#9432;</button></label>
-              <div class="field-hint"></div>
-              <select id="t6-type">
-                <option value="apartment">Apartment</option>
-                <option value="house">House</option>
-                <option value="studio">Studio</option>
-                <option value="shared room">Shared house (room)</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Rooms <button class="info-btn" data-hint="List every room you will be checking - bedrooms, bathrooms, kitchen, hallway, balcony, storage, basement. We use this to build your room-by-room checklist.">&#9432;</button></label>
-              <div class="field-hint"></div>
-              <input id="t6-rooms" type="text">
-            </div>
-          </div>
-          <div class="field">
-            <div class="field-wrap">
-              <label>Anything special about your move? <button class="info-btn" data-hint="Moving from abroad? Need BSN or address registration urgently? First time renting in the Netherlands? Mention it so we can include the right administrative steps.">&#9432;</button> <span class="char-count" id="cc-6-1">0 / 2000</span></label>
-              <div class="field-hint"></div>
-              <textarea id="t6-extra" rows="2" oninput="updateCount(this,'cc-6-1')"></textarea>
-            </div>
-          </div>
-          <button class="btn-submit" id="btn-6" onclick="submit(6)">Get advice &#8594;</button>
-          <div class="error-msg" id="err-6"></div>
-        </div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="empty-6">
-          <div class="empty-icon"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 3L29 13V29H3V13L16 3Z" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/><rect x="12" y="19" width="8" height="10" stroke="rgba(0,200,150,0.5)" stroke-width="1.5" fill="none"/></svg></div>
-          <p>Tell us about your property and we'll generate your complete room-by-room checklist.</p>
-        </div>
-        <div class="skeleton" id="skel-6">
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-          <div class="skel-bar"></div>
-        </div>
-        <div class="response-card" id="resp-6">
-          <div class="response-header">
-            <h3>Move-In Checklist</h3>
-            <div class="resp-actions">
-              <button class="copy-btn" onclick="copyResp(6)">Copy</button>
-              <button class="followup-btn" onclick="followUp(6)">Ask a follow-up &#8599;</button>
-            </div>
-          </div>
-          <div class="response-body" id="body-6"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="help-section">
-    <h3>Need help with something else?</h3>
-    <div class="help-links">
-      <a href="/letter" class="help-link">&#x2709;&#xFE0F; AI Motivation Letter</a>
-      <a href="/tools/landlord-reply" class="help-link">&#128172; Landlord Reply Coach</a>
-      <a href="/tools/rejection-analyser" class="help-link">&#128269; Rejection Analyser</a>
-      <a href="/tools/income-check" class="help-link">&#128176; Income Check</a>
-      <a href="/tools/reference-letter" class="help-link">&#128196; Reference Letter</a>
-      <a href="/tools/viewing-feedback" class="help-link">&#128065; Viewing Feedback</a>
-      <a href="/tools/tenant-rights" class="help-link">&#9878;&#65039; Tenant Rights Guide</a>
-      <a href="/tools/buy-assistant" class="help-link">&#127968; Buyer Assistant</a>
     </div>
   </div>
 </div>
+
+<!-- Panel 2: Application Coach -->
+<div id="panel-2" class="panel">
+  <div class="panel-header">
+    <h1>Application Coach</h1>
+    <p>Get an honest assessment, a copy-paste first message, and which documents to attach.</p>
+  </div>
+  <hr class="panel-divider">
+  <div id="t2-tips-panel" class="tips-panel">
+    <div class="tips-panel-header" onclick="t2ToggleTips()">
+      <span class="tips-panel-title" id="t2-tips-title">Application tips</span>
+      <button class="tips-toggle-btn" id="t2-tips-toggle">Show</button>
+    </div>
+    <div class="tips-body" id="t2-tips-content"></div>
+  </div>
+  <div class="content-grid">
+    <div class="input-card">
+      <div class="field">
+        <div class="field-wrap">
+          <label>Listing description <button class="info-btn" data-hint="Paste the listing text or describe the property — address, price, what the landlord is looking for, which platform.">i</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
+          <div class="field-hint"></div>
+          <textarea id="t2-listing" rows="5" oninput="updateCount(this,'cc-2-1')"></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-wrap">
+          <label>Your goal for this application <button class="info-btn" data-hint="What matters most — moving in quickly, beating many applicants, a specific move-in date?">i</button></label>
+          <div class="field-hint"></div>
+          <input id="t2-goal" type="text">
+        </div>
+      </div>
+      <button class="btn-submit" id="btn-2" onclick="submit(2)">Get advice</button>
+      <div class="error-msg" id="err-2"></div>
+    </div>
+    <div class="output-col">
+      <div class="output-empty" id="empty-2">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <p>Fill in the listing and your goal, then click Get advice.</p>
+      </div>
+      <div class="skeleton" id="skel-2"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+      <div class="response-card" id="resp-2"><div class="response-body" id="body-2"></div></div>
+      <div class="resp-actions-row" id="actions-2">
+        <button class="resp-action-btn" onclick="copyResp(2)">Copy</button>
+        <button class="resp-action-btn" onclick="followUp(2)">Ask a follow-up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Panel 3: Viewing Tips -->
+<div id="panel-3" class="panel">
+  <div class="panel-header">
+    <h1>Viewing Tips</h1>
+    <p>10 questions to ask, what to inspect, what to bring, and how to stand out at the viewing.</p>
+  </div>
+  <hr class="panel-divider">
+  <div class="content-grid">
+    <div class="input-card">
+      <div class="field">
+        <div class="field-wrap">
+          <label>Property description <button class="info-btn" data-hint="Include size, floor, energy label, building era, furnishing, and service costs.">i</button> <span class="char-count" id="cc-3-1">0 / 2000</span></label>
+          <div class="field-hint"></div>
+          <textarea id="t3-listing" rows="4" oninput="updateCount(this,'cc-3-1')"></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-wrap">
+          <label>Main concern or what you want to check <button class="info-btn" data-hint="Damp, noise, heating, service costs, building maintenance?">i</button></label>
+          <div class="field-hint"></div>
+          <input id="t3-goal" type="text">
+        </div>
+      </div>
+      <button class="btn-submit" id="btn-3" onclick="submit(3)">Get advice</button>
+      <div class="error-msg" id="err-3"></div>
+    </div>
+    <div class="output-col">
+      <div class="output-empty" id="empty-3">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <p>Describe the property and we'll prepare your questions and inspection checklist.</p>
+      </div>
+      <div class="skeleton" id="skel-3"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+      <div class="response-card" id="resp-3"><div class="response-body" id="body-3"></div></div>
+      <div class="resp-actions-row" id="actions-3">
+        <button class="resp-action-btn" onclick="copyResp(3)">Copy</button>
+        <button class="resp-action-btn" onclick="followUp(3)">Ask a follow-up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Panel 4: Negotiation -->
+<div id="panel-4" class="panel">
+  <div class="panel-header">
+    <h1>Negotiation</h1>
+    <p>Word-for-word scripts to negotiate rent, terms, or repairs with your landlord.</p>
+  </div>
+  <hr class="panel-divider">
+  <div class="content-grid">
+    <div class="input-card">
+      <div class="field">
+        <div class="field-wrap">
+          <label>What do you want to negotiate? <button class="info-btn" data-hint="Be specific: lower rent by a set amount, remove a clause, get repairs done, extend the lease term.">i</button></label>
+          <div class="field-hint"></div>
+          <input id="t4-goal" type="text">
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-wrap">
+          <label>Your situation <button class="info-btn" data-hint="How long has the listing been up? Do you have comparable prices? Can you move in quickly?">i</button> <span class="char-count" id="cc-4-1">0 / 2000</span></label>
+          <div class="field-hint"></div>
+          <textarea id="t4-situation" rows="3" oninput="updateCount(this,'cc-4-1')"></textarea>
+        </div>
+      </div>
+      <button class="btn-submit" id="btn-4" onclick="submit(4)">Get advice</button>
+      <div class="error-msg" id="err-4"></div>
+    </div>
+    <div class="output-col">
+      <div class="output-empty" id="empty-4">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <p>Describe what you want to negotiate and your leverage — we'll write the word-for-word scripts.</p>
+      </div>
+      <div class="skeleton" id="skel-4"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+      <div class="response-card" id="resp-4"><div class="response-body" id="body-4"></div></div>
+      <div class="resp-actions-row" id="actions-4">
+        <button class="resp-action-btn" onclick="copyResp(4)">Copy</button>
+        <button class="resp-action-btn" onclick="followUp(4)">Ask a follow-up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Panel 5: Lease Review -->
+<div id="panel-5" class="panel">
+  <div class="panel-header">
+    <h1>Lease Review</h1>
+    <p>Plain-English explanation of your lease clauses, red flags, and your rights under Dutch law.</p>
+  </div>
+  <hr class="panel-divider">
+  <div class="content-grid">
+    <div class="input-card">
+      <div class="field">
+        <div class="field-wrap">
+          <label>Paste your lease text <button class="info-btn" data-hint="Paste the full lease or just the clauses you are unsure about — deposit, notice period, rent increases, maintenance, service costs.">i</button> <span class="char-count" id="cc-5-1">0 / 2000</span></label>
+          <div class="field-hint"></div>
+          <textarea id="t5-lease" rows="9" oninput="updateCount(this,'cc-5-1')"></textarea>
+        </div>
+      </div>
+      <button class="btn-submit" id="btn-5" onclick="submit(5)">Get advice</button>
+      <div class="error-msg" id="err-5"></div>
+    </div>
+    <div class="output-col">
+      <div class="output-empty" id="empty-5">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <p>Paste your lease text and we'll flag the risky clauses and tell you what to challenge.</p>
+      </div>
+      <div class="skeleton" id="skel-5"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+      <div class="response-card" id="resp-5"><div class="response-body" id="body-5"></div></div>
+      <div class="resp-actions-row" id="actions-5">
+        <button class="resp-action-btn" onclick="copyResp(5)">Copy</button>
+        <button class="resp-action-btn" onclick="followUp(5)">Ask a follow-up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Panel 6: Move-In -->
+<div id="panel-6" class="panel">
+  <div class="panel-header">
+    <h1>Move-In</h1>
+    <p>Room-by-room inspection checklist, meter reading instructions, and a landlord email template.</p>
+  </div>
+  <hr class="panel-divider">
+  <div class="content-grid">
+    <div class="input-card">
+      <div class="field">
+        <div class="field-wrap">
+          <label>Property type <button class="info-btn" data-hint="The checklist adapts to property type — a shared house has different move-in steps than an apartment.">i</button></label>
+          <div class="field-hint"></div>
+          <select id="t6-type">
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="studio">Studio</option>
+            <option value="shared room">Shared house (room)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-wrap">
+          <label>Rooms <button class="info-btn" data-hint="List every room — bedrooms, bathrooms, kitchen, hallway, balcony, storage, basement.">i</button></label>
+          <div class="field-hint"></div>
+          <input id="t6-rooms" type="text">
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-wrap">
+          <label>Anything special about your move? <button class="info-btn" data-hint="Moving from abroad? Need BSN urgently? First time renting in the Netherlands?">i</button> <span class="char-count" id="cc-6-1">0 / 2000</span></label>
+          <div class="field-hint"></div>
+          <textarea id="t6-extra" rows="2" oninput="updateCount(this,'cc-6-1')"></textarea>
+        </div>
+      </div>
+      <button class="btn-submit" id="btn-6" onclick="submit(6)">Get advice</button>
+      <div class="error-msg" id="err-6"></div>
+    </div>
+    <div class="output-col">
+      <div class="output-empty" id="empty-6">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <p>Tell us about your property and we'll generate your complete room-by-room checklist.</p>
+      </div>
+      <div class="skeleton" id="skel-6"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+      <div class="response-card" id="resp-6"><div class="response-body" id="body-6"></div></div>
+      <div class="resp-actions-row" id="actions-6">
+        <button class="resp-action-btn" onclick="copyResp(6)">Copy</button>
+        <button class="resp-action-btn" onclick="followUp(6)">Ask a follow-up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="help-section">
+  <h3>More tools</h3>
+  <div class="help-links">
+    <a href="/letter" class="help-link">AI Motivation Letter</a>
+    <a href="/tools/landlord-reply" class="help-link">Landlord Reply Coach</a>
+    <a href="/tools/rejection-analyser" class="help-link">Rejection Analyser</a>
+    <a href="/tools/income-check" class="help-link">Income Check</a>
+    <a href="/tools/reference-letter" class="help-link">Reference Letter</a>
+    <a href="/tools/viewing-feedback" class="help-link">Viewing Feedback</a>
+    <a href="/tools/tenant-rights" class="help-link">Tenant Rights Guide</a>
+    <a href="/tools/buy-assistant" class="help-link">Buyer Assistant</a>
+  </div>
+</div>
+
+</div><!-- /main-inner -->
+</main>
+
+<div class="footer">AI-generated content is a starting point. Always review and personalise before sending. You are responsible for the accuracy of your application. &copy; 2025 HomeSeeker</div>
 
 <script>
 let chatId = null;
 let listingContext = '';
 const lastResponses = {};
-
-// UI tab number to API tab number mapping (Letter tab 1 uses separate API)
-const API_TAB_MAP = { 2: '1', 3: '2', 4: '3', 5: '4', 6: '5' };
+const API_TAB_MAP = { 2:'1', 3:'2', 4:'3', 5:'4', 6:'5' };
+const TAB_NAMES = { 1:'Letter', 2:'Application Coach', 3:'Viewing Tips', 4:'Negotiation', 5:'Lease Review', 6:'Move-In' };
 
 document.querySelectorAll('.info-btn').forEach(btn => {
   btn.addEventListener('click', e => {
@@ -615,14 +546,42 @@ function updateCount(el, ccId, max) {
   if (cc) cc.textContent = `${el.value.length} / ${max || 2000}`;
 }
 
+function openBottomSheet() {
+  document.getElementById('bs-overlay').style.display = 'block';
+  document.getElementById('bs-sheet').classList.add('open');
+}
+function closeBottomSheet() {
+  document.getElementById('bs-overlay').style.display = 'none';
+  document.getElementById('bs-sheet').classList.remove('open');
+}
+
+let activeTab = 1;
+function switchTab(n) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .bs-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(`panel-${n}`).classList.add('active');
+  document.querySelectorAll(`.nav-item[data-tab="${n}"], .bs-item[data-tab="${n}"]`).forEach(b => b.classList.add('active'));
+  const lbl = document.getElementById('mobile-tab-label');
+  if (lbl) lbl.textContent = TAB_NAMES[n] || '';
+  activeTab = n;
+  if (n === 1) initLetterTab();
+}
+
+function updateSidebarListing(address, price, badgesHtml) {
+  const el = document.getElementById('sidebar-listing');
+  if (!el) return;
+  let html = `<span class="sl-dot"></span><div class="sl-address">${ltEsc(address)}</div>`;
+  if (price) html += `<div class="sl-price">${ltEsc(price)}</div>`;
+  if (badgesHtml) html += `<div class="sl-score">${badgesHtml}</div>`;
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
 function getParams() {
   const p = new URLSearchParams(location.search);
   chatId = p.get('chat_id') || null;
   const tabParam = parseInt(p.get('tab') || '1', 10);
-  if (tabParam >= 1 && tabParam <= 6) {
-    const tabs = document.querySelectorAll('.tab-btn');
-    if (tabs[tabParam - 1]) switchTab(tabParam, tabs[tabParam - 1]);
-  }
+  if (tabParam >= 1 && tabParam <= 6) switchTab(tabParam);
   const listingId = p.get('listing') || null;
   if (listingId) {
     fetch(`/api/cached-listing/${listingId}`)
@@ -631,27 +590,12 @@ function getParams() {
         if (data && data.listing) {
           const l = data.listing;
           listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
-          const bar = document.getElementById('listing-bar');
-          if (bar) {
-            document.getElementById('listing-bar-address').textContent = l.address || l.url || 'Property';
-            if (l.price) document.getElementById('listing-bar-price').textContent = '· ' + l.price;
-            bar.classList.add('visible');
-          }
+          updateSidebarListing(l.address || l.url || 'Property', l.price || '', '');
           const t2 = document.getElementById('t2-listing');
           if (t2) { t2.value = listingContext.slice(0, 800); updateCount(t2, 'cc-2-1'); }
         }
       }).catch(() => {});
   }
-}
-
-let activeTab = 1;
-function switchTab(n, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`panel-${n}`).classList.add('active');
-  btn.classList.add('active');
-  activeTab = n;
-  if (n === 1) initLetterTab();
 }
 
 function buildMessage(tab) {
@@ -737,10 +681,12 @@ function renderResponse(tab, text) {
   const card = document.getElementById(`resp-${tab}`);
   const empty = document.getElementById(`empty-${tab}`);
   const skel = document.getElementById(`skel-${tab}`);
+  const actRow = document.getElementById(`actions-${tab}`);
   body.innerHTML = renderMarkdown(text);
   if (empty) empty.style.display = 'none';
   if (skel) skel.style.display = 'none';
   if (card) card.style.display = 'block';
+  if (actRow) actRow.style.display = 'flex';
 }
 
 function renderMarkdown(text) {
@@ -778,14 +724,16 @@ function setLoading(tab, on) {
   const empty = document.getElementById(`empty-${tab}`);
   const skel = document.getElementById(`skel-${tab}`);
   const resp = document.getElementById(`resp-${tab}`);
+  const actRow = document.getElementById(`actions-${tab}`);
   if (btn) {
     btn.disabled = on;
-    btn.innerHTML = on ? '<span class="btn-spinner"></span>Getting advice...' : 'Get advice &#8594;';
+    btn.innerHTML = on ? '<span class="btn-spinner"></span>Getting advice...' : 'Get advice';
   }
   if (on) {
     if (empty) empty.style.display = 'none';
     if (skel) skel.style.display = 'block';
     if (resp) resp.style.display = 'none';
+    if (actRow) actRow.style.display = 'none';
   } else {
     if (skel) skel.style.display = 'none';
   }
@@ -795,7 +743,7 @@ function copyResp(tab) {
   const text = lastResponses[tab] || '';
   if (!text) return;
   navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector(`#resp-${tab} .copy-btn`);
+    const btn = document.querySelector(`#actions-${tab} .resp-action-btn`);
     if (!btn) return;
     btn.textContent = 'Copied!';
     btn.classList.add('copied');
@@ -804,7 +752,7 @@ function copyResp(tab) {
 }
 
 function followUp(tab) {
-  const fields = { 2: 't2-listing', 3: 't3-listing', 4: 't4-situation', 5: 't5-lease', 6: 't6-extra' };
+  const fields = { 2:'t2-listing', 3:'t3-listing', 4:'t4-situation', 5:'t5-lease', 6:'t6-extra' };
   const fieldId = fields[tab];
   if (!fieldId) return;
   const el = document.getElementById(fieldId);
@@ -815,14 +763,13 @@ function followUp(tab) {
 
 function switchToCoach(e) {
   e.preventDefault();
-  const tabs = document.querySelectorAll('.tab-btn');
-  if (tabs[1]) switchTab(2, tabs[1]);
+  switchTab(2);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ─── Letter Tab Logic ───────────────────────────────────────────
+// ── Letter tab ──
 const ltEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const ltState = { loaded: false, cacheId: null, letter: '', tone: 'professional', checks: [true, true, true, true] };
+const ltState = { loaded: false, cacheId: null, letter: '', tone: 'professional', checks: [true,true,true,true] };
 
 const INCLUDE_LABELS = [
   'Your income and employment - confirm you meet the financial requirements',
@@ -833,7 +780,7 @@ const INCLUDE_LABELS = [
 
 function ltSetTone(tone, btn) {
   ltState.tone = tone;
-  document.querySelectorAll('.tone-pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tone-btn').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
 }
 
@@ -843,21 +790,19 @@ function renderStructuredTips(listingTips, profileTips, generalTips, containerId
   const total = listingTips.length + profileTips.length + generalTips.length;
   if (titleId) {
     const titleEl = document.getElementById(titleId);
-    if (titleEl) titleEl.textContent = `Your application tips (${total})`;
+    if (titleEl) titleEl.textContent = `Application tips (${total})`;
   }
   const sections = [
-    { label: 'From this listing', tips: listingTips, cardClass: 'tip-card--green', dotClass: 'tip-dot--green' },
-    { label: 'From your profile', tips: profileTips, cardClass: 'tip-card--blue', dotClass: 'tip-dot--blue' },
-    { label: 'Best practice', tips: generalTips, cardClass: 'tip-card--gray', dotClass: 'tip-dot--gray' },
+    { label: 'From this listing', tips: listingTips, dotColor: '#00c896' },
+    { label: 'From your profile', tips: profileTips, dotColor: '#4d9fff' },
+    { label: 'Best practice',     tips: generalTips, dotColor: 'rgba(255,255,255,0.3)' },
   ].filter(s => s.tips.length > 0);
   let html = '';
   sections.forEach(section => {
-    html += `<div class="tips-section-label">${ltEsc(section.label)}</div>`;
-    html += `<div class="tips-scroll-row">`;
+    html += `<div class="tip-section-label">${ltEsc(section.label)}</div>`;
     section.tips.forEach(tip => {
-      html += `<div class="tip-card ${section.cardClass}"><span class="tip-dot ${section.dotClass}"></span><span>${ltEsc(tip)}</span></div>`;
+      html += `<div class="tip-row"><span class="tip-dot" style="background:${section.dotColor}"></span><span class="tip-text">${ltEsc(tip)}</span></div>`;
     });
-    html += `</div>`;
   });
   el.innerHTML = html;
 }
@@ -867,7 +812,7 @@ function ltToggleTips() {
   const btn = document.getElementById('lt-tips-toggle');
   const open = body.style.display === 'block';
   body.style.display = open ? 'none' : 'block';
-  btn.innerHTML = open ? 'Show &#9660;' : 'Hide &#9650;';
+  btn.textContent = open ? 'Show' : 'Hide';
 }
 
 function t2ToggleTips() {
@@ -875,7 +820,7 @@ function t2ToggleTips() {
   const btn = document.getElementById('t2-tips-toggle');
   const open = body.style.display === 'block';
   body.style.display = open ? 'none' : 'block';
-  btn.innerHTML = open ? 'Show &#9660;' : 'Hide &#9650;';
+  btn.textContent = open ? 'Show' : 'Hide';
 }
 
 function initLetterTab() {
@@ -895,25 +840,19 @@ function initLetterTab() {
       const l = data.listing || {};
       const score = data.score;
       const dealScore = data.dealScore;
-      const bar = document.getElementById('listing-bar');
-      if (bar && (l.address || l.url)) {
-        document.getElementById('listing-bar-address').textContent = l.address || l.url || 'Property';
-        if (l.price) document.getElementById('listing-bar-price').textContent = '· ' + l.price;
-        const badges = document.getElementById('listing-bar-badges');
-        if (badges) {
-          let badgeHtml = '';
-          if (score != null) {
-            const scoreLbl = score >= 85 ? 'Excellent' : score >= 70 ? 'Strong' : score >= 50 ? 'Good' : score >= 30 ? 'Fair' : 'Weak';
-            const scoreColor = score >= 70 ? '#00c896' : score >= 40 ? '#ffb347' : '#ff6b6b';
-            badgeHtml += `<span class="score-badge" style="background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);color:${scoreColor}">Application: ${scoreLbl}</span>`;
-          }
-          if (dealScore != null) {
-            const dealLbl = dealScore >= 60 ? 'Good deal' : dealScore >= 40 ? 'Fair price' : 'Expensive';
-            badgeHtml += `<span class="score-badge" style="background:rgba(100,180,255,0.08);border:1px solid rgba(100,180,255,0.2);color:#6ab4ff">Market: ${dealLbl}</span>`;
-          }
-          badges.innerHTML = badgeHtml;
+      if (l.address || l.url) {
+        let badgesHtml = '';
+        if (score != null) {
+          const scoreLbl = score >= 85 ? 'Excellent' : score >= 70 ? 'Strong' : score >= 50 ? 'Good' : score >= 30 ? 'Fair' : 'Weak';
+          const scoreColor = score >= 70 ? '#00c896' : score >= 40 ? '#ffb347' : '#ff6b6b';
+          badgesHtml += `<span style="color:${scoreColor}">Application: ${scoreLbl}</span>`;
         }
-        bar.classList.add('visible');
+        if (dealScore != null) {
+          const dealLbl = dealScore >= 60 ? 'Good deal' : dealScore >= 40 ? 'Fair price' : 'Expensive';
+          if (badgesHtml) badgesHtml += '<br>';
+          badgesHtml += `<span style="color:#6ab4ff">Market: ${dealLbl}</span>`;
+        }
+        updateSidebarListing(l.address || l.url || 'Property', l.price || '', badgesHtml);
       }
       document.getElementById('lt-form').style.display = 'block';
       fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`)
@@ -943,6 +882,7 @@ async function ltGenerate() {
   document.getElementById('lt-empty').style.display = 'none';
   document.getElementById('lt-skel').style.display = 'block';
   document.getElementById('lt-letter-box').style.display = 'none';
+  document.getElementById('lt-actions-row').style.display = 'none';
   try {
     const selectedTipTexts = INCLUDE_LABELS.filter((_, i) => ltState.checks[i]);
     const extraContext = document.getElementById('lt-extra').value.trim();
@@ -963,7 +903,7 @@ async function ltGenerate() {
   } finally {
     document.getElementById('lt-skel').style.display = 'none';
     btn.disabled = false;
-    btn.innerHTML = 'Generate my letter &#8594;';
+    btn.innerHTML = 'Generate letter';
   }
 }
 
@@ -976,9 +916,10 @@ function ltShowLetter(text) {
   } else if (words <= 220) {
     wc.innerHTML = `<span class="wc-amber">~${words} words</span>`;
   } else {
-    wc.innerHTML = `<span class="wc-red">~${words} words - Consider the shorter version</span>`;
+    wc.innerHTML = `<span class="wc-red">~${words} words — consider the shorter version</span>`;
   }
   document.getElementById('lt-letter-box').style.display = 'block';
+  document.getElementById('lt-actions-row').style.display = 'flex';
   document.getElementById('lt-letter-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -1021,6 +962,7 @@ async function ltModify(mode) {
   btn.innerHTML = '<span class="btn-spinner"></span>Revising...';
   document.getElementById('lt-skel').style.display = 'block';
   document.getElementById('lt-letter-box').style.display = 'none';
+  document.getElementById('lt-actions-row').style.display = 'none';
   const instruction = mode === 'shorter'
     ? 'Make this letter shorter. Aim for 120 words maximum. Keep the essential points.'
     : 'Make this letter more personal. Add one genuine sentence about what specifically appeals about this home.';
@@ -1039,15 +981,15 @@ async function ltModify(mode) {
     document.getElementById('lt-err').textContent = e.message || 'Revision failed.';
     document.getElementById('lt-err').classList.add('visible');
     document.getElementById('lt-letter-box').style.display = 'block';
+    document.getElementById('lt-actions-row').style.display = 'flex';
   } finally {
     document.getElementById('lt-skel').style.display = 'none';
     btn.disabled = false;
-    btn.innerHTML = 'Generate my letter &#8594;';
+    btn.innerHTML = 'Generate letter';
   }
 }
 
 getParams();
 </script>
-<div style="border-top:1px solid rgba(255,255,255,0.07);padding:16px 24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.3)">AI-generated content is a starting point. Always review and personalise before sending. You are responsible for the accuracy of your application.<br>&copy; 2025 HomeSeeker</div>
 </body>
 </html>
