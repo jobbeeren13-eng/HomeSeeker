@@ -3,10 +3,10 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus } = require('./src/database');
-const { sendWelcomeEmail } = require('./src/email');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest } = require('./src/database');
+const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
-const { createBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
+const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips, getBuyerTips } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
@@ -260,7 +260,7 @@ app.post('/api/admin/fix-user', (req, res) => {
     // Create the user row from scratch
     const custId = (stripe_customer_id || '').trim();
     const subId  = (stripe_subscription_id || '').trim();
-    createUserByCustomerId.run(chatIdStr, emailNorm, custId, subId);
+    createUserByCustomerId.run(chatIdStr, emailNorm, custId, subId, Date.now());
     user = getUserByEmail.get(emailNorm) || getUserByCustomerId.get(custId);
     console.log(`[admin] fix-user: created user email=${emailNorm} chat_id=${chatIdStr}`);
   } else {
@@ -867,6 +867,76 @@ app.post('/api/agent-script', async (req, res) => {
 
 // ── Daily database backup ────────────────────────────────────────────────
 let lastBackupAt = null;
+// ── Daily job: trial reminders, no-alerts notifications, review requests ─────
+let lastDailyJobDate = null;
+
+function getAmsterdamHour() {
+  return parseInt(new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', hour12: false, timeZone: 'Europe/Amsterdam' }).format(new Date()), 10);
+}
+
+async function runDailyJob() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (getAmsterdamHour() !== 10) return;
+  if (lastDailyJobDate === today) return;
+  lastDailyJobDate = today;
+  console.log('[daily] Running daily job for', today);
+
+  const now = Date.now();
+
+  // FIX 2: Trial expiry reminder on day 5
+  try {
+    const min = now - 5.5 * 24 * 60 * 60 * 1000;
+    const max = now - 4.5 * 24 * 60 * 60 * 1000;
+    const trialUsers = getUsersForTrialReminder.all(min, max);
+    for (const u of trialUsers) {
+      if (!u.email) continue;
+      await sendTrialReminderEmail(u.email, u.naam || '').catch(e => console.error('[daily] trial reminder failed:', e.message));
+    }
+    if (trialUsers.length) console.log(`[daily] Trial reminders sent: ${trialUsers.length}`);
+  } catch (e) { console.error('[daily] trial reminder step error:', e.message); }
+
+  // FIX 3: No-alerts Telegram notification
+  try {
+    const _bot = getBot();
+    if (_bot) {
+      const cutoff48h = now - 48 * 60 * 60 * 1000;
+      const cutoff24h = new Date(now - 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').slice(0, 19);
+      const cutoff72h = now - 72 * 60 * 60 * 1000;
+      const noAlertUsers = getUsersForNoAlertsNotification.all(cutoff48h, cutoff24h, cutoff72h);
+      for (const u of noAlertUsers) {
+        try {
+          await _bot.sendMessage(u.chat_id,
+            'No new listings matching your filters in the past 48 hours.\n\nTry widening your city, price range, or room count to find more options.',
+            { reply_markup: { inline_keyboard: [[{ text: 'Adjust my filters', url: `${BASE_URL}/filters?chat_id=${u.chat_id}` }]] } }
+          );
+          updateLastNoAlertsNotificationAt.run(now, u.chat_id);
+        } catch (e) { console.error(`[daily] no-alerts msg failed for ${u.chat_id}:`, e.message); }
+      }
+      if (noAlertUsers.length) console.log(`[daily] No-alerts notifications sent: ${noAlertUsers.length}`);
+    }
+  } catch (e) { console.error('[daily] no-alerts step error:', e.message); }
+
+  // FIX 11: Review request (14 days after activation)
+  try {
+    const _bot = getBot();
+    if (_bot) {
+      const reviewUsers = getUsersForReviewRequest.all();
+      for (const u of reviewUsers) {
+        try {
+          await _bot.sendMessage(u.chat_id,
+            `Hi ${u.naam || 'there'}, you've been with HomeSeeker for 2 weeks now.\n\nIf the alerts or AI tools helped your search, we'd love a quick review — it helps other expats find us too.`,
+            { reply_markup: { inline_keyboard: [[{ text: 'Leave a review', url: 'https://homeseeker.dev/reviews' }]] } }
+          );
+          updateLastReviewRequestAt.run(now, u.chat_id);
+        } catch (e) { console.error(`[daily] review request failed for ${u.chat_id}:`, e.message); }
+      }
+      if (reviewUsers.length) console.log(`[daily] Review requests sent: ${reviewUsers.length}`);
+    }
+  } catch (e) { console.error('[daily] review request step error:', e.message); }
+}
+
+setInterval(runDailyJob, 60 * 60 * 1000);
+
 let lastBackupStatus = 'never';
 
 async function runDbBackup() {
@@ -926,7 +996,7 @@ if (useWebhook) {
   if (bootEmail && bootChat) {
     const existing = getUserByEmail.get(bootEmail);
     if (!existing) {
-      createUserByCustomerId.run(bootChat, bootEmail, '', '');
+      createUserByCustomerId.run(bootChat, bootEmail, '', '', Date.now());
       console.log(`[boot] DB reset detected — created user: email=${bootEmail} chat_id=${bootChat}`);
     } else if (!existing.chat_id || existing.chat_id !== bootChat) {
       setUserChatId.run(bootChat, bootEmail);

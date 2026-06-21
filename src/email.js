@@ -8,6 +8,12 @@ function getResend() {
   return resend;
 }
 
+const WRAP = 'font-family:sans-serif;max-width:580px;margin:0 auto;background:#0a0a0a;color:#e8edf3;padding:32px 28px;border-radius:12px';
+const MUTED = 'color:#7a8494';
+const GREEN = '#00c896';
+const CARD = 'background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:18px 20px;margin:10px 0';
+const DIVIDER = 'border:none;border-top:1px solid rgba(255,255,255,0.07);margin:24px 0';
+
 async function sendWelcomeEmail(email, naam, customerId) {
   const r = getResend();
   if (!r) return;
@@ -22,31 +28,69 @@ async function sendWelcomeEmail(email, naam, customerId) {
     to: email,
     subject: 'Welcome to HomeSeeker - Activate your Telegram alerts',
     html: `
-      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#111">
-        <h2 style="color:#00c896">Hi ${naam || 'there'} 👋</h2>
-        <p>Your 7-day HomeSeeker trial is active. We monitor <strong>Funda, Kamernet, and HousingAnywhere</strong> - 24/7, across 19 Dutch cities. Click the button below to activate your personal Telegram alerts:</p>
-        <div style="text-align:center;margin:32px 0">
-          <a href="${telegramLink}" style="background:#00c896;color:#000;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px">
-            📱 Activate Telegram Alerts
-          </a>
+      <div style="${WRAP}">
+        <p style="font-size:20px;font-weight:800;color:${GREEN};letter-spacing:1px;margin-bottom:20px">HOMESEEKER</p>
+        <h2 style="font-size:19px;font-weight:700;margin-bottom:14px;color:#fff">Hi ${naam || 'there'}, your 7-day trial is live.</h2>
+        <p style="${MUTED};font-size:14px;line-height:1.7;margin-bottom:24px">We monitor Funda, Kamernet, and HousingAnywhere — 24/7, across 19 Dutch cities. You'll get a personal Telegram alert the moment a matching listing goes live.</p>
+
+        <div style="text-align:center;margin-bottom:28px">
+          <a href="${telegramLink}" style="background:${GREEN};color:#000;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block">Activate Telegram Alerts</a>
         </div>
-        <p><strong>This link is personal</strong> - it securely connects your payment to your Telegram account. Do not share it.</p>
-        <ol>
-          <li>Click the button above</li>
-          <li>Telegram opens the HomeSeeker bot</li>
-          <li>Press <strong>Start</strong></li>
-          <li>Set your filters and receive real-time alerts</li>
-        </ol>
-        <p style="color:#666;font-size:13px">Questions? Email us at support@homeseeker.dev</p>
-        <p>Good luck with your search! 🏠</p>
-        <hr style="border:none;border-top:1px solid #eee;margin:24px 0"/>
-        <p style="color:#999;font-size:12px">
-          7-day free trial. After your trial, €9,99/month incl. 21% VAT is charged automatically.
-          Cancel anytime before day 7 by replying to this email or via /cancel in Telegram.
+
+        <p style="font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${GREEN};margin-bottom:10px">Getting started — 3 steps</p>
+
+        <div style="${CARD};border-top:2px solid ${GREEN}">
+          <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">1. Set your filters</p>
+          <p style="${MUTED};font-size:13px;line-height:1.6;margin:0">Click the button above to open Telegram. Press Start, then follow the link to set your city, budget, income, and availability. Takes 2 minutes.</p>
+        </div>
+        <div style="${CARD}">
+          <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">2. Wait for your first alert</p>
+          <p style="${MUTED};font-size:13px;line-height:1.6;margin:0">Every alert includes your personal Application Score, Market Value Score, landlord tips specific to that listing, and a one-tap AI letter button.</p>
+        </div>
+        <div style="${CARD}">
+          <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">3. Open the AI Rental Assistant</p>
+          <p style="${MUTED};font-size:13px;line-height:1.6;margin:0">Visit <a href="https://homeseeker.dev/tools/rent-assistant" style="color:${GREEN};text-decoration:none">homeseeker.dev/tools/rent-assistant</a> for your full toolkit — application coaching, viewing prep, lease review, negotiation scripts, and move-in checklist.</p>
+        </div>
+
+        <hr style="${DIVIDER}">
+        <p style="${MUTED};font-size:12px;line-height:1.7">
+          <strong style="color:#fff">This link is personal</strong> — it securely connects your payment to your Telegram account. Do not share it.<br><br>
+          7-day free trial. After your trial, €9,99/month incl. 21% VAT is charged automatically. Cancel anytime before day 7 via /cancel in Telegram or by replying to this email. Questions? support@homeseeker.dev
         </p>
       </div>
     `,
   });
 }
 
-module.exports = { sendWelcomeEmail };
+async function sendTrialReminderEmail(email, naam) {
+  const r = getResend();
+  if (!r) return;
+  await r.emails.send({
+    from: 'HomeSeeker <support@homeseeker.dev>',
+    to: email,
+    subject: 'Your HomeSeeker trial ends in 2 days',
+    html: `
+      <div style="${WRAP}">
+        <p style="font-size:20px;font-weight:800;color:${GREEN};letter-spacing:1px;margin-bottom:20px">HOMESEEKER</p>
+        <h2 style="font-size:19px;font-weight:700;margin-bottom:14px;color:#fff">Hi ${naam || 'there'}, your trial ends in 2 days.</h2>
+        <p style="${MUTED};font-size:14px;line-height:1.7;margin-bottom:24px">Your 7-day free trial ends on day 7. After that, €9,99/month incl. 21% VAT is charged automatically — unless you cancel first.</p>
+
+        <div style="${CARD};border-top:2px solid ${GREEN}">
+          <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">Already set up and receiving alerts?</p>
+          <p style="${MUTED};font-size:13px;line-height:1.6;margin:0">No action needed. Your subscription continues and you keep full access to all alerts and AI tools.</p>
+        </div>
+        <div style="${CARD}">
+          <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">Want to cancel?</p>
+          <p style="${MUTED};font-size:13px;line-height:1.6;margin:0">Send <strong style="color:#fff">/cancel</strong> to @HomeSeekerBot in Telegram, or reply to this email. Cancel before day 7 and you pay nothing.</p>
+        </div>
+
+        <hr style="${DIVIDER}">
+        <p style="${MUTED};font-size:12px;line-height:1.7">
+          €9,99/month incl. 21% VAT. Cancel anytime. Questions? support@homeseeker.dev
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { sendWelcomeEmail, sendTrialReminderEmail };

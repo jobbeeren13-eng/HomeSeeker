@@ -66,7 +66,7 @@ async function handleWebhook(payload, sig) {
     const subscriptionId = session.subscription;
  
     if (customerId) {
-      createUserByCustomerId.run('', email || '', customerId, subscriptionId);
+      createUserByCustomerId.run('', email || '', customerId, subscriptionId, Date.now());
       console.log(`[stripe] Trial started for customer ${customerId} (${email})`);
       if (email) {
         sendWelcomeEmail(email, '', customerId).catch(err => console.error('[email] Failed to send welcome email:', err));

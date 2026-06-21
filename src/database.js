@@ -170,6 +170,14 @@ try {
   if (!userCols.includes('move_reason')) db.exec(`ALTER TABLE users ADD COLUMN move_reason TEXT DEFAULT ''`);
   if (!userCols.includes('tenant_quality')) db.exec(`ALTER TABLE users ADD COLUMN tenant_quality TEXT DEFAULT ''`);
 } catch (e) {}
+
+try {
+  const userCols = db.prepare(`PRAGMA table_info(users)`).all().map(r => r.name);
+  if (!userCols.includes('trial_start')) { db.exec(`ALTER TABLE users ADD COLUMN trial_start INTEGER`); console.log('[db] Added trial_start'); }
+  if (!userCols.includes('last_alert_sent_at')) { db.exec(`ALTER TABLE users ADD COLUMN last_alert_sent_at INTEGER`); console.log('[db] Added last_alert_sent_at'); }
+  if (!userCols.includes('last_no_alerts_notification_at')) { db.exec(`ALTER TABLE users ADD COLUMN last_no_alerts_notification_at INTEGER`); console.log('[db] Added last_no_alerts_notification_at'); }
+  if (!userCols.includes('last_review_request_at')) { db.exec(`ALTER TABLE users ADD COLUMN last_review_request_at INTEGER`); console.log('[db] Added last_review_request_at'); }
+} catch (e) {}
  
 db.exec(`CREATE INDEX IF NOT EXISTS idx_fingerprint ON listings(fingerprint)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_listing_cache_expires ON listing_cache(expires_at)`);
@@ -232,8 +240,8 @@ const setUserPaidByCustomerId = db.prepare(`
   WHERE stripe_customer_id = ?
 `);
 const createUserByCustomerId = db.prepare(`
-  INSERT OR IGNORE INTO users (chat_id, email, stripe_customer_id, stripe_subscription_id, betaald, actief, trial_start_date)
-  VALUES (?, ?, ?, ?, 1, 1, datetime('now'))
+  INSERT OR IGNORE INTO users (chat_id, email, stripe_customer_id, stripe_subscription_id, betaald, actief, trial_start_date, trial_start)
+  VALUES (?, ?, ?, ?, 1, 1, datetime('now'), ?)
 `);
 const clearOldChatId = db.prepare('UPDATE users SET chat_id = NULL WHERE chat_id = ? AND stripe_customer_id != ?');
 const clearChatIdFromOthers = db.prepare(`
@@ -306,6 +314,28 @@ const upsertApplicationStatus = db.prepare(`
 `);
 const removeApplicationStatus = db.prepare('DELETE FROM application_tracker WHERE chat_id = ? AND listing_url = ?');
 
+const updateLastAlertSentAt = db.prepare('UPDATE users SET last_alert_sent_at = ? WHERE chat_id = ?');
+const updateLastNoAlertsNotificationAt = db.prepare('UPDATE users SET last_no_alerts_notification_at = ? WHERE chat_id = ?');
+const updateLastReviewRequestAt = db.prepare('UPDATE users SET last_review_request_at = ? WHERE chat_id = ?');
+
+const getUsersForTrialReminder = db.prepare(`
+  SELECT * FROM users WHERE actief = 1 AND email IS NOT NULL AND email != ''
+  AND trial_start IS NOT NULL AND trial_start > ? AND trial_start < ?
+`);
+const getUsersForNoAlertsNotification = db.prepare(`
+  SELECT * FROM users WHERE actief = 1 AND betaald = 1
+  AND chat_id IS NOT NULL AND chat_id != ''
+  AND (last_alert_sent_at IS NULL OR last_alert_sent_at < ?)
+  AND created_at < ?
+  AND (last_no_alerts_notification_at IS NULL OR last_no_alerts_notification_at < ?)
+`);
+const getUsersForReviewRequest = db.prepare(`
+  SELECT * FROM users WHERE actief = 1 AND betaald = 1
+  AND chat_id IS NOT NULL AND chat_id != ''
+  AND last_review_request_at IS NULL
+  AND created_at <= datetime('now', '-14 days')
+`);
+
 module.exports = {
   db, dbPath: DB_PATH,
   getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
@@ -319,5 +349,7 @@ module.exports = {
   getRecentListings,
   getFavorites, addFavorite, removeFavorite,
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
+  updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
+  getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
 };
  

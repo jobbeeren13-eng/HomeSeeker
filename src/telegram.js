@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
-const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings } = require('./database');
+const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings, updateLastAlertSentAt } = require('./database');
 const { rowToListing } = require('./scraper');
 const { detectLandlordIntent } = require('./score');
  
@@ -689,6 +689,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     } catch (e) {
       console.error(`[telegram] Failed to send alert to ${chatId}:`, e.message);
     }
+  }
+  if (user && user.chat_id) {
+    try { updateLastAlertSentAt.run(Date.now(), user.chat_id); } catch (_) {}
   }
   return cacheId;
 }

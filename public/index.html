@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HomeSeeker - Housing Alerts & AI Applications for Expats in the Netherlands</title>
   <meta name="description" content="Instant Telegram alerts + AI motivation letters. Built for internationals competing in the Dutch rental market. Be first to apply - and actually get it." />
+  <!-- Open Graph / Twitter -->
+  <!-- TODO: create public/og-image.png (1200x630px) for social sharing previews -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="HomeSeeker" />
+  <meta property="og:url" content="https://homeseeker.dev/" />
+  <meta property="og:title" content="HomeSeeker - Housing Alerts & AI Applications for Expats in the Netherlands" />
+  <meta property="og:description" content="Instant Telegram alerts + AI motivation letters. Built for internationals competing in the Dutch rental market. Be first to apply - and actually get it." />
+  <meta property="og:image" content="https://homeseeker.dev/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="HomeSeeker - Housing Alerts & AI Applications for Expats" />
+  <meta name="twitter:description" content="Instant Telegram alerts + AI motivation letters. Built for internationals competing in the Dutch rental market." />
+  <meta name="twitter:image" content="https://homeseeker.dev/og-image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -401,6 +413,75 @@
   </div>
 </div>
 
+<section class="bg2" id="demo">
+  <div class="container">
+    <div class="section-tag">What you receive</div>
+    <h2>Every alert, explained.</h2>
+    <p class="section-sub">Here's what a HomeSeeker alert looks like — and what each element tells you.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:32px">
+      <div class="phone-mock" style="max-width:100%">
+        <div class="tg-header">
+          <div class="tg-avatar" style="font-size:14px;font-weight:800">HS</div>
+          <div><div class="tg-name">HomeSeeker</div><div class="tg-online">● online</div></div>
+        </div>
+        <div class="tg-bubble">
+          <b>🏠 Funda &nbsp;🆕 New</b><br />
+          📍 <b>Bilderdijkstraat 94, Amsterdam</b><br />
+          62m² · Rent: €1,250/mo · Est. total: €1,580/mo<br /><br />
+          <b>Application Score</b><br />
+          🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜ <span class="tg-val-g">82%</span> — Strong<br /><br />
+          <b>Market Value</b><br />
+          🟩🟩🟩🟩🟩⬜⬜⬜⬜⬜ <span class="tg-val-g">54%</span> — Fair price<br /><br />
+          <span class="tg-tip-n">1.</span> Landlord specifically mentions working professionals — lead with your job title and company in the opening line.<br /><br />
+          <span class="tg-tip-n">2.</span> Your income covers this rent 3.8× — state your gross annual salary, not monthly. It sounds stronger.<br /><br />
+          <i>Strong match. Apply today.</i>
+        </div>
+        <div class="tg-btns">
+          <div class="tg-btn">View listing</div>
+          <div class="tg-btn">AI Rental Assistant</div>
+          <div class="tg-btn">Share</div>
+          <div class="tg-btn">Unsubscribe</div>
+        </div>
+      </div>
+      <div style="display:grid;gap:20px">
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🎯</div>
+          <div>
+            <strong style="display:block;font-size:14px;margin-bottom:3px">Application Score</strong>
+            <span style="font-size:13px;color:var(--muted);line-height:1.5">Personal 0–100 score based on your income, documents, and contract type vs the listing's requirements. Tells you exactly how competitive you are.</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">💎</div>
+          <div>
+            <strong style="display:block;font-size:14px;margin-bottom:3px">Market Value Score</strong>
+            <span style="font-size:13px;color:var(--muted);line-height:1.5">Compares the listing price against similar rentals in that city so you know instantly if it's a deal, fair, or overpriced.</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">💡</div>
+          <div>
+            <strong style="display:block;font-size:14px;margin-bottom:3px">Landlord-specific tips</strong>
+            <span style="font-size:13px;color:var(--muted);line-height:1.5">We read the listing and detect what the landlord wants. You get up to 5 specific actions tailored to that exact property — not generic advice.</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">✉️</div>
+          <div>
+            <strong style="display:block;font-size:14px;margin-bottom:3px">One-tap AI letter</strong>
+            <span style="font-size:13px;color:var(--muted);line-height:1.5">Tap "AI Rental Assistant" in any alert to open the full AI toolkit — personalised letter, application coaching, viewing prep, lease review, and more.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <style>
+      @media (max-width: 768px) {
+        #demo .container > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; gap: 28px !important; }
+      }
+    </style>
+  </div>
+</section>
+
 <section>
   <div class="container">
     <div class="section-tag">Who it's for</div>
@@ -780,6 +861,7 @@
       <a href="#faq">FAQ</a>
     </div>
   </div>
+  <!-- KVK_TODO: add KvK registration number here once registered -->
   <p class="footer-copy">© 2025 HomeSeeker. Built for expats in the Netherlands.</p>
   <p style="text-align:center;color:var(--muted);font-size:11px;margin-top:10px;max-width:var(--max-w);margin-left:auto;margin-right:auto">HomeSeeker aggregates publicly available listing data. Property information is sourced from Funda, Kamernet, and HousingAnywhere. HomeSeeker is not affiliated with or endorsed by these platforms.</p>
 </footer>
@@ -848,7 +930,7 @@
   initToolToggle('buy-hd',  'buy-body');
 
   fetch('/api/reviews').then(r => r.json()).then(reviews => {
-    if (!reviews || !reviews.length) return;
+    if (!reviews || reviews.length < 3) return;
     const grid = document.getElementById('reviews-grid');
     grid.innerHTML = reviews.map(r => `
       <div class="review-card">

@@ -21,6 +21,32 @@ if (missing.length) {
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
 
+// ── Scraper health monitoring ─────────────────────────────────────────────
+const scraperHealth = {
+  lastRunAt: null,
+  lastSuccessfulRunAt: null,
+  lastRunListings: 0,
+  consecutiveZeroRuns: 0,
+};
+
+async function sendAdminAlert(msg) {
+  const chatId = process.env.ADMIN_CHAT_ID;
+  if (!chatId) return;
+  try {
+    await bot.sendMessage(chatId, `*HomeSeeker Alert*\n\n${msg}`, { parse_mode: 'Markdown' });
+  } catch (e) { console.error('[watchdog] Admin alert failed:', e.message); }
+}
+
+// Watchdog: alert if scraper stalls or returns zero listings repeatedly
+setInterval(async () => {
+  if (!scraperHealth.lastRunAt) return;
+  if (Date.now() - scraperHealth.lastRunAt > 90 * 60 * 1000) {
+    await sendAdminAlert(`Scraper has not completed a cycle in >90 minutes.\nLast run: ${new Date(scraperHealth.lastRunAt).toISOString()}`);
+  } else if (scraperHealth.consecutiveZeroRuns >= 3) {
+    await sendAdminAlert(`${scraperHealth.consecutiveZeroRuns} consecutive cycles returned zero listings.\nLast run: ${new Date(scraperHealth.lastRunAt).toISOString()}`);
+  }
+}, 30 * 60 * 1000);
+
 // ── Shared alert sender (cron + match-now) ────────────────────────────────
 async function dispatchAlerts(matches) {
   const sentUrls = [];
@@ -62,10 +88,19 @@ async function runScrapeAndAlert() {
     return;
   }
   isRunning = true;
+  scraperHealth.lastRunAt = Date.now();
   console.log(`[cron] Starting scrape cycle at ${new Date().toISOString()}`);
   try {
     const listings = await scrapeListings();
-    if (!listings.length) { console.log('[cron] No new listings'); return; }
+    if (!listings.length) {
+      scraperHealth.consecutiveZeroRuns++;
+      scraperHealth.lastRunListings = 0;
+      console.log('[cron] No new listings');
+      return;
+    }
+    scraperHealth.consecutiveZeroRuns = 0;
+    scraperHealth.lastSuccessfulRunAt = Date.now();
+    scraperHealth.lastRunListings = listings.length;
 
     const matches = await findMatches(listings);
     console.log(`[cron] Found ${matches.length} matches`);
