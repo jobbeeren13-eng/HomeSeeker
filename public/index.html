@@ -1,12 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HomeSeeker - Housing Alerts & AI Applications for Expats in the Netherlands</title>
   <meta name="description" content="Instant Telegram alerts + AI motivation letters. Built for internationals competing in the Dutch rental market. Be first to apply - and actually get it." />
-  <!-- Open Graph / Twitter -->
-  <!-- TODO: create public/og-image.png (1200x630px) for social sharing previews -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="HomeSeeker" />
   <meta property="og:url" content="https://homeseeker.dev/" />
@@ -28,206 +26,141 @@
       --green-dim: rgba(0,200,150,0.10);
       --green-border: rgba(0,200,150,0.22);
       --bg: #0a0a0a;
-      --bg2: #0f1115;
+      --bg2: #0d1117;
       --card: #111318;
       --border: rgba(255,255,255,0.08);
       --text: #e8edf3;
-      --muted: #7a8494;
+      --muted: rgba(255,255,255,0.45);
       --max-w: 1100px;
     }
 
     html { scroll-behavior: smooth; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 
-    /* ─── NAV ─────────────────────────────────── */
+    /* NAV */
     .nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 300;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px; height: 60px;
-      background: rgba(10,10,10,0.92); backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 0 32px; height: 56px;
+      background: rgba(10,10,10,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
     }
-    .nav-logo { font-size: 17px; font-weight: 800; letter-spacing: 1.5px; color: var(--green); text-decoration: none; text-transform: uppercase; }
-    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-brand-text { font-size: 15px; font-weight: 800; letter-spacing: 2px; color: var(--green); text-transform: uppercase; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
-    .nav-links a:hover { color: var(--green); }
-    .nav-cta { background: var(--green) !important; color: #0a0a0a !important; font-weight: 700 !important; font-size: 13px !important; padding: 9px 20px !important; border-radius: 100px !important; transition: opacity .15s !important; }
-    .nav-cta:hover { opacity: .85 !important; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { background: var(--green) !important; color: #0a0a0a !important; font-weight: 700 !important; font-size: 13px !important; padding: 8px 18px !important; border-radius: 100px !important; transition: opacity .15s !important; }
+    .nav-cta:hover { opacity: .85 !important; color: #0a0a0a !important; }
 
     .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
     .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
 
     .nav-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; transform: translateX(100%); transition: transform .2s ease; }
     .nav-overlay.open { transform: translateX(0); }
-    .nav-overlay-close { position: absolute; top: 18px; right: 20px; background: none; border: none; color: var(--text); font-size: 30px; cursor: pointer; line-height: 1; padding: 4px 8px; }
+    .nav-overlay-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--text); font-size: 30px; cursor: pointer; line-height: 1; padding: 4px 8px; }
     .nav-overlay-links { display: flex; flex-direction: column; align-items: center; gap: 32px; }
-    .nav-overlay-links a { color: var(--text); text-decoration: none; font-size: 22px; font-weight: 700; transition: color .15s; }
-    .nav-overlay-links a:hover { color: var(--green); }
+    .nav-overlay-links a { color: var(--text); text-decoration: none; font-size: 22px; font-weight: 700; }
     .nav-overlay-cta { margin-top: 48px; display: block; background: var(--green); color: #0a0a0a; font-weight: 700; font-size: 16px; padding: 16px 52px; border-radius: 100px; text-decoration: none; }
 
-    /* ─── LAYOUT ──────────────────────────────── */
-    section { padding: 64px 24px; }
-    .container { max-width: var(--max-w); margin: 0 auto; width: 100%; }
-    .section-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
-    h2 { font-size: clamp(26px, 3.5vw, 42px); font-weight: 800; line-height: 1.12; letter-spacing: -.5px; margin-bottom: 10px; color: #fff; }
-    .section-sub { color: var(--muted); font-size: 15px; max-width: 520px; line-height: 1.7; margin-bottom: 28px; }
-    .section-sub-center { margin-left: auto; margin-right: auto; text-align: center; }
+    /* LAYOUT */
+    .container { max-width: var(--max-w); margin: 0 auto; width: 100%; padding: 0 24px; }
+    section { padding: 80px 0; }
 
-    /* ─── HERO ────────────────────────────────── */
-    .hero { min-height: 100vh; display: flex; align-items: center; padding: 60px 24px 48px; position: relative; overflow: hidden; }
-    .hero::before { content: ''; position: absolute; top: -5%; left: 42%; width: 700px; height: 700px; background: radial-gradient(ellipse, rgba(0,200,150,0.09) 0%, transparent 65%); pointer-events: none; }
-    .hero-grid { max-width: var(--max-w); margin: 0 auto; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; }
+    /* HERO */
+    .hero { min-height: 100vh; display: flex; align-items: center; padding: 56px 0 0; background: var(--bg); position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: 0; right: 0; width: 600px; height: 600px; background: radial-gradient(ellipse, rgba(0,200,150,0.07) 0%, transparent 65%); pointer-events: none; }
 
-    .hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(0,200,150,0.08); border: 1px solid rgba(0,200,150,0.2); color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; margin-bottom: 22px; }
-    .hero-badge-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.3; transform:scale(1.5); } }
+    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; padding: 48px 24px; max-width: var(--max-w); margin: 0 auto; width: 100%; }
 
-    h1 { font-size: clamp(32px, 4.5vw, 46px); font-weight: 800; line-height: 1.08; letter-spacing: -1.5px; margin-bottom: 18px; color: #fff; }
-    h1 em { font-style: normal; color: var(--green); }
+    .hero-eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 20px; }
+    .hero h1 { font-size: clamp(34px, 4.5vw, 52px); font-weight: 800; line-height: 1.06; letter-spacing: -1.5px; margin-bottom: 20px; color: #fff; }
+    .hero h1 em { font-style: normal; color: var(--green); }
+    .hero-sub { font-size: 16px; color: var(--muted); max-width: 480px; margin-bottom: 28px; line-height: 1.7; }
 
-    .hero-sub { font-size: 16px; color: var(--muted); max-width: 460px; margin-bottom: 18px; line-height: 1.7; }
+    .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .btn-primary { display: inline-block; background: var(--green); color: #0a0a0a; font-weight: 700; font-size: 15px; padding: 13px 26px; border-radius: 10px; text-decoration: none; transition: opacity .15s, transform .1s; }
+    .btn-primary:hover { opacity: .87; transform: translateY(-1px); }
+    .btn-outline { display: inline-block; background: transparent; color: var(--text); font-size: 15px; font-weight: 600; padding: 12px 26px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); text-decoration: none; transition: border-color .15s; }
+    .btn-outline:hover { border-color: var(--green); }
+
     .hero-trust { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-bottom: 24px; }
     .hero-trust span::before { content: '✓ '; color: var(--green); font-weight: 700; }
 
-    .hero-ctas { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; max-width: 320px; }
-    .btn-primary { display: inline-block; background: var(--green); color: #0a0a0a; font-weight: 700; font-size: 15px; padding: 14px 28px; border-radius: 10px; text-decoration: none; text-align: center; transition: opacity .15s, transform .1s; }
-    .btn-primary:hover { opacity: .87; transform: translateY(-1px); }
-    .btn-outline { display: inline-block; background: transparent; color: var(--text); font-size: 15px; font-weight: 600; padding: 13px 28px; border-radius: 10px; border: 1px solid var(--green); text-decoration: none; text-align: center; transition: background .15s; }
-    .btn-outline:hover { background: rgba(0,200,150,0.06); }
-
     .hero-sources { display: flex; gap: 8px; flex-wrap: wrap; }
-    .source-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 6px 13px; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .source-pill { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: var(--muted); }
 
-    /* Phone mock */
-    .phone-mock { background: #141920; border-radius: 22px; border: 1px solid rgba(255,255,255,0.10); padding: 17px; max-width: 310px; box-shadow: 0 0 80px rgba(0,200,150,0.08), 0 40px 80px rgba(0,0,0,0.5); }
-    .tg-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 11px; border-bottom: 1px solid var(--border); }
-    .tg-avatar { width: 34px; height: 34px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-    .tg-name { font-weight: 700; font-size: 13px; }
-    .tg-online { font-size: 11px; color: var(--green); }
-    .tg-bubble { background: #1e2530; border-radius: 4px 14px 14px 14px; padding: 11px 13px; font-size: 11.5px; line-height: 1.65; margin-bottom: 10px; }
+    /* Telegram mockup */
+    .tg-mock { background: #141920; border-radius: 18px; border: 1px solid rgba(255,255,255,0.09); padding: 16px; max-width: 320px; box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,200,150,0.06); }
+    .tg-mock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .tg-mock-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+    .tg-mock-name { font-weight: 700; font-size: 13px; color: var(--text); }
+    .tg-mock-status { font-size: 11px; color: var(--green); }
+    .tg-bubble { background: #1e2530; border-radius: 4px 14px 14px 14px; padding: 12px 14px; font-size: 11.5px; line-height: 1.7; color: var(--text); margin-bottom: 10px; }
     .tg-bubble b { color: #fff; }
     .tg-val-g { color: var(--green); font-weight: 700; }
-    .tg-val-r { color: #ff5b5b; font-weight: 700; }
-    .tg-tip-n { color: var(--green); font-weight: 800; }
-    .tg-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-    .tg-btn { background: #252d38; border-radius: 8px; padding: 7px 10px; font-size: 11px; text-align: center; color: var(--text); font-weight: 500; }
+    .tg-val-y { color: #f5a623; font-weight: 700; }
+    .tg-bubble-footer { font-size: 11px; color: rgba(255,255,255,0.35); font-style: italic; margin-top: 6px; }
+    .tg-mock-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tg-mock-btn { background: rgba(0,200,150,0.12); border: 1px solid rgba(0,200,150,0.2); border-radius: 8px; padding: 8px 10px; font-size: 11px; text-align: center; color: var(--green); font-weight: 600; }
 
-    /* ─── STATS ───────────────────────────────── */
-    .stats-bar { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg2); }
-    .stats-inner { display: flex; max-width: 100%; }
-    .stat { flex: 1; text-align: center; padding: 20px 12px; border-right: 1px solid var(--border); }
-    .stat:last-child { border-right: none; }
-    .stat-num { font-size: 22px; font-weight: 800; color: var(--green); line-height: 1; margin-bottom: 4px; }
-    .stat-label { font-size: 12px; color: var(--muted); }
+    /* HOW IT WORKS */
+    .how-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .section-title { font-size: clamp(24px, 3vw, 32px); font-weight: 800; color: #fff; text-align: center; margin-bottom: 10px; letter-spacing: -.5px; }
+    .section-sub { font-size: 15px; color: var(--muted); text-align: center; margin-bottom: 48px; }
 
-    /* ─── CARD GRIDS ──────────────────────────── */
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 28px; }
-
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
-    .card-icon { font-size: 24px; margin-bottom: 12px; }
-    .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-    .card p { color: var(--muted); font-size: 13px; line-height: 1.6; }
-
-    .intel-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
-    .intel-card.c-green { border-top: 3px solid var(--green); }
-    .intel-card.c-amber { border-top: 3px solid #f5a623; }
-    .intel-card.c-red { border-top: 3px solid #ff5b5b; }
-    .intel-card .card-icon { font-size: 22px; margin-bottom: 10px; }
-    .intel-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-    .intel-card p { color: var(--muted); font-size: 13px; line-height: 1.6; }
-
-    /* ─── HOW IT WORKS ────────────────────────── */
-    .steps-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .steps-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 32px; position: relative; }
-    .steps-row::before { content: ''; position: absolute; top: 23px; left: calc(12.5% + 20px); right: calc(12.5% + 20px); height: 1px; border-top: 1px dashed rgba(0,200,150,0.28); pointer-events: none; }
-    .step { padding: 0 18px; text-align: center; }
-    .step-circle { width: 48px; height: 48px; border-radius: 50%; background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.28); color: var(--green); font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; position: relative; z-index: 1; }
-    .step h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin-top: 40px; position: relative; }
+    .steps::before { content: ''; position: absolute; top: 24px; left: calc(12.5% + 18px); right: calc(12.5% + 18px); height: 1px; border-top: 1px dashed rgba(0,200,150,0.25); pointer-events: none; }
+    .step { padding: 0 16px; text-align: center; }
+    .step-num { width: 48px; height: 48px; border-radius: 50%; background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.3); color: var(--green); font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; position: relative; z-index: 1; }
+    .step h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #fff; }
     .step p { color: var(--muted); font-size: 13px; line-height: 1.6; }
 
-    /* ─── FEATURES GRID ───────────────────────── */
-    .features-grid { display: grid; grid-template-columns: 1fr 1fr; margin-top: 28px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
-    .feat-item { display: flex; align-items: flex-start; gap: 13px; padding: 15px 18px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
-    .feat-item:nth-child(2n) { border-right: none; }
-    .feat-item:nth-last-child(-n+2) { border-bottom: none; }
-    .feat-icon { width: 36px; height: 36px; background: var(--green-dim); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .feat-text strong { display: block; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-    .feat-text span { color: var(--muted); font-size: 12px; line-height: 1.5; }
-    .feat-show-more { display: none; }
+    /* TOOLS */
+    .tools-section { background: var(--bg); }
+    .accordion { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+    .acc-item { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .acc-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; cursor: pointer; user-select: none; transition: background .15s; }
+    .acc-header:hover { background: rgba(255,255,255,0.02); }
+    .acc-header-left { display: flex; align-items: center; gap: 10px; }
+    .acc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    .acc-title { font-size: 16px; font-weight: 700; color: #fff; }
+    .acc-chevron { color: var(--muted); font-size: 18px; transition: transform .25s; flex-shrink: 0; }
+    .acc-item.open .acc-chevron { transform: rotate(180deg); }
+    .acc-body { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+    .acc-item.open .acc-body { max-height: 1000px; }
+    .acc-body-inner { padding: 0 20px 20px; display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
 
-    /* ─── SCORES ──────────────────────────────── */
-    .scores-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
-    .score-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
-    .score-stag { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
-    .score-stag-green { color: var(--green); }
-    .score-stag-blue { color: #6ab4ff; }
-    .score-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-    .score-panel > p { color: var(--muted); font-size: 13px; line-height: 1.65; margin-bottom: 16px; }
-    .score-bar-wrap { margin-bottom: 16px; }
-    .score-bar-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-    .score-bar-track { height: 7px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
-    .score-bar-fill { height: 100%; border-radius: 4px; }
-    .score-bar-green { background: var(--green); }
-    .score-bar-yellow { background: #f5a623; }
-    .score-rows { display: grid; gap: 5px; }
-    .score-row { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 8px 13px; display: flex; justify-content: space-between; align-items: center; }
-    .score-row-lbl { font-size: 12px; color: var(--muted); }
-    .score-row-val { font-size: 12px; font-weight: 700; }
-    .score-row-val-green { color: var(--green); }
-    .score-row-val-blue { color: #6ab4ff; }
-    .score-row-val-dim { color: var(--muted); }
+    .tool-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-decoration: none; display: flex; flex-direction: column; gap: 10px; transition: border-color .15s; }
+    .tool-card:hover { border-color: rgba(0,200,150,0.3); }
+    .tool-card-icon { width: 36px; height: 36px; background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+    .tool-card strong { font-size: 14px; font-weight: 700; color: #fff; display: block; }
+    .tool-card p { font-size: 12px; color: var(--muted); line-height: 1.55; flex: 1; }
+    .tool-card-cta { font-size: 12px; font-weight: 700; color: var(--green); margin-top: auto; }
 
-    /* ─── AI TOOL CARDS ───────────────────────── */
-    .ai-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
-    .ai-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; border-top: 2px solid rgba(0,200,150,0.35); }
-    .ai-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
-    .ai-card p { color: var(--muted); font-size: 13px; line-height: 1.6; }
-
-    /* ─── TOOLS ───────────────────────────────── */
-    .tools-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .assistant-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
-    .assistant-card { display: block; background: linear-gradient(135deg, rgba(0,200,150,0.08), rgba(0,200,150,0.02)); border: 1px solid var(--green-border); border-radius: 14px; padding: 20px; text-decoration: none; transition: border-color .15s; }
-    .assistant-card:hover { border-color: rgba(0,200,150,0.48); }
-    .assistant-card .ac-icon { font-size: 26px; margin-bottom: 8px; }
-    .assistant-card strong { display: block; font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
-    .assistant-card span { font-size: 13px; color: var(--muted); line-height: 1.5; display: block; }
-    .assistant-card .ac-arrow { margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--green); }
-
-    .tools-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
-    .tools-col-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-    .tool-item { display: flex; align-items: flex-start; gap: 11px; padding: 10px 0; border-bottom: 1px solid var(--border); text-decoration: none; transition: opacity .15s; }
-    .tool-item:last-child { border-bottom: none; }
-    .tool-item:hover { opacity: .8; }
-    .tool-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--green-dim); border: 1px solid rgba(0,200,150,0.12); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-    .tool-text strong { display: block; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 1px; }
-    .tool-text span { font-size: 12px; color: var(--muted); line-height: 1.4; }
-
-    .tools-mobile-hd { display: none; }
-    .tools-mobile-body-wrap { display: contents; }
-
-    /* ─── PRICING ─────────────────────────────── */
-    .pricing-section { text-align: center; }
-    .price-wrap { display: flex; justify-content: center; margin-top: 28px; }
-    .price-card { background: var(--card); border: 1px solid rgba(0,200,150,0.28); border-radius: 18px; padding: 32px 36px; max-width: 480px; width: 100%; box-shadow: 0 0 60px rgba(0,200,150,0.06); }
+    /* PRICING */
+    .pricing-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .price-intro { font-size: 14px; color: var(--muted); font-style: italic; text-align: center; max-width: 480px; margin: 0 auto 28px; line-height: 1.7; }
+    .price-wrap { display: flex; justify-content: center; }
+    .price-card { background: var(--card); border: 1px solid rgba(0,200,150,0.28); border-radius: 18px; padding: 32px 36px; max-width: 480px; width: 100%; box-shadow: 0 0 60px rgba(0,200,150,0.05); }
     .price-badge { display: inline-block; background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.25); color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 5px 14px; border-radius: 100px; margin-bottom: 20px; }
-    .price-amount { font-size: 52px; font-weight: 800; color: var(--green); line-height: 1; letter-spacing: -2px; }
-    .price-period { color: var(--muted); font-size: 14px; margin-top: 5px; margin-bottom: 22px; }
-    .price-features { list-style: none; text-align: left; margin-bottom: 20px; }
-    .price-features li { padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+    .price-amount { font-size: 48px; font-weight: 800; color: var(--green); line-height: 1; letter-spacing: -2px; }
+    .price-period { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .price-vat { font-size: 11px; color: var(--muted); margin-top: 2px; margin-bottom: 20px; }
+    .price-features { list-style: none; margin-bottom: 20px; }
+    .price-features li { padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; color: var(--text); }
     .price-features li:last-child { border-bottom: none; }
     .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-    .price-trust { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
-    .price-cta { display: block; background: var(--green); color: #0a0a0a; font-weight: 700; font-size: 15px; padding: 15px; border-radius: 10px; text-decoration: none; transition: opacity .15s; }
+    .price-cta { display: block; background: var(--green); color: #0a0a0a; font-weight: 700; font-size: 15px; padding: 15px; border-radius: 10px; text-decoration: none; text-align: center; transition: opacity .15s; margin-bottom: 12px; }
     .price-cta:hover { opacity: .87; }
-    .price-disclaimer { margin-top: 10px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .price-disclaimer { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; }
 
-    /* ─── FAQ ─────────────────────────────────── */
-    .faq-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .faq-list { max-width: 680px; margin-top: 24px; }
+    /* FAQ */
+    .faq-section { background: var(--bg); }
+    .faq-list { max-width: 680px; margin: 0 auto; }
     .faq-item { border-bottom: 1px solid var(--border); }
     .faq-item:first-child { border-top: 1px solid var(--border); }
-    .faq-q { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; cursor: pointer; font-weight: 600; font-size: 15px; user-select: none; transition: color .15s; }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; cursor: pointer; font-weight: 600; font-size: 15px; user-select: none; transition: color .15s; color: var(--text); }
     .faq-q:hover { color: var(--green); }
     .faq-icon { font-size: 20px; color: var(--green); flex-shrink: 0; font-weight: 300; transition: transform .2s; }
     .faq-item.open .faq-icon { transform: rotate(45deg); }
@@ -235,105 +168,85 @@
     .faq-a-inner { padding-bottom: 16px; color: var(--muted); font-size: 14px; line-height: 1.7; }
     .faq-item.open .faq-a { max-height: 300px; }
 
-    /* ─── REVIEWS ─────────────────────────────── */
-    .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; margin-bottom: 20px; }
-    .review-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
-    .review-stars { color: #ffd700; font-size: 15px; margin-bottom: 8px; }
-    .review-text { color: var(--text); font-size: 13px; line-height: 1.6; margin-bottom: 10px; }
-    .review-author { color: var(--muted); font-size: 12px; font-weight: 600; }
-
-    /* ─── FOOTER ──────────────────────────────── */
-    footer { background: #070a0d; border-top: 1px solid var(--border); padding: 40px 24px 28px; }
-    .footer-inner { max-width: var(--max-w); margin: 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: start; margin-bottom: 28px; }
-    .footer-logo { font-size: 16px; font-weight: 800; letter-spacing: 1.5px; color: var(--green); text-transform: uppercase; margin-bottom: 5px; }
-    .footer-tagline { font-size: 13px; color: var(--muted); }
-    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: flex-end; padding-top: 4px; }
+    /* FOOTER */
+    footer { background: #070a0d; border-top: 1px solid var(--border); padding: 40px 24px 24px; }
+    .footer-inner { max-width: var(--max-w); margin: 0 auto 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; flex-wrap: wrap; }
+    .footer-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .footer-brand-text { font-size: 14px; font-weight: 800; letter-spacing: 2px; color: var(--green); text-transform: uppercase; }
+    .footer-tagline { font-size: 12px; color: var(--muted); }
+    .footer-links { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
     .footer-links a { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
     .footer-links a:hover { color: var(--text); }
-    .footer-copy { text-align: center; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 20px; max-width: var(--max-w); margin: 0 auto; }
+    .footer-copy { text-align: center; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); padding-top: 20px; max-width: var(--max-w); margin: 0 auto; line-height: 1.7; }
 
-    .bg2 { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .final-cta { text-align: center; background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,200,150,0.07) 0%, transparent 70%); border-top: 1px solid var(--border); }
-
-    /* ─── MOBILE ──────────────────────────────── */
+    /* MOBILE */
     @media (max-width: 768px) {
-      section { padding: 40px 20px; }
+      section { padding: 48px 0; }
 
       .nav { padding: 0 20px; }
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
       .nav-overlay { display: flex; }
 
-      .hero { min-height: auto; padding: 60px 20px 36px; align-items: flex-start; }
-      .hero-grid { grid-template-columns: 1fr; gap: 36px; text-align: center; }
-      .hero-badge { display: inline-flex; margin-left: auto; margin-right: auto; }
-      h1 { font-size: 32px; letter-spacing: -0.5px; }
+      .hero { min-height: auto; padding: 56px 0 0; }
+      .hero-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; padding: 40px 20px 40px; }
+      .hero-eyebrow { display: block; }
       .hero-sub { margin-left: auto; margin-right: auto; }
       .hero-trust { justify-content: center; }
-      .hero-ctas { max-width: 100%; align-items: stretch; }
+      .hero-btns { justify-content: center; }
       .hero-sources { justify-content: center; }
       .hero-right { display: flex; justify-content: center; }
-      .phone-mock { max-width: 280px; }
+      .tg-mock { max-width: 100%; }
 
-      .stats-inner { flex-wrap: wrap; }
-      .stat { min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
-      .stat:nth-child(odd) { border-right: 1px solid var(--border); }
-      .stat:nth-last-child(-n+2) { border-bottom: none; }
-
-      .steps-row { grid-template-columns: 1fr; gap: 24px; }
-      .steps-row::before { display: none; }
+      .steps { grid-template-columns: 1fr; gap: 24px; }
+      .steps::before { display: none; }
       .step { text-align: left; display: flex; gap: 14px; align-items: flex-start; padding: 0; }
-      .step-circle { flex-shrink: 0; margin: 0; }
-      .step > div { flex: 1; }
+      .step-num { flex-shrink: 0; margin: 0; }
 
-      .grid-3 { grid-template-columns: 1fr; }
-      .grid-2 { grid-template-columns: 1fr; }
-      .ai-cards { grid-template-columns: 1fr; }
-      .scores-row { grid-template-columns: 1fr; }
-
-      .features-grid { grid-template-columns: 1fr; }
-      .feat-item { border-right: none !important; }
-      .feat-item:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); }
-      .feat-item:last-child { border-bottom: none; }
-      .feat-hidden-mob { display: none; }
-      .feat-show-more { display: block; margin-top: 12px; padding: 10px; text-align: center; color: var(--green); font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); border-radius: 8px; background: none; width: 100%; }
-
-      .assistant-cards { grid-template-columns: 1fr; }
-      .tools-cols { grid-template-columns: 1fr; gap: 0; }
-      .tools-col-title { display: none; }
-      .tools-mobile-hd { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 15px; font-weight: 700; color: var(--text); }
-      .tools-mobile-hd .tm-arrow { color: var(--green); transition: transform .2s; font-size: 16px; }
-      .tools-mobile-hd.tm-open .tm-arrow { transform: rotate(180deg); }
-      .tools-mobile-body-wrap { display: block; max-height: 0; overflow: hidden; transition: max-height .3s ease; }
-      .tools-mobile-body-wrap.tm-open { max-height: 2000px; }
+      .acc-body-inner { grid-template-columns: 1fr; }
+      /* Mobile: start collapsed */
+      .acc-item.open .acc-body { max-height: 3000px; }
 
       .price-card { padding: 24px 18px; }
       .price-amount { font-size: 40px; }
 
-      .reviews-grid { display: flex; grid-template-columns: unset; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 8px; gap: 12px; }
-      .review-card { flex-shrink: 0; width: 265px; scroll-snap-align: start; }
-
-      .footer-inner { grid-template-columns: 1fr; text-align: center; gap: 16px; }
-      .footer-links { justify-content: center; }
+      .footer-inner { flex-direction: column; gap: 20px; }
+      .footer-links { justify-content: flex-start; }
     }
 
     @media (min-width: 769px) {
-      .feat-show-more { display: none !important; }
-      .tools-mobile-hd { display: none !important; }
-      .tools-mobile-body-wrap { display: contents !important; max-height: none !important; overflow: visible !important; }
+      /* Desktop: accordion items open by default (set by JS, but also via class) */
     }
   </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav class="nav">
-  <a class="nav-logo" href="/">HomeSeeker</a>
+  <a class="nav-brand" href="/">
+    <svg width="28" height="28" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="680" fill="#0a0a0a"/>
+      <rect x="155" y="145" width="370" height="370" rx="85" fill="#0d1117" stroke="#00c896" stroke-width="2.5"/>
+      <g transform="translate(340,335)">
+        <polygon points="0,-132 138,-20 -138,-20" fill="#00c896"/>
+        <rect x="-6" y="-152" width="16" height="40" rx="4" fill="#00c896"/>
+        <rect x="-115" y="-20" width="230" height="132" fill="#00c896"/>
+        <rect x="-88" y="-8" width="46" height="36" rx="4" fill="#0a0a0a"/>
+        <line x1="-65" y1="-8" x2="-65" y2="28" stroke="#00c896" stroke-width="2"/>
+        <line x1="-88" y1="10" x2="-42" y2="10" stroke="#00c896" stroke-width="2"/>
+        <rect x="42" y="-8" width="46" height="36" rx="4" fill="#0a0a0a"/>
+        <line x1="65" y1="-8" x2="65" y2="28" stroke="#00c896" stroke-width="2"/>
+        <line x1="42" y1="10" x2="88" y2="10" stroke="#00c896" stroke-width="2"/>
+        <rect x="-26" y="28" width="52" height="84" rx="5" fill="#0a0a0a"/>
+        <circle cx="18" cy="70" r="5" fill="#00c896"/>
+      </g>
+    </svg>
+    <span class="nav-brand-text">HomeSeeker</span>
+  </a>
   <div class="nav-links">
     <a href="#how-it-works">How it works</a>
-    <a href="#tools">Tools</a>
     <a href="#pricing">Pricing</a>
     <a href="#faq">FAQ</a>
-    <a href="/reviews">Reviews</a>
     <a href="/subscribe" class="nav-cta">Start free trial</a>
   </div>
   <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
@@ -348,408 +261,235 @@
     <a href="#tools" class="ov-link">Tools</a>
     <a href="#pricing" class="ov-link">Pricing</a>
     <a href="#faq" class="ov-link">FAQ</a>
-    <a href="/reviews" class="ov-link">Reviews</a>
   </nav>
   <a href="/subscribe" class="nav-overlay-cta">Start 7-day free trial →</a>
 </div>
 
+<!-- HERO -->
 <section class="hero">
   <div class="hero-grid">
     <div>
-      <div class="hero-badge"><span class="hero-badge-dot"></span>Live · 3 platforms · 19 cities · 24/7</div>
-      <h1>Finding a rental in the Netherlands is easy.<br /><em>Winning one is not.</em></h1>
-      <p class="hero-sub">HomeSeeker monitors Funda, Kamernet, and HousingAnywhere 24/7. Every alert includes your personal Application Score, listing-specific strategy, and an AI that helps you write the application that wins.</p>
-      <div class="hero-trust">
-        <span>7-day free trial</span>
-        <span>Cancel anytime</span>
-        <span>Instant Telegram setup</span>
-      </div>
-      <div class="hero-ctas">
+      <span class="hero-eyebrow">Built for expats in the Netherlands</span>
+      <h1>Finding a rental is easy.<br /><em>Winning one is not.</em></h1>
+      <p class="hero-sub">HomeSeeker monitors Funda, Kamernet, and HousingAnywhere 24/7. Every alert includes your Application Score, personalised tips, and AI tools to write the application that wins.</p>
+      <div class="hero-btns">
         <a href="/subscribe" class="btn-primary">Start my 7-day free trial →</a>
         <a href="#how-it-works" class="btn-outline">See how it works ↓</a>
       </div>
+      <div class="hero-trust">
+        <span>7-day free trial</span>
+        <span>Cancel anytime</span>
+        <span>Instant setup</span>
+      </div>
       <div class="hero-sources">
-        <div class="source-pill">🏠 Funda</div>
-        <div class="source-pill">🚪 Kamernet</div>
-        <div class="source-pill">🌍 HousingAnywhere</div>
+        <div class="source-pill">Funda</div>
+        <div class="source-pill">Kamernet</div>
+        <div class="source-pill">HousingAnywhere</div>
       </div>
     </div>
     <div class="hero-right">
-      <div class="phone-mock">
-        <div class="tg-header">
-          <div class="tg-avatar">🏠</div>
-          <div><div class="tg-name">HomeSeeker</div><div class="tg-online">● online</div></div>
+      <div class="tg-mock">
+        <div class="tg-mock-header">
+          <div class="tg-mock-avatar">
+            <svg width="20" height="20" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+              <rect width="680" height="680" fill="#00c896"/>
+              <g transform="translate(340,335)">
+                <polygon points="0,-132 138,-20 -138,-20" fill="#0a0a0a"/>
+                <rect x="-6" y="-152" width="16" height="40" rx="4" fill="#0a0a0a"/>
+                <rect x="-115" y="-20" width="230" height="132" fill="#0a0a0a"/>
+                <rect x="-88" y="-8" width="46" height="36" rx="4" fill="#00c896"/>
+                <rect x="42" y="-8" width="46" height="36" rx="4" fill="#00c896"/>
+                <rect x="-26" y="28" width="52" height="84" rx="5" fill="#00c896"/>
+                <circle cx="18" cy="70" r="5" fill="#0a0a0a"/>
+              </g>
+            </svg>
+          </div>
+          <div>
+            <div class="tg-mock-name">HomeSeeker</div>
+            <div class="tg-mock-status">● online</div>
+          </div>
         </div>
         <div class="tg-bubble">
-          <b>🌐 HousingAnywhere &nbsp;🆕 New</b><br />
-          📍 <b>Willem Nakkenstraat, Amsterdam</b><br />
-          Rent: €985/mo · Est. total: €1.300/mo<br /><br />
-          Application: <b>Strong</b><br />
-          🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜ <span class="tg-val-g">87%</span><br /><br />
-          Market Value: <b>Expensive</b><br />
-          🟥🟥⬜⬜⬜⬜⬜⬜⬜⬜ <span class="tg-val-r">16%</span><br /><br />
-          <span class="tg-tip-n">1.</span> Call the agency after sending - agents who hear a voice are 3x more likely to schedule a viewing.<br /><br />
-          <span class="tg-tip-n">2.</span> Your income covers this rent 4x over - state your gross annual salary upfront, not monthly. It sounds stronger.<br /><br />
-          <span class="tg-tip-n">3.</span> This landlord mentions working professionals - lead with your job title and company name in the first line.<br /><br />
-          <i>Strong match - apply immediately.</i>
-        </div>
-        <div class="tg-btns">
-          <div class="tg-btn">View listing</div>
-          <div class="tg-btn">AI Letter</div>
-          <div class="tg-btn">Share</div>
-          <div class="tg-btn">Unsubscribe</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="stats-bar">
-  <div class="stats-inner">
-    <div class="stat"><div class="stat-num">3</div><div class="stat-label">Platforms monitored</div></div>
-    <div class="stat"><div class="stat-num">19</div><div class="stat-label">Cities covered</div></div>
-    <div class="stat"><div class="stat-num">Instant</div><div class="stat-label">Alert speed</div></div>
-    <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Live monitoring</div></div>
-  </div>
-</div>
-
-<section class="bg2" id="demo">
-  <div class="container">
-    <div class="section-tag">What you receive</div>
-    <h2>Every alert, explained.</h2>
-    <p class="section-sub">Here's what a HomeSeeker alert looks like — and what each element tells you.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:32px">
-      <div class="phone-mock" style="max-width:100%">
-        <div class="tg-header">
-          <div class="tg-avatar" style="font-size:14px;font-weight:800">HS</div>
-          <div><div class="tg-name">HomeSeeker</div><div class="tg-online">● online</div></div>
-        </div>
-        <div class="tg-bubble">
-          <b>🏠 Funda &nbsp;🆕 New</b><br />
-          📍 <b>Bilderdijkstraat 94, Amsterdam</b><br />
-          62m² · Rent: €1,250/mo · Est. total: €1,580/mo<br /><br />
+          <b>🏠 Funda</b><br />
+          📍 <b>Jan Evertsenstraat 84, Amsterdam</b><br />
+          72m² &nbsp;·&nbsp; Rent: €1.650/mo &nbsp;·&nbsp; Est. total: €1.940/mo<br /><br />
           <b>Application Score</b><br />
-          🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜ <span class="tg-val-g">82%</span> — Strong<br /><br />
+          🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜ <span class="tg-val-g">78%</span> — Strong<br /><br />
           <b>Market Value</b><br />
-          🟩🟩🟩🟩🟩⬜⬜⬜⬜⬜ <span class="tg-val-g">54%</span> — Fair price<br /><br />
-          <span class="tg-tip-n">1.</span> Landlord specifically mentions working professionals — lead with your job title and company in the opening line.<br /><br />
-          <span class="tg-tip-n">2.</span> Your income covers this rent 3.8× — state your gross annual salary, not monthly. It sounds stronger.<br /><br />
-          <i>Strong match. Apply today.</i>
+          🟨🟨🟨🟨🟨⬜⬜⬜⬜⬜ <span class="tg-val-y">52%</span> — Fair price<br /><br />
+          <div class="tg-bubble-footer">Strong match. Open the assistant to see your best move.</div>
         </div>
-        <div class="tg-btns">
-          <div class="tg-btn">View listing</div>
-          <div class="tg-btn">AI Rental Assistant</div>
-          <div class="tg-btn">Share</div>
-          <div class="tg-btn">Unsubscribe</div>
+        <div class="tg-mock-btns">
+          <div class="tg-mock-btn">AI Rental Assistant</div>
+          <div class="tg-mock-btn">View listing</div>
         </div>
-      </div>
-      <div style="display:grid;gap:20px">
-        <div style="display:flex;gap:14px;align-items:flex-start">
-          <div style="width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🎯</div>
-          <div>
-            <strong style="display:block;font-size:14px;margin-bottom:3px">Application Score</strong>
-            <span style="font-size:13px;color:var(--muted);line-height:1.5">Personal 0–100 score based on your income, documents, and contract type vs the listing's requirements. Tells you exactly how competitive you are.</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:14px;align-items:flex-start">
-          <div style="width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">💎</div>
-          <div>
-            <strong style="display:block;font-size:14px;margin-bottom:3px">Market Value Score</strong>
-            <span style="font-size:13px;color:var(--muted);line-height:1.5">Compares the listing price against similar rentals in that city so you know instantly if it's a deal, fair, or overpriced.</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:14px;align-items:flex-start">
-          <div style="width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">💡</div>
-          <div>
-            <strong style="display:block;font-size:14px;margin-bottom:3px">Landlord-specific tips</strong>
-            <span style="font-size:13px;color:var(--muted);line-height:1.5">We read the listing and detect what the landlord wants. You get up to 5 specific actions tailored to that exact property — not generic advice.</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:14px;align-items:flex-start">
-          <div style="width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">✉️</div>
-          <div>
-            <strong style="display:block;font-size:14px;margin-bottom:3px">One-tap AI letter</strong>
-            <span style="font-size:13px;color:var(--muted);line-height:1.5">Tap "AI Rental Assistant" in any alert to open the full AI toolkit — personalised letter, application coaching, viewing prep, lease review, and more.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <style>
-      @media (max-width: 768px) {
-        #demo .container > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; gap: 28px !important; }
-      }
-    </style>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="section-tag">Who it's for</div>
-    <h2>Built for people who need<br />more than just an alert.</h2>
-    <p class="section-sub">Speed gets you in the door. The right application gets you the home.</p>
-    <div class="grid-3">
-      <div class="card">
-        <div class="card-icon">🌍</div>
-        <h3>Expats & internationals</h3>
-        <p>Searching from abroad? Get instant alerts and a personalised AI letter - no Dutch required.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">🎓</div>
-        <h3>Students</h3>
-        <p>Student housing moves fast. Your score tells you whether to act - the AI letter handles the rest.</p>
-      </div>
-      <div class="card">
-        <div class="card-icon">💼</div>
-        <h3>Young professionals</h3>
-        <p>Stop refreshing Funda. Get instant alerts with your personal score and apply before the competition.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="steps-section" id="how-it-works">
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how-it-works">
   <div class="container">
-    <div class="section-tag">How it works</div>
-    <h2>From listing<br />to application.</h2>
+    <h2 class="section-title">How it works</h2>
     <p class="section-sub">Start free. Be set up before the next listing drops.</p>
-    <div class="steps-row">
+    <div class="steps">
       <div class="step">
-        <div class="step-circle">1</div>
+        <div class="step-num">1</div>
         <div>
           <h3>Set your filters</h3>
-          <p>City, budget, rental or purchase, and your profile - income, documents, contract type. Takes 2 minutes.</p>
+          <p>City, budget, rental or purchase, your income and profile. Takes 2 minutes.</p>
         </div>
       </div>
       <div class="step">
-        <div class="step-circle">2</div>
+        <div class="step-num">2</div>
         <div>
           <h3>Get instant alerts</h3>
-          <p>New listings land in Telegram the moment they go live - before most people even open the app.</p>
+          <p>New listings land in Telegram the moment they go live on all three platforms.</p>
         </div>
       </div>
       <div class="step">
-        <div class="step-circle">3</div>
+        <div class="step-num">3</div>
         <div>
-          <h3>See your scores</h3>
-          <p>Application Score and Market Value tell you whether to act - and exactly what to fix first.</p>
+          <h3>See your score</h3>
+          <p>Every alert includes your personal Application Score and smart tips for this listing.</p>
         </div>
       </div>
       <div class="step">
-        <div class="step-circle">4</div>
+        <div class="step-num">4</div>
         <div>
-          <h3>Apply with AI</h3>
-          <p>One tap generates your motivation letter, tailored to that listing and landlord. Copy and send.</p>
+          <h3>Win the application</h3>
+          <p>One tap opens the AI Rental Assistant: letter, viewing prep, negotiation, lease review.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="features">
-  <div class="container">
-    <div class="section-tag">Every alert includes</div>
-    <h2>Not just an alert.<br />A complete edge.</h2>
-    <p class="section-sub">Every notification is built around your profile - so you know whether to act and exactly how to win.</p>
-    <div class="features-grid" id="features-grid">
-      <div class="feat-item">
-        <div class="feat-icon">📍</div>
-        <div class="feat-text"><strong>Address & listing link</strong><span>Exact location with a direct link to the source listing.</span></div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">🎯</div>
-        <div class="feat-text"><strong>Personal Application Score</strong><span>0–100 based on your income, documents, and price fit.</span></div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">💎</div>
-        <div class="feat-text"><strong>Market Value Score</strong><span>Is this price fair compared to similar listings nearby?</span></div>
-      </div>
-      <div class="feat-item">
-        <div class="feat-icon">🧠</div>
-        <div class="feat-text"><strong>Landlord Intelligence</strong><span>What the landlord is looking for - and how to match it.</span></div>
-      </div>
-      <div class="feat-item feat-hidden-mob">
-        <div class="feat-icon">💡</div>
-        <div class="feat-text"><strong>Smart Tips per listing</strong><span>Up to 5 specific actions tailored to that exact property.</span></div>
-      </div>
-      <div class="feat-item feat-hidden-mob">
-        <div class="feat-icon">✉️</div>
-        <div class="feat-text"><strong>One-tap AI letter</strong><span>Personalised motivation letter generated in seconds.</span></div>
-      </div>
-      <div class="feat-item feat-hidden-mob">
-        <div class="feat-icon">📦</div>
-        <div class="feat-text"><strong>Full application package</strong><span>Letter, intro, WhatsApp one-liner, and financial summary.</span></div>
-      </div>
-      <div class="feat-item feat-hidden-mob">
-        <div class="feat-icon">🔄</div>
-        <div class="feat-text"><strong>3-platform coverage</strong><span>Funda, Kamernet, HousingAnywhere - one subscription.</span></div>
-      </div>
-    </div>
-    <button class="feat-show-more" id="feat-show-more">Show all features ↓</button>
-  </div>
-</section>
-
-<section class="bg2">
-  <div class="container">
-    <div class="section-tag">Landlord Intelligence</div>
-    <h2>Not just alerts.<br />A competitive edge.</h2>
-    <p class="section-sub">Every alert analyses the listing and detects what the landlord wants - then matches it against your profile.</p>
-    <div class="grid-3">
-      <div class="intel-card c-green">
-        <div class="card-icon">🔍</div>
-        <h3>Landlord profile detection</h3>
-        <p>We identify what the landlord is looking for and match it against your income, contract, and documents.</p>
-      </div>
-      <div class="intel-card c-amber">
-        <div class="card-icon">🎯</div>
-        <h3>Property-specific tips</h3>
-        <p>Up to 5 high-impact actions tailored to this specific landlord - not generic advice that applies to everyone.</p>
-      </div>
-      <div class="intel-card c-red">
-        <div class="card-icon">⚠️</div>
-        <h3>Risk warnings</h3>
-        <p>Instantly flagged: no pets, no sharing, income too low, or document gaps that would disqualify your application.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="scores">
-  <div class="container">
-    <div class="section-tag">Two scores per alert</div>
-    <h2>Know your odds.<br />Know the value.</h2>
-    <p class="section-sub">Two scores so you instantly know whether to act - and how urgently.</p>
-    <div class="scores-row">
-      <div class="score-panel">
-        <div class="score-stag score-stag-green">🎯 Application Score</div>
-        <h3>How strong is your application?</h3>
-        <p>Personal to you. Based on your income vs the listing price, documents, contract type, and timing.</p>
-        <div class="score-bar-wrap">
-          <div class="score-bar-meta"><span>Sample: Strong application</span><span style="color:var(--green);font-weight:700">76%</span></div>
-          <div class="score-bar-track"><div class="score-bar-fill score-bar-green" style="width:76%"></div></div>
-        </div>
-        <div class="score-rows">
-          <div class="score-row"><span class="score-row-lbl">Excellent</span><span class="score-row-val score-row-val-green">85–100</span></div>
-          <div class="score-row"><span class="score-row-lbl">Good</span><span class="score-row-val score-row-val-green">70–84</span></div>
-          <div class="score-row"><span class="score-row-lbl">Fair</span><span class="score-row-val score-row-val-green">55–69</span></div>
-          <div class="score-row"><span class="score-row-lbl">Low</span><span class="score-row-val score-row-val-dim">40–54</span></div>
-          <div class="score-row"><span class="score-row-lbl">Very Low</span><span class="score-row-val score-row-val-dim">0–39</span></div>
-        </div>
-      </div>
-      <div class="score-panel">
-        <div class="score-stag score-stag-blue">💎 Market Value Score</div>
-        <h3>Is it a good deal?</h3>
-        <p>Based on similar listings in your city. Tells you instantly if the price is fair, cheap, or inflated.</p>
-        <div class="score-bar-wrap">
-          <div class="score-bar-meta"><span>Sample: At market rate</span><span style="color:#f5a623;font-weight:700">48%</span></div>
-          <div class="score-bar-track"><div class="score-bar-fill score-bar-yellow" style="width:48%"></div></div>
-        </div>
-        <div class="score-rows">
-          <div class="score-row"><span class="score-row-lbl">Great deal</span><span class="score-row-val score-row-val-blue">Well below market</span></div>
-          <div class="score-row"><span class="score-row-lbl">Good deal</span><span class="score-row-val score-row-val-blue">Below market</span></div>
-          <div class="score-row"><span class="score-row-lbl">Fair</span><span class="score-row-val score-row-val-blue">At market rate</span></div>
-          <div class="score-row"><span class="score-row-lbl">Overpriced</span><span class="score-row-val score-row-val-dim">Above market</span></div>
-        </div>
-      </div>
-    </div>
-    <div style="text-align:center;margin-top:16px">
-      <a href="/how-scores-work" style="color:var(--green);font-size:13px;text-decoration:none;font-weight:600">How both scores are calculated →</a>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="section-tag">AI application tools</div>
-    <h2>From listing to<br />application in seconds.</h2>
-    <p class="section-sub">Tap "AI Letter" in any alert, or open the web app for the full package. Everything personalised.</p>
-    <div class="ai-cards">
-      <div class="ai-card">
-        <h3>One-tap letter</h3>
-        <p>Tap in the Telegram alert. The AI reads the listing, picks the right tips, and writes your letter instantly.</p>
-      </div>
-      <div class="ai-card">
-        <h3>Web letter generator</h3>
-        <p>Customise which landlord signals to highlight and fine-tune the letter before sending.</p>
-      </div>
-      <div class="ai-card">
-        <h3>Full application package</h3>
-        <p>One click: motivation letter + personal intro + WhatsApp one-liner + financial summary card.</p>
-      </div>
-    </div>
-    <p style="text-align:center;margin-top:16px;color:var(--muted);font-size:13px">You always send the application yourself - HomeSeeker never contacts landlords on your behalf.</p>
-  </div>
-</section>
-
+<!-- TOOLS -->
 <section class="tools-section" id="tools">
   <div class="container">
-    <div class="section-tag">All Tools</div>
-    <h2>Everything you need<br />to win the application.</h2>
-    <p class="section-sub">From real-time alerts to the application that gets you the viewing — all in one subscription.</p>
+    <h2 class="section-title">Everything you need to win</h2>
+    <p class="section-sub">From the first alert to the signed contract.</p>
 
-    <!-- Core tools — full-size cards -->
-    <div class="assistant-cards" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
-      <a href="/tools/rent-assistant" class="assistant-card">
-        <strong>AI Rental Assistant</strong>
-        <span>Application Coach, Viewing Prep, Negotiation Scripts, Lease Review, Move-In Checklist</span>
-        <div class="ac-arrow">Open assistant →</div>
-      </a>
-      <a href="/tools/landlord-reply" class="assistant-card">
-        <strong>Landlord Reply Coach</strong>
-        <span>Paste any landlord message and get an instant decode, intent analysis, and ready-to-send reply</span>
-        <div class="ac-arrow">Decode a reply →</div>
-      </a>
-      <a href="/tools/buy-assistant" class="assistant-card">
-        <strong>AI Buyer Assistant</strong>
-        <span>Affordability, Property Analyser, Bid Strategy, Legal Process Guide, VvE Checker</span>
-        <div class="ac-arrow">Open assistant →</div>
-      </a>
-    </div>
+    <div class="accordion">
 
-    <!-- Secondary tools -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px">
-      <a href="/tools/income-check" class="tool-item" style="border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px"><div class="tool-icon">💰</div><div class="tool-text"><strong>Income Check</strong><span>Does your income meet the 3x requirement? Instant check with AI explanation</span></div></a>
-      <a href="/tools/deal-finder" class="tool-item" style="border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px"><div class="tool-icon">🏷</div><div class="tool-text"><strong>Deal Finder</strong><span>Price vs market benchmark, hidden costs, negotiation room, and red flags</span></div></a>
-      <a href="/tools/rejection-analyser" class="tool-item" style="border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px"><div class="tool-icon">🔍</div><div class="tool-text"><strong>Rejection Analyser</strong><span>Describe your rejections — get a specific diagnosis and what to fix first</span></div></a>
+      <!-- Renting -->
+      <div class="acc-item" id="acc-rent">
+        <div class="acc-header" id="acc-rent-hd">
+          <div class="acc-header-left">
+            <div class="acc-dot"></div>
+            <span class="acc-title">Renting</span>
+          </div>
+          <span class="acc-chevron">&#8964;</span>
+        </div>
+        <div class="acc-body" id="acc-rent-body">
+          <div class="acc-body-inner">
+            <a href="/tools/rent-assistant" class="tool-card">
+              <div class="tool-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+              <strong>AI Rental Assistant</strong>
+              <p>Write your application letter, prep for viewings, get negotiation scripts, review your lease, and plan your move-in — all in one place.</p>
+              <span class="tool-card-cta">Open assistant →</span>
+            </a>
+            <a href="/tools/landlord-reply" class="tool-card">
+              <div class="tool-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <strong>Landlord Reply Coach</strong>
+              <p>Paste any message from a landlord or agent. Get an instant translation, intent analysis, and a perfect ready-to-send reply.</p>
+              <span class="tool-card-cta">Decode a reply →</span>
+            </a>
+            <a href="/tools/income-check" class="tool-card">
+              <div class="tool-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h2v5H7zM11 10h2v3h-2zM15 6h2v7h-2z"/></svg>
+              </div>
+              <strong>Income Check</strong>
+              <p>Check whether you meet the income requirement before applying. Get an AI explanation for unusual income situations.</p>
+              <span class="tool-card-cta">Check my income →</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buying -->
+      <div class="acc-item" id="acc-buy">
+        <div class="acc-header" id="acc-buy-hd">
+          <div class="acc-header-left">
+            <div class="acc-dot"></div>
+            <span class="acc-title">Buying</span>
+          </div>
+          <span class="acc-chevron">&#8964;</span>
+        </div>
+        <div class="acc-body" id="acc-buy-body">
+          <div class="acc-body-inner">
+            <a href="/tools/buy-assistant" class="tool-card">
+              <div class="tool-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <strong>AI Buyer Assistant</strong>
+              <p>Affordability calculator, property analysis, bid strategy, legal process guide, and VvE checker — everything an expat buyer needs.</p>
+              <span class="tool-card-cta">Open assistant →</span>
+            </a>
+            <a href="/tools/deal-finder" class="tool-card">
+              <div class="tool-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+              </div>
+              <strong>Deal Finder</strong>
+              <p>Price vs benchmark analysis for any listing. Instant deal score, hidden costs, negotiation room, and red flags.</p>
+              <span class="tool-card-cta">Analyse a listing →</span>
+            </a>
+            <a href="/tools/rejection-analyser" class="tool-card">
+              <div class="tool-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <strong>Rejection Analyser</strong>
+              <p>Describe your past applications. Get a specific diagnosis of why you are being rejected and a ranked fix list.</p>
+              <span class="tool-card-cta">Analyse rejections →</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
 
-<section id="pricing" class="pricing-section">
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
   <div class="container">
-    <div class="section-tag">Pricing</div>
-    <h2>One subscription.<br />Everything included.</h2>
-    <p class="section-sub section-sub-center">Start free, cancel anytime.</p>
+    <h2 class="section-title">One plan. Everything included.</h2>
+    <p class="price-intro">The average expat in the Netherlands searches for a home for 3 months. HomeSeeker users report finding one in 3-6 weeks.</p>
     <div class="price-wrap">
       <div class="price-card">
-        <div class="price-badge">Everything included</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">The average expat searches for 3 months. HomeSeeker users report finding a home in 3-6 weeks.</p>
+        <div class="price-badge">7-day free trial</div>
         <div class="price-amount">€9,99</div>
-        <div class="price-period">per month</div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:18px;margin-top:-14px">Prices include 21% VAT as required by Dutch law.</p>
+        <div class="price-period">/month</div>
+        <div class="price-vat">incl. 21% VAT</div>
         <ul class="price-features">
-          <li>Funda, Kamernet &amp; HousingAnywhere - all in one subscription</li>
+          <li>Funda, Kamernet &amp; HousingAnywhere — all in one</li>
           <li>Real-time Telegram alerts the moment a listing goes live</li>
-          <li>Personal Application Score (0–100) based on your income, docs &amp; timing</li>
-          <li>Smart Tips per alert - based on what that specific landlord is looking for</li>
-          <li>Market Value Score - see if a listing is a fair deal vs the local market</li>
-          <li>AI Motivation Letter - one tap in Telegram, personalised, ready to send</li>
-          <li>Full Application Package - letter + intro + WhatsApp one-liner + financial summary</li>
-          <li>19 cities: Amsterdam, Rotterdam, Utrecht, The Hague, Haarlem, Eindhoven, Delft, Leiden, Groningen, Nijmegen, Tilburg, Almere, Breda, Maastricht, Zwolle, Arnhem, Enschede, Apeldoorn, Amstelveen</li>
-          <li>All AI tools: rejection analyser, income check, reference letters, viewing coach, tenant rights, and more</li>
-          <li>Cancel anytime before day 7 - no charge</li>
+          <li>Personal Application Score (0-100) based on your income, docs &amp; timing</li>
+          <li>Smart tips per alert — based on what that specific landlord wants</li>
+          <li>Market Value Score — see if a listing is fair vs the local market</li>
+          <li>AI Motivation Letter — one tap in Telegram, personalised, ready to send</li>
+          <li>Full Application Package — letter, intro, WhatsApp one-liner, financial summary</li>
+          <li>All AI tools: AI Rental Assistant, Landlord Reply Coach, Rejection Analyser, Income Check, and more</li>
+          <li>19 cities across the Netherlands</li>
+          <li>Cancel anytime before day 7 — no charge</li>
         </ul>
-        <p class="price-trust">Cancel anytime · No commitment · Instant setup</p>
         <a href="/subscribe" class="price-cta">Start my 7-day free trial →</a>
-        <p class="price-disclaimer">€9,99/month incl. 21% VAT. 7-day free trial. Cancel anytime before day 7 and pay nothing.</p>
+        <p class="price-disclaimer">€9,99/month after trial. Cancel anytime before day 7 and pay nothing.</p>
       </div>
     </div>
   </div>
 </section>
 
+<!-- FAQ -->
 <section class="faq-section" id="faq">
   <div class="container">
-    <div class="section-tag">FAQ</div>
-    <h2>Common questions.</h2>
+    <h2 class="section-title" style="text-align:left;margin-bottom:24px">Common questions</h2>
     <div class="faq-list">
       <div class="faq-item open">
         <div class="faq-q">Which platforms do you monitor? <span class="faq-icon">+</span></div>
@@ -757,23 +497,19 @@
       </div>
       <div class="faq-item">
         <div class="faq-q">How fast are the alerts? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">As soon as a listing appears that matches your filters, you get a Telegram notification. We run continuous monitoring 24/7 - most alerts arrive within minutes of a listing going live.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">As soon as a listing appears that matches your filters, you get a Telegram notification. We run continuous monitoring 24/7 — most alerts arrive within minutes of a listing going live.</div></div>
       </div>
       <div class="faq-item">
         <div class="faq-q">What is the Application Score? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">A personal 0–100 score calculated for every listing based on income vs rent, contract type, document readiness, and timing. It tells you how strong your application is - and what to fix first.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">A personal 0-100 score calculated for every listing based on income vs rent, contract type, document readiness, and timing. It tells you how strong your application is — and what to fix first.</div></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">What are the Smart Tips? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">For every alert, we read the listing and detect what the landlord is looking for. You get up to 5 specific, actionable tips tailored to that property - not generic advice.</div></div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">What is the AI Letter? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">Tap "AI Letter" in any Telegram alert to get a personalised motivation letter in seconds. Open the web app for a complete package - letter, intro, WhatsApp one-liner, and financial summary card.</div></div>
+        <div class="faq-q">What is the AI Rental Assistant? <span class="faq-icon">+</span></div>
+        <div class="faq-a"><div class="faq-a-inner">A 5-in-1 tool you access from any alert. It helps you write a personalised motivation letter, prepare for viewings, get negotiation scripts, review your lease, and plan your move-in.</div></div>
       </div>
       <div class="faq-item">
         <div class="faq-q">Does it work for rentals and purchases? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">Yes - filter by rental, purchase, or both. Your Application Score and tips adapt to the listing type, and all tools cover both journeys.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">Yes — filter by rental, purchase, or both. Your Application Score and tips adapt to the listing type, and all tools cover both journeys.</div></div>
       </div>
       <div class="faq-item">
         <div class="faq-q">How do I cancel? <span class="faq-icon">+</span></div>
@@ -783,67 +519,44 @@
   </div>
 </section>
 
-<section>
-  <div class="container">
-    <div class="section-tag">What users say</div>
-    <h2>Expats who found<br />their home.</h2>
-    <p class="section-sub">Join internationals across the Netherlands who stopped scrolling and started winning applications.</p>
-    <div class="reviews-grid" id="reviews-grid">
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p class="review-text">"Got an alert 4 minutes after the listing went live. Applied the same day using the AI letter. Viewing booked within 2 hours."</p>
-        <div class="review-author">Lucas M. - Software engineer, Amsterdam</div>
-      </div>
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p class="review-text">"As an expat I always felt my applications looked generic. The personalised score and letter made a real difference - I got 3 viewings in my first week."</p>
-        <div class="review-author">Priya S. - Product manager, Utrecht</div>
-      </div>
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p class="review-text">"Spent 3 months looking on Funda manually with no luck. Signed up for HomeSeeker and was signing a lease 2 weeks later."</p>
-        <div class="review-author">Tom V. - Data analyst, The Hague</div>
-      </div>
-    </div>
-    <div style="text-align:center">
-      <a href="/reviews" style="display:inline-block;padding:10px 24px;border:1px solid var(--green);color:var(--green);border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">Leave a review →</a>
-    </div>
-  </div>
-</section>
-
-<section class="final-cta">
-  <div class="container">
-    <h2>Find your home. Then get it.</h2>
-    <p class="section-sub section-sub-center" style="margin-bottom:24px">Be first to see it. Be the one they pick.</p>
-    <a href="/subscribe" class="btn-primary" style="font-size:16px;padding:15px 40px;display:inline-block">Start your free trial →</a>
-    <p style="margin-top:14px;font-size:12px;color:var(--muted)">€9,99/month incl. VAT after trial · Cancel anytime · No commitment</p>
-    <div style="display:flex;justify-content:center;gap:20px;margin-top:16px;font-size:12px;color:var(--muted);flex-wrap:wrap">
-      <span>🏠 Funda</span><span>🚪 Kamernet</span><span>🌍 HousingAnywhere</span>
-    </div>
-  </div>
-</section>
-
+<!-- FOOTER -->
 <footer>
   <div class="footer-inner">
     <div>
-      <div class="footer-logo">HomeSeeker</div>
-      <div class="footer-tagline">Real-time alerts. AI-powered applications.</div>
+      <div class="footer-brand">
+        <svg width="22" height="22" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+          <rect width="680" height="680" fill="#070a0d"/>
+          <rect x="155" y="145" width="370" height="370" rx="85" fill="#0d1117" stroke="#00c896" stroke-width="2.5"/>
+          <g transform="translate(340,335)">
+            <polygon points="0,-132 138,-20 -138,-20" fill="#00c896"/>
+            <rect x="-6" y="-152" width="16" height="40" rx="4" fill="#00c896"/>
+            <rect x="-115" y="-20" width="230" height="132" fill="#00c896"/>
+            <rect x="-88" y="-8" width="46" height="36" rx="4" fill="#070a0d"/>
+            <line x1="-65" y1="-8" x2="-65" y2="28" stroke="#00c896" stroke-width="2"/>
+            <line x1="-88" y1="10" x2="-42" y2="10" stroke="#00c896" stroke-width="2"/>
+            <rect x="42" y="-8" width="46" height="36" rx="4" fill="#070a0d"/>
+            <line x1="65" y1="-8" x2="65" y2="28" stroke="#00c896" stroke-width="2"/>
+            <line x1="42" y1="10" x2="88" y2="10" stroke="#00c896" stroke-width="2"/>
+            <rect x="-26" y="28" width="52" height="84" rx="5" fill="#070a0d"/>
+            <circle cx="18" cy="70" r="5" fill="#00c896"/>
+          </g>
+        </svg>
+        <span class="footer-brand-text">HomeSeeker</span>
+      </div>
+      <div class="footer-tagline">Find your home. We'll help you get it.</div>
     </div>
     <div class="footer-links">
       <a href="/privacy">Privacy Policy</a>
       <a href="/terms">Terms of Service</a>
       <a href="/cancel">Cancel Subscription</a>
-      <a href="/how-scores-work">How Scores Work</a>
-      <a href="mailto:support@homeseeker.dev">Support</a>
-      <a href="#faq">FAQ</a>
+      <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>
     </div>
   </div>
-  <!-- KVK_TODO: add KvK registration number here once registered -->
-  <p class="footer-copy">© 2025 HomeSeeker. Built for expats in the Netherlands.</p>
-  <p style="text-align:center;color:var(--muted);font-size:11px;margin-top:10px;max-width:var(--max-w);margin-left:auto;margin-right:auto">HomeSeeker aggregates publicly available listing data. Property information is sourced from Funda, Kamernet, and HousingAnywhere. HomeSeeker is not affiliated with or endorsed by these platforms.</p>
+  <p class="footer-copy">© 2025 HomeSeeker. Built for expats in the Netherlands. Not affiliated with Funda, Kamernet, or HousingAnywhere.</p>
 </footer>
 
 <script>
+  // Hamburger nav
   const hamburger = document.getElementById('nav-hamburger');
   const overlay   = document.getElementById('nav-overlay');
   const ovClose   = document.getElementById('nav-overlay-close');
@@ -864,6 +577,7 @@
   document.querySelectorAll('.ov-link').forEach(l => l.addEventListener('click', closeOverlay));
   overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
 
+  // FAQ accordion
   document.querySelectorAll('.faq-item').forEach(item => {
     item.querySelector('.faq-q').addEventListener('click', () => {
       const wasOpen = item.classList.contains('open');
@@ -872,39 +586,30 @@
     });
   });
 
-  let featExpanded = false;
-  const featBtn = document.getElementById('feat-show-more');
-  const featHidden = document.querySelectorAll('.feat-hidden-mob');
+  // Tools accordion — open on desktop, closed on mobile
+  function initAccordion(itemId, headerId) {
+    const item = document.getElementById(itemId);
+    const header = document.getElementById(headerId);
+    if (!item || !header) return;
 
-  function syncFeatures() {
-    const mobile = window.innerWidth <= 768;
-    featHidden.forEach(el => { el.style.display = (mobile && !featExpanded) ? 'none' : 'flex'; });
-    const item4 = document.querySelector('.feat-item:nth-child(4)');
-    if (item4) item4.style.borderBottom = (mobile && !featExpanded) ? 'none' : '';
-    if (featBtn) featBtn.style.display = mobile ? 'block' : 'none';
-  }
+    function setDesktopState() {
+      if (window.innerWidth >= 769) {
+        item.classList.add('open');
+      } else {
+        item.classList.remove('open');
+      }
+    }
 
-  if (featBtn) {
-    featBtn.addEventListener('click', () => {
-      featExpanded = !featExpanded;
-      featBtn.textContent = featExpanded ? 'Show fewer ↑' : 'Show all features ↓';
-      syncFeatures();
+    header.addEventListener('click', () => {
+      item.classList.toggle('open');
     });
+
+    setDesktopState();
+    window.addEventListener('resize', setDesktopState);
   }
-  syncFeatures();
-  window.addEventListener('resize', syncFeatures);
 
-
-  fetch('/api/reviews').then(r => r.json()).then(reviews => {
-    if (!reviews || reviews.length < 3) return;
-    const grid = document.getElementById('reviews-grid');
-    grid.innerHTML = reviews.map(r => `
-      <div class="review-card">
-        <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-        <p class="review-text">"${r.review_text}"</p>
-        <div class="review-author">${r.name}</div>
-      </div>`).join('');
-  }).catch(() => {});
+  initAccordion('acc-rent', 'acc-rent-hd');
+  initAccordion('acc-buy',  'acc-buy-hd');
 </script>
 </body>
 </html>
