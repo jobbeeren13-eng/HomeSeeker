@@ -4,339 +4,343 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Buyer Assistant - HomeSeeker</title>
-<!-- Open Graph / Twitter -->
-<!-- TODO: create public/og-image.png (1200x630px) for social sharing previews -->
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="HomeSeeker" />
-<meta property="og:url" content="https://homeseeker.dev/tools/buy-assistant" />
 <meta property="og:title" content="AI Buyer Assistant - HomeSeeker" />
 <meta property="og:description" content="5-in-1 AI buyer toolkit: affordability check, property analysis, bid strategy, legal process guide, and VvE checker." />
-<meta property="og:image" content="https://homeseeker.dev/og-image.png" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="AI Buyer Assistant - HomeSeeker" />
-<meta name="twitter:description" content="5-in-1 AI buyer toolkit: affordability check, property analysis, bid strategy, legal process guide, and VvE checker." />
-<meta name="twitter:image" content="https://homeseeker.dev/og-image.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --green: #00c896;
-  --bg: #0a0a0a;
-  --border: rgba(255,255,255,0.08);
-  --text: #e8edf3;
-  --sw: 200px;
-}
+:root{--g:#00c896;--bg:#0a0a0a;--card:#111318;--text:#e8edf3;--muted:rgba(255,255,255,0.45);--border:rgba(255,255,255,0.08);--sw:180px;--hh:52px;--lb:36px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
 
-.site-header{position:fixed;top:0;left:0;right:0;z-index:200;height:52px;display:flex;align-items:center;padding:0 24px;background:rgba(10,10,10,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
-.site-logo{font-size:14px;font-weight:800;letter-spacing:2px;color:var(--green);text-decoration:none;text-transform:uppercase}
+.hdr{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--hh);display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(10,10,10,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.hdr-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-box{width:26px;height:26px;background:var(--g);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-box svg{width:13px;height:13px}
+.logo-name{font-size:13px;font-weight:700;color:var(--text)}
+.hdr-right{font-size:12px;color:var(--muted)}
 
-.sidebar{position:fixed;top:52px;left:0;bottom:0;width:var(--sw);background:#0a0a0a;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
-.sidebar-listing{display:none;margin:14px 14px 0;padding:10px 12px;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:8px;font-size:12px}
-.sl-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle;flex-shrink:0}
-.sl-address{color:rgba(255,255,255,0.75);font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
-.sl-price{color:rgba(255,255,255,0.4);font-size:11px}
-.sidebar-nav{flex:1;padding:14px 0}
-.nav-item{display:block;width:100%;padding:10px 20px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);background:none;border:none;border-left:2px solid transparent;text-align:left;cursor:pointer;font-family:inherit;transition:color .12s,background .12s;white-space:nowrap}
-.nav-item:hover{color:rgba(255,255,255,0.75)}
-.nav-item.active{color:#fff;background:rgba(255,255,255,0.03);border-left-color:var(--green);padding-left:18px}
+.lb-bar{display:none;position:fixed;top:var(--hh);left:0;right:0;z-index:150;height:var(--lb);background:var(--card);border-bottom:1px solid rgba(0,200,150,0.15);padding:0 20px;align-items:center;gap:10px}
+.lb-bar.on{display:flex}
+.lb-dot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0}
+.lb-addr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.lb-price{font-size:12px;color:var(--muted);flex-shrink:0}
 
-.main{margin-left:var(--sw);padding:32px 40px 80px;margin-top:52px;min-height:calc(100vh - 52px)}
-.main-inner{max-width:1000px}
+.sidebar{position:fixed;top:var(--hh);bottom:0;width:var(--sw);background:var(--bg);border-right:1px solid var(--border);overflow-y:auto;z-index:100;display:flex;flex-direction:column}
+body.has-lb .sidebar{top:calc(var(--hh) + var(--lb))}
+.sb-nav{padding:10px 0;flex:1}
+.sb-section{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.2);padding:10px 20px 4px;font-weight:600}
+.nb{display:block;width:100%;padding:9px 20px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);background:none;border:none;border-left:2px solid transparent;text-align:left;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
+.nb:hover{color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.02)}
+.nb.on{color:#fff;background:rgba(255,255,255,0.03);border-left-color:var(--g);padding-left:18px}
+.sb-hr{border:none;border-top:1px solid var(--border);margin:8px 20px}
 
-.panel-header{margin-bottom:18px}
-.panel-header h1{font-size:22px;font-weight:700;margin-bottom:4px}
-.panel-header p{font-size:13px;color:rgba(255,255,255,0.4)}
-.panel-divider{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 20px}
-
-.content-grid{display:grid;grid-template-columns:44fr 56fr;gap:24px;align-items:start}
-
-.input-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px}
-.field{margin-bottom:14px}
-.field label{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-weight:600;flex-wrap:wrap;gap:4px}
-.char-count{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400}
-.field input,.field textarea,.field select{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;line-height:1.6;padding:10px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
-.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,200,150,0.08)}
-.field textarea{resize:vertical;min-height:100px}
-.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-.info-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.3);font-size:9px;cursor:pointer;font-family:inherit;padding:0;margin-left:4px;flex-shrink:0;transition:border-color .15s,color .15s}
-.info-btn:hover{border-color:var(--green);color:var(--green)}
-.field-hint{display:none;font-size:12px;color:rgba(255,255,255,0.45);background:rgba(0,200,150,0.04);border-left:2px solid var(--green);padding:8px 10px;border-radius:0 6px 6px 0;margin-bottom:8px;line-height:1.5}
-.btn-submit{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:44px;background:var(--green);color:#0a0a0a;font-family:inherit;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:background .15s}
-.btn-submit:hover:not(:disabled){background:#00b386}
-.btn-submit:disabled{opacity:.45;cursor:not-allowed}
-.btn-spinner{width:13px;height:13px;border:2px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.error-msg{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
-.error-msg.visible{display:block}
-
-.output-empty{border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:48px 24px;text-align:center}
-.output-empty svg{opacity:.5;margin:0 auto 12px;display:block}
-.output-empty p{font-size:13px;line-height:1.6;max-width:220px;margin:0 auto;color:rgba(255,255,255,0.25)}
-
-.skeleton{background:#111318;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;display:none}
-.skel-bar{height:12px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:12px;position:relative;overflow:hidden}
-.skel-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);transform:translateX(-100%);animation:shimmer 1.4s infinite}
-@keyframes shimmer{to{transform:translateX(100%)}}
-.skel-bar:nth-child(2){width:75%}
-.skel-bar:nth-child(3){width:55%}
-
-.response-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;display:none}
-.response-body{font-size:13px;line-height:1.75;color:rgba(255,255,255,0.8)}
-.response-body h2{font-size:13px;font-weight:600;color:#fff;margin-top:16px;margin-bottom:6px}
-.response-body h2:first-child{margin-top:0}
-.response-body ul,.response-body ol{padding-left:14px;margin:4px 0 10px}
-.response-body li{margin-bottom:4px}
-.response-body ul li::marker{color:var(--green)}
-.response-body p{margin-bottom:8px}
-.response-body strong{color:var(--text);font-weight:600}
-
-.resp-actions-row{display:none;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
-.resp-action-btn{height:32px;padding:0 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.4);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
-.resp-action-btn:hover{border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.7)}
-.resp-action-btn.copied{border-color:var(--green);color:var(--green)}
-
-.letter-box{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;display:none}
-.letter-text{font-size:13px;line-height:1.8;white-space:pre-wrap;color:rgba(255,255,255,0.8)}
-
+.main{margin-left:var(--sw);padding:28px 36px 80px;margin-top:var(--hh)}
+body.has-lb .main{margin-top:calc(var(--hh) + var(--lb))}
 .panel{display:none}
-.panel.active{display:block}
+.panel.on{display:block}
+.ptitle{font-size:20px;font-weight:700;margin-bottom:4px}
+.psub{font-size:13px;color:var(--muted);margin-bottom:20px}
 
-.mobile-nav{display:none;position:sticky;top:52px;z-index:90;padding:10px 16px;background:rgba(10,10,10,0.97);border-bottom:1px solid var(--border)}
-.mobile-dropdown-btn{width:100%;background:#111318;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer}
-.mobile-dropdown-chevron{color:rgba(255,255,255,0.4);font-size:10px}
+.steps{display:flex;align-items:center;margin-bottom:28px}
+.step{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:100px}
+.sc{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);background:var(--bg);position:relative;z-index:1;transition:all .2s}
+.step.active .sc{border-color:var(--g);color:var(--g);background:rgba(0,200,150,0.08)}
+.step.done .sc{border-color:var(--g);background:var(--g);color:#0a0a0a}
+.sl{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;text-align:center}
+.step.active .sl{color:var(--text)}
+.sline{flex:1;height:1px;background:var(--border);margin-bottom:16px;transition:background .2s}
+.sline.done{background:var(--g)}
 
-.bs-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300}
-.bs-sheet{position:fixed;bottom:0;left:0;right:0;background:#111318;border-radius:16px 16px 0 0;border-top:1px solid var(--border);z-index:301;transform:translateY(100%);transition:transform .25s ease;padding-bottom:env(safe-area-inset-bottom,16px)}
-.bs-sheet.open{transform:translateY(0)}
-.bs-handle{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:12px auto 16px}
-.bs-section-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.25);padding:0 20px 10px}
-.bs-item{display:block;width:100%;background:none;border:none;text-align:left;padding:12px 20px;font-family:inherit;font-size:14px;color:rgba(255,255,255,0.55);cursor:pointer;transition:color .12s}
-.bs-item:hover{color:rgba(255,255,255,0.85)}
-.bs-item.active{color:#fff;font-weight:600}
+.how{background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:10px;margin-bottom:20px;overflow:hidden}
+.how-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none}
+.how-lbl{font-size:12px;font-weight:600;color:var(--g)}
+.how-chv{font-size:10px;color:var(--muted);transition:transform .2s}
+.how-hd.open .how-chv{transform:rotate(180deg)}
+.how-bd{font-size:12px;color:var(--muted);line-height:1.7;padding:0 14px 12px;display:none}
 
-.help-section{margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.06)}
-.help-section h3{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:12px}
-.help-links{display:flex;flex-wrap:wrap;gap:8px}
-.help-link{padding:6px 12px;border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none;transition:all .15s;background:#0f1318}
-.help-link:hover{border-color:rgba(0,200,150,0.3);color:var(--green)}
+.twocol{display:grid;grid-template-columns:44fr 56fr;gap:22px;align-items:start}
+.ic{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.fld{margin-bottom:14px}
+.fld label{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-weight:600;gap:4px}
+.fld input,.fld textarea,.fld select{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;line-height:1.6;padding:10px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+.fld input:focus,.fld textarea:focus,.fld select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(0,200,150,0.08)}
+.fld textarea{resize:vertical;min-height:90px}
+.fld select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.cc{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400}
+.opt{text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)}
 
-.footer{border-top:1px solid rgba(255,255,255,0.06);padding:14px 24px;text-align:center;font-size:11px;color:rgba(255,255,255,0.2);margin-top:40px}
+.btn{width:100%;height:44px;background:var(--g);color:#0a0a0a;font-family:inherit;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.btn:hover:not(:disabled){background:#00b386}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.spin{width:13px;height:13px;border:2px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.errtxt{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
+.errtxt.on{display:block}
+
+.oe{border:1px dashed rgba(255,255,255,0.07);border-radius:12px;padding:44px 20px;text-align:center}
+.oe svg{opacity:.3;margin:0 auto 10px;display:block}
+.oe p{font-size:12px;color:rgba(255,255,255,0.2);max-width:200px;margin:0 auto;line-height:1.6}
+.skel{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;display:none}
+.sk{height:11px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:10px;overflow:hidden;position:relative}
+.sk::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);transform:translateX(-100%);animation:sh 1.4s infinite}
+@keyframes sh{to{transform:translateX(100%)}}
+.sk:nth-child(2){width:70%}.sk:nth-child(3){width:50%}
+
+.rc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;display:none}
+.rb{font-size:13px;line-height:1.75;color:rgba(255,255,255,0.8)}
+.rb h2{font-size:13px;font-weight:600;color:#fff;margin:16px 0 6px}
+.rb h2:first-child{margin-top:0}
+.rb ul,.rb ol{padding-left:16px;margin:4px 0 10px}
+.rb li{margin-bottom:4px}
+.rb ul li::marker{color:var(--g)}
+.rb p{margin-bottom:8px}
+.rb strong{color:var(--text);font-weight:600}
+.ra{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ra.on{display:flex}
+.ab{height:32px;padding:0 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
+.ab:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}
+.ab.ok{border-color:var(--g);color:var(--g)}
+
+.letter-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;display:none}
+.letter-txt{font-size:13px;line-height:1.85;white-space:pre-wrap;color:rgba(255,255,255,0.85)}
+.la{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}
+.la.on{display:flex}
+
+.mh{margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.05)}
+.mh-ttl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.2);font-weight:600;margin-bottom:12px}
+.hcards{display:flex;gap:10px;flex-wrap:wrap}
+.hcard{padding:10px 14px;border:1px solid var(--border);border-radius:8px;text-decoration:none;background:#0d1117;transition:all .15s}
+.hcard:hover{border-color:rgba(0,200,150,0.3)}
+.hcard strong{display:block;color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;margin-bottom:2px}
+.hcard span{font-size:11px;color:var(--muted)}
+
+footer{border-top:1px solid rgba(255,255,255,0.05);padding:12px;text-align:center;font-size:11px;color:rgba(255,255,255,0.2)}
+
+.mnav{display:none;position:sticky;top:var(--hh);z-index:90;background:rgba(10,10,10,0.97);border-bottom:1px solid var(--border);padding:8px 16px}
+body.has-lb .mnav{top:calc(var(--hh) + var(--lb))}
+.mdb{width:100%;background:var(--card);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;height:44px}
+.mchv{color:var(--muted);font-size:10px}
+
+.bso{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:300}
+.bss{position:fixed;bottom:0;left:0;right:0;background:#111318;border-radius:16px 16px 0 0;border-top:1px solid var(--border);z-index:301;transform:translateY(100%);transition:transform .25s ease;padding-bottom:env(safe-area-inset-bottom,16px)}
+.bss.open{transform:translateY(0)}
+.bsh{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:12px auto 16px}
+.bssec{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.2);padding:0 20px 8px;font-weight:600}
+.bsb{display:block;width:100%;background:none;border:none;text-align:left;padding:12px 20px;font-family:inherit;font-size:14px;color:rgba(255,255,255,0.55);cursor:pointer;transition:color .12s}
+.bsb:hover{color:rgba(255,255,255,0.85)}
+.bsb.on{color:#fff;font-weight:600}
 
 @media(max-width:768px){
   .sidebar{display:none}
-  .mobile-nav{display:block}
+  .mnav{display:block}
   .main{margin-left:0;padding:16px 16px 80px}
-  .content-grid{grid-template-columns:1fr}
-  .output-col{order:-1}
-  .output-empty{padding:28px 16px}
-  .btn-submit{position:sticky;bottom:16px;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+  .twocol{grid-template-columns:1fr}
+  .outcol{order:-1}
+  .btn{position:sticky;bottom:16px;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.6)}
+  .lb-addr{max-width:160px}
+  .steps{display:none}
 }
 </style>
 </head>
 <body>
 
-<header class="site-header">
-  <a class="site-logo" href="/">Homeseeker</a>
+<header class="hdr">
+  <a class="hdr-logo" href="/">
+    <div class="logo-box"><svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1L1 5.5V12h3.5V8.5h4V12H12V5.5L6.5 1z" fill="#0a0a0a"/></svg></div>
+    <span class="logo-name">HomeSeeker</span>
+  </a>
+  <span class="hdr-right">AI Buyer Assistant</span>
 </header>
 
+<div class="lb-bar" id="lb-bar">
+  <div class="lb-dot"></div>
+  <div class="lb-addr" id="lb-addr"></div>
+  <div class="lb-price" id="lb-price"></div>
+</div>
+
 <aside class="sidebar">
-  <div id="sidebar-listing" class="sidebar-listing"></div>
-  <nav class="sidebar-nav">
-    <button class="nav-item" data-tab="6" onclick="switchTab(6)">Buyer Letter</button>
-    <button class="nav-item active" data-tab="1" onclick="switchTab(1)">Affordability</button>
-    <button class="nav-item" data-tab="2" onclick="switchTab(2)">Property Analysis</button>
-    <button class="nav-item" data-tab="3" onclick="switchTab(3)">Bid Strategy</button>
-    <button class="nav-item" data-tab="4" onclick="switchTab(4)">Legal Process</button>
-    <button class="nav-item" data-tab="5" onclick="switchTab(5)">VvE Checker</button>
+  <nav class="sb-nav">
+    <div class="sb-section">Research</div>
+    <button class="nb on" data-tab="1" onclick="switchTab(1)">Affordability</button>
+    <button class="nb" data-tab="2" onclick="switchTab(2)">Property Analysis</button>
+    <hr class="sb-hr">
+    <div class="sb-section">Your offer</div>
+    <button class="nb" data-tab="3" onclick="switchTab(3)">Bid Strategy</button>
+    <button class="nb" data-tab="4" onclick="switchTab(4)">Legal Process</button>
+    <button class="nb" data-tab="5" onclick="switchTab(5)">VvE Checker</button>
+    <hr class="sb-hr">
+    <button class="nb" data-tab="6" onclick="switchTab(6)">Buyer Letter</button>
   </nav>
 </aside>
 
-<div class="mobile-nav">
-  <button class="mobile-dropdown-btn" onclick="openBottomSheet()">
-    <span id="mobile-tab-label">Affordability</span>
-    <span class="mobile-dropdown-chevron">&#9660;</span>
+<div class="mnav" id="mnav">
+  <button class="mdb" onclick="openBS()">
+    <span id="mob-lbl">Affordability</span>
+    <span class="mchv">&#9660;</span>
   </button>
 </div>
 
-<div class="bs-overlay" id="bs-overlay" onclick="closeBottomSheet()"></div>
-<div class="bs-sheet" id="bs-sheet">
-  <div class="bs-handle"></div>
-  <div class="bs-section-title">Select tool</div>
-  <button class="bs-item" data-tab="6" onclick="switchTab(6);closeBottomSheet()">Buyer Letter</button>
-  <button class="bs-item active" data-tab="1" onclick="switchTab(1);closeBottomSheet()">Affordability</button>
-  <button class="bs-item" data-tab="2" onclick="switchTab(2);closeBottomSheet()">Property Analysis</button>
-  <button class="bs-item" data-tab="3" onclick="switchTab(3);closeBottomSheet()">Bid Strategy</button>
-  <button class="bs-item" data-tab="4" onclick="switchTab(4);closeBottomSheet()">Legal Process</button>
-  <button class="bs-item" data-tab="5" onclick="switchTab(5);closeBottomSheet()">VvE Checker</button>
+<div class="bso" id="bso" onclick="closeBS()"></div>
+<div class="bss" id="bss">
+  <div class="bsh"></div>
+  <div class="bssec">Research</div>
+  <button class="bsb on" data-tab="1" onclick="switchTab(1);closeBS()">Affordability</button>
+  <button class="bsb" data-tab="2" onclick="switchTab(2);closeBS()">Property Analysis</button>
+  <div class="bssec" style="padding-top:10px">Your offer</div>
+  <button class="bsb" data-tab="3" onclick="switchTab(3);closeBS()">Bid Strategy</button>
+  <button class="bsb" data-tab="4" onclick="switchTab(4);closeBS()">Legal Process</button>
+  <button class="bsb" data-tab="5" onclick="switchTab(5);closeBS()">VvE Checker</button>
+  <button class="bsb" data-tab="6" onclick="switchTab(6);closeBS()">Buyer Letter</button>
 </div>
 
 <main class="main">
-<div class="main-inner">
 
-<!-- Panel 1: Affordability -->
-<div id="panel-1" class="panel active">
-  <div class="panel-header">
-    <h1>Affordability</h1>
-    <p>Your exact mortgage ceiling, the cash you need upfront, and which contract types qualify.</p>
+  <div class="steps" id="steps">
+    <div class="step active" id="step-1"><div class="sc" id="sc-1">1</div><div class="sl">Know your budget</div></div>
+    <div class="sline" id="sline-1"></div>
+    <div class="step" id="step-2"><div class="sc" id="sc-2">2</div><div class="sl">Analyse the property</div></div>
+    <div class="sline" id="sline-2"></div>
+    <div class="step" id="step-3"><div class="sc" id="sc-3">3</div><div class="sl">Make your offer</div></div>
   </div>
-  <hr class="panel-divider">
-  <div class="content-grid">
-    <div class="input-card">
-      <div class="field">
-        <div class="field-wrap">
-          <label>Gross annual income <button class="info-btn" data-hint="Enter your gross (pre-tax) annual income. Include a partner's income if they will be on the mortgage.">i</button></label>
-          <div class="field-hint"></div>
-          <input id="t1-income" type="text">
+
+  <!-- Panel 1: Affordability -->
+  <div id="panel-1" class="panel on">
+    <div class="ptitle">Affordability</div>
+    <div class="psub">Enter your income and savings. Find out exactly what you can afford and what the bank will say.</div>
+    <div class="how" id="how-1">
+      <div class="how-hd" id="how-hd-1" onclick="toggleHow(1)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
+      <div class="how-bd" id="how-bd-1">1. Enter your gross annual income. 2. Select your employment type. 3. Add your savings and target city. 4. Tap Get advice.</div>
+    </div>
+    <div class="twocol">
+      <div class="ic">
+        <div class="fld">
+          <label>Gross annual income</label>
+          <input id="t1-income" type="text" placeholder="e.g. 65000">
         </div>
-      </div>
-      <div class="field">
-        <div class="field-wrap">
-          <label>Contract type <button class="info-btn" data-hint="Permanent contracts get the highest mortgage multiple. ZZP requires 3 years of accounts. Expat 30% ruling affects how income is counted.">i</button></label>
-          <div class="field-hint"></div>
+        <div class="fld">
+          <label>Employment type</label>
           <select id="t1-contract">
             <option value="permanent">Permanent (vast contract)</option>
             <option value="temporary">Temporary (tijdelijk)</option>
             <option value="zzp">Self-employed (ZZP)</option>
-            <option value="expat 30%">Expat ruling (30% ruling)</option>
+            <option value="expat 30%">Expat with 30% ruling</option>
           </select>
         </div>
-      </div>
-      <div class="field">
-        <div class="field-wrap">
-          <label>Own savings available <button class="info-btn" data-hint="Include all savings you can use. Mention debts (car loans, student loans) — these reduce what you can borrow. You need roughly 5–6% of the purchase price in cash on top of the mortgage.">i</button></label>
-          <div class="field-hint"></div>
-          <input id="t1-savings" type="text">
+        <div class="fld">
+          <label>Own savings <span class="opt">(optional)</span></label>
+          <input id="t1-savings" type="text" placeholder="e.g. 40000">
         </div>
-      </div>
-      <div class="field">
-        <div class="field-wrap">
-          <label>Target city and price range <button class="info-btn" data-hint="City matters because transaction costs and market conditions vary. Include both the city and the price range you are looking at.">i</button></label>
-          <div class="field-hint"></div>
-          <input id="t1-target" type="text">
+        <div class="fld">
+          <label>Target city and price range <span class="opt">(optional)</span></label>
+          <input id="t1-target" type="text" placeholder="e.g. Amsterdam, 400-500k">
         </div>
+        <button class="btn" id="btn-1" onclick="submit(1)">Get advice</button>
+        <div class="errtxt" id="err-1"></div>
       </div>
-      <button class="btn-submit" id="btn-1" onclick="submit(1)">Get advice</button>
-      <div class="error-msg" id="err-1"></div>
-    </div>
-    <div class="output-col">
-      <div class="output-empty" id="empty-1">
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-        <p>Fill in your income and situation — we'll tell you exactly what you can afford.</p>
-      </div>
-      <div class="skeleton" id="skel-1"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
-      <div class="response-card" id="resp-1"><div class="response-body" id="body-1"></div></div>
-      <div class="resp-actions-row" id="actions-1">
-        <button class="resp-action-btn" onclick="copyResp(1)">Copy</button>
-        <button class="resp-action-btn" onclick="followUp(1)">Ask a follow-up</button>
+      <div class="outcol">
+        <div class="oe" id="empty-1">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <p>Fill in your income and situation to find out exactly what you can afford.</p>
+        </div>
+        <div class="skel" id="skel-1"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+        <div class="rc" id="resp-1"><div class="rb" id="body-1"></div></div>
+        <div class="ra" id="acts-1">
+          <button class="ab" onclick="cpResp(1)">Copy</button>
+          <button class="ab" onclick="followUp(1)">Ask a follow-up</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Panel 2: Property Analysis -->
-<div id="panel-2" class="panel">
-  <div class="panel-header">
-    <h1>Property Analysis</h1>
-    <p>Price benchmarks, leasehold risk analysis, energy label impact, and 5 questions for the agent.</p>
-  </div>
-  <hr class="panel-divider">
-  <div class="content-grid">
-    <div class="input-card">
-      <div class="field">
-        <div class="field-wrap">
-          <label>Listing details <button class="info-btn" data-hint="Paste the listing or describe it — size, price, city, floor, build year, energy label, leasehold (erfpacht), VvE costs, and anything notable.">i</button> <span class="char-count" id="cc-2-1">0 / 2000</span></label>
-          <div class="field-hint"></div>
-          <textarea id="t2-listing" rows="5" oninput="updateCount(this,'cc-2-1')"></textarea>
-        </div>
-      </div>
-      <div class="field">
-        <div class="field-wrap">
-          <label>What concerns you most? <button class="info-btn" data-hint="Erfpacht, energy label impact on mortgage, VvE health, hidden renovation costs? Name it and we'll focus the analysis there.">i</button></label>
-          <div class="field-hint"></div>
-          <input id="t2-concern" type="text">
-        </div>
-      </div>
-      <button class="btn-submit" id="btn-2" onclick="submit(2)">Get advice</button>
-      <div class="error-msg" id="err-2"></div>
+  <!-- Panel 2: Property Analysis -->
+  <div id="panel-2" class="panel">
+    <div class="ptitle">Property Analysis</div>
+    <div class="psub">Enter the listing details. Find out if the price is fair and what red flags to watch for.</div>
+    <div class="how" id="how-2">
+      <div class="how-hd" id="how-hd-2" onclick="toggleHow(2)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
+      <div class="how-bd" id="how-bd-2">1. Paste the listing or describe the property — size, price, city, floor, build year, energy label, leasehold. 2. Mention what concerns you most. 3. Tap Get advice.</div>
     </div>
-    <div class="output-col">
-      <div class="output-empty" id="empty-2">
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-        <p>Paste the listing details and we'll flag the risks, benchmark the price, and tell you what to ask the agent.</p>
+    <div class="twocol">
+      <div class="ic">
+        <div class="fld">
+          <label>Listing details <span class="cc" id="cc-2" data-max="2000">0 / 2000</span></label>
+          <textarea id="t2-listing" rows="5" placeholder="Paste the listing or describe it — size, price, city, floor, build year, energy label, leasehold..." oninput="uc(this,'cc-2')"></textarea>
+        </div>
+        <div class="fld">
+          <label>What concerns you most? <span class="opt">(optional)</span></label>
+          <input id="t2-concern" type="text" placeholder="e.g. erfpacht, renovation costs, VvE health...">
+        </div>
+        <button class="btn" id="btn-2" onclick="submit(2)">Get advice</button>
+        <div class="errtxt" id="err-2"></div>
       </div>
-      <div class="skeleton" id="skel-2"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
-      <div class="response-card" id="resp-2"><div class="response-body" id="body-2"></div></div>
-      <div class="resp-actions-row" id="actions-2">
-        <button class="resp-action-btn" onclick="copyResp(2)">Copy</button>
-        <button class="resp-action-btn" onclick="followUp(2)">Ask a follow-up</button>
+      <div class="outcol">
+        <div class="oe" id="empty-2">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <p>Paste the listing details and we will flag the risks and benchmark the price.</p>
+        </div>
+        <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+        <div class="rc" id="resp-2"><div class="rb" id="body-2"></div></div>
+        <div class="ra" id="acts-2">
+          <button class="ab" onclick="cpResp(2)">Copy</button>
+          <button class="ab" onclick="followUp(2)">Ask a follow-up</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Panel 3: Bid Strategy -->
-<div id="panel-3" class="panel">
-  <div class="panel-header">
-    <h1>Bid Strategy</h1>
-    <p>A specific bid amount, city-specific overbidding data, and the exact scripts to win.</p>
-  </div>
-  <hr class="panel-divider">
-  <div class="content-grid">
-    <div class="input-card">
-      <div class="field">
-        <div class="field-wrap">
-          <label>Property and asking price <button class="info-btn" data-hint="Include property type, city, asking price, and how long it has been listed.">i</button></label>
-          <div class="field-hint"></div>
-          <input id="t3-property" type="text">
-        </div>
-      </div>
-      <div class="field">
-        <div class="field-wrap">
-          <label>Your situation <button class="info-btn" data-hint="Do you have mortgage pre-approval? How many other bidders are there? What condition is the property in?">i</button> <span class="char-count" id="cc-3-1">0 / 2000</span></label>
-          <div class="field-hint"></div>
-          <textarea id="t3-situation" rows="3" oninput="updateCount(this,'cc-3-1')"></textarea>
-        </div>
-      </div>
-      <div class="field">
-        <div class="field-wrap">
-          <label>Budget ceiling <button class="info-btn" data-hint="Your absolute maximum including all purchase costs (transfer tax, notary, advisor fees).">i</button></label>
-          <div class="field-hint"></div>
-          <input id="t3-budget" type="text">
-        </div>
-      </div>
-      <button class="btn-submit" id="btn-3" onclick="submit(3)">Get advice</button>
-      <div class="error-msg" id="err-3"></div>
+  <!-- Panel 3: Bid Strategy -->
+  <div id="panel-3" class="panel">
+    <div class="ptitle">Bid Strategy</div>
+    <div class="psub">Enter the asking price and your budget. Get a recommended bid amount and the exact words to win.</div>
+    <div class="how" id="how-3">
+      <div class="how-hd" id="how-hd-3" onclick="toggleHow(3)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
+      <div class="how-bd" id="how-bd-3">1. Enter the property and asking price. 2. Describe your situation and any competing bids you know of. 3. Enter your maximum budget. 4. Tap Get strategy.</div>
     </div>
-    <div class="output-col">
-      <div class="output-empty" id="empty-3">
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-        <p>Describe the property and your situation — we'll calculate your bid and write the letter.</p>
+    <div class="twocol">
+      <div class="ic">
+        <div class="fld">
+          <label>Property and asking price</label>
+          <input id="t3-property" type="text" placeholder="e.g. Amsterdam apartment, asking price 425000">
+        </div>
+        <div class="fld">
+          <label>Your situation <span class="cc" id="cc-3" data-max="2000">0 / 2000</span></label>
+          <textarea id="t3-situation" rows="3" placeholder="Mortgage pre-approval, number of other bidders, property condition, how long it has been listed..." oninput="uc(this,'cc-3')"></textarea>
+        </div>
+        <div class="fld">
+          <label>Your budget ceiling</label>
+          <input id="t3-budget" type="text" placeholder="e.g. 460000 including all costs">
+        </div>
+        <button class="btn" id="btn-3" onclick="submit(3)">Get strategy</button>
+        <div class="errtxt" id="err-3"></div>
       </div>
-      <div class="skeleton" id="skel-3"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
-      <div class="response-card" id="resp-3"><div class="response-body" id="body-3"></div></div>
-      <div class="resp-actions-row" id="actions-3">
-        <button class="resp-action-btn" onclick="copyResp(3)">Copy</button>
-        <button class="resp-action-btn" onclick="followUp(3)">Ask a follow-up</button>
+      <div class="outcol">
+        <div class="oe" id="empty-3">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <p>Describe the property and your situation to get a recommended bid and winning strategy.</p>
+        </div>
+        <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+        <div class="rc" id="resp-3"><div class="rb" id="body-3"></div></div>
+        <div class="ra" id="acts-3">
+          <button class="ab" onclick="cpResp(3)">Copy</button>
+          <button class="ab" onclick="followUp(3)">Ask a follow-up</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Panel 4: Legal Process -->
-<div id="panel-4" class="panel">
-  <div class="panel-header">
-    <h1>Legal Process</h1>
-    <p>Step-by-step guidance, expat-specific warnings, and what to do right now.</p>
-  </div>
-  <hr class="panel-divider">
-  <div class="content-grid">
-    <div class="input-card">
-      <div class="field">
-        <div class="field-wrap">
-          <label>Where are you in the process? <button class="info-btn" data-hint="Select the step you are at right now. The guide adapts to give you the most relevant next actions and expat-specific warnings.">i</button></label>
-          <div class="field-hint"></div>
+  <!-- Panel 4: Legal Process -->
+  <div id="panel-4" class="panel">
+    <div class="ptitle">Legal Process</div>
+    <div class="psub">Select which step you are at. Get a plain-English explanation and your action items.</div>
+    <div class="how" id="how-4">
+      <div class="how-hd" id="how-hd-4" onclick="toggleHow(4)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
+      <div class="how-bd" id="how-bd-4">1. Select your current step in the buying process. 2. Describe your situation and any concerns. 3. Tap Get guidance.</div>
+    </div>
+    <div class="twocol">
+      <div class="ic">
+        <div class="fld">
+          <label>Where are you in the process?</label>
           <select id="t4-stage">
             <option value="bid accepted">Bid just accepted</option>
             <option value="koopovereenkomst">Signing the purchase agreement</option>
@@ -346,503 +350,364 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
             <option value="completed">Just completed / post-purchase</option>
           </select>
         </div>
-      </div>
-      <div class="field">
-        <div class="field-wrap">
-          <label>Your situation and concerns <button class="info-btn" data-hint="Nationality, visa type, purchase price, timeline pressures, anything unusual about the property or deal.">i</button> <span class="char-count" id="cc-4-1">0 / 2000</span></label>
-          <div class="field-hint"></div>
-          <textarea id="t4-context" rows="3" oninput="updateCount(this,'cc-4-1')"></textarea>
+        <div class="fld">
+          <label>Your situation and concerns <span class="cc" id="cc-4" data-max="2000">0 / 2000</span></label>
+          <textarea id="t4-context" rows="4" placeholder="Nationality, visa type, purchase price, timeline pressures, anything unusual about the property or deal..." oninput="uc(this,'cc-4')"></textarea>
         </div>
+        <button class="btn" id="btn-4" onclick="submit(4)">Get guidance</button>
+        <div class="errtxt" id="err-4"></div>
       </div>
-      <button class="btn-submit" id="btn-4" onclick="submit(4)">Get advice</button>
-      <div class="error-msg" id="err-4"></div>
-    </div>
-    <div class="output-col">
-      <div class="output-empty" id="empty-4">
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-        <p>Tell us where you are in the buying process and we'll guide you through every step.</p>
-      </div>
-      <div class="skeleton" id="skel-4"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
-      <div class="response-card" id="resp-4"><div class="response-body" id="body-4"></div></div>
-      <div class="resp-actions-row" id="actions-4">
-        <button class="resp-action-btn" onclick="copyResp(4)">Copy</button>
-        <button class="resp-action-btn" onclick="followUp(4)">Ask a follow-up</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Panel 5: VvE Checker -->
-<div id="panel-5" class="panel">
-  <div class="panel-header">
-    <h1>VvE Checker</h1>
-    <p>A health score, financial risk assessment, and a clear go/no-go recommendation.</p>
-  </div>
-  <hr class="panel-divider">
-  <div class="content-grid">
-    <div class="input-card">
-      <div class="field">
-        <div class="field-wrap">
-          <label>Paste what you know about the VvE <button class="info-btn" data-hint="Include monthly service costs, number of apartments, reserve fund size, whether an MJOP exists, building age, any known issues. Even partial info gives useful results.">i</button> <span class="char-count" id="cc-5-1">0 / 2000</span></label>
-          <div class="field-hint"></div>
-          <textarea id="t5-vve" rows="6" oninput="updateCount(this,'cc-5-1')"></textarea>
-        </div>
-      </div>
-      <button class="btn-submit" id="btn-5" onclick="submit(5)">Get advice</button>
-      <div class="error-msg" id="err-5"></div>
-    </div>
-    <div class="output-col">
-      <div class="output-empty" id="empty-5">
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-        <p>Paste everything you know about the VvE — we'll give you a health score and go/no-go verdict.</p>
-      </div>
-      <div class="skeleton" id="skel-5"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
-      <div class="response-card" id="resp-5"><div class="response-body" id="body-5"></div></div>
-      <div class="resp-actions-row" id="actions-5">
-        <button class="resp-action-btn" onclick="copyResp(5)">Copy</button>
-        <button class="resp-action-btn" onclick="followUp(5)">Ask a follow-up</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Panel 6: Buyer Letter -->
-<div id="panel-6" class="panel">
-  <div class="panel-header">
-    <h1>Buyer Letter</h1>
-    <p>A personal introduction to the selling agent. A well-written letter can tip the balance when bids are close.</p>
-  </div>
-  <hr class="panel-divider">
-  <div id="bl-loading">
-    <div class="skeleton" style="display:block"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
-  </div>
-  <div id="bl-form" style="display:none">
-    <div class="content-grid">
-      <div class="input-card">
-        <div id="bl-listing-card" style="display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;color:rgba(255,255,255,0.5)"></div>
-        <div class="field">
-          <label>Property address *</label>
-          <input type="text" id="bl-address">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="field">
-            <label>City</label>
-            <input type="text" id="bl-city">
-          </div>
-          <div class="field">
-            <label>Asking price</label>
-            <input type="text" id="bl-price">
-          </div>
-        </div>
-        <div class="field">
-          <label>Why do you want this property? *</label>
-          <textarea id="bl-why" style="min-height:90px"></textarea>
-        </div>
-        <div class="field">
-          <label>Your situation <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)">(optional)</span></label>
-          <textarea id="bl-situation" style="min-height:70px"></textarea>
-        </div>
-        <div class="field" style="margin-bottom:14px">
-          <label>Offer intent</label>
-          <select id="bl-intent">
-            <option value="">Select...</option>
-            <option value="bidding at asking price">Bidding at asking price</option>
-            <option value="bidding above asking price and prepared to move fast">Bidding above asking price</option>
-            <option value="pre-approved for a mortgage and ready to proceed quickly">Pre-approved mortgage, ready to proceed</option>
-            <option value="exploring and planning to make a serious offer after a viewing">Exploring, serious offer after viewing</option>
-          </select>
-        </div>
-        <button class="btn-submit" id="bl-gen-btn" onclick="blGenerate()">Generate letter</button>
-        <div class="error-msg" id="bl-err"></div>
-      </div>
-      <div class="output-col">
-        <div class="output-empty" id="bl-empty">
+      <div class="outcol">
+        <div class="oe" id="empty-4">
           <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <p>Your buyer introduction letter will appear here.</p>
+          <p>Tell us where you are in the buying process and we will guide you through the next steps.</p>
         </div>
-        <div class="skeleton" id="bl-skel"></div>
-        <div class="letter-box" id="bl-letter-box">
-          <div id="bl-letter-text" class="letter-text"></div>
-        </div>
-        <div class="resp-actions-row" id="bl-actions-row">
-          <button class="resp-action-btn" id="bl-copy-btn" onclick="blCopy()">Copy</button>
-          <button class="resp-action-btn" onclick="blDownload()">.txt</button>
-          <button class="resp-action-btn" onclick="blRegenerate()">Regenerate</button>
+        <div class="skel" id="skel-4"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+        <div class="rc" id="resp-4"><div class="rb" id="body-4"></div></div>
+        <div class="ra" id="acts-4">
+          <button class="ab" onclick="cpResp(4)">Copy</button>
+          <button class="ab" onclick="followUp(4)">Ask a follow-up</button>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="help-section">
-  <h3>More tools</h3>
-  <div class="help-links">
-    <a href="/tools/buyer-letter" class="help-link">Buyer Intro Letter</a>
-    <a href="/tools/mortgage" class="help-link">Mortgage Calculator</a>
-    <a href="/tools/bid-advisor" class="help-link">Bid Advisor</a>
-    <a href="/tools/deal-finder" class="help-link">Deal Finder</a>
-    <a href="/tools/inspection-advisor" class="help-link">Inspection Advisor</a>
-    <a href="/tools/erfpacht-checker" class="help-link">Erfpacht Checker</a>
-    <a href="/tools/agent-scripts" class="help-link">Agent Scripts</a>
-    <a href="/tools/rent-assistant" class="help-link">Rental Assistant</a>
+  <!-- Panel 5: VvE Checker -->
+  <div id="panel-5" class="panel">
+    <div class="ptitle">VvE Checker</div>
+    <div class="psub">Describe the apartment owners association. Find out if it is healthy or a risk before you buy.</div>
+    <div class="how" id="how-5">
+      <div class="how-hd" id="how-hd-5" onclick="toggleHow(5)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
+      <div class="how-bd" id="how-bd-5">1. Paste or describe the VvE details — monthly costs, number of apartments, reserve fund, MJOP status, building age, known issues. 2. Tap Analyse.</div>
+    </div>
+    <div class="twocol">
+      <div class="ic">
+        <div class="fld">
+          <label>VvE details <span class="cc" id="cc-5" data-max="2000">0 / 2000</span></label>
+          <textarea id="t5-vve" rows="7" placeholder="Monthly service costs, number of apartments, reserve fund size, whether an MJOP exists, building age, any known issues..." oninput="uc(this,'cc-5')"></textarea>
+        </div>
+        <button class="btn" id="btn-5" onclick="submit(5)">Analyse</button>
+        <div class="errtxt" id="err-5"></div>
+      </div>
+      <div class="outcol">
+        <div class="oe" id="empty-5">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <p>Paste everything you know about the VvE and we will give you a health score and go / no-go verdict.</p>
+        </div>
+        <div class="skel" id="skel-5"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+        <div class="rc" id="resp-5"><div class="rb" id="body-5"></div></div>
+        <div class="ra" id="acts-5">
+          <button class="ab" onclick="cpResp(5)">Copy</button>
+          <button class="ab" onclick="followUp(5)">Ask a follow-up</button>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
-</div><!-- /main-inner -->
+  <!-- Panel 6: Buyer Letter -->
+  <div id="panel-6" class="panel">
+    <div class="ptitle">Buyer Letter</div>
+    <div class="psub">A personal introduction to the selling agent. A well-written letter can tip the balance when bids are close.</div>
+    <div class="how" id="how-6">
+      <div class="how-hd" id="how-hd-6" onclick="toggleHow(6)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
+      <div class="how-bd" id="how-bd-6">1. Enter the property address. 2. Explain why you want this specific home. 3. Add your offer intent. 4. Tap Generate letter.</div>
+    </div>
+    <div id="bl-loading" style="display:none">
+      <div class="skel" style="display:block"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+    </div>
+    <div id="bl-form">
+      <div class="twocol">
+        <div class="ic">
+          <div id="bl-listing-card" style="display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.15);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;color:rgba(255,255,255,0.5)"></div>
+          <div class="fld">
+            <label>Property address *</label>
+            <input type="text" id="bl-address" placeholder="e.g. Keizersgracht 123, Amsterdam">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="fld"><label>City</label><input type="text" id="bl-city"></div>
+            <div class="fld"><label>Asking price</label><input type="text" id="bl-price" placeholder="e.g. 425000"></div>
+          </div>
+          <div class="fld">
+            <label>Why do you want this property? *</label>
+            <textarea id="bl-why" style="min-height:90px" placeholder="Be specific — neighbourhood, layout, light, garden, proximity to work or school..."></textarea>
+          </div>
+          <div class="fld">
+            <label>Your situation <span class="opt">(optional)</span></label>
+            <textarea id="bl-situation" style="min-height:70px" placeholder="Family size, moving timeline, mortgage pre-approval..."></textarea>
+          </div>
+          <div class="fld" style="margin-bottom:14px">
+            <label>Offer intent</label>
+            <select id="bl-intent">
+              <option value="">Select...</option>
+              <option value="bidding at asking price">Bidding at asking price</option>
+              <option value="bidding above asking price and prepared to move fast">Bidding above asking price</option>
+              <option value="pre-approved for a mortgage and ready to proceed quickly">Pre-approved mortgage, ready to proceed</option>
+              <option value="exploring and planning to make a serious offer after a viewing">Exploring, serious offer after viewing</option>
+            </select>
+          </div>
+          <button class="btn" id="bl-gen-btn" onclick="blGenerate()">Generate letter</button>
+          <div class="errtxt" id="bl-err"></div>
+        </div>
+        <div class="outcol">
+          <div class="oe" id="bl-empty">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M6 4h14l6 6v18H6V4z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M20 4v6h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M10 14h12M10 18h12M10 22h8" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <p>Your buyer introduction letter will appear here.</p>
+          </div>
+          <div class="skel" id="bl-skel"></div>
+          <div class="letter-box" id="bl-letter-box">
+            <div id="bl-letter-text" class="letter-txt"></div>
+          </div>
+          <div class="la" id="bl-actions">
+            <button class="ab" id="bl-copy-btn" onclick="blCopy()">Copy</button>
+            <button class="ab" onclick="blDownload()">.txt</button>
+            <button class="ab" onclick="blRegenerate()">Regenerate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mh">
+    <div class="mh-ttl">Need more help?</div>
+    <div class="hcards">
+      <a href="/tools/rent-assistant" class="hcard"><strong>Rental Assistant</strong><span>For renting instead of buying</span></a>
+      <a href="/tools/landlord-reply" class="hcard"><strong>Landlord Reply Coach</strong><span>Decode any message and reply fast</span></a>
+      <a href="/tools/income-check" class="hcard"><strong>Income Check</strong><span>See if you meet the income requirement</span></a>
+    </div>
+  </div>
+
 </main>
 
-<div class="footer">AI-generated content is a starting point. Always review and personalise before sending. You are responsible for the accuracy of your application. &copy; 2025 HomeSeeker</div>
+<footer>AI-generated content is a starting point. Always review before acting. &copy; 2025 HomeSeeker</footer>
 
 <script>
-let chatId = null;
-let listingContext = '';
-const lastResponses = {};
-const TAB_NAMES = { 1:'Affordability', 2:'Property Analysis', 3:'Bid Strategy', 4:'Legal Process', 5:'VvE Checker', 6:'Buyer Letter' };
-const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let chatId=null,listingContext='';
+const lastResp={};
+const TAB_NAMES={1:'Affordability',2:'Property Analysis',3:'Bid Strategy',4:'Legal Process',5:'VvE Checker',6:'Buyer Letter'};
+const blState={loaded:false,letter:''};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const CONTRACT_LABELS={permanent:'Permanent Dutch contract (vast)',temporary:'Temporary contract (tijdelijk)',zzp:'Self-employed / ZZP','expat 30%':'Expat with 30% ruling'};
 
-document.querySelectorAll('.info-btn').forEach(btn => {
-  btn.addEventListener('click', e => {
-    e.preventDefault();
-    const wrap = btn.closest('.field-wrap');
-    if (!wrap) return;
-    const hint = wrap.querySelector('.field-hint');
-    if (!hint) return;
-    const isOpen = hint.style.display === 'block';
-    hint.style.display = isOpen ? 'none' : 'block';
-    hint.textContent = btn.dataset.hint;
-  });
-});
-
-function updateCount(el, ccId) {
-  const cc = document.getElementById(ccId);
-  if (cc) cc.textContent = `${el.value.length} / 2000`;
-}
-
-function openBottomSheet() {
-  document.getElementById('bs-overlay').style.display = 'block';
-  document.getElementById('bs-sheet').classList.add('open');
-}
-function closeBottomSheet() {
-  document.getElementById('bs-overlay').style.display = 'none';
-  document.getElementById('bs-sheet').classList.remove('open');
-}
-
-let activeTab = 1;
-function switchTab(n) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item, .bs-item').forEach(b => b.classList.remove('active'));
-  document.getElementById(`panel-${n}`).classList.add('active');
-  document.querySelectorAll(`.nav-item[data-tab="${n}"], .bs-item[data-tab="${n}"]`).forEach(b => b.classList.add('active'));
-  const lbl = document.getElementById('mobile-tab-label');
-  if (lbl) lbl.textContent = TAB_NAMES[n] || '';
-  activeTab = n;
-  if (n === 6) initBuyLetterTab();
-}
-
-function getParams() {
-  const p = new URLSearchParams(location.search);
-  chatId = p.get('chat_id') || null;
-  const tabParam = parseInt(p.get('tab') || '1', 10);
-  if (tabParam >= 1 && tabParam <= 6) switchTab(tabParam);
-  const listingId = p.get('listing') || null;
-  if (listingId) {
-    fetch(`/api/cached-listing/${listingId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data && data.listing) {
-          const l = data.listing;
-          listingContext = [l.address, l.city, l.price, l.description].filter(Boolean).join(' - ');
-          const el = document.getElementById('sidebar-listing');
-          if (el) {
-            el.innerHTML = `<span class="sl-dot"></span><div class="sl-address">${esc(l.address || l.url || 'Property')}</div>${l.price ? `<div class="sl-price">${esc(l.price)}</div>` : ''}`;
-            el.style.display = 'block';
-          }
-          const t2 = document.getElementById('t2-listing');
-          if (t2) { t2.value = listingContext.slice(0, 800); updateCount(t2, 'cc-2-1'); }
-        }
-      }).catch(() => {});
+function getParams(){
+  const p=new URLSearchParams(location.search);
+  chatId=p.get('chat_id')||null;
+  const t=parseInt(p.get('tab')||'1',10);
+  if(t>=1&&t<=6)switchTab(t);
+  const lid=p.get('listing')||null;
+  if(lid){
+    fetch(`/api/cached-listing/${encodeURIComponent(lid)}`).then(r=>r.ok?r.json():null).then(d=>{
+      if(!d||!d.listing)return;
+      const l=d.listing;
+      listingContext=[l.address,l.city,l.price,l.description].filter(Boolean).join(' - ');
+      const addr=document.getElementById('lb-addr'),price=document.getElementById('lb-price');
+      if(addr)addr.textContent=l.address||l.url||'Property';
+      if(price)price.textContent=l.price||'';
+      document.getElementById('lb-bar').classList.add('on');
+      document.body.classList.add('has-lb');
+      const t2=document.getElementById('t2-listing');
+      if(t2){t2.value=listingContext.slice(0,800);uc(t2,'cc-2');}
+    }).catch(()=>{});
   }
 }
 
-const CONTRACT_LABELS = {
-  permanent: 'Permanent Dutch contract (vast)',
-  temporary: 'Temporary contract (tijdelijk)',
-  zzp: 'Self-employed / ZZP',
-  'expat 30%': 'Expat with 30% ruling',
-};
+function switchTab(n){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nb,.bsb').forEach(b=>b.classList.remove('on'));
+  const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
+  document.querySelectorAll(`[data-tab="${n}"]`).forEach(b=>b.classList.add('on'));
+  const lbl=document.getElementById('mob-lbl');if(lbl)lbl.textContent=TAB_NAMES[n]||'';
+  updateSteps(n);
+  if(n===6)initBuyLetter();
+}
 
-function buildMessage(tab) {
-  switch (tab) {
-    case 1: {
-      const income = document.getElementById('t1-income').value.trim();
-      const contract = document.getElementById('t1-contract').value;
-      const savings = document.getElementById('t1-savings').value.trim();
-      const target = document.getElementById('t1-target').value.trim();
-      if (!income) return null;
-      const parts = [`Gross annual income: ${income}.`, `Employment type: ${CONTRACT_LABELS[contract] || contract}.`];
-      if (savings) parts.push(`Own funds / savings: ${savings}.`);
-      if (target) parts.push(`Target city and price range: ${target}.`);
+function updateSteps(tab){
+  const s=tab===1?1:tab===2?2:3;
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById(`step-${i}`),sc=document.getElementById(`sc-${i}`);if(!el)return;
+    el.classList.remove('active','done');
+    if(i===s)el.classList.add('active');
+    else if(i<s){el.classList.add('done');if(sc)sc.textContent='✓';}
+    if(i>=s&&sc)sc.textContent=i;
+  });
+  const sl1=document.getElementById('sline-1'),sl2=document.getElementById('sline-2');
+  if(sl1)sl1.classList.toggle('done',s>1);
+  if(sl2)sl2.classList.toggle('done',s>2);
+}
+
+function openBS(){document.getElementById('bso').style.display='block';document.getElementById('bss').classList.add('open');}
+function closeBS(){document.getElementById('bso').style.display='none';document.getElementById('bss').classList.remove('open');}
+
+function toggleHow(n){
+  const bd=document.getElementById(`how-bd-${n}`),hd=document.getElementById(`how-hd-${n}`);if(!bd)return;
+  const open=bd.style.display==='block';
+  bd.style.display=open?'none':'block';
+  if(hd)hd.classList.toggle('open',!open);
+  try{localStorage.setItem(`how-seen-ba-${n}`,'1');}catch(e){}
+}
+
+function initHows(){
+  [1,2,3,4,5,6].forEach(n=>{
+    try{if(!localStorage.getItem(`how-seen-ba-${n}`)){const bd=document.getElementById(`how-bd-${n}`),hd=document.getElementById(`how-hd-${n}`);if(bd)bd.style.display='block';if(hd)hd.classList.add('open');}}catch(e){}
+  });
+}
+
+function uc(el,ccId){
+  const cc=document.getElementById(ccId);
+  if(cc)cc.textContent=`${el.value.length} / ${cc.dataset.max||2000}`;
+}
+
+function buildMsg(tab){
+  switch(tab){
+    case 1:{
+      const inc=document.getElementById('t1-income')?.value.trim(),contract=document.getElementById('t1-contract')?.value,sav=document.getElementById('t1-savings')?.value.trim(),tgt=document.getElementById('t1-target')?.value.trim();
+      if(!inc)return null;
+      const parts=[`Gross annual income: ${inc}.`,`Employment type: ${CONTRACT_LABELS[contract]||contract}.`];
+      if(sav)parts.push(`Own funds / savings: ${sav}.`);
+      if(tgt)parts.push(`Target city and price range: ${tgt}.`);
       return parts.join('\n');
     }
-    case 2: {
-      const listing = document.getElementById('t2-listing').value.trim();
-      const concern = document.getElementById('t2-concern').value.trim();
-      if (!listing) return null;
-      const parts = [`Property listing: ${listing}`];
-      if (concern) parts.push(`Main concern: ${concern}`);
-      return parts.join('\n\n');
-    }
-    case 3: {
-      const property = document.getElementById('t3-property').value.trim();
-      const situation = document.getElementById('t3-situation').value.trim();
-      const budget = document.getElementById('t3-budget').value.trim();
-      if (!property) return null;
-      const parts = [`Property and asking price: ${property}`];
-      if (situation) parts.push(`Buyer situation: ${situation}`);
-      if (budget) parts.push(`Budget ceiling: ${budget}`);
-      return parts.join('\n\n');
-    }
-    case 4: {
-      const stage = document.getElementById('t4-stage').value;
-      const context = document.getElementById('t4-context').value.trim();
-      const parts = [`Current stage: ${stage}`];
-      if (context) parts.push(`Context and concerns: ${context}`);
-      return parts.join('\n\n');
-    }
-    case 5: {
-      const vve = document.getElementById('t5-vve').value.trim();
-      if (!vve || vve.length < 30) return null;
-      return vve;
-    }
-    default: return null;
+    case 2:{const l=document.getElementById('t2-listing')?.value.trim(),c=document.getElementById('t2-concern')?.value.trim();if(!l)return null;return c?`${l}\n\nMain concern: ${c}`:l;}
+    case 3:{const prop=document.getElementById('t3-property')?.value.trim(),sit=document.getElementById('t3-situation')?.value.trim(),bud=document.getElementById('t3-budget')?.value.trim();if(!prop)return null;const pts=[`Property: ${prop}`];if(sit)pts.push(`Situation: ${sit}`);if(bud)pts.push(`Budget ceiling: ${bud}`);return pts.join('\n\n');}
+    case 4:{const stage=document.getElementById('t4-stage')?.value,ctx=document.getElementById('t4-context')?.value.trim();const pts=[`Current stage: ${stage}`];if(ctx)pts.push(`Context: ${ctx}`);return pts.join('\n\n');}
+    case 5:{const v=document.getElementById('t5-vve')?.value.trim();return(v&&v.length>=30)?v:null;}
+    default:return null;
   }
 }
 
-const ERRORS = {
-  1: 'Please enter your gross income.',
-  2: 'Please describe the property listing.',
-  3: 'Please describe the property and asking price.',
-  4: 'Please describe your situation.',
-  5: 'Please provide at least 30 characters about the VvE.',
-};
+const ERR_MSG={1:'Please enter your gross annual income.',2:'Please describe the property listing.',3:'Please enter the property and asking price.',4:'',5:'Please provide at least 30 characters about the VvE.'};
+const BTN_LBL={1:'Get advice',2:'Get advice',3:'Get strategy',4:'Get guidance',5:'Analyse'};
 
-async function submit(tab) {
-  const msg = buildMessage(tab);
-  if (!msg) { showErr(tab, ERRORS[tab] || 'Please fill in the required fields.'); return; }
-  hideErr(tab);
-  setLoading(tab, true);
-  try {
-    const body = { tab, userMessage: msg };
-    const r = await fetch('/api/buy-assistant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Request failed');
-    lastResponses[tab] = data.response;
-    renderResponse(tab, data.response);
-  } catch (err) {
-    showErr(tab, err.message || 'Something went wrong. Please try again.');
-  } finally {
-    setLoading(tab, false);
-  }
+async function submit(tab){
+  const msg=buildMsg(tab);
+  if(!msg){showE(tab,ERR_MSG[tab]||'Please fill in the required fields.');return;}
+  hideE(tab);setLoad(tab,true);
+  try{
+    const r=await fetch('/api/buy-assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tab,userMessage:msg})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Request failed');
+    lastResp[tab]=d.response;
+    renderResp(tab,d.response);
+  }catch(e){showE(tab,e.message||'Something went wrong. Please try again.');}
+  finally{setLoad(tab,false);}
 }
 
-function renderResponse(tab, text) {
-  const body = document.getElementById(`body-${tab}`);
-  const card = document.getElementById(`resp-${tab}`);
-  const empty = document.getElementById(`empty-${tab}`);
-  const skel = document.getElementById(`skel-${tab}`);
-  const actRow = document.getElementById(`actions-${tab}`);
-  body.innerHTML = renderMarkdown(text);
-  if (empty) empty.style.display = 'none';
-  if (skel) skel.style.display = 'none';
-  if (card) card.style.display = 'block';
-  if (actRow) actRow.style.display = 'flex';
+function renderResp(tab,text){
+  const body=document.getElementById(`body-${tab}`),card=document.getElementById(`resp-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`);
+  if(body)body.innerHTML=renderMd(text);
+  if(empty)empty.style.display='none';
+  if(skel)skel.style.display='none';
+  if(card)card.style.display='block';
+  if(acts)acts.classList.add('on');
 }
 
-function renderMarkdown(text) {
-  let s = text
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  s = s.replace(/((?:^[-*] .+\n?)+)/gm, match => {
-    const items = match.trim().split('\n').map(l => `<li>${l.replace(/^[-*] /,'')}</li>`).join('');
-    return `<ul>${items}</ul>`;
+function renderMd(text){
+  let s=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/((?:^[-*] .+\n?)+)/gm,m=>`<ul>${m.trim().split('\n').map(l=>`<li>${l.replace(/^[-*] /,'')}</li>`).join('')}</ul>`);
+  s=s.replace(/((?:^\d+\. .+\n?)+)/gm,m=>`<ol>${m.trim().split('\n').map(l=>`<li>${l.replace(/^\d+\. /,'')}</li>`).join('')}</ol>`);
+  return s.split('\n').map(l=>{if(!l.trim())return'';if(/^<(h2|ul|ol|li|p)/.test(l.trim()))return l;return`<p>${l}</p>`;}).join('');
+}
+
+function showE(tab,msg){const e=document.getElementById(`err-${tab}`);if(e&&msg){e.textContent=msg;e.classList.add('on');}}
+function hideE(tab){const e=document.getElementById(`err-${tab}`);if(e)e.classList.remove('on');}
+
+function setLoad(tab,on){
+  const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),resp=document.getElementById(`resp-${tab}`),empty=document.getElementById(`empty-${tab}`),acts=document.getElementById(`acts-${tab}`);
+  if(btn){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>Working...`:BTN_LBL[tab]||'Get advice';}
+  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(resp)resp.style.display='none';if(acts)acts.classList.remove('on');}
+  else if(skel)skel.style.display='none';
+}
+
+function cpResp(tab){
+  const t=lastResp[tab]||'';if(!t)return;
+  navigator.clipboard.writeText(t).then(()=>{
+    const btn=document.querySelector(`#acts-${tab} .ab`);
+    if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
+  }).catch(()=>{});
+}
+
+function followUp(tab){
+  const map={1:'t1-income',2:'t2-listing',3:'t3-situation',4:'t4-context',5:'t5-vve'};
+  const el=document.getElementById(map[tab]);if(!el)return;
+  el.value='Follow-up: ';el.focus();el.setSelectionRange(el.value.length,el.value.length);
+}
+
+function initBuyLetter(){
+  if(blState.loaded)return;
+  blState.loaded=true;
+  const lid=new URLSearchParams(location.search).get('listing');
+  if(!lid)return;
+  document.getElementById('bl-loading').style.display='block';
+  document.getElementById('bl-form').style.display='none';
+  fetch(`/api/cached-listing/${encodeURIComponent(lid)}`).then(r=>r.ok?r.json():null).then(d=>{
+    if(d&&d.listing){
+      const l=d.listing;
+      if(l.address)document.getElementById('bl-address').value=l.address;
+      if(l.city)document.getElementById('bl-city').value=l.city;
+      if(l.price)document.getElementById('bl-price').value=l.price;
+      const card=document.getElementById('bl-listing-card');
+      card.innerHTML=`<strong style="color:var(--text)">${esc(l.address||l.url||'Property')}</strong>${l.price?' &middot; '+esc(l.price):''}${l.city?' &middot; '+esc(l.city):''}`;
+      card.style.display='block';
+    }
+  }).catch(()=>{}).finally(()=>{
+    document.getElementById('bl-loading').style.display='none';
+    document.getElementById('bl-form').style.display='block';
   });
-  s = s.replace(/((?:^\d+\. .+\n?)+)/gm, match => {
-    const items = match.trim().split('\n').map(l => `<li>${l.replace(/^\d+\. /,'')}</li>`).join('');
-    return `<ol>${items}</ol>`;
-  });
-  s = s.split('\n').map(line => {
-    if (!line.trim()) return '';
-    if (/^<(h2|ul|ol|li|p)/.test(line.trim())) return line;
-    return `<p>${line}</p>`;
-  }).join('');
-  return s;
 }
 
-function showErr(tab, msg) {
-  const el = document.getElementById(`err-${tab}`);
-  if (el) { el.textContent = msg; el.classList.add('visible'); }
-}
-function hideErr(tab) {
-  const el = document.getElementById(`err-${tab}`);
-  if (el) el.classList.remove('visible');
-}
-
-function setLoading(tab, on) {
-  const btn = document.getElementById(`btn-${tab}`);
-  const empty = document.getElementById(`empty-${tab}`);
-  const skel = document.getElementById(`skel-${tab}`);
-  const resp = document.getElementById(`resp-${tab}`);
-  const actRow = document.getElementById(`actions-${tab}`);
-  if (btn) {
-    btn.disabled = on;
-    btn.innerHTML = on ? '<span class="btn-spinner"></span>Getting advice...' : 'Get advice';
-  }
-  if (on) {
-    if (empty) empty.style.display = 'none';
-    if (skel) skel.style.display = 'block';
-    if (resp) resp.style.display = 'none';
-    if (actRow) actRow.style.display = 'none';
-  } else {
-    if (skel) skel.style.display = 'none';
+async function blGenerate(){
+  const address=document.getElementById('bl-address').value.trim();
+  if(!address){blErr('Property address is required.');return;}
+  const why=document.getElementById('bl-why').value.trim();
+  if(!why){blErr('Please describe why you want this property.');return;}
+  blErr('');
+  const btn=document.getElementById('bl-gen-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Generating...';
+  document.getElementById('bl-empty').style.display='none';
+  document.getElementById('bl-skel').style.display='block';
+  document.getElementById('bl-letter-box').style.display='none';
+  document.getElementById('bl-actions').classList.remove('on');
+  try{
+    const r=await fetch('/api/buyer-letter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({houseAddress:address,houseCity:document.getElementById('bl-city').value.trim(),housePrice:document.getElementById('bl-price').value.trim(),whyLove:why,situation:document.getElementById('bl-situation').value.trim(),offerIntent:document.getElementById('bl-intent').value})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Generation failed');
+    blState.letter=d.letter;
+    document.getElementById('bl-letter-text').textContent=d.letter;
+    document.getElementById('bl-letter-box').style.display='block';
+    document.getElementById('bl-actions').classList.add('on');
+    document.getElementById('bl-letter-box').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){
+    blErr(e.message||'Letter generation failed. Please try again.');
+    document.getElementById('bl-empty').style.display='block';
+  }finally{
+    document.getElementById('bl-skel').style.display='none';
+    btn.disabled=false;btn.innerHTML='Generate letter';
   }
 }
 
-function copyResp(tab) {
-  const text = lastResponses[tab] || '';
-  if (!text) return;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector(`#actions-${tab} .resp-action-btn`);
-    if (!btn) return;
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-  }).catch(() => {});
+function blErr(msg){const e=document.getElementById('bl-err');if(!e)return;e.textContent=msg;e.classList.toggle('on',!!msg);}
+
+function blCopy(){
+  if(!blState.letter)return;
+  navigator.clipboard.writeText(blState.letter).then(()=>{
+    const btn=document.getElementById('bl-copy-btn');
+    if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
+  }).catch(()=>{});
 }
 
-function followUp(tab) {
-  const fields = { 1:'t1-income', 2:'t2-listing', 3:'t3-situation', 4:'t4-context', 5:'t5-vve' };
-  const fieldId = fields[tab];
-  if (!fieldId) return;
-  const el = document.getElementById(fieldId);
-  el.value = 'Following up on the above: ';
-  el.focus();
-  el.setSelectionRange(el.value.length, el.value.length);
+function blDownload(){
+  if(!blState.letter)return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([blState.letter],{type:'text/plain'}));
+  a.download='buyer-letter.txt';a.click();URL.revokeObjectURL(a.href);
 }
 
-// ── Buyer Letter ──
-const blState = { loaded: false, letter: '' };
-
-function initBuyLetterTab() {
-  if (blState.loaded) return;
-  blState.loaded = true;
-  const cacheId = new URLSearchParams(location.search).get('listing');
-  if (!cacheId) {
-    document.getElementById('bl-loading').style.display = 'none';
-    document.getElementById('bl-form').style.display = 'block';
-    return;
-  }
-  fetch(`/api/cached-listing/${encodeURIComponent(cacheId)}`)
-    .then(r => r.ok ? r.json() : null)
-    .then(data => {
-      if (data && data.listing) {
-        const l = data.listing;
-        if (l.address) document.getElementById('bl-address').value = l.address;
-        if (l.city) document.getElementById('bl-city').value = l.city;
-        if (l.price) document.getElementById('bl-price').value = l.price;
-        const card = document.getElementById('bl-listing-card');
-        card.innerHTML = `<strong style="color:var(--text)">${esc(l.address || l.url || 'Property')}</strong>${l.price ? ' &middot; ' + esc(l.price) : ''}${l.city ? ' &middot; ' + esc(l.city) : ''}`;
-        card.style.display = 'block';
-      }
-    })
-    .catch(() => {})
-    .finally(() => {
-      document.getElementById('bl-loading').style.display = 'none';
-      document.getElementById('bl-form').style.display = 'block';
-    });
-}
-
-async function blGenerate() {
-  const address = document.getElementById('bl-address').value.trim();
-  if (!address) {
-    document.getElementById('bl-err').textContent = 'Property address is required.';
-    document.getElementById('bl-err').classList.add('visible');
-    return;
-  }
-  const whyLove = document.getElementById('bl-why').value.trim();
-  if (!whyLove) {
-    document.getElementById('bl-err').textContent = 'Please describe why you want this property.';
-    document.getElementById('bl-err').classList.add('visible');
-    return;
-  }
-  document.getElementById('bl-err').classList.remove('visible');
-  const btn = document.getElementById('bl-gen-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="btn-spinner"></span>Generating...';
-  document.getElementById('bl-empty').style.display = 'none';
-  document.getElementById('bl-skel').style.display = 'block';
-  document.getElementById('bl-letter-box').style.display = 'none';
-  document.getElementById('bl-actions-row').style.display = 'none';
-  try {
-    const resp = await fetch('/api/buyer-letter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        houseAddress: address,
-        houseCity: document.getElementById('bl-city').value.trim(),
-        housePrice: document.getElementById('bl-price').value.trim(),
-        whyLove,
-        situation: document.getElementById('bl-situation').value.trim(),
-        offerIntent: document.getElementById('bl-intent').value,
-      }),
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Generation failed');
-    blState.letter = data.letter;
-    document.getElementById('bl-letter-text').textContent = data.letter;
-    document.getElementById('bl-letter-box').style.display = 'block';
-    document.getElementById('bl-actions-row').style.display = 'flex';
-    document.getElementById('bl-letter-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  } catch (e) {
-    document.getElementById('bl-err').textContent = e.message || 'Letter generation failed. Please try again.';
-    document.getElementById('bl-err').classList.add('visible');
-    document.getElementById('bl-empty').style.display = 'block';
-  } finally {
-    document.getElementById('bl-skel').style.display = 'none';
-    btn.disabled = false;
-    btn.innerHTML = 'Generate letter';
-  }
-}
-
-function blCopy() {
-  if (!blState.letter) return;
-  navigator.clipboard.writeText(blState.letter).then(() => {
-    const btn = document.getElementById('bl-copy-btn');
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
-  }).catch(() => {});
-}
-
-function blDownload() {
-  if (!blState.letter) return;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([blState.letter], { type: 'text/plain' }));
-  a.download = 'buyer-letter.txt';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function blRegenerate() {
-  document.getElementById('bl-letter-box').style.display = 'none';
-  document.getElementById('bl-actions-row').style.display = 'none';
+function blRegenerate(){
+  document.getElementById('bl-letter-box').style.display='none';
+  document.getElementById('bl-actions').classList.remove('on');
   blGenerate();
 }
 
+initHows();
 getParams();
 </script>
 </body>
