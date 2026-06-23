@@ -162,8 +162,8 @@ app.post('/api/generate-letter', async (req, res) => {
   const { listing, user, selectedTips } = req.body;
   if (!listing) return res.status(400).json({ error: 'listing required' });
   try {
-    const letter = await generateLetterDirect({ listing, user: user || {}, selectedTips: selectedTips || [] });
-    res.json({ letter });
+    const result = await generateLetterDirect({ listing, user: user || {}, selectedTips: selectedTips || [] });
+    res.json({ letter: result.letter });
   } catch (err) {
     console.error('[generate-letter] Error:', err);
     res.status(500).json({ error: err.message });

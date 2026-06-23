@@ -145,6 +145,19 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .bs-item:hover{color:rgba(255,255,255,0.85)}
 .bs-item.active{color:#fff;font-weight:600}
 
+.when-reply-card{display:none;background:#111318;border-left:3px solid var(--green);border-radius:10px;padding:16px 20px;margin-top:16px}
+.when-reply-card.visible{display:block}
+.when-reply-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:6px}
+.when-reply-body{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:12px;line-height:1.5}
+.when-reply-btn{height:36px;padding:0 16px;background:transparent;border:1px solid rgba(0,200,150,0.35);border-radius:7px;color:var(--green);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.when-reply-btn:hover{background:rgba(0,200,150,0.08)}
+.send-now-block{display:none;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.25);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.send-now-block.visible{display:block}
+.send-now-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-bottom:10px;font-weight:700}
+.send-now-text{font-size:14px;color:#e8edf3;line-height:1.7;white-space:pre-wrap;margin-bottom:14px}
+.send-now-btn{width:100%;height:44px;background:var(--green);border:none;border-radius:8px;color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+.send-now-btn:hover{background:#00b386}
+.send-now-btn.copied{background:#00b386}
 .help-section{margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.06)}
 .help-section h3{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:12px}
 .help-links{display:flex;flex-wrap:wrap;gap:8px}
@@ -174,6 +187,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
   <div id="sidebar-listing" class="sidebar-listing"></div>
   <nav class="sidebar-nav">
     <button class="nav-item active" data-tab="1" onclick="switchTab(1)">Letter</button>
+    <a class="nav-item" href="/tools/landlord-reply" style="color:rgba(0,200,150,0.6);font-size:12px;padding:6px 20px;border-left:2px solid transparent;text-decoration:none;display:block">Got a reply? Decode it</a>
     <button class="nav-item" data-tab="2" onclick="switchTab(2)">Application Coach</button>
     <button class="nav-item" data-tab="3" onclick="switchTab(3)">Viewing Tips</button>
     <button class="nav-item" data-tab="4" onclick="switchTab(4)">Negotiation</button>
@@ -194,6 +208,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
   <div class="bs-handle"></div>
   <div class="bs-section-title">Select tool</div>
   <button class="bs-item active" data-tab="1" onclick="switchTab(1);closeBottomSheet()">Letter</button>
+  <a class="bs-item" href="/tools/landlord-reply" style="color:rgba(0,200,150,0.7);font-size:13px;text-decoration:none;display:block;padding:12px 20px">Got a reply? Decode it</a>
   <button class="bs-item" data-tab="2" onclick="switchTab(2);closeBottomSheet()">Application Coach</button>
   <button class="bs-item" data-tab="3" onclick="switchTab(3);closeBottomSheet()">Viewing Tips</button>
   <button class="bs-item" data-tab="4" onclick="switchTab(4);closeBottomSheet()">Negotiation</button>
@@ -292,6 +307,11 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
           <button class="resp-action-btn" onclick="ltModify('shorter')">Shorter</button>
           <button class="resp-action-btn" onclick="ltModify('personal')">More personal</button>
         </div>
+        <div class="when-reply-card" id="lt-when-reply">
+          <div class="when-reply-title">When you hear back</div>
+          <div class="when-reply-body">Paste the landlord's reply to decode exactly what it means and get the perfect response.</div>
+          <button class="when-reply-btn" onclick="window.location.href='/tools/landlord-reply'">Decode their reply &rarr;</button>
+        </div>
       </div>
     </div>
   </div>
@@ -336,9 +356,14 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
         <p>Fill in the listing and your goal, then click Get advice.</p>
       </div>
       <div class="skeleton" id="skel-2"><div class="skel-bar"></div><div class="skel-bar"></div><div class="skel-bar"></div></div>
+      <div class="send-now-block" id="send-now-2">
+        <div class="send-now-label">Send this now</div>
+        <div class="send-now-text" id="send-now-text-2"></div>
+        <button class="send-now-btn" id="send-now-btn-2" onclick="copySendNow()">Copy message</button>
+      </div>
       <div class="response-card" id="resp-2"><div class="response-body" id="body-2"></div></div>
       <div class="resp-actions-row" id="actions-2">
-        <button class="resp-action-btn" onclick="copyResp(2)">Copy</button>
+        <button class="resp-action-btn" onclick="copyResp(2)">Copy all</button>
         <button class="resp-action-btn" onclick="followUp(2)">Ask a follow-up</button>
       </div>
     </div>
@@ -537,8 +562,9 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 let chatId = null;
 let listingContext = '';
 const lastResponses = {};
-const API_TAB_MAP = { 2:'1', 3:'2', 4:'3', 5:'4', 6:'5' };
+const API_TAB_MAP = { 2:'2', 3:'3', 4:'4', 5:'5', 6:'6' };
 const TAB_NAMES = { 1:'Letter', 2:'Application Coach', 3:'Viewing Tips', 4:'Negotiation', 5:'Lease Review', 6:'Move-In' };
+let lastSendNowText = '';
 
 document.querySelectorAll('.info-btn').forEach(btn => {
   btn.addEventListener('click', e => {
@@ -694,11 +720,38 @@ function renderResponse(tab, text) {
   const empty = document.getElementById(`empty-${tab}`);
   const skel = document.getElementById(`skel-${tab}`);
   const actRow = document.getElementById(`actions-${tab}`);
-  body.innerHTML = renderMarkdown(text);
+
+  // For Application Coach (tab 2), extract "Send this now" section and display it separately
+  if (tab === 2) {
+    const sendNowBlock = document.getElementById('send-now-2');
+    const sendNowTextEl = document.getElementById('send-now-text-2');
+    const sendNowMatch = text.match(/##\s*Send this now\s*\n([\s\S]*?)(?=\n##|$)/i);
+    if (sendNowMatch && sendNowTextEl) {
+      const sendNowContent = sendNowMatch[1].trim();
+      lastSendNowText = sendNowContent;
+      sendNowTextEl.textContent = sendNowContent;
+      if (sendNowBlock) sendNowBlock.classList.add('visible');
+      // Remove "Send this now" section from main body so it isn't shown twice
+      text = text.replace(/##\s*Send this now\s*\n[\s\S]*?(?=\n##|$)/i, '').trim();
+    }
+  }
+
+  if (body) body.innerHTML = renderMarkdown(text);
   if (empty) empty.style.display = 'none';
   if (skel) skel.style.display = 'none';
   if (card) card.style.display = 'block';
   if (actRow) actRow.style.display = 'flex';
+}
+
+function copySendNow() {
+  if (!lastSendNowText) return;
+  navigator.clipboard.writeText(lastSendNowText).then(() => {
+    const btn = document.getElementById('send-now-btn-2');
+    if (!btn) return;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy message'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {});
 }
 
 function renderMarkdown(text) {
@@ -799,21 +852,34 @@ function ltSetTone(tone, btn) {
 function renderStructuredTips(listingTips, profileTips, generalTips, containerId, titleId) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  const total = listingTips.length + profileTips.length + generalTips.length;
+  const criticalTips = (listingTips || []).filter(t => t && t.level === 'critical');
+  const opportunityTips = (listingTips || []).filter(t => t && t.level !== 'critical');
+  const total = criticalTips.length + opportunityTips.length + (profileTips || []).length + (generalTips || []).length;
   if (titleId) {
     const titleEl = document.getElementById(titleId);
-    if (titleEl) titleEl.textContent = `Application tips (${total})`;
+    if (titleEl) {
+      const blockerNote = criticalTips.length > 0 ? ` · ${criticalTips.length} blocker${criticalTips.length > 1 ? 's' : ''}` : '';
+      titleEl.textContent = `Application tips (${total}${blockerNote})`;
+    }
+  }
+  let html = '';
+  if (criticalTips.length > 0) {
+    html += `<div class="tip-section-label" style="color:#ff6b6b">Critical — read before applying</div>`;
+    criticalTips.forEach(tipObj => {
+      const tipText = typeof tipObj === 'string' ? tipObj : (tipObj.tip || '');
+      html += `<div class="tip-row" style="background:rgba(255,107,107,0.04);border-left:2px solid rgba(255,107,107,0.4)"><span class="tip-dot" style="background:#ff6b6b"></span><span class="tip-text" style="color:rgba(255,255,255,0.85)">${ltEsc(tipText)}</span></div>`;
+    });
   }
   const sections = [
-    { label: 'From this listing', tips: listingTips, dotColor: '#00c896' },
-    { label: 'From your profile', tips: profileTips, dotColor: '#4d9fff' },
-    { label: 'Best practice',     tips: generalTips, dotColor: 'rgba(255,255,255,0.3)' },
+    { label: 'From this listing', tips: opportunityTips, dotColor: '#00c896' },
+    { label: 'From your profile', tips: (profileTips || []), dotColor: '#4d9fff' },
+    { label: 'Best practice',     tips: (generalTips || []), dotColor: 'rgba(255,255,255,0.3)' },
   ].filter(s => s.tips.length > 0);
-  let html = '';
   sections.forEach(section => {
     html += `<div class="tip-section-label">${ltEsc(section.label)}</div>`;
-    section.tips.forEach(tip => {
-      html += `<div class="tip-row"><span class="tip-dot" style="background:${section.dotColor}"></span><span class="tip-text">${ltEsc(tip)}</span></div>`;
+    section.tips.forEach(tipObj => {
+      const tipText = typeof tipObj === 'string' ? tipObj : (tipObj.tip || '');
+      html += `<div class="tip-row"><span class="tip-dot" style="background:${section.dotColor}"></span><span class="tip-text">${ltEsc(tipText)}</span></div>`;
     });
   });
   el.innerHTML = html;
@@ -932,6 +998,7 @@ function ltShowLetter(text) {
   }
   document.getElementById('lt-letter-box').style.display = 'block';
   document.getElementById('lt-actions-row').style.display = 'flex';
+  document.getElementById('lt-when-reply').classList.add('visible');
   document.getElementById('lt-letter-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 

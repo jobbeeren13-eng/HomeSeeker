@@ -178,83 +178,143 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
   const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
   const desc = (listing.description || '').toLowerCase();
   const source = (listing.source || '').toLowerCase();
-  const listingTips = [];
-  const profileTips = [];
+  const city = (listing.city || '').toLowerCase();
+  const listingTips = [];  // critical blockers + listing-specific opportunities
+  const profileTips = [];  // profile-specific always-fire tips
   const generalTips = [];
 
-  // ── LAYER 1: LISTING TIPS — description-based signals ────────────
+  // ── LEVEL 1: CRITICAL BLOCKERS — shown first, always, highest priority ──
+
+  if (inkomen > 0 && price > 0) {
+    const ratio = inkomen / price;
+    if (ratio < 2.5) {
+      const requiredIncome = fmtEuro(price * 3);
+      listingTips.push({
+        tip: `Your income is ${ratio.toFixed(1)}x the rent — significantly below the standard 3x requirement. Do not apply without a guarantor earning above ${requiredIncome}/mo or an offer of 3 months deposit upfront. Most landlords will reject without one of these.`,
+        category: 'financial_blocker',
+        level: 'critical',
+      });
+    }
+  }
+
+  if (user.application_readiness === 'niet') {
+    listingTips.push({
+      tip: 'Your documents are not prepared. Without payslips, employment contract, and bank statements ready to send, you cannot compete with applicants who can deliver documents within the hour. Prepare these before applying.',
+      category: 'documents_blocker',
+      level: 'critical',
+    });
+  }
+
+  const ct = (user.contract_type || '').toLowerCase();
+  const profiel = (user.profiel_type || '').toLowerCase();
+  const isStudent = ct === 'student' || profiel === 'student';
+  const hasNoEmployment = ct === '' || ct === 'none';
+  const hasPartner = user.met_partner === 'ja';
+
+  if (isStudent && /geen studenten|no students|niet voor studenten|studenten niet|not for students/i.test(desc)) {
+    listingTips.push({
+      tip: 'This landlord explicitly states no students. Applying is very unlikely to succeed and may waste your first-hour advantage on a better listing.',
+      category: 'student_blocker',
+      level: 'critical',
+    });
+  }
+
+  if (hasPartner && /geen koppel|geen koppels|no couples|geen stel\b|geen stellen/i.test(desc)) {
+    listingTips.push({
+      tip: 'This landlord states no couples. This conflicts directly with your profile — applying is very unlikely to succeed.',
+      category: 'couples_blocker',
+      level: 'critical',
+    });
+  }
+
+  if (hasNoEmployment && /geen uitkeringsgerechtigden|werkende woningdelers|only working professionals|working professionals only/i.test(desc)) {
+    listingTips.push({
+      tip: 'This landlord requires proof of employment. Without this, your application will not pass the first filter.',
+      category: 'employment_blocker',
+      level: 'critical',
+    });
+  }
+
+  // ── LEVEL 2: LISTING-SPECIFIC OPPORTUNITIES — only when description contains signals ──
 
   if (/woningcorporatie|sociale huur|objectcode|inschrijvingsduur|wachtlijst|alliantie|ymere|stadgenoot|eigen haard|de key|rochdale/i.test(desc)) {
-    listingTips.push({ tip: "This is a social housing listing — you need a valid objectcode or registration number, not a motivation letter. Find the exact code in the listing and follow the housing corporation's application process directly.", category: 'social_housing' });
-  }
-
-  if (/gemeubileerd|furnished|gestoffeerd/i.test(desc)) {
-    listingTips.push({ tip: "Confirm exactly what 'furnished' includes before applying — Dutch listings range from a bed to a complete home. Request a written inventory list before you sign anything.", category: 'furnished' });
-  }
-
-  if (/short stay|tijdelijk|temporary|expat only|max[^\d]{0,5}\d+\s*maand|maximaal\s*\d+\s*maanden/i.test(desc)) {
-    listingTips.push({ tip: 'This listing may be a short-stay or temporary rental. Confirm the minimum and maximum lease length before applying — temporary contracts offer less tenant protection under Dutch law.', category: 'short_stay' });
+    listingTips.push({ tip: "This is a social housing listing — you need a valid objectcode or registration number, not a motivation letter. Follow the housing corporation's specific process exactly — applying without the correct objectcode is an immediate rejection.", category: 'social_housing', level: 'listing' });
   }
 
   if (/makelaar|makelaardij|real estate|NVM|VBO|\bvia\b.*kantoor/i.test(desc)) {
-    listingTips.push({ tip: 'This listing is managed by an agency processing dozens of applications. Call them directly after submitting — agents who speak to a candidate are far more likely to book a viewing than with those who only email.', category: 'agency' });
+    listingTips.push({ tip: 'This listing is managed by an agency. Agencies process high volumes and are more transactional than private landlords. Call the agency directly after submitting — give your name, confirm your application, and ask about the timeline. Most applicants never call.', category: 'agency', level: 'listing' });
+  }
+
+  if (/werkende|working professional|working professionals|werkend\b|vast dienstverband/i.test(desc) && !isStudent) {
+    listingTips.push({ tip: 'This landlord is explicitly filtering for working professionals. Your opening line must name your job title, employer, and contract type — nothing else. Landlords make this shortlist decision in under 10 seconds.', category: 'working_professional', level: 'listing' });
+  }
+
+  if (/expat|international|relocation|expats welcome|internationals/i.test(desc)) {
+    listingTips.push({ tip: 'This landlord explicitly welcomes expats. Your international background and Dutch relocation story is an advantage here — mention your employer name and your reason for being in the Netherlands.', category: 'expat_welcome', level: 'listing' });
+  }
+
+  if (/\btuin\b|private garden|achtertuin|gemeenschappelijke tuin/i.test(desc)) {
+    listingTips.push({ tip: 'This property has outdoor space. State directly that you will maintain it — landlords with gardens consistently cite neglect as their biggest fear. One sentence removes that concern.', category: 'garden', level: 'listing' });
+  }
+
+  if (/gemeubileerd|furnished|gestoffeerd/i.test(desc)) {
+    listingTips.push({ tip: "This listing is furnished. Before applying, confirm exactly what is included — 'furnished' in Dutch listings ranges from a single bed to a complete home. Ask for an inventory list in your first message.", category: 'furnished', level: 'listing' });
   }
 
   if (/inschrijving niet mogelijk|geen inschrijving|not possible to register|cannot register/i.test(desc)) {
-    listingTips.push({ tip: 'This listing does not allow municipality registration — without it you cannot get a BSN, open a Dutch bank account, or access most services. Confirm whether this is acceptable for your situation before applying.', category: 'no_registration' });
+    listingTips.push({ tip: 'This listing does not allow municipality registration. For expats this is critical — without registration you cannot obtain a BSN, open a Dutch bank account, or access most government services. Verify whether this works for your situation before applying.', category: 'no_registration', level: 'listing' });
   }
 
-  if (/huisdieren welkom|pets allowed|pets welcome|huisdier toegestaan/i.test(desc)) {
-    listingTips.push({ tip: "Mention your pet proactively: include breed, size, and one sentence about behaviour. Landlords who allow pets appreciate transparency — it removes the doubt that costs you the deal.", category: 'pets_welcome' });
+  // Check listing age for "old listing" signal
+  if (listing.listedAt) {
+    const ageDays = (Date.now() - new Date(listing.listedAt).getTime()) / (1000 * 60 * 60 * 24);
+    if (ageDays >= 21) {
+      listingTips.push({ tip: 'This listing has been available longer than average. The landlord may have had a previous deal fall through or is waiting for a very specific tenant. Apply with a message that emphasises your reliability and ability to sign quickly — this is your leverage.', category: 'old_listing', level: 'listing' });
+    }
   }
 
-  // ── LAYER 2: PROFILE TIPS — user data vs listing ─────────────────
+  // ── LEVEL 3: PROFILE-SPECIFIC — always fire, always personalised ─────────────────
 
   if (inkomen > 0 && price > 0) {
     const ratio = inkomen / price;
     if (ratio >= 4) {
-      profileTips.push({ tip: `Your income is ${ratio.toFixed(1)}x the rent — this is your strongest asset. State your gross annual salary (${fmtEuro(inkomen * 12)}/year) in your first sentence: annual figures sound more substantial than monthly and landlords calculate annually.`, category: 'financial' });
+      profileTips.push({ tip: `Your income covers this rent ${ratio.toFixed(1)}x. Lead with your gross annual salary (${fmtEuro(inkomen * 12)}/year) in your first sentence — annual figures land harder than monthly, and your ratio is one of the strongest a landlord will see today.`, category: 'financial' });
     } else if (ratio >= 3) {
-      profileTips.push({ tip: `Your income meets the 3x requirement at ${ratio.toFixed(1)}x — state your gross annual income (${fmtEuro(inkomen * 12)}/year) in your first sentence. Send payslips within the hour of being asked: most landlords decide before they finish reading applications.`, category: 'financial' });
-    } else if (ratio >= 2) {
-      profileTips.push({ tip: `Your income is ${ratio.toFixed(1)}x the rent, below the standard 3x requirement. Address this directly: offer a guarantor earning above the gap, or propose 3 months deposit upfront.`, category: 'financial' });
-    } else {
-      profileTips.push({ tip: `Your income covers only ${ratio.toFixed(1)}x the rent, well below the 3x threshold. A guarantor earning ${fmtEuro(price * 3)}/mo is required — do not apply without one or a 3-month deposit offer.`, category: 'financial' });
+      profileTips.push({ tip: `You meet the 3x income requirement at ${ratio.toFixed(1)}x. You qualify, but some private landlords want 3.5x or higher. State your gross annual income explicitly: ${fmtEuro(inkomen * 12)}/year.`, category: 'financial' });
+    } else if (ratio >= 2.5) {
+      profileTips.push({ tip: `Your income is ${ratio.toFixed(1)}x the rent — borderline for the standard 3x rule. State your annual income clearly (${fmtEuro(inkomen * 12)}/year) and offer to provide 3 months bank statements to demonstrate financial stability.`, category: 'financial' });
     }
+    // below 2.5x is already a critical blocker in Level 1
   }
 
-  const ct = (user.contract_type || '').toLowerCase();
   if (ct === 'vast' || ct === 'permanent') {
-    profileTips.push({ tip: "Open your first sentence with your permanent contract: 'I hold a permanent contract at [company] earning €X/year.' Landlords filter by contract type before they finish reading the first paragraph.", category: 'contract' });
+    profileTips.push({ tip: 'Your permanent contract is your strongest asset in the Dutch rental market. It must appear in your first sentence, not buried in paragraph two. Landlords filter by contract type before they finish reading the opening line.', category: 'contract' });
   } else if (ct === 'tijdelijk' || ct === 'temporary') {
-    profileTips.push({ tip: 'Your temporary contract is a yellow flag for Dutch landlords. Counter it proactively: state when your contract is likely to be extended or renewed, and offer additional deposit security.', category: 'contract' });
+    profileTips.push({ tip: 'Your temporary contract is a risk signal for Dutch landlords. Address it proactively: state the likelihood of renewal, how long you have been with the employer, and consider offering 3 months deposit as security.', category: 'contract' });
   } else if (ct === 'zzp' || ct === 'freelance') {
-    profileTips.push({ tip: 'Freelance income requires extra documentation — 3 years of annual accounts and a current assignment confirmation. Prepare these before applying to any listing.', category: 'contract' });
+    profileTips.push({ tip: 'Freelance income requires more documentation than employment. Prepare 3 years of annual accounts (jaaropgaven), a current assignment confirmation, and your last 6 months bank statements. State in your application that you have these ready.', category: 'contract' });
   }
 
-  if (user.application_readiness === 'niet') {
-    profileTips.push({ tip: 'Your documents are not prepared — fix this before applying. You need a passport copy, last 3 payslips, employment contract, and 3 months of bank statements: landlords ask for these immediately and unpreparedness kills the deal.', category: 'documents' });
-  } else if (user.application_readiness === 'bezig' || user.application_readiness === 'bijna') {
-    profileTips.push({ tip: 'Your documents are almost ready — finish them before applying. The moment a landlord asks and you cannot deliver within the hour, you drop behind candidates who can.', category: 'documents' });
+  if (user.application_readiness === 'bezig' || user.application_readiness === 'bijna') {
+    profileTips.push({ tip: 'Finish your documents before sending your application. The moment a landlord asks and you cannot deliver within the hour, you drop in the queue behind candidates who can.', category: 'documents' });
   } else if (user.application_readiness === 'klaar') {
-    profileTips.push({ tip: `State this in every application: 'All documents are ready — I can send everything within the hour.' This single sentence moves you ahead of every candidate who cannot say the same.`, category: 'documents' });
+    profileTips.push({ tip: "All documents prepared. State this explicitly in every message: 'I can send payslips, employment contract, and bank statements within the hour of your request.' This single sentence closes more deals than any other single action.", category: 'documents' });
   }
 
   if (source === 'funda') {
-    profileTips.push({ tip: 'Call the agency within one hour of sending your application. Agents who speak to a candidate book viewings 3x more often — most applicants never call, so you immediately stand out.', category: 'source' });
+    profileTips.push({ tip: 'Funda listings attract 50-200 applications. Call the agency within one hour of sending your application — state your name, confirm your application, and ask about the timeline. Agents who speak to a candidate are 3x more likely to schedule a viewing.', category: 'source' });
   } else if (source === 'kamernet') {
-    profileTips.push({ tip: 'Kamernet landlords are usually private individuals. A warm, personal message works better than a formal letter — address them by name if it appears in the listing.', category: 'source' });
+    profileTips.push({ tip: 'Kamernet landlords are usually private individuals. A warm, personal message works better than a formal letter. If the landlord name appears anywhere in the listing, address them directly.', category: 'source' });
   } else if (source === 'housinganywhere') {
-    profileTips.push({ tip: 'HousingAnywhere listings attract many international applicants. Write your message in English with one Dutch sentence at the end: it signals integration and seriousness.', category: 'source' });
+    profileTips.push({ tip: 'HousingAnywhere attracts many international applicants. Write your message in English and end with one sentence in Dutch — it signals integration and long-term intent.', category: 'source' });
   }
 
-  // ── LAYER 3: GENERAL TIPS — universal best practices ─────────────
-
+  // ── GENERAL TIPS — universal best practices ─────────────────
   generalTips.push({ tip: 'Send all documents as one PDF named Firstname_Lastname_Application.pdf. Landlords with 50+ applications shortlist candidates who make their job easy — loose files signal disorganisation.', category: 'general_docs' });
   generalTips.push({ tip: "Name two specific days you are available in your first message: 'I am free Tuesday and Thursday this week.' Vague availability loses viewings to candidates who are decisive.", category: 'general_timing' });
-  generalTips.push({ tip: 'Add one sentence about why this specific street suits your life — near your work, your gym, your neighbourhood. Landlords can tell when someone actually wants this home versus any available rental.', category: 'general_personal' });
+  generalTips.push({ tip: 'Add one sentence about why this specific street suits your life — near your work, your neighbourhood. Landlords can tell when someone actually wants this home versus any available rental.', category: 'general_personal' });
 
-  // ── BACKWARDS COMPAT: flat deduplicated tips array (one per category) ───
+  // ── Flat deduplicated tips array for backwards compatibility ───
   const usedCategories = new Set();
   const tips = [];
   for (const t of [...listingTips, ...profileTips, ...generalTips]) {

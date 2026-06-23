@@ -369,9 +369,9 @@ app.get('/api/listing-tips', (req, res) => {
     ? getBuyerTips(listing, user || {})
     : getImprovementTips(listing, user || {});
   res.json({
-    listingTips: listingTips.map(t => t.tip),
-    profileTips: profileTips.map(t => t.tip),
-    generalTips: generalTips.map(t => t.tip),
+    listingTips: listingTips.map(t => ({ tip: t.tip, level: t.level || 'listing' })),
+    profileTips: profileTips.map(t => ({ tip: t.tip })),
+    generalTips: generalTips.map(t => ({ tip: t.tip })),
     tips: tips.map(t => t.tip),
     listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
     score,
@@ -407,7 +407,7 @@ app.post('/api/generate-letter-web', async (req, res) => {
       if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
       letter = (await resp.json()).letter;
     } else {
-      letter = await generateLetterDirect({ listing, user: user || {}, selectedTips, tone });
+      ({ letter } = await generateLetterDirect({ listing, user: user || {}, selectedTips, tone }));
     }
     res.json({ letter });
   } catch (err) {
