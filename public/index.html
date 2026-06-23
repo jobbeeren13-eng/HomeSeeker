@@ -894,17 +894,6 @@
   syncFeatures();
   window.addEventListener('resize', syncFeatures);
 
-  function initToolToggle(hdId, bodyId) {
-    const hd   = document.getElementById(hdId);
-    const body = document.getElementById(bodyId);
-    if (!hd || !body) return;
-    hd.addEventListener('click', () => {
-      const open = body.classList.toggle('tm-open');
-      hd.classList.toggle('tm-open', open);
-    });
-  }
-  initToolToggle('rent-hd', 'rent-body');
-  initToolToggle('buy-hd',  'buy-body');
 
   fetch('/api/reviews').then(r => r.json()).then(reviews => {
     if (!reviews || reviews.length < 3) return;
