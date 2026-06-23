@@ -554,14 +554,14 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     lines.push(`• Rent: ${priceStr}/mo`);
     if (listing.area && listing.priceNumber) {
       const ppm2 = Math.round(listing.priceNumber / listing.area);
-      lines.push(`• ${ppm2}/m²`);
+      if (ppm2 >= 5 && ppm2 <= 100) lines.push(`• €${ppm2}/m²`);
     }
     if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
   } else if (!isHuur && listing.priceNumber) {
     lines.push(`• ${priceStr}`);
     if (listing.area && listing.priceNumber) {
       const ppm2 = Math.round(listing.priceNumber / listing.area);
-      lines.push(`• ${ppm2}/m²`);
+      if (ppm2 >= 5 && ppm2 <= 100) lines.push(`• €${ppm2}/m²`);
     }
   } else {
     lines.push(`• ${priceStr}${isHuur ? '/mo' : ''}`);
@@ -586,28 +586,6 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push('');
   lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore, dealFill(dealScore)));
-
-  // Deal score bar for koop listings
-  if (!isHuur && listing.priceNumber && listing.area) {
-    const BUYER_BENCHMARKS = { amsterdam: 6800, utrecht: 5100, rotterdam: 4200, denhaag: 4400, haarlem: 5200, eindhoven: 3800, leiden: 4900, delft: 4600, groningen: 3100, maastricht: 3200 };
-    const cityKey = (listing.city || '').toLowerCase().replace(/[-\s]/g, '');
-    const bench = BUYER_BENCHMARKS[cityKey] || null;
-    if (bench) {
-      const ppm2 = Math.round(listing.priceNumber / listing.area);
-      const diff = (ppm2 - bench) / bench;
-      let buyDealScore = 50;
-      if (diff < -0.15) buyDealScore = 85;
-      else if (diff < -0.05) buyDealScore = 70;
-      else if (diff < 0.10) buyDealScore = 50;
-      else if (diff < 0.20) buyDealScore = 30;
-      else buyDealScore = 15;
-      const dealFillFn = (pct) => pct >= 60 ? '🟩' : pct >= 35 ? '🟨' : '🟥';
-      const dealLabelFn = (pct) => pct >= 65 ? 'Good deal' : pct >= 40 ? 'Fair price' : 'Overpriced';
-      lines.push('');
-      lines.push(`*Deal Score: ${dealLabelFn(buyDealScore)}*`);
-      lines.push(bar(buyDealScore, dealFillFn(buyDealScore)));
-    }
-  }
 
   // Warnings
   if (intent.warnings.length > 0) {
