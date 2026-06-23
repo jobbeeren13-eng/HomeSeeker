@@ -10,7 +10,7 @@ const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing,
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips, getBuyerTips } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
-const { generateLetterDirect, generatePackageDirect, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect } = require('./src/letter');
+const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect } = require('./src/letter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -413,6 +413,39 @@ app.post('/api/generate-letter-web', async (req, res) => {
   } catch (err) {
     console.error('[api/generate-letter-web]', err.message);
     res.status(500).json({ error: 'Letter generation failed. Try again in a moment.' });
+  }
+});
+
+// First contact message — short 4-sentence message to send to landlord immediately
+app.post('/api/first-contact-message', async (req, res) => {
+  const { cacheId, extraContext = '' } = req.body;
+  if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
+
+  const entry = getCachedEntry(cacheId);
+  if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
+
+  const { listing, chatId } = entry;
+  const user = chatId ? getUser.get(String(chatId)) : null;
+
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    let message;
+    if (hetznerUrl && adminKey) {
+      const resp = await timedFetch(`${hetznerUrl}/api/generate-first-contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+        body: JSON.stringify({ listing, user: user || {}, extraContext }),
+      });
+      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+      message = (await resp.json()).message;
+    } else {
+      ({ message } = await generateFirstContactMessage({ listing, user: user || {}, extraContext }));
+    }
+    res.json({ message });
+  } catch (err) {
+    console.error('[api/first-contact-message]', err.message);
+    res.status(500).json({ error: 'First contact message generation failed. Try again in a moment.' });
   }
 });
 

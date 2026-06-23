@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--g:#00c896;--bg:#0a0a0a;--card:#111318;--text:#e8edf3;--muted:rgba(255,255,255,0.45);--border:rgba(255,255,255,0.08)}
+:root{--g:#00c896;--bg:#0a0a0a;--card:#111318;--text:#e8edf3;--muted:rgba(255,255,255,0.45);--border:rgba(255,255,255,0.12)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased}
 
@@ -27,42 +27,42 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .wrap{max-width:720px;margin:0 auto;padding:32px 24px 80px;margin-top:52px}
 body.has-lb .wrap{margin-top:88px}
 
-.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07)}
-.tab{padding:8px 16px;border-radius:6px;background:transparent;border:none;color:rgba(255,255,255,0.4);font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s}
-.tab:hover{color:rgba(255,255,255,0.7)}
-.tab.on{background:rgba(255,255,255,0.06);color:#fff;font-weight:600}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.tab{padding:9px 18px;border-radius:8px;background:#111318;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.tab:hover{color:rgba(255,255,255,0.85);border-color:rgba(255,255,255,0.2)}
+.tab.on{background:#00c896;color:#0a0a0a;font-weight:700;border-color:#00c896;box-shadow:0 0 0 3px rgba(0,200,150,0.2)}
 
 .panel{display:none}
 .panel.on{display:block}
-.ptitle{font-size:20px;font-weight:700;margin-bottom:4px}
-.psub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.ptitle{font-size:22px;font-weight:800;color:#ffffff;margin-bottom:4px}
+.psub{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px}
 
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card{background:#111318;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:20px;margin-bottom:16px}
 
 .fld{margin-bottom:16px}
 .fld:last-child{margin-bottom:0}
-.lbl{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.3);font-weight:600;margin-bottom:6px}
-.cc{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)}
-.inp{width:100%;background:var(--bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:10px 14px;outline:none;transition:border-color .15s}
-.inp:focus{border-color:var(--g)}
+.lbl{display:flex;justify-content:space-between;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#e8edf3;font-weight:600;margin-bottom:8px}
+.cc{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.3)}
+.inp{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#ffffff;font-family:inherit;font-size:14px;padding:12px 14px;outline:none;transition:border-color .15s,box-shadow .15s}
+.inp:focus{border-color:#00c896;box-shadow:0 0 0 3px rgba(0,200,150,0.1)}
 textarea.inp{min-height:120px;resize:vertical;line-height:1.6}
-select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
 
 .tone-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.tp{padding:7px 16px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s}
-.tp:hover{color:rgba(255,255,255,0.7)}
-.tp.on{border-color:var(--g);color:var(--g);background:rgba(0,200,150,0.06)}
+.tp{padding:8px 18px;border:1px solid rgba(255,255,255,0.12);border-radius:7px;background:#0d1117;color:rgba(255,255,255,0.55);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.tp:hover{color:rgba(255,255,255,0.8)}
+.tp.on{border-color:#00c896;color:#00c896;background:rgba(0,200,150,0.08)}
 
 .cklist{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
-.ckitem{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:var(--bg);border:1px solid rgba(255,255,255,0.08);border-radius:7px;cursor:pointer;transition:border-color .12s}
-.ckitem:hover{border-color:rgba(0,200,150,0.2)}
-.ckitem input{accent-color:var(--g);cursor:pointer;flex-shrink:0;margin-top:2px;width:14px;height:14px}
-.ckitem span{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.4}
+.ckitem{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;transition:border-color .12s}
+.ckitem:hover{border-color:rgba(0,200,150,0.25)}
+.ckitem input{accent-color:#00c896;cursor:pointer;flex-shrink:0;margin-top:2px;width:14px;height:14px}
+.ckitem span{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.4}
 
-.btn-main{width:100%;height:46px;background:var(--g);color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-main{width:100%;height:50px;background:#00c896;color:#0a0a0a;font-family:inherit;font-size:15px;font-weight:800;border:none;border-radius:10px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-main:hover:not(:disabled){background:#00b386}
 .btn-main:disabled{opacity:.4;cursor:not-allowed}
-.spin{width:13px;height:13px;border:2px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+.spin{width:14px;height:14px;border:2.5px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
 .errtxt{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
 .errtxt.on{display:block}
@@ -75,33 +75,47 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .sk:nth-child(2){width:70%}.sk:nth-child(3){width:50%}
 
 .rb{font-size:13px;line-height:1.75;color:rgba(255,255,255,0.8);display:none}
-.rb h2{font-size:13px;font-weight:600;color:#fff;margin:16px 0 6px}
+.rb h2{font-size:13px;font-weight:700;color:#fff;margin:18px 0 7px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.06)}
 .rb h2:first-child{margin-top:0}
-.rb ul,.rb ol{padding-left:16px;margin:4px 0 10px}
-.rb li{margin-bottom:4px}
-.rb ul li::marker{color:var(--g)}
+.rb ul,.rb ol{padding-left:18px;margin:6px 0 12px}
+.rb li{margin-bottom:5px}
+.rb ul li::marker{color:#00c896}
+.rb ol li::marker{color:rgba(255,255,255,0.4);font-weight:600}
 .rb p{margin-bottom:8px}
-.rb strong{color:var(--text);font-weight:600}
+.rb strong{color:#fff;font-weight:600}
 
 .act-row{display:none;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
 .act-row.on{display:flex}
-.btn-sm{height:32px;padding:0 14px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
-.btn-sm:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}
-.btn-sm.ok{border-color:var(--g);color:var(--g)}
-.lt-meta{font-size:11px;color:rgba(255,255,255,0.2);margin-left:auto}
+.btn-sm{height:32px;padding:0 14px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:transparent;color:rgba(255,255,255,0.55);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
+.btn-sm:hover{border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.8)}
+.btn-sm.ok{border-color:#00c896;color:#00c896}
 
+/* Letter output */
 .letter-box{display:none}
-.letter-txt{font-size:13px;line-height:1.85;white-space:pre-wrap;color:rgba(255,255,255,0.85)}
+.letter-txt{font-size:13px;line-height:1.9;white-space:pre-wrap;color:rgba(255,255,255,0.85)}
+.wc-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;margin-left:auto}
+.wc-green{color:#00c896;background:rgba(0,200,150,0.1)}
+.wc-amber{color:#f59e0b;background:rgba(245,158,11,0.1)}
+.wc-red{color:#ff6b6b;background:rgba(255,107,107,0.1)}
 
-.sn{background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px 16px;margin-bottom:12px;display:none}
-.sn-lbl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--g);font-weight:700;margin-bottom:8px}
-.sn-txt{font-size:13px;line-height:1.75;white-space:pre-wrap;color:rgba(255,255,255,0.85)}
-.sn-btn{height:28px;padding:0 12px;border:1px solid rgba(0,200,150,0.3);border-radius:6px;background:transparent;color:var(--g);font-size:12px;font-family:inherit;cursor:pointer;margin-top:10px}
+/* Send this first block */
+.sn{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.25);border-radius:12px;padding:18px 20px;margin-bottom:16px;display:none}
+.sn-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#00c896;font-weight:700;margin-bottom:10px}
+.sn-txt{font-size:13px;line-height:1.75;white-space:pre-wrap;color:rgba(255,255,255,0.9)}
+.sn-copy{margin-top:14px;height:36px;padding:0 18px;border:1px solid rgba(0,200,150,0.35);border-radius:7px;background:transparent;color:#00c896;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.sn-copy:hover{background:rgba(0,200,150,0.08)}
+.sn-copy.ok{background:rgba(0,200,150,0.12)}
 
-.next-card{background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:none;font-size:13px;color:var(--muted);line-height:1.6}
-.next-card a{color:var(--g);text-decoration:underline}
+/* What to do next */
+.next-steps{display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.next-steps-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);font-weight:700;margin-bottom:12px}
+.next-steps ol{padding-left:20px;counter-reset:none}
+.next-steps li{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:8px}
+.next-steps li::marker{color:#00c896;font-weight:700}
+.next-steps a{color:#00c896;text-decoration:underline}
 
-.tips-hd{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:0;font-size:12px;color:rgba(255,255,255,0.35);user-select:none}
+/* Tips */
+.tips-hd{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0;font-size:12px;color:rgba(255,255,255,0.35);user-select:none}
 .tips-chv{font-size:10px;transition:transform .2s}
 .tips-chv.open{transform:rotate(180deg)}
 .tips-wrap{margin-bottom:16px}
@@ -109,16 +123,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .tip-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
 .tip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
 .tip-dot.critical{background:#ff6b6b}
-.tip-dot.listing{background:var(--g)}
+.tip-dot.listing{background:#00c896}
 .tip-dot.profile{background:#4d9fff}
-
-.legal-note{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:16px;line-height:1.6}
-.legal-note a{color:rgba(255,255,255,0.45);text-decoration:underline}
 
 @media(max-width:600px){
   .wrap{padding:20px 16px 80px}
   .cklist{grid-template-columns:1fr}
-  .tab{padding:7px 12px;font-size:13px}
+  .tab{padding:8px 14px;font-size:13px}
 }
 </style>
 </head>
@@ -142,17 +153,14 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
   <div class="tabs">
     <button class="tab on" data-tab="1" onclick="switchTab(1)">Write Letter</button>
-    <button class="tab" data-tab="2" onclick="switchTab(2)">Application Coach</button>
-    <button class="tab" data-tab="3" onclick="switchTab(3)">Viewing Tips</button>
-    <button class="tab" data-tab="4" onclick="switchTab(4)">Negotiation</button>
-    <button class="tab" data-tab="5" onclick="switchTab(5)">Check Lease</button>
-    <button class="tab" data-tab="6" onclick="switchTab(6)">Move-In</button>
+    <button class="tab" data-tab="2" onclick="switchTab(2)">Viewing Tips</button>
+    <button class="tab" data-tab="3" onclick="switchTab(3)">Negotiation</button>
   </div>
 
   <!-- Panel 1: Write Letter -->
   <div id="panel-1" class="panel on">
     <div class="ptitle">Write your application letter</div>
-    <div class="psub">Generate a letter for this listing in 30 seconds.</div>
+    <div class="psub">Generate a personalised letter and get the exact first message to send right now.</div>
 
     <div class="tips-wrap" id="tips-wrap" style="display:none">
       <div class="tips-hd" onclick="toggleTips()">
@@ -172,60 +180,68 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
         </div>
       </div>
       <div class="fld">
-        <div class="lbl">What applies to you?</div>
+        <div class="lbl">Include in letter</div>
         <div class="cklist">
-          <label class="ckitem"><input type="checkbox" id="ck-income"><span>Income and documents ready</span></label>
-          <label class="ckitem"><input type="checkbox" id="ck-avail"><span>Available immediately</span></label>
-          <label class="ckitem"><input type="checkbox" id="ck-reg"><span>No city registration needed</span></label>
-          <label class="ckitem"><input type="checkbox" id="ck-view"><span>Flexible viewing schedule</span></label>
+          <label class="ckitem"><input type="checkbox" id="ck-income" checked><span>Your income and employment</span></label>
+          <label class="ckitem"><input type="checkbox" id="ck-home" checked><span>Why this specific home</span></label>
+          <label class="ckitem"><input type="checkbox" id="ck-avail" checked><span>Your move-in timeline</span></label>
+          <label class="ckitem"><input type="checkbox" id="ck-docs" checked><span>Documents ready to send</span></label>
         </div>
       </div>
       <div class="fld">
-        <div class="lbl">Extra context <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)">(optional)</span> <span class="cc" id="cc-lt">0 / 300</span></div>
-        <textarea class="inp" id="lt-extra" rows="2" placeholder="Anything specific about your situation..." oninput="uc(this,'cc-lt',300)"></textarea>
+        <div class="lbl">Extra context <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)">(optional)</span> <span class="cc" id="cc-lt">0 / 400</span></div>
+        <textarea class="inp" id="lt-extra" rows="2" oninput="uc(this,'cc-lt',400)"></textarea>
       </div>
-      <button class="btn-main" id="btn-lt" onclick="ltGenerate()">Generate my letter</button>
+      <button class="btn-main" id="btn-lt" onclick="ltGenerate()">Generate my letter &#8594;</button>
       <div class="errtxt" id="err-lt"></div>
     </div>
 
-    <div class="next-card" id="lt-next">
-      Add the landlord's name to the first line. Send within the first hour the listing goes live. Call the agency 30 minutes after sending.<br><br>
-      Got a reply? <a href="/tools/landlord-reply">Use the Landlord Reply Coach</a>
+    <!-- Send this first block -->
+    <div class="sn" id="sn-1">
+      <div class="sn-lbl">Send this first</div>
+      <div class="sn-txt" id="sn-txt-1"></div>
+      <button class="sn-copy" id="sn-copy-1" onclick="copySN()">Copy</button>
     </div>
 
-    <div class="card" id="lt-out">
-      <div class="empty-st" id="lt-empty">Your letter will appear here.</div>
+    <!-- What to do next -->
+    <div class="next-steps" id="next-steps-1">
+      <div class="next-steps-lbl">What to do next</div>
+      <ol>
+        <li>Send the first contact message above right now — within the first hour of the listing going live</li>
+        <li>Call the agency 30 minutes after sending to confirm receipt — candidates who call are 3x more likely to get a viewing</li>
+        <li>Attach your letter and all documents in one PDF: Firstname_Lastname_Application.pdf</li>
+      </ol>
+    </div>
+
+    <!-- Letter output -->
+    <div class="card">
       <div class="skel" id="lt-skel"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="empty-st" id="lt-empty">Your letter will appear here.</div>
       <div class="letter-box" id="lt-box"><div class="letter-txt" id="lt-text"></div></div>
       <div class="act-row" id="lt-actions">
         <button class="btn-sm" id="lt-copy" onclick="ltCopy()">Copy</button>
         <button class="btn-sm" onclick="ltDownload()">.txt</button>
         <button class="btn-sm" onclick="ltModify('shorter')">Shorter</button>
         <button class="btn-sm" onclick="ltModify('personal')">More personal</button>
-        <span class="lt-meta" id="lt-meta"></span>
+        <span class="wc-badge wc-green" id="wc-badge" style="display:none"></span>
       </div>
     </div>
   </div>
 
-  <!-- Panel 2: Application Coach -->
+  <!-- Panel 2: Viewing Tips -->
   <div id="panel-2" class="panel">
-    <div class="ptitle">Get your application strategy</div>
-    <div class="psub">Describe the listing. Get the exact message to send right now.</div>
+    <div class="ptitle">Prepare for your viewing</div>
+    <div class="psub">Describe the property. Get everything you need to walk in prepared and walk out as the top candidate.</div>
     <div class="card">
       <div class="fld">
-        <div class="lbl">Listing details and your situation <span class="cc" id="cc-2">0 / 2000</span></div>
-        <textarea class="inp" id="t2-msg" rows="6" placeholder="Paste the listing or describe it. Include rent, location, requirements you spotted. Add your income, contract type, and how many people are moving in." oninput="uc(this,'cc-2',2000)"></textarea>
+        <div class="lbl">Describe the property <span class="cc" id="cc-2">0 / 2000</span></div>
+        <textarea class="inp" id="t2-msg" rows="5" placeholder="Type, price, location, anything from the listing description..." oninput="uc(this,'cc-2',2000)"></textarea>
       </div>
-      <button class="btn-main" id="btn-2" onclick="submit(2)">Get strategy</button>
+      <button class="btn-main" id="btn-2" onclick="submit(2)">Get viewing tips &#8594;</button>
       <div class="errtxt" id="err-2"></div>
     </div>
     <div class="card">
-      <div class="sn" id="sn-2">
-        <div class="sn-lbl">Send this now</div>
-        <div class="sn-txt" id="sn-txt-2"></div>
-        <button class="sn-btn" onclick="copySN()">Copy</button>
-      </div>
-      <div class="empty-st" id="empty-2">Your strategy will appear here.</div>
+      <div class="empty-st" id="empty-2">Your viewing preparation will appear here.</div>
       <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="rb" id="body-2"></div>
       <div class="act-row" id="acts-2">
@@ -235,20 +251,29 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     </div>
   </div>
 
-  <!-- Panel 3: Viewing Tips -->
+  <!-- Panel 3: Negotiation -->
   <div id="panel-3" class="panel">
-    <div class="ptitle">Prepare for your viewing</div>
-    <div class="psub">Describe the property. Get questions to ask and what to check.</div>
+    <div class="ptitle">Get negotiation advice</div>
+    <div class="psub">Find out if negotiating is realistic here — then get the exact words to use.</div>
     <div class="card">
       <div class="fld">
-        <div class="lbl">Property details <span class="cc" id="cc-3">0 / 2000</span></div>
-        <textarea class="inp" id="t3-msg" rows="5" placeholder="Type, address, rent, anything you know about the property..." oninput="uc(this,'cc-3',2000)"></textarea>
+        <div class="lbl">What do you want to negotiate?</div>
+        <select class="inp" id="t3-goal">
+          <option value="lower rent">Lower rent</option>
+          <option value="longer lease">Longer lease</option>
+          <option value="competing offers">Competing offers</option>
+          <option value="something else">Something else</option>
+        </select>
       </div>
-      <button class="btn-main" id="btn-3" onclick="submit(3)">Get viewing tips</button>
+      <div class="fld">
+        <div class="lbl">Your situation <span class="cc" id="cc-3">0 / 2000</span></div>
+        <textarea class="inp" id="t3-msg" rows="4" placeholder="City, how long the listing has been online, your position, any leverage you have..." oninput="uc(this,'cc-3',2000)"></textarea>
+      </div>
+      <button class="btn-main" id="btn-3" onclick="submit(3)">Get negotiation advice &#8594;</button>
       <div class="errtxt" id="err-3"></div>
     </div>
     <div class="card">
-      <div class="empty-st" id="empty-3">Your viewing tips will appear here.</div>
+      <div class="empty-st" id="empty-3">Your negotiation strategy will appear here.</div>
       <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="rb" id="body-3"></div>
       <div class="act-row" id="acts-3">
@@ -258,102 +283,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     </div>
   </div>
 
-  <!-- Panel 4: Negotiation -->
-  <div id="panel-4" class="panel">
-    <div class="ptitle">Get negotiation advice</div>
-    <div class="psub">Find out if negotiating is realistic and get the exact words to use.</div>
-    <div class="card">
-      <div class="fld">
-        <div class="lbl">Goal</div>
-        <select class="inp" id="t4-goal">
-          <option value="lower rent">Lower the rent</option>
-          <option value="longer lease">Get a longer lease</option>
-          <option value="competing offers">Handle competing offers</option>
-        </select>
-      </div>
-      <div class="fld">
-        <div class="lbl">Your situation <span class="cc" id="cc-4">0 / 2000</span></div>
-        <textarea class="inp" id="t4-msg" rows="4" placeholder="Listing details, your offer so far, any leverage you have..." oninput="uc(this,'cc-4',2000)"></textarea>
-      </div>
-      <button class="btn-main" id="btn-4" onclick="submit(4)">Get advice</button>
-      <div class="errtxt" id="err-4"></div>
-    </div>
-    <div class="card">
-      <div class="empty-st" id="empty-4">Your negotiation advice will appear here.</div>
-      <div class="skel" id="skel-4"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-      <div class="rb" id="body-4"></div>
-      <div class="act-row" id="acts-4">
-        <button class="btn-sm" onclick="cpResp(4)">Copy</button>
-        <button class="btn-sm" onclick="followUp(4)">Follow up</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Panel 5: Check Lease -->
-  <div id="panel-5" class="panel">
-    <div class="ptitle">Understand your lease</div>
-    <div class="psub">Paste any clause or the full contract. Get plain-English explanation and red flags.</div>
-    <div class="card">
-      <p class="legal-note">For binding decisions, contact <a href="https://www.juridischloket.nl" target="_blank" rel="noopener">Juridisch Loket</a> (free legal help in English).</p>
-      <div class="fld">
-        <div class="lbl">Lease text or clauses <span class="cc" id="cc-5">0 / 3000</span></div>
-        <textarea class="inp" id="t5-msg" rows="8" placeholder="Paste the lease text or specific clauses you want checked..." oninput="uc(this,'cc-5',3000)"></textarea>
-      </div>
-      <button class="btn-main" id="btn-5" onclick="submit(5)">Analyse lease</button>
-      <div class="errtxt" id="err-5"></div>
-    </div>
-    <div class="card">
-      <div class="empty-st" id="empty-5">Your lease analysis will appear here.</div>
-      <div class="skel" id="skel-5"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-      <div class="rb" id="body-5"></div>
-      <div class="act-row" id="acts-5">
-        <button class="btn-sm" onclick="cpResp(5)">Copy</button>
-        <button class="btn-sm" onclick="followUp(5)">Follow up</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Panel 6: Move-In -->
-  <div id="panel-6" class="panel">
-    <div class="ptitle">Prepare your move-in</div>
-    <div class="psub">Get a room-by-room checklist and template email to protect your deposit.</div>
-    <div class="card">
-      <div class="fld">
-        <div class="lbl">Property type</div>
-        <select class="inp" id="t6-type">
-          <option value="studio">Studio</option>
-          <option value="apartment">Apartment</option>
-          <option value="house">House</option>
-        </select>
-      </div>
-      <div class="fld">
-        <div class="lbl">Number of rooms</div>
-        <input class="inp" type="number" id="t6-rooms" min="1" max="10" value="2">
-      </div>
-      <label class="ckitem" style="margin-bottom:16px">
-        <input type="checkbox" id="ck-email">
-        <span>Include template email for the landlord</span>
-      </label>
-      <button class="btn-main" id="btn-6" onclick="submit(6)">Generate checklist</button>
-      <div class="errtxt" id="err-6"></div>
-    </div>
-    <div class="card">
-      <div class="empty-st" id="empty-6">Your checklist will appear here.</div>
-      <div class="skel" id="skel-6"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-      <div class="rb" id="body-6"></div>
-      <div class="act-row" id="acts-6">
-        <button class="btn-sm" onclick="cpResp(6)">Copy</button>
-        <button class="btn-sm" onclick="followUp(6)">Follow up</button>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 <script>
 let chatId=null,listingContext='',cacheId=null;
 const lastResp={};
-const API_TAB_MAP={2:'2',3:'3',4:'4',5:'5',6:'6'};
+const API_TAB_MAP={2:'3',3:'4'};
+const BTN={2:'Get viewing tips →',3:'Get negotiation advice →'};
 const ltState={letter:'',tone:'professional'};
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 let tipsOpen=false;
@@ -363,15 +299,13 @@ function getParams(){
   chatId=p.get('chat_id')||null;
   cacheId=p.get('listing')||null;
   const t=parseInt(p.get('tab')||'1',10);
-  if(t>=1&&t<=6)switchTab(t);
+  if(t>=1&&t<=3)switchTab(t);
   if(cacheId){
     fetch(`/api/letter-data?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d||!d.listing)return;
       const l=d.listing;
       listingContext=[l.address,l.city,l.price,l.description].filter(Boolean).join(' - ');
       showLbar(l);
-      const t2=document.getElementById('t2-msg');
-      if(t2&&!t2.value){t2.value=listingContext.slice(0,800);uc(t2,'cc-2',2000);}
     }).catch(()=>{});
     fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d)return;
@@ -426,21 +360,42 @@ function uc(el,ccId,max){
   const cc=document.getElementById(ccId);if(cc)cc.textContent=`${el.value.length} / ${max||2000}`;
 }
 
+function wcBadge(text){
+  const count=text.split(/\s+/).filter(Boolean).length;
+  const badge=document.getElementById('wc-badge');
+  if(!badge)return;
+  badge.textContent=`${count} words`;
+  badge.className='wc-badge '+(count>200?'wc-red':count>160?'wc-amber':'wc-green');
+  badge.style.display='';
+}
+
 async function ltGenerate(){
   if(!cacheId){showEL('No listing loaded. Open this tool from a listing alert in the Telegram bot.');return;}
   clearEL();
   const tips=[];
-  if(document.getElementById('ck-income')?.checked)tips.push('Income and documents ready');
-  if(document.getElementById('ck-avail')?.checked)tips.push('Available immediately');
-  if(document.getElementById('ck-reg')?.checked)tips.push('No city registration needed');
-  if(document.getElementById('ck-view')?.checked)tips.push('Flexible viewing schedule');
+  if(document.getElementById('ck-income')?.checked)tips.push('Your income and employment confirms financial eligibility');
+  if(document.getElementById('ck-home')?.checked)tips.push('Why this specific home');
+  if(document.getElementById('ck-avail')?.checked)tips.push('Move-in timeline and flexibility');
+  if(document.getElementById('ck-docs')?.checked)tips.push('Documents ready to send immediately');
   const extra=document.getElementById('lt-extra')?.value.trim()||'';
   setLtLoad(true);
   try{
-    const r=await fetch('/api/generate-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:tips,extraContext:extra,tone:ltState.tone})});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error||'Generation failed');
-    ltState.letter=d.letter||'';
+    const [letterResp, snResp]=await Promise.all([
+      fetch('/api/generate-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:tips,extraContext:extra,tone:ltState.tone})}),
+      fetch('/api/first-contact-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,extraContext:extra})})
+    ]);
+    const ld=await letterResp.json();
+    if(!letterResp.ok)throw new Error(ld.error||'Letter generation failed');
+    ltState.letter=ld.letter||'';
+
+    if(snResp.ok){
+      const sd=await snResp.json();
+      if(sd.message){
+        document.getElementById('sn-txt-1').textContent=sd.message;
+        document.getElementById('sn-1').style.display='block';
+        document.getElementById('next-steps-1').style.display='block';
+      }
+    }
     showLetter(ltState.letter);
   }catch(e){showEL(e.message||'Something went wrong.');}
   finally{setLtLoad(false);}
@@ -466,16 +421,22 @@ function showLetter(text){
   const box=document.getElementById('lt-box');if(box)box.style.display='block';
   const el=document.getElementById('lt-text');if(el)el.textContent=text;
   document.getElementById('lt-actions').classList.add('on');
-  document.getElementById('lt-next').style.display='block';
-  const meta=document.getElementById('lt-meta');
-  if(meta)meta.textContent=`${text.split(/\s+/).filter(Boolean).length} words`;
+  wcBadge(text);
 }
 
 function setLtLoad(on){
   const btn=document.getElementById('btn-lt');
-  if(btn){btn.disabled=on;btn.innerHTML=on?'<span class="spin"></span>Generating...':'Generate my letter';}
-  if(on){document.getElementById('lt-empty').style.display='none';document.getElementById('lt-skel').style.display='block';const b=document.getElementById('lt-box');if(b)b.style.display='none';document.getElementById('lt-actions').classList.remove('on');document.getElementById('lt-next').style.display='none';}
-  else document.getElementById('lt-skel').style.display='none';
+  if(btn){btn.disabled=on;btn.innerHTML=on?'<span class="spin"></span>Generating...':'Generate my letter →';}
+  if(on){
+    document.getElementById('lt-empty').style.display='none';
+    document.getElementById('lt-skel').style.display='block';
+    const b=document.getElementById('lt-box');if(b)b.style.display='none';
+    document.getElementById('lt-actions').classList.remove('on');
+    document.getElementById('sn-1').style.display='none';
+    document.getElementById('next-steps-1').style.display='none';
+  } else {
+    document.getElementById('lt-skel').style.display='none';
+  }
 }
 
 function ltCopy(){
@@ -488,21 +449,23 @@ function ltDownload(){
   if(!ltState.letter)return;
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ltState.letter],{type:'text/plain'}));a.download='rental-letter.txt';a.click();URL.revokeObjectURL(a.href);
 }
+function copySN(){
+  const t=document.getElementById('sn-txt-1')?.textContent||'';
+  navigator.clipboard.writeText(t).then(()=>{
+    const btn=document.getElementById('sn-copy-1');if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
+  }).catch(()=>{});
+}
 function showEL(msg){const e=document.getElementById('err-lt');if(e){e.textContent=msg;e.classList.add('on');}}
 function clearEL(){const e=document.getElementById('err-lt');if(e)e.classList.remove('on');}
 
 function buildMsg(tab){
   switch(tab){
     case 2:{const m=document.getElementById('t2-msg')?.value.trim();return m||null;}
-    case 3:{const m=document.getElementById('t3-msg')?.value.trim();return m||null;}
-    case 4:{const g=document.getElementById('t4-goal')?.value,s=document.getElementById('t4-msg')?.value.trim();return s?`Goal: ${g}\n\n${s}`:null;}
-    case 5:{const l=document.getElementById('t5-msg')?.value.trim();return(l&&l.length>=50)?l:null;}
-    case 6:{const t=document.getElementById('t6-type')?.value,r=document.getElementById('t6-rooms')?.value,e=document.getElementById('ck-email')?.checked;return `Property type: ${t}. Rooms: ${r}.${e?' Include a move-in email template for the landlord.':''}`;}
+    case 3:{const g=document.getElementById('t3-goal')?.value,s=document.getElementById('t3-msg')?.value.trim();return s?`Goal: ${g}\n\n${s}`:`Goal: ${g}`;}
     default:return null;
   }
 }
-const ERR={2:'Please describe the listing.',3:'Please describe the property.',4:'Please describe your situation.',5:'Please paste at least 50 characters of lease text.'};
-const BTN={2:'Get strategy',3:'Get viewing tips',4:'Get advice',5:'Analyse lease',6:'Generate checklist'};
+const ERR={2:'Please describe the property.',3:'Please describe your situation.'};
 
 async function submit(tab){
   const msg=buildMsg(tab);
@@ -519,10 +482,6 @@ async function submit(tab){
 }
 
 function renderResp(tab,text){
-  if(tab===2){
-    const m=text.match(/##\s*Send this now\s*\n([\s\S]*?)(?=\n##|$)/i);
-    if(m){const sn=document.getElementById('sn-txt-2');if(sn)sn.textContent=m[1].trim();document.getElementById('sn-2').style.display='block';text=text.replace(m[0],'').trim();}
-  }
   const body=document.getElementById(`body-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`);
   if(body){body.innerHTML=renderMd(text);body.style.display='block';}
   if(empty)empty.style.display='none';
@@ -537,15 +496,11 @@ function renderMd(text){
   return s.split('\n').map(l=>{if(!l.trim())return'';if(/^<(h2|ul|ol|li|p)/.test(l.trim()))return l;return`<p>${l}</p>`;}).join('');
 }
 
-function copySN(){
-  const t=document.getElementById('sn-txt-2')?.textContent||'';
-  navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector('#sn-2 .sn-btn');if(btn){btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy';},2000);}}).catch(()=>{});
-}
 function showE(tab,msg){const e=document.getElementById(`err-${tab}`);if(e){e.textContent=msg;e.classList.add('on');}}
 function hideE(tab){const e=document.getElementById(`err-${tab}`);if(e)e.classList.remove('on');}
 function setLoad(tab,on){
   const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),empty=document.getElementById(`empty-${tab}`),body=document.getElementById(`body-${tab}`),acts=document.getElementById(`acts-${tab}`);
-  if(btn){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>Working...`:BTN[tab]||'Get advice';}
+  if(btn){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>Working...`:BTN[tab]||'Get advice →';}
   if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(body)body.style.display='none';if(acts)acts.classList.remove('on');}
   else if(skel)skel.style.display='none';
 }
@@ -554,7 +509,7 @@ function cpResp(tab){
   navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector(`#acts-${tab} .btn-sm`);if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}}).catch(()=>{});
 }
 function followUp(tab){
-  const map={2:'t2-msg',3:'t3-msg',4:'t4-msg',5:'t5-msg'};
+  const map={2:'t2-msg',3:'t3-msg'};
   const el=document.getElementById(map[tab]);if(!el)return;
   el.value='Follow-up: ';el.focus();el.setSelectionRange(el.value.length,el.value.length);
 }
