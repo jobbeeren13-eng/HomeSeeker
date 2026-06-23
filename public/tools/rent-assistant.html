@@ -4,113 +4,77 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Rental Assistant - HomeSeeker</title>
-<meta property="og:title" content="AI Rental Assistant - HomeSeeker" />
-<meta property="og:description" content="Write your rental letter, prepare for the viewing, and negotiate like a pro." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--g:#00c896;--bg:#0a0a0a;--card:#111318;--text:#e8edf3;--muted:rgba(255,255,255,0.45);--border:rgba(255,255,255,0.08);--sw:180px;--hh:52px;--lb:36px}
+:root{--g:#00c896;--bg:#0a0a0a;--card:#111318;--text:#e8edf3;--muted:rgba(255,255,255,0.45);--border:rgba(255,255,255,0.08)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased}
 
-.hdr{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--hh);display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(10,10,10,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
-.hdr-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
-.logo-box{width:26px;height:26px;background:var(--g);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.logo-box svg{width:13px;height:13px}
-.logo-name{font-size:13px;font-weight:700;color:var(--text)}
-.hdr-right{font-size:12px;color:var(--muted)}
+.hdr{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,0.07)}
+.hdr-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-box{width:32px;height:32px;background:var(--g);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-box svg{width:16px;height:16px}
+.logo-name{font-size:13px;font-weight:800;color:var(--g);letter-spacing:1.5px;text-transform:uppercase}
+.hdr-page{font-size:12px;color:var(--muted)}
 
-.lb-bar{display:none;position:fixed;top:var(--hh);left:0;right:0;z-index:150;height:var(--lb);background:var(--card);border-bottom:1px solid rgba(0,200,150,0.15);padding:0 20px;align-items:center;gap:10px}
-.lb-bar.on{display:flex}
-.lb-dot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0}
-.lb-addr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
-.lb-price{font-size:12px;color:var(--muted);flex-shrink:0}
-.lb-score{margin-left:auto;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(0,200,150,0.1);color:var(--g);flex-shrink:0;display:none}
+.lbar{display:none;position:fixed;top:52px;left:0;right:0;z-index:99;background:var(--card);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 24px;align-items:center;gap:10px}
+.lbar.on{display:flex}
+.lbar-dot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0}
+.lbar-addr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbar-price{font-size:12px;color:var(--muted);flex-shrink:0}
 
-.sidebar{position:fixed;top:var(--hh);bottom:0;width:var(--sw);background:var(--bg);border-right:1px solid var(--border);overflow-y:auto;z-index:100;display:flex;flex-direction:column}
-body.has-lb .sidebar{top:calc(var(--hh) + var(--lb))}
-.sb-listing{margin:14px 12px 0;padding:10px 12px;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:8px;font-size:12px;display:none}
-.sb-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--g);margin-right:6px;vertical-align:middle}
-.sb-addr{color:rgba(255,255,255,0.75);font-weight:600;margin-bottom:2px}
-.sb-price{color:var(--muted);font-size:11px}
-.sb-nav{padding:10px 0;flex:1}
-.sb-section{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.2);padding:10px 20px 4px;font-weight:600}
-.nb{display:block;width:100%;padding:9px 20px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.45);background:none;border:none;border-left:2px solid transparent;text-align:left;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
-.nb:hover{color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.02)}
-.nb.on{color:#fff;background:rgba(255,255,255,0.03);border-left-color:var(--g);padding-left:18px}
-.sb-hr{border:none;border-top:1px solid var(--border);margin:8px 20px}
+.wrap{max-width:720px;margin:0 auto;padding:32px 24px 80px;margin-top:52px}
+body.has-lb .wrap{margin-top:88px}
 
-.main{margin-left:var(--sw);padding:28px 36px 80px;margin-top:var(--hh)}
-body.has-lb .main{margin-top:calc(var(--hh) + var(--lb))}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.tab{padding:8px 16px;border-radius:6px;background:transparent;border:none;color:rgba(255,255,255,0.4);font-size:14px;cursor:pointer;font-family:inherit;transition:all .15s}
+.tab:hover{color:rgba(255,255,255,0.7)}
+.tab.on{background:rgba(255,255,255,0.06);color:#fff;font-weight:600}
+
 .panel{display:none}
 .panel.on{display:block}
 .ptitle{font-size:20px;font-weight:700;margin-bottom:4px}
-.psub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.psub{font-size:13px;color:var(--muted);margin-bottom:24px}
 
-.steps{display:flex;align-items:center;margin-bottom:28px}
-.step{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:90px}
-.sc{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);background:var(--bg);position:relative;z-index:1;transition:all .2s}
-.step.active .sc{border-color:var(--g);color:var(--g);background:rgba(0,200,150,0.08)}
-.step.done .sc{border-color:var(--g);background:var(--g);color:#0a0a0a}
-.sl{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;text-align:center}
-.step.active .sl{color:var(--text)}
-.sline{flex:1;height:1px;background:var(--border);margin-bottom:16px;transition:background .2s}
-.sline.done{background:var(--g)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
 
-.how{background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:10px;margin-bottom:20px;overflow:hidden}
-.how-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none}
-.how-lbl{font-size:12px;font-weight:600;color:var(--g)}
-.how-chv{font-size:10px;color:var(--muted);transition:transform .2s}
-.how-hd.open .how-chv{transform:rotate(180deg)}
-.how-bd{font-size:12px;color:var(--muted);line-height:1.7;padding:0 14px 12px;display:none}
+.fld{margin-bottom:16px}
+.fld:last-child{margin-bottom:0}
+.lbl{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.3);font-weight:600;margin-bottom:6px}
+.cc{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)}
+.inp{width:100%;background:var(--bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:10px 14px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--g)}
+textarea.inp{min-height:120px;resize:vertical;line-height:1.6}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
 
-.twocol{display:grid;grid-template-columns:44fr 56fr;gap:22px;align-items:start}
-.ic{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
-.fld{margin-bottom:14px}
-.fld label{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:6px;font-weight:600;gap:4px}
-.fld input,.fld textarea,.fld select{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;line-height:1.6;padding:10px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
-.fld input:focus,.fld textarea:focus,.fld select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(0,200,150,0.08)}
-.fld textarea{resize:vertical;min-height:90px}
-.fld select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-.cc{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400}
-.opt{text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)}
+.tone-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tp{padding:7px 16px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s}
+.tp:hover{color:rgba(255,255,255,0.7)}
+.tp.on{border-color:var(--g);color:var(--g);background:rgba(0,200,150,0.06)}
 
-.tone-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.tb{padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;height:32px}
-.tb:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}
-.tb.on{border-color:var(--g);color:var(--g);background:rgba(0,200,150,0.06)}
+.cklist{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
+.ckitem{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;background:var(--bg);border:1px solid rgba(255,255,255,0.08);border-radius:7px;cursor:pointer;transition:border-color .12s}
+.ckitem:hover{border-color:rgba(0,200,150,0.2)}
+.ckitem input{accent-color:var(--g);cursor:pointer;flex-shrink:0;margin-top:2px;width:14px;height:14px}
+.ckitem span{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.4}
 
-.cklist{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
-.ckitem{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:7px;cursor:pointer;transition:border-color .12s}
-.ckitem:hover{border-color:rgba(0,200,150,0.25)}
-.ckitem input{width:14px;height:14px;accent-color:var(--g);cursor:pointer;flex-shrink:0;margin-top:1px}
-.ckitem span{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.4}
-
-.btn{width:100%;height:44px;background:var(--g);color:#0a0a0a;font-family:inherit;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
-.btn:hover:not(:disabled){background:#00b386}
-.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-main{width:100%;height:46px;background:var(--g);color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-main:hover:not(:disabled){background:#00b386}
+.btn-main:disabled{opacity:.4;cursor:not-allowed}
 .spin{width:13px;height:13px;border:2px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
 .errtxt{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
 .errtxt.on{display:block}
 
-.oe{border:1px dashed rgba(255,255,255,0.07);border-radius:12px;padding:44px 20px;text-align:center}
-.oe svg{opacity:.3;margin:0 auto 10px;display:block}
-.oe p{font-size:12px;color:rgba(255,255,255,0.2);max-width:200px;margin:0 auto;line-height:1.6}
-.skel{background:var(--card);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;display:none}
+.empty-st{text-align:center;padding:40px 20px;color:rgba(255,255,255,0.2);font-size:13px}
+.skel{display:none}
 .sk{height:11px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:10px;overflow:hidden;position:relative}
 .sk::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);transform:translateX(-100%);animation:sh 1.4s infinite}
 @keyframes sh{to{transform:translateX(100%)}}
 .sk:nth-child(2){width:70%}.sk:nth-child(3){width:50%}
 
-.sn{background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px 16px;margin-bottom:12px;display:none}
-.sn-lbl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--g);font-weight:700;margin-bottom:8px}
-.sn-txt{font-size:13px;line-height:1.75;white-space:pre-wrap;color:rgba(255,255,255,0.85)}
-.sn-btn{height:30px;padding:0 12px;background:transparent;border:1px solid rgba(0,200,150,0.3);border-radius:6px;color:var(--g);font-size:12px;font-family:inherit;cursor:pointer;margin-top:10px;transition:all .15s}
-.sn-btn:hover{background:rgba(0,200,150,0.08)}
-
-.rc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;display:none}
-.rb{font-size:13px;line-height:1.75;color:rgba(255,255,255,0.8)}
+.rb{font-size:13px;line-height:1.75;color:rgba(255,255,255,0.8);display:none}
 .rb h2{font-size:13px;font-weight:600;color:#fff;margin:16px 0 6px}
 .rb h2:first-child{margin-top:0}
 .rb ul,.rb ol{padding-left:16px;margin:4px 0 10px}
@@ -118,69 +82,43 @@ body.has-lb .main{margin-top:calc(var(--hh) + var(--lb))}
 .rb ul li::marker{color:var(--g)}
 .rb p{margin-bottom:8px}
 .rb strong{color:var(--text);font-weight:600}
-.ra{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}
-.ra.on{display:flex}
-.ab{height:32px;padding:0 12px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
-.ab:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}
-.ab.ok{border-color:var(--g);color:var(--g)}
 
-.letter-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;display:none}
+.act-row{display:none;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.act-row.on{display:flex}
+.btn-sm{height:32px;padding:0 14px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
+.btn-sm:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}
+.btn-sm.ok{border-color:var(--g);color:var(--g)}
+.lt-meta{font-size:11px;color:rgba(255,255,255,0.2);margin-left:auto}
+
+.letter-box{display:none}
 .letter-txt{font-size:13px;line-height:1.85;white-space:pre-wrap;color:rgba(255,255,255,0.85)}
-.la{display:none;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
-.la.on{display:flex}
-.lmeta{font-size:11px;color:var(--muted);margin-left:auto}
 
-.tips-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:none}
-.tips-ttl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.3);font-weight:600;margin-bottom:10px}
+.sn{background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px 16px;margin-bottom:12px;display:none}
+.sn-lbl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--g);font-weight:700;margin-bottom:8px}
+.sn-txt{font-size:13px;line-height:1.75;white-space:pre-wrap;color:rgba(255,255,255,0.85)}
+.sn-btn{height:28px;padding:0 12px;border:1px solid rgba(0,200,150,0.3);border-radius:6px;background:transparent;color:var(--g);font-size:12px;font-family:inherit;cursor:pointer;margin-top:10px}
+
+.next-card{background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:none;font-size:13px;color:var(--muted);line-height:1.6}
+.next-card a{color:var(--g);text-decoration:underline}
+
+.tips-hd{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:0;font-size:12px;color:rgba(255,255,255,0.35);user-select:none}
+.tips-chv{font-size:10px;transition:transform .2s}
+.tips-chv.open{transform:rotate(180deg)}
+.tips-wrap{margin-bottom:16px}
+.tips-list{padding-top:12px;display:none}
 .tip-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
-.tip-row:last-child{margin-bottom:0}
 .tip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
 .tip-dot.critical{background:#ff6b6b}
 .tip-dot.listing{background:var(--g)}
 .tip-dot.profile{background:#4d9fff}
 
-.next-card{background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:10px;padding:14px 16px;margin-top:14px;display:none}
-.next-ttl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--g);font-weight:700;margin-bottom:8px}
-.next-list{list-style:none;padding:0}
-.next-list li{font-size:12px;color:var(--muted);line-height:1.6;padding-left:14px;position:relative;margin-bottom:5px}
-.next-list li::before{content:'';position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--g)}
+.legal-note{font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:16px;line-height:1.6}
+.legal-note a{color:rgba(255,255,255,0.45);text-decoration:underline}
 
-.disc{background:rgba(255,107,107,0.04);border:1px solid rgba(255,107,107,0.15);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6}
-.disc a{color:rgba(255,107,107,0.8);text-decoration:underline}
-
-.mh{margin-top:48px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.05)}
-.mh-ttl{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.2);font-weight:600;margin-bottom:12px}
-.hcards{display:flex;gap:10px;flex-wrap:wrap}
-.hcard{padding:10px 14px;border:1px solid var(--border);border-radius:8px;text-decoration:none;background:#0d1117;transition:all .15s}
-.hcard:hover{border-color:rgba(0,200,150,0.3)}
-.hcard strong{display:block;color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;margin-bottom:2px}
-.hcard span{font-size:11px;color:var(--muted)}
-
-footer{border-top:1px solid rgba(255,255,255,0.05);padding:12px;text-align:center;font-size:11px;color:rgba(255,255,255,0.2)}
-
-.mnav{display:none;position:sticky;top:var(--hh);z-index:90;background:rgba(10,10,10,0.97);border-bottom:1px solid var(--border);padding:8px 16px}
-body.has-lb .mnav{top:calc(var(--hh) + var(--lb))}
-.mdb{width:100%;background:var(--card);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;height:44px}
-.mchv{color:var(--muted);font-size:10px}
-
-.bso{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:300}
-.bss{position:fixed;bottom:0;left:0;right:0;background:#111318;border-radius:16px 16px 0 0;border-top:1px solid var(--border);z-index:301;transform:translateY(100%);transition:transform .25s ease;padding-bottom:env(safe-area-inset-bottom,16px)}
-.bss.open{transform:translateY(0)}
-.bsh{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:12px auto 16px}
-.bssec{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.2);padding:0 20px 8px;font-weight:600}
-.bsb{display:block;width:100%;background:none;border:none;text-align:left;padding:12px 20px;font-family:inherit;font-size:14px;color:rgba(255,255,255,0.55);cursor:pointer;transition:color .12s}
-.bsb:hover{color:rgba(255,255,255,0.85)}
-.bsb.on{color:#fff;font-weight:600}
-
-@media(max-width:768px){
-  .sidebar{display:none}
-  .mnav{display:block}
-  .main{margin-left:0;padding:16px 16px 80px}
-  .twocol{grid-template-columns:1fr}
-  .outcol{order:-1}
-  .btn{position:sticky;bottom:16px;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.6)}
-  .lb-addr{max-width:160px}
-  .steps{display:none}
+@media(max-width:600px){
+  .wrap{padding:20px 16px 80px}
+  .cklist{grid-template-columns:1fr}
+  .tab{padding:7px 12px;font-size:13px}
 }
 </style>
 </head>
@@ -188,340 +126,237 @@ body.has-lb .mnav{top:calc(var(--hh) + var(--lb))}
 
 <header class="hdr">
   <a class="hdr-logo" href="/">
-    <div class="logo-box"><svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1L1 5.5V12h3.5V8.5h4V12H12V5.5L6.5 1z" fill="#0a0a0a"/></svg></div>
+    <div class="logo-box"><svg viewBox="0 0 16 16" fill="none"><path d="M8 1L1.5 6.5V15h4.5v-5h4v5h4.5V6.5L8 1z" fill="#0a0a0a"/></svg></div>
     <span class="logo-name">HomeSeeker</span>
   </a>
-  <span class="hdr-right">AI Rental Assistant</span>
+  <span class="hdr-page">AI Rental Assistant</span>
 </header>
 
-<div class="lb-bar" id="lb-bar">
-  <div class="lb-dot"></div>
-  <div class="lb-addr" id="lb-addr"></div>
-  <div class="lb-price" id="lb-price"></div>
-  <div class="lb-score" id="lb-score"></div>
+<div class="lbar" id="lbar">
+  <div class="lbar-dot"></div>
+  <div class="lbar-addr" id="lbar-addr"></div>
+  <div class="lbar-price" id="lbar-price"></div>
 </div>
 
-<aside class="sidebar">
-  <div id="sb-listing" class="sb-listing"></div>
-  <nav class="sb-nav">
-    <div class="sb-section">Preparation</div>
-    <button class="nb on" data-tab="1" onclick="switchTab(1)">Write Letter</button>
-    <button class="nb" data-tab="2" onclick="switchTab(2)">Application Coach</button>
-    <button class="nb" data-tab="3" onclick="switchTab(3)">Viewing Tips</button>
-    <hr class="sb-hr">
-    <div class="sb-section">After viewing</div>
-    <button class="nb" data-tab="4" onclick="switchTab(4)">Negotiation</button>
-    <button class="nb" data-tab="5" onclick="switchTab(5)">Check Lease</button>
-    <button class="nb" data-tab="6" onclick="switchTab(6)">Move-In Checklist</button>
-    <hr class="sb-hr">
-    <button class="nb" onclick="location.href='/tools/landlord-reply'">Got a reply?</button>
-  </nav>
-</aside>
+<div class="wrap">
 
-<div class="mnav" id="mnav">
-  <button class="mdb" onclick="openBS()">
-    <span id="mob-lbl">Write Letter</span>
-    <span class="mchv">&#9660;</span>
-  </button>
-</div>
-
-<div class="bso" id="bso" onclick="closeBS()"></div>
-<div class="bss" id="bss">
-  <div class="bsh"></div>
-  <div class="bssec">Preparation</div>
-  <button class="bsb on" data-tab="1" onclick="switchTab(1);closeBS()">Write Letter</button>
-  <button class="bsb" data-tab="2" onclick="switchTab(2);closeBS()">Application Coach</button>
-  <button class="bsb" data-tab="3" onclick="switchTab(3);closeBS()">Viewing Tips</button>
-  <div class="bssec" style="padding-top:10px">After viewing</div>
-  <button class="bsb" data-tab="4" onclick="switchTab(4);closeBS()">Negotiation</button>
-  <button class="bsb" data-tab="5" onclick="switchTab(5);closeBS()">Check Lease</button>
-  <button class="bsb" data-tab="6" onclick="switchTab(6);closeBS()">Move-In Checklist</button>
-  <button class="bsb" onclick="location.href='/tools/landlord-reply';closeBS()">Got a reply?</button>
-</div>
-
-<main class="main">
-
-  <div class="steps" id="steps">
-    <div class="step active" id="step-1"><div class="sc" id="sc-1">1</div><div class="sl">Write your letter</div></div>
-    <div class="sline" id="sline-1"></div>
-    <div class="step" id="step-2"><div class="sc" id="sc-2">2</div><div class="sl">Prepare for viewing</div></div>
-    <div class="sline" id="sline-2"></div>
-    <div class="step" id="step-3"><div class="sc" id="sc-3">3</div><div class="sl">After the viewing</div></div>
+  <div class="tabs">
+    <button class="tab on" data-tab="1" onclick="switchTab(1)">Write Letter</button>
+    <button class="tab" data-tab="2" onclick="switchTab(2)">Application Coach</button>
+    <button class="tab" data-tab="3" onclick="switchTab(3)">Viewing Tips</button>
+    <button class="tab" data-tab="4" onclick="switchTab(4)">Negotiation</button>
+    <button class="tab" data-tab="5" onclick="switchTab(5)">Check Lease</button>
+    <button class="tab" data-tab="6" onclick="switchTab(6)">Move-In</button>
   </div>
 
   <!-- Panel 1: Write Letter -->
   <div id="panel-1" class="panel on">
-    <div class="ptitle">Write your rental letter</div>
-    <div class="psub">A personalised letter increases your chance of a viewing by up to 40%.</div>
-    <div class="how" id="how-1">
-      <div class="how-hd" id="how-hd-1" onclick="toggleHow(1)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
-      <div class="how-bd" id="how-bd-1">Pick your tone, tick what applies to you, add any extra context, then click Generate. Copy the letter or use Shorter / More personal to refine it.</div>
-    </div>
-    <div class="tips-card" id="tips-1"></div>
-    <div class="twocol">
-      <div class="ic">
-        <div style="margin-bottom:14px">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);font-weight:600;margin-bottom:8px">Tone</div>
-          <div class="tone-row">
-            <button class="tb on" onclick="setTone(this,'professional')">Professional</button>
-            <button class="tb" onclick="setTone(this,'friendly')">Friendly</button>
-            <button class="tb" onclick="setTone(this,'urgent')">Urgent</button>
-            <button class="tb" onclick="setTone(this,'concise')">Concise</button>
-          </div>
-        </div>
-        <div style="margin-bottom:14px">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);font-weight:600;margin-bottom:8px">What applies to you?</div>
-          <div class="cklist">
-            <label class="ckitem"><input type="checkbox" id="ck-income"><span>Income and documents ready</span></label>
-            <label class="ckitem"><input type="checkbox" id="ck-avail"><span>Available immediately</span></label>
-            <label class="ckitem"><input type="checkbox" id="ck-reg"><span>No city registration needed</span></label>
-            <label class="ckitem"><input type="checkbox" id="ck-view"><span>Flexible viewing schedule</span></label>
-          </div>
-        </div>
-        <div class="fld">
-          <label>Extra context <span class="opt">(optional)</span> <span class="cc" id="cc-1" data-max="300">0 / 300</span></label>
-          <textarea id="lt-extra" rows="2" placeholder="Anything specific about you or your situation..." oninput="uc(this,'cc-1')"></textarea>
-        </div>
-        <button class="btn" id="btn-lt" onclick="ltGenerate()">Generate my letter</button>
-        <div class="errtxt" id="err-lt"></div>
+    <div class="ptitle">Write your application letter</div>
+    <div class="psub">Generate a letter for this listing in 30 seconds.</div>
+
+    <div class="tips-wrap" id="tips-wrap" style="display:none">
+      <div class="tips-hd" onclick="toggleTips()">
+        <span id="tips-lbl">Tips for this listing</span>
+        <span class="tips-chv" id="tips-chv">&#9660;</span>
       </div>
-      <div class="outcol">
-        <div class="oe" id="lt-empty">
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M6 4h14l6 6v18H6V4z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M20 4v6h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M10 14h12M10 18h12M10 22h8" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <p>Your personalised letter will appear here.</p>
+      <div class="tips-list" id="tips-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">Tone</div>
+        <div class="tone-row">
+          <button class="tp on" onclick="setTone(this,'professional')">Professional</button>
+          <button class="tp" onclick="setTone(this,'personal')">Personal</button>
+          <button class="tp" onclick="setTone(this,'concise')">Concise</button>
         </div>
-        <div class="skel" id="lt-skel"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-        <div class="letter-box" id="lt-box"><div class="letter-txt" id="lt-text"></div></div>
-        <div class="la" id="lt-actions">
-          <button class="ab" id="lt-copy" onclick="ltCopy()">Copy</button>
-          <button class="ab" onclick="ltDownload()">.txt</button>
-          <button class="ab" onclick="ltModify('shorter')">Shorter</button>
-          <button class="ab" onclick="ltModify('personal')">More personal</button>
-          <span class="lmeta" id="lt-meta"></span>
+      </div>
+      <div class="fld">
+        <div class="lbl">What applies to you?</div>
+        <div class="cklist">
+          <label class="ckitem"><input type="checkbox" id="ck-income"><span>Income and documents ready</span></label>
+          <label class="ckitem"><input type="checkbox" id="ck-avail"><span>Available immediately</span></label>
+          <label class="ckitem"><input type="checkbox" id="ck-reg"><span>No city registration needed</span></label>
+          <label class="ckitem"><input type="checkbox" id="ck-view"><span>Flexible viewing schedule</span></label>
         </div>
-        <div class="next-card" id="lt-next">
-          <div class="next-ttl">What to do now</div>
-          <ul class="next-list">
-            <li>Add the landlord's name to the first line if you have it.</li>
-            <li>Send by email within the first hour the listing goes live.</li>
-            <li>Call the agency 30 minutes after sending to confirm receipt.</li>
-          </ul>
-          <div style="margin-top:12px;font-size:12px;color:var(--muted)">Got a reply? <a href="/tools/landlord-reply" style="color:var(--g);text-decoration:underline">Landlord Reply Coach</a></div>
-        </div>
+      </div>
+      <div class="fld">
+        <div class="lbl">Extra context <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)">(optional)</span> <span class="cc" id="cc-lt">0 / 300</span></div>
+        <textarea class="inp" id="lt-extra" rows="2" placeholder="Anything specific about your situation..." oninput="uc(this,'cc-lt',300)"></textarea>
+      </div>
+      <button class="btn-main" id="btn-lt" onclick="ltGenerate()">Generate my letter</button>
+      <div class="errtxt" id="err-lt"></div>
+    </div>
+
+    <div class="next-card" id="lt-next">
+      Add the landlord's name to the first line. Send within the first hour the listing goes live. Call the agency 30 minutes after sending.<br><br>
+      Got a reply? <a href="/tools/landlord-reply">Use the Landlord Reply Coach</a>
+    </div>
+
+    <div class="card" id="lt-out">
+      <div class="empty-st" id="lt-empty">Your letter will appear here.</div>
+      <div class="skel" id="lt-skel"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="letter-box" id="lt-box"><div class="letter-txt" id="lt-text"></div></div>
+      <div class="act-row" id="lt-actions">
+        <button class="btn-sm" id="lt-copy" onclick="ltCopy()">Copy</button>
+        <button class="btn-sm" onclick="ltDownload()">.txt</button>
+        <button class="btn-sm" onclick="ltModify('shorter')">Shorter</button>
+        <button class="btn-sm" onclick="ltModify('personal')">More personal</button>
+        <span class="lt-meta" id="lt-meta"></span>
       </div>
     </div>
   </div>
 
   <!-- Panel 2: Application Coach -->
   <div id="panel-2" class="panel">
-    <div class="ptitle">Application Coach</div>
-    <div class="psub">Get your exact strategy before you apply — what to say, what to skip, and what to fix first.</div>
-    <div class="how" id="how-2">
-      <div class="how-hd" id="how-hd-2" onclick="toggleHow(2)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
-      <div class="how-bd" id="how-bd-2">Paste the full listing — rent, location, any requirements you spotted. The AI tells you your realistic chances and exactly what to do next.</div>
-    </div>
-    <div class="twocol">
-      <div class="ic">
-        <div class="fld">
-          <label>Listing details <span class="cc" id="cc-2" data-max="2000">0 / 2000</span></label>
-          <textarea id="t2-listing" rows="5" placeholder="Paste the full listing or describe it..." oninput="uc(this,'cc-2')"></textarea>
-        </div>
-        <div class="fld">
-          <label>Your situation <span class="opt">(optional)</span></label>
-          <textarea id="t2-sit" rows="2" placeholder="Income, contract type, number of people moving in..."></textarea>
-        </div>
-        <button class="btn" id="btn-2" onclick="submit(2)">Get my strategy</button>
-        <div class="errtxt" id="err-2"></div>
+    <div class="ptitle">Get your application strategy</div>
+    <div class="psub">Describe the listing. Get the exact message to send right now.</div>
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">Listing details and your situation <span class="cc" id="cc-2">0 / 2000</span></div>
+        <textarea class="inp" id="t2-msg" rows="6" placeholder="Paste the listing or describe it. Include rent, location, requirements you spotted. Add your income, contract type, and how many people are moving in." oninput="uc(this,'cc-2',2000)"></textarea>
       </div>
-      <div class="outcol">
-        <div class="sn" id="sn-2">
-          <div class="sn-lbl">Send this now</div>
-          <div class="sn-txt" id="sn-txt-2"></div>
-          <button class="sn-btn" onclick="copySN()">Copy</button>
-        </div>
-        <div class="oe" id="empty-2">
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <p>Paste the listing and get your exact chances and action plan.</p>
-        </div>
-        <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-        <div class="rc" id="resp-2"><div class="rb" id="body-2"></div></div>
-        <div class="ra" id="acts-2">
-          <button class="ab" onclick="cpResp(2)">Copy</button>
-          <button class="ab" onclick="followUp(2)">Ask a follow-up</button>
-        </div>
+      <button class="btn-main" id="btn-2" onclick="submit(2)">Get strategy</button>
+      <div class="errtxt" id="err-2"></div>
+    </div>
+    <div class="card">
+      <div class="sn" id="sn-2">
+        <div class="sn-lbl">Send this now</div>
+        <div class="sn-txt" id="sn-txt-2"></div>
+        <button class="sn-btn" onclick="copySN()">Copy</button>
+      </div>
+      <div class="empty-st" id="empty-2">Your strategy will appear here.</div>
+      <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="rb" id="body-2"></div>
+      <div class="act-row" id="acts-2">
+        <button class="btn-sm" onclick="cpResp(2)">Copy</button>
+        <button class="btn-sm" onclick="followUp(2)">Follow up</button>
       </div>
     </div>
   </div>
 
   <!-- Panel 3: Viewing Tips -->
   <div id="panel-3" class="panel">
-    <div class="ptitle">Viewing Tips</div>
-    <div class="psub">What to check, what to ask, and how to stand out during the viewing.</div>
-    <div class="how" id="how-3">
-      <div class="how-hd" id="how-hd-3" onclick="toggleHow(3)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
-      <div class="how-bd" id="how-bd-3">Describe the property — type, location, rent, anything you know. You will get a room-by-room checklist and specific things to say to the landlord.</div>
-    </div>
-    <div class="twocol">
-      <div class="ic">
-        <div class="fld">
-          <label>Property details <span class="cc" id="cc-3" data-max="2000">0 / 2000</span></label>
-          <textarea id="t3-prop" rows="5" placeholder="Type, address, rent, anything you know about the property..." oninput="uc(this,'cc-3')"></textarea>
-        </div>
-        <button class="btn" id="btn-3" onclick="submit(3)">Get viewing tips</button>
-        <div class="errtxt" id="err-3"></div>
+    <div class="ptitle">Prepare for your viewing</div>
+    <div class="psub">Describe the property. Get questions to ask and what to check.</div>
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">Property details <span class="cc" id="cc-3">0 / 2000</span></div>
+        <textarea class="inp" id="t3-msg" rows="5" placeholder="Type, address, rent, anything you know about the property..." oninput="uc(this,'cc-3',2000)"></textarea>
       </div>
-      <div class="outcol">
-        <div class="oe" id="empty-3">
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <p>Describe the property and get a checklist of what to check and ask.</p>
-        </div>
-        <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-        <div class="rc" id="resp-3"><div class="rb" id="body-3"></div></div>
-        <div class="ra" id="acts-3">
-          <button class="ab" onclick="cpResp(3)">Copy</button>
-          <button class="ab" onclick="followUp(3)">Ask a follow-up</button>
-        </div>
+      <button class="btn-main" id="btn-3" onclick="submit(3)">Get viewing tips</button>
+      <div class="errtxt" id="err-3"></div>
+    </div>
+    <div class="card">
+      <div class="empty-st" id="empty-3">Your viewing tips will appear here.</div>
+      <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="rb" id="body-3"></div>
+      <div class="act-row" id="acts-3">
+        <button class="btn-sm" onclick="cpResp(3)">Copy</button>
+        <button class="btn-sm" onclick="followUp(3)">Follow up</button>
       </div>
     </div>
   </div>
 
   <!-- Panel 4: Negotiation -->
   <div id="panel-4" class="panel">
-    <div class="ptitle">Negotiation</div>
-    <div class="psub">Find out if negotiating is realistic, then get the exact scripts to do it.</div>
-    <div class="how" id="how-4">
-      <div class="how-hd" id="how-hd-4" onclick="toggleHow(4)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
-      <div class="how-bd" id="how-bd-4">Select your goal and describe your situation. The response always starts with whether negotiating is realistic in your case, then gives you the exact scripts.</div>
-    </div>
-    <div class="twocol">
-      <div class="ic">
-        <div class="fld">
-          <label>Goal</label>
-          <select id="t4-goal">
-            <option value="lower rent">Lower the rent</option>
-            <option value="longer lease">Get a longer lease</option>
-            <option value="competing offers">Handle competing offers</option>
-          </select>
-        </div>
-        <div class="fld">
-          <label>Your situation <span class="cc" id="cc-4" data-max="2000">0 / 2000</span></label>
-          <textarea id="t4-sit" rows="4" placeholder="Listing details, your offer so far, any leverage you have..." oninput="uc(this,'cc-4')"></textarea>
-        </div>
-        <button class="btn" id="btn-4" onclick="submit(4)">Get negotiation advice</button>
-        <div class="errtxt" id="err-4"></div>
+    <div class="ptitle">Get negotiation advice</div>
+    <div class="psub">Find out if negotiating is realistic and get the exact words to use.</div>
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">Goal</div>
+        <select class="inp" id="t4-goal">
+          <option value="lower rent">Lower the rent</option>
+          <option value="longer lease">Get a longer lease</option>
+          <option value="competing offers">Handle competing offers</option>
+        </select>
       </div>
-      <div class="outcol">
-        <div class="oe" id="empty-4">
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <p>Describe your situation and find out if negotiating makes sense.</p>
-        </div>
-        <div class="skel" id="skel-4"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-        <div class="rc" id="resp-4"><div class="rb" id="body-4"></div></div>
-        <div class="ra" id="acts-4">
-          <button class="ab" onclick="cpResp(4)">Copy</button>
-          <button class="ab" onclick="followUp(4)">Ask a follow-up</button>
-        </div>
+      <div class="fld">
+        <div class="lbl">Your situation <span class="cc" id="cc-4">0 / 2000</span></div>
+        <textarea class="inp" id="t4-msg" rows="4" placeholder="Listing details, your offer so far, any leverage you have..." oninput="uc(this,'cc-4',2000)"></textarea>
+      </div>
+      <button class="btn-main" id="btn-4" onclick="submit(4)">Get advice</button>
+      <div class="errtxt" id="err-4"></div>
+    </div>
+    <div class="card">
+      <div class="empty-st" id="empty-4">Your negotiation advice will appear here.</div>
+      <div class="skel" id="skel-4"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="rb" id="body-4"></div>
+      <div class="act-row" id="acts-4">
+        <button class="btn-sm" onclick="cpResp(4)">Copy</button>
+        <button class="btn-sm" onclick="followUp(4)">Follow up</button>
       </div>
     </div>
   </div>
 
   <!-- Panel 5: Check Lease -->
   <div id="panel-5" class="panel">
-    <div class="ptitle">Check Lease</div>
-    <div class="psub">Spot illegal clauses and hidden risks before you sign.</div>
-    <div class="how" id="how-5">
-      <div class="how-hd" id="how-hd-5" onclick="toggleHow(5)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
-      <div class="how-bd" id="how-bd-5">Paste the full lease text or specific clauses you are unsure about. The AI flags illegal terms and unusual conditions. Always confirm with Juridisch Loket before signing.</div>
-    </div>
-    <div class="disc">This is an AI overview, not legal advice. For Dutch tenant rights visit <a href="https://www.juridischloket.nl" target="_blank" rel="noopener">Juridisch Loket</a> (free, in English) or the <a href="https://www.huurcommissie.nl" target="_blank" rel="noopener">Huurcommissie</a>.</div>
-    <div class="twocol">
-      <div class="ic">
-        <div class="fld">
-          <label>Lease text or clauses <span class="cc" id="cc-5" data-max="3000">0 / 3000</span></label>
-          <textarea id="t5-lease" rows="8" placeholder="Paste the lease text or paste specific clauses you want checked..." oninput="uc(this,'cc-5')"></textarea>
-        </div>
-        <button class="btn" id="btn-5" onclick="submit(5)">Analyse my lease</button>
-        <div class="errtxt" id="err-5"></div>
+    <div class="ptitle">Understand your lease</div>
+    <div class="psub">Paste any clause or the full contract. Get plain-English explanation and red flags.</div>
+    <div class="card">
+      <p class="legal-note">For binding decisions, contact <a href="https://www.juridischloket.nl" target="_blank" rel="noopener">Juridisch Loket</a> (free legal help in English).</p>
+      <div class="fld">
+        <div class="lbl">Lease text or clauses <span class="cc" id="cc-5">0 / 3000</span></div>
+        <textarea class="inp" id="t5-msg" rows="8" placeholder="Paste the lease text or specific clauses you want checked..." oninput="uc(this,'cc-5',3000)"></textarea>
       </div>
-      <div class="outcol">
-        <div class="oe" id="empty-5">
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <p>Paste your lease and we will flag illegal clauses or unusual terms.</p>
-        </div>
-        <div class="skel" id="skel-5"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-        <div class="rc" id="resp-5"><div class="rb" id="body-5"></div></div>
-        <div class="ra" id="acts-5">
-          <button class="ab" onclick="cpResp(5)">Copy</button>
-          <button class="ab" onclick="followUp(5)">Ask a follow-up</button>
-        </div>
+      <button class="btn-main" id="btn-5" onclick="submit(5)">Analyse lease</button>
+      <div class="errtxt" id="err-5"></div>
+    </div>
+    <div class="card">
+      <div class="empty-st" id="empty-5">Your lease analysis will appear here.</div>
+      <div class="skel" id="skel-5"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="rb" id="body-5"></div>
+      <div class="act-row" id="acts-5">
+        <button class="btn-sm" onclick="cpResp(5)">Copy</button>
+        <button class="btn-sm" onclick="followUp(5)">Follow up</button>
       </div>
     </div>
   </div>
 
-  <!-- Panel 6: Move-In Checklist -->
+  <!-- Panel 6: Move-In -->
   <div id="panel-6" class="panel">
-    <div class="ptitle">Move-In Checklist</div>
-    <div class="psub">Document everything on day one so you get your deposit back on day last.</div>
-    <div class="how" id="how-6">
-      <div class="how-hd" id="how-hd-6" onclick="toggleHow(6)"><span class="how-lbl">How to use</span><span class="how-chv">&#9660;</span></div>
-      <div class="how-bd" id="how-bd-6">Select your property type and number of rooms. Optionally generate a move-in email to send to your landlord documenting any existing damage.</div>
-    </div>
-    <div class="twocol">
-      <div class="ic">
-        <div class="fld">
-          <label>Property type</label>
-          <select id="t6-type">
-            <option value="studio">Studio</option>
-            <option value="apartment">Apartment</option>
-            <option value="house">House</option>
-          </select>
-        </div>
-        <div class="fld">
-          <label>Number of rooms</label>
-          <input type="number" id="t6-rooms" min="1" max="10" value="2">
-        </div>
-        <label class="ckitem" style="margin-bottom:14px">
-          <input type="checkbox" id="ck-email">
-          <span>Also generate a move-in email template for the landlord</span>
-        </label>
-        <button class="btn" id="btn-6" onclick="submit(6)">Generate my checklist</button>
-        <div class="errtxt" id="err-6"></div>
+    <div class="ptitle">Prepare your move-in</div>
+    <div class="psub">Get a room-by-room checklist and template email to protect your deposit.</div>
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">Property type</div>
+        <select class="inp" id="t6-type">
+          <option value="studio">Studio</option>
+          <option value="apartment">Apartment</option>
+          <option value="house">House</option>
+        </select>
       </div>
-      <div class="outcol">
-        <div class="oe" id="empty-6">
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M8 4h16v24H8z" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none"/><path d="M11 10h10M11 14h10M11 18h6" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <p>Select your property type and get a complete move-in checklist.</p>
-        </div>
-        <div class="skel" id="skel-6"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-        <div class="rc" id="resp-6"><div class="rb" id="body-6"></div></div>
-        <div class="ra" id="acts-6">
-          <button class="ab" onclick="cpResp(6)">Copy</button>
-          <button class="ab" onclick="followUp(6)">Ask a follow-up</button>
-        </div>
+      <div class="fld">
+        <div class="lbl">Number of rooms</div>
+        <input class="inp" type="number" id="t6-rooms" min="1" max="10" value="2">
+      </div>
+      <label class="ckitem" style="margin-bottom:16px">
+        <input type="checkbox" id="ck-email">
+        <span>Include template email for the landlord</span>
+      </label>
+      <button class="btn-main" id="btn-6" onclick="submit(6)">Generate checklist</button>
+      <div class="errtxt" id="err-6"></div>
+    </div>
+    <div class="card">
+      <div class="empty-st" id="empty-6">Your checklist will appear here.</div>
+      <div class="skel" id="skel-6"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="rb" id="body-6"></div>
+      <div class="act-row" id="acts-6">
+        <button class="btn-sm" onclick="cpResp(6)">Copy</button>
+        <button class="btn-sm" onclick="followUp(6)">Follow up</button>
       </div>
     </div>
   </div>
 
-  <div class="mh">
-    <div class="mh-ttl">Need more help?</div>
-    <div class="hcards">
-      <a href="/tools/landlord-reply" class="hcard"><strong>Landlord Reply Coach</strong><span>Decode any reply and write back</span></a>
-      <a href="/tools/income-check" class="hcard"><strong>Income Check</strong><span>See if you meet the income requirement</span></a>
-      <a href="/tools/rejection-analyser" class="hcard"><strong>Rejection Analyser</strong><span>Find out why and what to change</span></a>
-    </div>
-  </div>
-
-</main>
-
-<footer>AI-generated content is a starting point. Always review before sending. &copy; 2025 HomeSeeker</footer>
+</div>
 
 <script>
 let chatId=null,listingContext='',cacheId=null;
 const lastResp={};
 const API_TAB_MAP={2:'2',3:'3',4:'4',5:'5',6:'6'};
-const TAB_NAMES={1:'Write Letter',2:'Application Coach',3:'Viewing Tips',4:'Negotiation',5:'Check Lease',6:'Move-In Checklist'};
 const ltState={letter:'',tone:'professional'};
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let tipsOpen=false;
 
 function getParams(){
   const p=new URLSearchParams(location.search);
@@ -534,92 +369,65 @@ function getParams(){
       if(!d||!d.listing)return;
       const l=d.listing;
       listingContext=[l.address,l.city,l.price,l.description].filter(Boolean).join(' - ');
-      showBar(l);
-      const t2=document.getElementById('t2-listing');
-      if(t2){t2.value=listingContext.slice(0,800);uc(t2,'cc-2');}
+      showLbar(l);
+      const t2=document.getElementById('t2-msg');
+      if(t2&&!t2.value){t2.value=listingContext.slice(0,800);uc(t2,'cc-2',2000);}
     }).catch(()=>{});
     fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d)return;
-      if(d.score){const el=document.getElementById('lb-score');if(el){el.textContent=`Score ${d.score}`;el.style.display='block';}}
-      renderTips(d.listingTips||[],d.profileTips||[],d.generalTips||[],'tips-1');
+      renderTips(d.listingTips||[],d.profileTips||[],d.generalTips||[]);
     }).catch(()=>{});
   }
 }
 
-function showBar(l){
-  const addr=document.getElementById('lb-addr'),price=document.getElementById('lb-price');
+function showLbar(l){
+  const addr=document.getElementById('lbar-addr'),price=document.getElementById('lbar-price');
   if(addr)addr.textContent=l.address||l.url||'Property';
   if(price)price.textContent=l.price||'';
-  document.getElementById('lb-bar').classList.add('on');
+  document.getElementById('lbar').classList.add('on');
   document.body.classList.add('has-lb');
-  const sb=document.getElementById('sb-listing');
-  if(sb){sb.innerHTML=`<span class="sb-dot"></span><div class="sb-addr">${esc(l.address||l.url||'Property')}</div>${l.price?`<div class="sb-price">${esc(l.price)}</div>`:''}`; sb.style.display='block';}
 }
 
-function renderTips(lt,pt,gt,cid){
-  const card=document.getElementById(cid);if(!card)return;
+function renderTips(lt,pt,gt){
   const all=[];
   lt.forEach(t=>{const tip=typeof t==='string'?t:t.tip,lv=typeof t==='string'?'listing':(t.level||'listing');all.push({tip,lv});});
   pt.forEach(t=>all.push({tip:typeof t==='string'?t:t.tip,lv:'profile'}));
   gt.forEach(t=>all.push({tip:typeof t==='string'?t:t.tip,lv:'profile'}));
   if(!all.length)return;
   all.sort((a,b)=>a.lv==='critical'?-1:b.lv==='critical'?1:0);
-  card.innerHTML=`<div class="tips-ttl">Tips for this listing</div>`+all.slice(0,5).map(t=>`<div class="tip-row"><div class="tip-dot ${t.lv}"></div><span style="font-size:12px;color:rgba(255,255,255,${t.lv==='critical'?'0.85':'0.55'})">${esc(t.tip)}</span></div>`).join('');
-  card.style.display='block';
+  const list=document.getElementById('tips-list');
+  if(!list)return;
+  list.innerHTML=all.slice(0,6).map(t=>`<div class="tip-row"><div class="tip-dot ${t.lv}"></div><span style="font-size:13px;color:rgba(255,255,255,${t.lv==='critical'?'0.8':'0.5'})">${esc(t.tip)}</span></div>`).join('');
+  const wrap=document.getElementById('tips-wrap'),lbl=document.getElementById('tips-lbl');
+  if(wrap)wrap.style.display='block';
+  if(lbl)lbl.textContent=`Tips for this listing (${all.length})`;
+}
+
+function toggleTips(){
+  tipsOpen=!tipsOpen;
+  const list=document.getElementById('tips-list'),chv=document.getElementById('tips-chv');
+  if(list)list.style.display=tipsOpen?'block':'none';
+  if(chv)chv.classList.toggle('open',tipsOpen);
 }
 
 function switchTab(n){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.nb,.bsb').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
-  document.querySelectorAll(`[data-tab="${n}"]`).forEach(b=>b.classList.add('on'));
-  const lbl=document.getElementById('mob-lbl');if(lbl)lbl.textContent=TAB_NAMES[n]||'';
-  updateSteps(n);
-}
-
-function updateSteps(tab){
-  const s=tab===1?1:tab<=3?2:3;
-  [1,2,3].forEach(i=>{
-    const el=document.getElementById(`step-${i}`),sc=document.getElementById(`sc-${i}`);if(!el)return;
-    el.classList.remove('active','done');
-    if(i===s)el.classList.add('active');
-    else if(i<s){el.classList.add('done');if(sc)sc.textContent='✓';}
-    if(i>=s&&sc)sc.textContent=i;
-  });
-  const sl1=document.getElementById('sline-1'),sl2=document.getElementById('sline-2');
-  if(sl1)sl1.classList.toggle('done',s>1);
-  if(sl2)sl2.classList.toggle('done',s>2);
-}
-
-function openBS(){document.getElementById('bso').style.display='block';document.getElementById('bss').classList.add('open');}
-function closeBS(){document.getElementById('bso').style.display='none';document.getElementById('bss').classList.remove('open');}
-
-function toggleHow(n){
-  const bd=document.getElementById(`how-bd-${n}`),hd=document.getElementById(`how-hd-${n}`);if(!bd)return;
-  const open=bd.style.display==='block';
-  bd.style.display=open?'none':'block';
-  if(hd)hd.classList.toggle('open',!open);
-  try{localStorage.setItem(`how-seen-ra-${n}`,'1');}catch(e){}
-}
-
-function initHows(){
-  [1,2,3,4,5,6].forEach(n=>{
-    try{if(!localStorage.getItem(`how-seen-ra-${n}`)){const bd=document.getElementById(`how-bd-${n}`),hd=document.getElementById(`how-hd-${n}`);if(bd)bd.style.display='block';if(hd)hd.classList.add('open');}}catch(e){}
-  });
+  document.querySelector(`.tab[data-tab="${n}"]`)?.classList.add('on');
 }
 
 function setTone(btn,tone){
-  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tp').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');ltState.tone=tone;
 }
 
-function uc(el,ccId){
-  const cc=document.getElementById(ccId);
-  if(cc)cc.textContent=`${el.value.length} / ${cc.dataset.max||2000}`;
+function uc(el,ccId,max){
+  const cc=document.getElementById(ccId);if(cc)cc.textContent=`${el.value.length} / ${max||2000}`;
 }
 
 async function ltGenerate(){
-  if(!cacheId){showEL('No listing loaded. Open this tool from a listing in the Telegram bot.');return;}
+  if(!cacheId){showEL('No listing loaded. Open this tool from a listing alert in the Telegram bot.');return;}
   clearEL();
   const tips=[];
   if(document.getElementById('ck-income')?.checked)tips.push('Income and documents ready');
@@ -634,30 +442,29 @@ async function ltGenerate(){
     if(!r.ok)throw new Error(d.error||'Generation failed');
     ltState.letter=d.letter||'';
     showLetter(ltState.letter);
-  }catch(e){showEL(e.message||'Something went wrong. Please try again.');}
+  }catch(e){showEL(e.message||'Something went wrong.');}
   finally{setLtLoad(false);}
 }
 
 async function ltModify(mode){
   if(!ltState.letter)return;
   const instr={shorter:'Make this letter shorter. Keep the key points.',personal:'Make this letter more personal and warm while keeping it professional.'};
-  const extra=`${instr[mode]||mode}\n\nOriginal letter:\n${ltState.letter}`;
+  const extra=`${instr[mode]}\n\nOriginal letter:\n${ltState.letter}`;
   setLtLoad(true);clearEL();
   try{
     const r=await fetch('/api/generate-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:[],extraContext:extra,tone:ltState.tone})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'Failed');
-    ltState.letter=d.letter||'';
-    showLetter(ltState.letter);
+    ltState.letter=d.letter||'';showLetter(ltState.letter);
   }catch(e){showEL(e.message||'Something went wrong.');}
   finally{setLtLoad(false);}
 }
 
 function showLetter(text){
-  const el=document.getElementById('lt-text');if(el)el.textContent=text;
   document.getElementById('lt-empty').style.display='none';
   document.getElementById('lt-skel').style.display='none';
-  document.getElementById('lt-box').style.display='block';
+  const box=document.getElementById('lt-box');if(box)box.style.display='block';
+  const el=document.getElementById('lt-text');if(el)el.textContent=text;
   document.getElementById('lt-actions').classList.add('on');
   document.getElementById('lt-next').style.display='block';
   const meta=document.getElementById('lt-meta');
@@ -667,45 +474,39 @@ function showLetter(text){
 function setLtLoad(on){
   const btn=document.getElementById('btn-lt');
   if(btn){btn.disabled=on;btn.innerHTML=on?'<span class="spin"></span>Generating...':'Generate my letter';}
-  if(on){document.getElementById('lt-empty').style.display='none';document.getElementById('lt-skel').style.display='block';document.getElementById('lt-box').style.display='none';document.getElementById('lt-actions').classList.remove('on');document.getElementById('lt-next').style.display='none';}
+  if(on){document.getElementById('lt-empty').style.display='none';document.getElementById('lt-skel').style.display='block';const b=document.getElementById('lt-box');if(b)b.style.display='none';document.getElementById('lt-actions').classList.remove('on');document.getElementById('lt-next').style.display='none';}
   else document.getElementById('lt-skel').style.display='none';
 }
 
 function ltCopy(){
   if(!ltState.letter)return;
   navigator.clipboard.writeText(ltState.letter).then(()=>{
-    const btn=document.getElementById('lt-copy');
-    if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
+    const btn=document.getElementById('lt-copy');if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
   }).catch(()=>{});
 }
-
 function ltDownload(){
   if(!ltState.letter)return;
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([ltState.letter],{type:'text/plain'}));
-  a.download='rental-letter.txt';a.click();URL.revokeObjectURL(a.href);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ltState.letter],{type:'text/plain'}));a.download='rental-letter.txt';a.click();URL.revokeObjectURL(a.href);
 }
-
 function showEL(msg){const e=document.getElementById('err-lt');if(e){e.textContent=msg;e.classList.add('on');}}
 function clearEL(){const e=document.getElementById('err-lt');if(e)e.classList.remove('on');}
 
 function buildMsg(tab){
   switch(tab){
-    case 2:{const l=document.getElementById('t2-listing')?.value.trim(),s=document.getElementById('t2-sit')?.value.trim();if(!l)return null;return s?`${l}\n\nMy situation: ${s}`:l;}
-    case 3:{const p=document.getElementById('t3-prop')?.value.trim();return p||null;}
-    case 4:{const g=document.getElementById('t4-goal')?.value,s=document.getElementById('t4-sit')?.value.trim();if(!s)return null;return `Goal: ${g}\n\n${s}`;}
-    case 5:{const l=document.getElementById('t5-lease')?.value.trim();return(l&&l.length>=50)?l:null;}
-    case 6:{const t=document.getElementById('t6-type')?.value,r=document.getElementById('t6-rooms')?.value,e=document.getElementById('ck-email')?.checked;return `Property type: ${t}. Rooms: ${r}.${e?' Also generate a move-in email template for the landlord.':''}`;}
+    case 2:{const m=document.getElementById('t2-msg')?.value.trim();return m||null;}
+    case 3:{const m=document.getElementById('t3-msg')?.value.trim();return m||null;}
+    case 4:{const g=document.getElementById('t4-goal')?.value,s=document.getElementById('t4-msg')?.value.trim();return s?`Goal: ${g}\n\n${s}`:null;}
+    case 5:{const l=document.getElementById('t5-msg')?.value.trim();return(l&&l.length>=50)?l:null;}
+    case 6:{const t=document.getElementById('t6-type')?.value,r=document.getElementById('t6-rooms')?.value,e=document.getElementById('ck-email')?.checked;return `Property type: ${t}. Rooms: ${r}.${e?' Include a move-in email template for the landlord.':''}`;}
     default:return null;
   }
 }
-
-const ERR_MSG={2:'Please paste or describe the listing.',3:'Please describe the property.',4:'Please describe your situation.',5:'Please paste at least 50 characters of lease text.'};
-const BTN_LBL={2:'Get my strategy',3:'Get viewing tips',4:'Get negotiation advice',5:'Analyse my lease',6:'Generate my checklist'};
+const ERR={2:'Please describe the listing.',3:'Please describe the property.',4:'Please describe your situation.',5:'Please paste at least 50 characters of lease text.'};
+const BTN={2:'Get strategy',3:'Get viewing tips',4:'Get advice',5:'Analyse lease',6:'Generate checklist'};
 
 async function submit(tab){
   const msg=buildMsg(tab);
-  if(!msg){showE(tab,ERR_MSG[tab]||'Please fill in the required fields.');return;}
+  if(!msg){showE(tab,ERR[tab]||'Please fill in the required field.');return;}
   hideE(tab);setLoad(tab,true);
   try{
     const r=await fetch('/api/rent-assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tab:API_TAB_MAP[tab],userMessage:msg,chatId,listingContext})});
@@ -713,20 +514,19 @@ async function submit(tab){
     if(!r.ok)throw new Error(d.error||'Request failed');
     lastResp[tab]=d.response;
     renderResp(tab,d.response);
-  }catch(e){showE(tab,e.message||'Something went wrong. Please try again.');}
+  }catch(e){showE(tab,e.message||'Something went wrong.');}
   finally{setLoad(tab,false);}
 }
 
 function renderResp(tab,text){
   if(tab===2){
     const m=text.match(/##\s*Send this now\s*\n([\s\S]*?)(?=\n##|$)/i);
-    if(m){document.getElementById('sn-txt-2').textContent=m[1].trim();document.getElementById('sn-2').style.display='block';text=text.replace(m[0],'').trim();}
+    if(m){const sn=document.getElementById('sn-txt-2');if(sn)sn.textContent=m[1].trim();document.getElementById('sn-2').style.display='block';text=text.replace(m[0],'').trim();}
   }
-  const body=document.getElementById(`body-${tab}`),card=document.getElementById(`resp-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`);
-  if(body)body.innerHTML=renderMd(text);
+  const body=document.getElementById(`body-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`);
+  if(body){body.innerHTML=renderMd(text);body.style.display='block';}
   if(empty)empty.style.display='none';
   if(skel)skel.style.display='none';
-  if(card)card.style.display='block';
   if(acts)acts.classList.add('on');
 }
 
@@ -738,35 +538,27 @@ function renderMd(text){
 }
 
 function copySN(){
-  const t=document.getElementById('sn-txt-2')?.textContent||'';if(!t)return;
+  const t=document.getElementById('sn-txt-2')?.textContent||'';
   navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector('#sn-2 .sn-btn');if(btn){btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy';},2000);}}).catch(()=>{});
 }
-
 function showE(tab,msg){const e=document.getElementById(`err-${tab}`);if(e){e.textContent=msg;e.classList.add('on');}}
 function hideE(tab){const e=document.getElementById(`err-${tab}`);if(e)e.classList.remove('on');}
-
 function setLoad(tab,on){
-  const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),resp=document.getElementById(`resp-${tab}`),empty=document.getElementById(`empty-${tab}`),acts=document.getElementById(`acts-${tab}`);
-  if(btn){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>Working...`:BTN_LBL[tab]||'Get advice';}
-  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(resp)resp.style.display='none';if(acts)acts.classList.remove('on');}
+  const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),empty=document.getElementById(`empty-${tab}`),body=document.getElementById(`body-${tab}`),acts=document.getElementById(`acts-${tab}`);
+  if(btn){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>Working...`:BTN[tab]||'Get advice';}
+  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(body)body.style.display='none';if(acts)acts.classList.remove('on');}
   else if(skel)skel.style.display='none';
 }
-
 function cpResp(tab){
   const t=lastResp[tab]||'';if(!t)return;
-  navigator.clipboard.writeText(t).then(()=>{
-    const btn=document.querySelector(`#acts-${tab} .ab`);
-    if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
-  }).catch(()=>{});
+  navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector(`#acts-${tab} .btn-sm`);if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}}).catch(()=>{});
 }
-
 function followUp(tab){
-  const map={2:'t2-listing',3:'t3-prop',4:'t4-sit',5:'t5-lease'};
+  const map={2:'t2-msg',3:'t3-msg',4:'t4-msg',5:'t5-msg'};
   const el=document.getElementById(map[tab]);if(!el)return;
   el.value='Follow-up: ';el.focus();el.setSelectionRange(el.value.length,el.value.length);
 }
 
-initHows();
 getParams();
 </script>
 </body>
