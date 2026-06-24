@@ -586,6 +586,8 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push('');
   lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore, dealFill(dealScore)));
+  lines.push('');
+  lines.push('_Score reflects your profile fit — not your odds of getting the home._');
 
   // Warnings
   if (intent.warnings.length > 0) {
@@ -608,6 +610,9 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
       else lines.push('Review your buyer position. Open the Buyer Assistant to understand your options.');
     }
   }
+
+  lines.push('');
+  lines.push('💡 _Tap AI Rental Assistant for personalised tips and your application letter._');
 
   const fullText = lines.join('\n');
   const cacheId = cacheListing(listing, chatId, score, dealScore);

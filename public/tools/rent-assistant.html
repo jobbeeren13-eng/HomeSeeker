@@ -114,17 +114,19 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .next-steps li::marker{color:#00c896;font-weight:700}
 .next-steps a{color:#00c896;text-decoration:underline}
 
-/* Tips */
-.tips-hd{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:12px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:0;font-size:12px;color:rgba(255,255,255,0.35);user-select:none}
-.tips-chv{font-size:10px;transition:transform .2s}
-.tips-chv.open{transform:rotate(180deg)}
-.tips-wrap{margin-bottom:16px}
-.tips-list{padding-top:12px;display:none}
-.tip-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
-.tip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.tip-dot.critical{background:#ff6b6b}
-.tip-dot.listing{background:#00c896}
-.tip-dot.profile{background:#4d9fff}
+/* Tip checkboxes */
+.tips-section{margin-bottom:0}
+.tips-section-lbl{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);font-weight:600;margin-bottom:10px}
+.tip-ck{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:border-color .12s,background .12s}
+.tip-ck.on{border-color:#00c896;background:rgba(0,200,150,0.06)}
+.tip-ck input[type=checkbox]{accent-color:#00c896;cursor:pointer;flex-shrink:0;margin-top:3px;width:16px;height:16px}
+.tip-ck-body{display:flex;flex-direction:column;gap:3px}
+.tip-badge{font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:700;line-height:1}
+.tc-listing{color:#00c896}
+.tc-critical{color:#ff6b6b}
+.tc-profile{color:#4d9fff}
+.tc-general{color:rgba(255,255,255,0.3)}
+.tip-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5}
 
 @media(max-width:600px){
   .wrap{padding:20px 16px 80px}
@@ -162,30 +164,17 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="ptitle">Write your application letter</div>
     <div class="psub">Generate a personalised letter and get the exact first message to send right now.</div>
 
-    <div class="tips-wrap" id="tips-wrap" style="display:none">
-      <div class="tips-hd" onclick="toggleTips()">
-        <span id="tips-lbl">Tips for this listing</span>
-        <span class="tips-chv" id="tips-chv">&#9660;</span>
-      </div>
-      <div class="tips-list" id="tips-list"></div>
-    </div>
-
     <div class="card">
+      <div class="fld tips-section">
+        <div class="tips-section-lbl">Select tips to include in your letter</div>
+        <div id="tips-checkboxes"></div>
+      </div>
       <div class="fld">
         <div class="lbl">Tone</div>
         <div class="tone-row">
           <button class="tp on" onclick="setTone(this,'professional')">Professional</button>
           <button class="tp" onclick="setTone(this,'personal')">Personal</button>
           <button class="tp" onclick="setTone(this,'concise')">Concise</button>
-        </div>
-      </div>
-      <div class="fld">
-        <div class="lbl">Include in letter</div>
-        <div class="cklist">
-          <label class="ckitem"><input type="checkbox" id="ck-income" checked><span>Your income and employment</span></label>
-          <label class="ckitem"><input type="checkbox" id="ck-home" checked><span>Why this specific home</span></label>
-          <label class="ckitem"><input type="checkbox" id="ck-avail" checked><span>Your move-in timeline</span></label>
-          <label class="ckitem"><input type="checkbox" id="ck-docs" checked><span>Documents ready to send</span></label>
         </div>
       </div>
       <div class="fld">
@@ -292,7 +281,36 @@ const API_TAB_MAP={2:'3',3:'4'};
 const BTN={2:'Get viewing tips →',3:'Get negotiation advice →'};
 const ltState={letter:'',tone:'professional'};
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-let tipsOpen=false;
+
+const DEFAULT_TIPS=[
+  {tip:'Your income and employment — confirm you meet the financial requirements',lv:'profile'},
+  {tip:'Why this specific home — one sentence about why this property suits you',lv:'general'},
+  {tip:'Your move-in timeline — when you can move in and your flexibility',lv:'profile'},
+  {tip:'Documents ready — confirm you can send everything immediately',lv:'general'},
+];
+
+function renderTipCheckboxes(tips){
+  const container=document.getElementById('tips-checkboxes');
+  if(!container)return;
+  container.innerHTML=tips.map((t,i)=>{
+    const lv=t.lv||t.level||'general';
+    const cls=lv==='critical'?'tc-critical':lv==='listing'?'tc-listing':lv==='profile'?'tc-profile':'tc-general';
+    const badge=lv==='critical'?'CRITICAL':lv==='listing'?'THIS LISTING':lv==='profile'?'YOUR PROFILE':'ALWAYS USEFUL';
+    return `<label class="tip-ck on" onclick="toggleTipCard(this)"><input type="checkbox" checked onclick="event.stopPropagation()"><div class="tip-ck-body"><span class="tip-badge ${cls}">${badge}</span><span class="tip-text">${esc(t.tip)}</span></div></label>`;
+  }).join('');
+}
+
+function toggleTipCard(el){
+  const cb=el.querySelector('input[type=checkbox]');
+  if(!cb)return;
+  cb.checked=!cb.checked;
+  el.classList.toggle('on',cb.checked);
+}
+
+function getSelectedTips(){
+  return Array.from(document.querySelectorAll('#tips-checkboxes .tip-ck.on .tip-text'))
+    .map(el=>el.textContent||'').filter(Boolean);
+}
 
 function getParams(){
   const p=new URLSearchParams(location.search);
@@ -300,6 +318,7 @@ function getParams(){
   cacheId=p.get('listing')||null;
   const t=parseInt(p.get('tab')||'1',10);
   if(t>=1&&t<=3)switchTab(t);
+  renderTipCheckboxes(DEFAULT_TIPS);
   if(cacheId){
     fetch(`/api/letter-data?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d||!d.listing)return;
@@ -309,7 +328,11 @@ function getParams(){
     }).catch(()=>{});
     fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d)return;
-      renderTips(d.listingTips||[],d.profileTips||[],d.generalTips||[]);
+      const all=[];
+      (d.listingTips||[]).forEach(t=>all.push(typeof t==='string'?{tip:t,lv:'listing'}:{...t,lv:t.level||'listing'}));
+      (d.profileTips||[]).forEach(t=>all.push(typeof t==='string'?{tip:t,lv:'profile'}:{...t,lv:'profile'}));
+      (d.generalTips||[]).forEach(t=>all.push(typeof t==='string'?{tip:t,lv:'general'}:{...t,lv:'general'}));
+      if(all.length)renderTipCheckboxes(all.slice(0,8));
     }).catch(()=>{});
   }
 }
@@ -320,28 +343,6 @@ function showLbar(l){
   if(price)price.textContent=l.price||'';
   document.getElementById('lbar').classList.add('on');
   document.body.classList.add('has-lb');
-}
-
-function renderTips(lt,pt,gt){
-  const all=[];
-  lt.forEach(t=>{const tip=typeof t==='string'?t:t.tip,lv=typeof t==='string'?'listing':(t.level||'listing');all.push({tip,lv});});
-  pt.forEach(t=>all.push({tip:typeof t==='string'?t:t.tip,lv:'profile'}));
-  gt.forEach(t=>all.push({tip:typeof t==='string'?t:t.tip,lv:'profile'}));
-  if(!all.length)return;
-  all.sort((a,b)=>a.lv==='critical'?-1:b.lv==='critical'?1:0);
-  const list=document.getElementById('tips-list');
-  if(!list)return;
-  list.innerHTML=all.slice(0,6).map(t=>`<div class="tip-row"><div class="tip-dot ${t.lv}"></div><span style="font-size:13px;color:rgba(255,255,255,${t.lv==='critical'?'0.8':'0.5'})">${esc(t.tip)}</span></div>`).join('');
-  const wrap=document.getElementById('tips-wrap'),lbl=document.getElementById('tips-lbl');
-  if(wrap)wrap.style.display='block';
-  if(lbl)lbl.textContent=`Tips for this listing (${all.length})`;
-}
-
-function toggleTips(){
-  tipsOpen=!tipsOpen;
-  const list=document.getElementById('tips-list'),chv=document.getElementById('tips-chv');
-  if(list)list.style.display=tipsOpen?'block':'none';
-  if(chv)chv.classList.toggle('open',tipsOpen);
 }
 
 function switchTab(n){
@@ -372,11 +373,7 @@ function wcBadge(text){
 async function ltGenerate(){
   if(!cacheId){showEL('No listing loaded. Open this tool from a listing alert in the Telegram bot.');return;}
   clearEL();
-  const tips=[];
-  if(document.getElementById('ck-income')?.checked)tips.push('Your income and employment confirms financial eligibility');
-  if(document.getElementById('ck-home')?.checked)tips.push('Why this specific home');
-  if(document.getElementById('ck-avail')?.checked)tips.push('Move-in timeline and flexibility');
-  if(document.getElementById('ck-docs')?.checked)tips.push('Documents ready to send immediately');
+  const tips=getSelectedTips();
   const extra=document.getElementById('lt-extra')?.value.trim()||'';
   setLtLoad(true);
   try{

@@ -83,7 +83,6 @@ async function findMatches(listings) {
       if (!matchesUser(listing, user)) { stats.noMatch++; userStats.set(user.chat_id, stats); continue; }
 
       const score = calculateScore(listing, user);
-      if (score < (user.kans_min || 0)) { stats.lowScore++; userStats.set(user.chat_id, stats); continue; }
 
       const dealMin = user.deal_min || 0;
       if (dealMin > 0 && (dScore === null || dScore < dealMin)) { stats.lowDeal++; userStats.set(user.chat_id, stats); continue; }
@@ -128,7 +127,6 @@ async function findMatchesForUser(listings, chatId) {
     if (!matchesUser(listing, user)) continue;
 
     const score = calculateScore(listing, user);
-    if (score < (user.kans_min || 0)) continue;
 
     const dScore = calculateDealScore(listing);
     const dLabel = dealLabel(dScore, listing);

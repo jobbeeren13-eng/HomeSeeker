@@ -135,6 +135,39 @@ const WEIGHTS = {
   competition: 0.10,
 };
 
+const COMPETITION_PENALTY = {
+  funda: {
+    amsterdam: 18,
+    utrecht: 14,
+    haarlem: 14,
+    leiden: 12,
+    delft: 11,
+    'den-haag': 9,
+    rotterdam: 9,
+    eindhoven: 8,
+    default: 10,
+  },
+  kamernet: {
+    amsterdam: 10,
+    rotterdam: 6,
+    utrecht: 8,
+    default: 6,
+  },
+  housinganywhere: {
+    amsterdam: 8,
+    rotterdam: 5,
+    utrecht: 6,
+    default: 5,
+  },
+};
+
+function getCompetitionPenalty(source, city) {
+  const src = (source || 'funda').toLowerCase();
+  const cty = (city || '').toLowerCase().replace(/\s+/g, '-');
+  const penalties = COMPETITION_PENALTY[src] || COMPETITION_PENALTY.funda;
+  return penalties[cty] || penalties.default;
+}
+
 function calculateScore(listing, user) {
   const financial = calcFinancialFit(listing, user);
   const profile = calcProfileStrength(user);
@@ -150,8 +183,12 @@ function calculateScore(listing, user) {
     competition.score * WEIGHTS.competition;
 
   const bonus = listingAgeBonusPoints(listing);
-  const result = Math.round(weighted) + bonus;
-  return isNaN(result) ? 0 : Math.min(100, Math.max(0, result));
+  const raw = Math.round(weighted) + bonus;
+  if (isNaN(raw)) return 0;
+  let score = Math.min(100, Math.max(0, raw));
+  const competitionPenalty = getCompetitionPenalty(listing.source, listing.city);
+  score = Math.max(0, score - competitionPenalty);
+  return Math.round(score);
 }
 
 function scoreLabel(score) {
