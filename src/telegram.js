@@ -616,7 +616,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   const fullText = lines.join('\n');
   const cacheId = cacheListing(listing, chatId, score, dealScore);
- 
+
   const keyboard = isHuur ? {
     inline_keyboard: [
       [
@@ -641,39 +641,59 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
       [{ text: 'Unsubscribe', callback_data: 'unsubscribe' }],
     ],
   };
- 
-  const hasRealImage = listing.image && /^https?:\/\//.test(listing.image);
-  console.log('[telegram] alert text length:', fullText.length);
 
-  // sendPhoto caps captions at 1024 chars — long captions hide keyboard rows.
-  // Only use sendPhoto when text fits; otherwise send image first, then text+keyboard.
-  let sent = false;
-  if (hasRealImage && fullText.length <= 900) {
+  const hasRealImage = listing.image && /^https?:\/\//.test(listing.image);
+
+  // Split: caption gets everything before numbered tips or the CTA line; second message gets tips+CTA+keyboard.
+  const tipStart = lines.findIndex(l => l.match(/^\*[0-9]+\./) || l.startsWith('💡'));
+  let captionLines, tipsLines;
+  if (tipStart > -1) {
+    captionLines = lines.slice(0, tipStart);
+    tipsLines = lines.slice(tipStart);
+  } else {
+    captionLines = lines;
+    tipsLines = [];
+  }
+  const captionText = captionLines.join('\n').trim();
+  const tipsText = tipsLines.join('\n').trim();
+
+  console.log('[telegram] caption length:', captionText.length, 'tips length:', tipsText.length);
+
+  let atLeastOneSent = false;
+  if (hasRealImage) {
     try {
       await sendWithRetry(_bot, 'sendPhoto', chatId, listing.image, {
-        caption: fullText,
+        caption: captionText,
         parse_mode: 'Markdown',
-        reply_markup: keyboard,
       });
-      sent = true;
+      atLeastOneSent = true;
     } catch (_) {}
-  }
-
-  if (!sent) {
-    if (hasRealImage) {
-      try { await sendWithRetry(_bot, 'sendPhoto', chatId, listing.image, {}); } catch (_) {}
+    if (tipsText) {
+      try {
+        await sendWithRetry(_bot, 'sendMessage', chatId, tipsText, {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard,
+          disable_web_page_preview: true,
+        });
+        atLeastOneSent = true;
+      } catch (e) {
+        console.error(`[telegram] Failed to send tips message to ${chatId}:`, e.message);
+      }
     }
+  } else {
     try {
       await sendWithRetry(_bot, 'sendMessage', chatId, fullText, {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
         disable_web_page_preview: true,
       });
+      atLeastOneSent = true;
     } catch (e) {
       console.error(`[telegram] Failed to send alert to ${chatId}:`, e.message);
     }
   }
-  if (user && user.chat_id) {
+
+  if (atLeastOneSent && user && user.chat_id) {
     try { updateLastAlertSentAt.run(Date.now(), user.chat_id); } catch (_) {}
   }
   return cacheId;
