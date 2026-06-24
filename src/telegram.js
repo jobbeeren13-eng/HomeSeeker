@@ -570,6 +570,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   captionLines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) captionLines.push(bar(dealScore, dealFill(dealScore)));
   const captionText = captionLines.join('\n');
+  const hasRealImage = listing.image && /^https?:\/\//.test(listing.image);
   console.log('[alert] captionLength:', captionText.length, 'hasRealImage:', hasRealImage);
   if (captionText.length > 600) console.warn('[telegram] caption over 600 chars:', captionText.length);
 
@@ -624,7 +625,6 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     ],
   };
 
-  const hasRealImage = listing.image && /^https?:\/\//.test(listing.image);
   let atLeastOneSent = false;
   if (hasRealImage) {
     try {
