@@ -1072,6 +1072,32 @@ app.post('/api/support-chat', async (req, res) => {
   }
 });
 
+// Funda photo proxy — called by Hetzner scraper to bypass IP-based CAPTCHA block
+app.get('/api/fetch-funda-photo', async (req, res) => {
+  const { url } = req.query;
+  if (!url || !url.startsWith('https://www.funda.nl/')) return res.status(400).json({ error: 'invalid url' });
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'nl-NL,nl;q=0.9',
+        'Referer': 'https://www.funda.nl/',
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+    const html = await resp.text();
+    if (html.includes('fundaCaptchaForm') || html.includes('akam_recaptcha')) {
+      return res.json({ photo: null, captcha: true });
+    }
+    const m = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)
+           || html.match(/<meta\s+content="([^"]+)"\s+property="og:image"/i);
+    res.json({ photo: m ? m[1] : null });
+  } catch (e) {
+    res.json({ photo: null, error: e.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);
   console.log(`[server] Base URL: ${BASE_URL}`);

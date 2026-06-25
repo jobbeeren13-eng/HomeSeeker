@@ -429,10 +429,23 @@ async function scrapeFunda() {
   // Batch-fetch description + image for new listings (concurrency = 3, non-blocking on error)
   if (needsDesc.length > 0) {
     console.log(`[scraper] Enriching ${needsDesc.length} new Funda listing(s) with description + image…`);
+    const railwayBase = process.env.RAILWAY_URL;
     const CONCURRENCY = 3;
     for (let i = 0; i < needsDesc.length; i += CONCURRENCY) {
       await Promise.allSettled(needsDesc.slice(i, i + CONCURRENCY).map(async url => {
-        const { description, image } = await fetchFundaDescriptionAndImage(url);
+        const { description, image: directImage } = await fetchFundaDescriptionAndImage(url);
+        let image = directImage;
+        // If Hetzner IP is CAPTCHA-blocked, fetch photo via Railway (different IP)
+        if (!image && railwayBase) {
+          try {
+            const r = await fetch(`${railwayBase}/api/fetch-funda-photo?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(10000) });
+            const d = await r.json();
+            if (d.photo) image = d.photo;
+            else if (d.captcha) console.log('[scraper] funda photo: Railway also CAPTCHA-blocked:', url.slice(-50));
+          } catch (e) {
+            console.log('[scraper] funda photo via Railway failed:', e.message);
+          }
+        }
         if (description) updateListingDescription.run(description, url);
         if (image) { try { updateListingImage.run(image, url); } catch {} }
         console.log('[scraper] funda detail fetch:', url.slice(-50), '| desc:', description ? 'ok' : 'empty', '| img:', image ? image.slice(0, 60) : 'EMPTY');
