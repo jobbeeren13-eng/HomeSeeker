@@ -27,39 +27,33 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .wrap{max-width:720px;margin:0 auto;padding:32px 24px 80px;margin-top:52px}
 body.has-lb .wrap{margin-top:88px}
 
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07)}
-.tab{padding:9px 18px;border-radius:8px;background:#111318;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
-.tab:hover{color:rgba(255,255,255,0.85);border-color:rgba(255,255,255,0.2)}
-.tab.on{background:#00c896;color:#0a0a0a;font-weight:700;border-color:#00c896;box-shadow:0 0 0 3px rgba(0,200,150,0.2)}
+.tabs{display:flex;flex-wrap:wrap;margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.07);padding:0}
+.tab{padding:10px 16px;border:none;background:transparent;color:rgba(255,255,255,0.4);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:color .15s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:rgba(255,255,255,0.7)}
+.tab.on{color:#ffffff;border-bottom:2px solid #00c896;font-weight:600}
 
 .panel{display:none}
 .panel.on{display:block}
-.ptitle{font-size:22px;font-weight:800;color:#ffffff;margin-bottom:4px}
-.psub{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px}
+.ptitle{font-size:18px;font-weight:700;color:#ffffff;margin-bottom:4px}
+.psub{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px}
 
-.card{background:#111318;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:20px;margin-bottom:16px}
+.card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-bottom:16px}
 
 .fld{margin-bottom:16px}
 .fld:last-child{margin-bottom:0}
-.lbl{display:flex;justify-content:space-between;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#e8edf3;font-weight:600;margin-bottom:8px}
+.lbl{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);font-weight:600;margin-bottom:6px}
 .cc{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.3)}
-.inp{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#ffffff;font-family:inherit;font-size:14px;padding:12px 14px;outline:none;transition:border-color .15s,box-shadow .15s}
-.inp:focus{border-color:#00c896;box-shadow:0 0 0 3px rgba(0,200,150,0.1)}
+.inp{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#ffffff;font-family:inherit;font-size:14px;padding:12px 14px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:#00c896}
 textarea.inp{min-height:120px;resize:vertical;line-height:1.6}
 select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
 
 .tone-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.tp{padding:8px 18px;border:1px solid rgba(255,255,255,0.12);border-radius:7px;background:#0d1117;color:rgba(255,255,255,0.55);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.tp{padding:7px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:7px;background:transparent;color:rgba(255,255,255,0.45);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
 .tp:hover{color:rgba(255,255,255,0.8)}
-.tp.on{border-color:#00c896;color:#00c896;background:rgba(0,200,150,0.08)}
+.tp.on{border-color:#00c896;color:#00c896;background:rgba(0,200,150,0.07)}
 
-.cklist{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
-.ckitem{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;transition:border-color .12s}
-.ckitem:hover{border-color:rgba(0,200,150,0.25)}
-.ckitem input{accent-color:#00c896;cursor:pointer;flex-shrink:0;margin-top:2px;width:14px;height:14px}
-.ckitem span{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.4}
-
-.btn-main{width:100%;height:50px;background:#00c896;color:#0a0a0a;font-family:inherit;font-size:15px;font-weight:800;border:none;border-radius:10px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-main{width:100%;height:46px;background:#00c896;color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-main:hover:not(:disabled){background:#00b386}
 .btn-main:disabled{opacity:.4;cursor:not-allowed}
 .spin{width:14px;height:14px;border:2.5px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
@@ -67,7 +61,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .errtxt{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
 .errtxt.on{display:block}
 
-.empty-st{text-align:center;padding:40px 20px;color:rgba(255,255,255,0.2);font-size:13px}
+.empty-st{text-align:center;padding:36px 20px;color:rgba(255,255,255,0.2);font-size:13px}
 .skel{display:none}
 .sk{height:11px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:10px;overflow:hidden;position:relative}
 .sk::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);transform:translateX(-100%);animation:sh 1.4s infinite}
@@ -86,8 +80,8 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 .act-row{display:none;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
 .act-row.on{display:flex}
-.btn-sm{height:32px;padding:0 14px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:transparent;color:rgba(255,255,255,0.55);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
-.btn-sm:hover{border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.8)}
+.btn-sm{height:30px;padding:0 14px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
+.btn-sm:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.8)}
 .btn-sm.ok{border-color:#00c896;color:#00c896}
 
 /* Letter output */
@@ -99,44 +93,39 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .wc-red{color:#ff6b6b;background:rgba(255,107,107,0.1)}
 
 /* Send this first block */
-.sn{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.25);border-radius:12px;padding:18px 20px;margin-bottom:16px;display:none}
-.sn-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#00c896;font-weight:700;margin-bottom:10px}
+.sn{background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:16px 18px;margin-bottom:16px;display:none}
+.sn-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#00c896;font-weight:700;margin-bottom:8px}
 .sn-txt{font-size:13px;line-height:1.75;white-space:pre-wrap;color:rgba(255,255,255,0.9)}
-.sn-copy{margin-top:14px;height:36px;padding:0 18px;border:1px solid rgba(0,200,150,0.35);border-radius:7px;background:transparent;color:#00c896;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
-.sn-copy:hover{background:rgba(0,200,150,0.08)}
-.sn-copy.ok{background:rgba(0,200,150,0.12)}
+.sn-copy{margin-top:12px;height:32px;padding:0 16px;border:1px solid rgba(0,200,150,0.3);border-radius:6px;background:transparent;color:#00c896;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.sn-copy:hover{background:rgba(0,200,150,0.07)}
+.sn-copy.ok{background:rgba(0,200,150,0.1)}
 
 /* What to do next */
-.next-steps{display:none;background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.12);border-radius:12px;padding:18px 20px;margin-bottom:16px}
-.next-steps-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);font-weight:700;margin-bottom:12px}
-.next-steps ol{padding-left:20px;counter-reset:none}
-.next-steps li{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.6;margin-bottom:8px}
+.next-steps{display:none;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.next-steps-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:700;margin-bottom:10px}
+.next-steps ol{padding-left:18px}
+.next-steps li{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:6px}
 .next-steps li::marker{color:#00c896;font-weight:700}
 .next-steps a{color:#00c896;text-decoration:underline}
 
-/* Intelligence cards */
-.tips-section{margin-bottom:0}
-.tips-section-lbl{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);font-weight:600;margin-bottom:10px}
-.intel-card{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-bottom:8px;overflow:hidden}
-.intel-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none;gap:8px}
-.intel-hdr:hover{background:rgba(255,255,255,0.02)}
-.intel-title{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;flex:1}
-.intel-chev{width:14px;height:14px;flex-shrink:0;transition:transform .2s;opacity:.45}
-.intel-chev.open{transform:rotate(180deg)}
-.intel-body{padding:0 14px 12px;display:none}
-.intel-body.open{display:block}
-.intel-bullet{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;padding:5px 0 5px 14px;position:relative;border-bottom:1px solid rgba(255,255,255,0.04)}
-.intel-bullet:last-of-type{border-bottom:none}
-.intel-bullet::before{content:'·';position:absolute;left:2px;font-weight:700;color:rgba(255,255,255,0.3)}
-.intel-expand-btn{display:inline-block;margin-top:10px;font-size:11px;color:#00c896;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;letter-spacing:.3px}
-.intel-expand-btn:hover{text-decoration:underline}
-.intel-hidden{display:none}
-.intel-hidden.open{display:block}
+/* Intelligence flat list */
+.intel-wrap{border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;margin-bottom:20px}
+.intel-section{margin-bottom:14px}
+.intel-section:last-child{margin-bottom:0}
+.intel-section-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);font-weight:600;margin-bottom:8px}
+.intel-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
+.intel-item:last-of-type{margin-bottom:0}
+.intel-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:7px}
+.intel-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7}
+.intel-divider{height:1px;background:rgba(255,255,255,0.06);margin:14px 0}
+.intel-analysis-btn{font-size:12px;color:#00c896;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;margin-top:8px;display:inline-block}
+.intel-analysis-btn:hover{text-decoration:underline}
+.intel-hidden-section{display:none;margin-top:10px}
+.intel-hidden-section.open{display:block}
 
 @media(max-width:600px){
   .wrap{padding:20px 16px 80px}
-  .cklist{grid-template-columns:1fr}
-  .tab{padding:8px 14px;font-size:13px}
+  .tab{padding:8px 12px;font-size:13px}
 }
 </style>
 </head>
@@ -169,11 +158,9 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="ptitle">Write your application letter</div>
     <div class="psub">Generate a personalised letter and get the exact first message to send right now.</div>
 
+    <div id="tips-checkboxes" class="intel-wrap"></div>
+
     <div class="card">
-      <div class="fld tips-section">
-        <div class="tips-section-lbl">Select tips to include in your letter</div>
-        <div id="tips-checkboxes"></div>
-      </div>
       <div class="fld">
         <div class="lbl">Tone</div>
         <div class="tone-row">
@@ -183,7 +170,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
         </div>
       </div>
       <div class="fld">
-        <div class="lbl">Extra context <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)">(optional)</span> <span class="cc" id="cc-lt">0 / 400</span></div>
+        <div class="lbl">Extra context <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)">(optional)</span> <span class="cc" id="cc-lt">0 / 400</span></div>
         <textarea class="inp" id="lt-extra" rows="2" oninput="uc(this,'cc-lt',400)"></textarea>
       </div>
       <button class="btn-main" id="btn-lt" onclick="ltGenerate()">Generate my letter &#8594;</button>
@@ -210,13 +197,10 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <!-- Letter output -->
     <div class="card">
       <div class="skel" id="lt-skel"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-      <div class="empty-st" id="lt-empty">Your letter will appear here.</div>
+      <div class="empty-st" id="lt-empty">Your letter appears here.</div>
       <div class="letter-box" id="lt-box"><div class="letter-txt" id="lt-text"></div></div>
       <div class="act-row" id="lt-actions">
         <button class="btn-sm" id="lt-copy" onclick="ltCopy()">Copy</button>
-        <button class="btn-sm" onclick="ltDownload()">.txt</button>
-        <button class="btn-sm" onclick="ltModify('shorter')">Shorter</button>
-        <button class="btn-sm" onclick="ltModify('personal')">More personal</button>
         <span class="wc-badge wc-green" id="wc-badge" style="display:none"></span>
       </div>
     </div>
@@ -235,12 +219,11 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <div class="errtxt" id="err-2"></div>
     </div>
     <div class="card">
-      <div class="empty-st" id="empty-2">Your viewing preparation will appear here.</div>
+      <div class="empty-st" id="empty-2">Your response appears here.</div>
       <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="rb" id="body-2"></div>
       <div class="act-row" id="acts-2">
         <button class="btn-sm" onclick="cpResp(2)">Copy</button>
-        <button class="btn-sm" onclick="followUp(2)">Follow up</button>
       </div>
     </div>
   </div>
@@ -267,12 +250,11 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <div class="errtxt" id="err-3"></div>
     </div>
     <div class="card">
-      <div class="empty-st" id="empty-3">Your negotiation strategy will appear here.</div>
+      <div class="empty-st" id="empty-3">Your response appears here.</div>
       <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="rb" id="body-3"></div>
       <div class="act-row" id="acts-3">
         <button class="btn-sm" onclick="cpResp(3)">Copy</button>
-        <button class="btn-sm" onclick="followUp(3)">Follow up</button>
       </div>
     </div>
   </div>
@@ -294,54 +276,41 @@ const DEFAULT_INTEL={
     'State your move-in date as a fact: "I can move in on [date]" — not "I would like to"',
     'Attach all documents in one PDF: Firstname_Lastname_Application.pdf',
   ],
-  uniqueAngles:['Name two specific viewing days in your first message — most candidates stay vague. Decisiveness shortcuts the landlord\'s decision process'],
+  uniqueAngles:["Name two specific viewing days in your first message — most candidates stay vague. Decisiveness shortcuts the landlord's decision process"],
   watchOut:[],
   hiddenSignals:[],
 };
 
-function buildIntelCard(title,accent,bullets,key,expandable,hiddenBullets){
-  if(!bullets||!bullets.length)return'';
-  const bodyId='intel-body-'+key;
-  const chevSvg=`<svg class="intel-chev" viewBox="0 0 14 8" fill="none"><path d="M1 1l6 6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const bulletsHtml=bullets.map(b=>`<div class="intel-bullet" data-intel="${key}">${esc(b)}</div>`).join('');
-  let hiddenHtml='';
-  if(hiddenBullets&&hiddenBullets.length){
-    const hiddenId='intel-hidden-'+key;
-    const hb=hiddenBullets.map(b=>`<div class="intel-bullet">${esc(b)}</div>`).join('');
-    hiddenHtml=`<button class="intel-expand-btn" data-target="${hiddenId}">Show full analysis →</button><div class="intel-hidden" id="${hiddenId}">${hb}</div>`;
-  }
-  const hdrAttrs=expandable?` data-expand="${bodyId}"`:'';
-  const bodyOpen=expandable?'open':'open';
-  return `<div class="intel-card" style="border-left:3px solid ${accent}"><div class="intel-hdr"${hdrAttrs}><span class="intel-title" style="color:${accent}">${esc(title)}</span>${expandable?chevSvg:''}</div><div class="intel-body ${bodyOpen}" id="${bodyId}">${bulletsHtml}${hiddenHtml}</div></div>`;
-}
-
 function renderIntelCards(data){
   const container=document.getElementById('tips-checkboxes');
   if(!container)return;
+  const sections=[];
+  if(data.watchOut&&data.watchOut.length)sections.push({label:'WATCH OUT',color:'#e24b4a',items:data.watchOut,key:'watch'});
+  if(data.landlordProfile&&data.landlordProfile.length)sections.push({label:'WHAT THIS LANDLORD WANTS',color:'#00c896',items:data.landlordProfile,key:'landlord',hidden:data.hiddenSignals});
+  if(data.smartPoints&&data.smartPoints.length)sections.push({label:'MENTION IN YOUR APPLICATION',color:'#4d9fff',items:data.smartPoints,key:'smart'});
+  if(data.uniqueAngles&&data.uniqueAngles.length)sections.push({label:"WHAT OTHERS WON'T SAY",color:'#f0a020',items:data.uniqueAngles,key:'unique'});
+  if(!sections.length){container.style.display='none';return;}
+  container.style.display='';
   let html='';
-  if(data.watchOut&&data.watchOut.length)html+=buildIntelCard('Watch out for','#e24b4a',data.watchOut,'watch',true,null);
-  html+=buildIntelCard('What this landlord is looking for','#00c896',data.landlordProfile||[],'landlord',true,data.hiddenSignals);
-  html+=buildIntelCard('What to mention in your application','#4d9fff',data.smartPoints||[],'smart',true,null);
-  html+=buildIntelCard("What others won't say",'#f0a020',data.uniqueAngles||[],'unique',false,null);
-  container.innerHTML=html;
-  container.querySelectorAll('.intel-hdr[data-expand]').forEach(hdr=>{
-    const bodyId=hdr.getAttribute('data-expand');
-    const body=document.getElementById(bodyId);
-    const chev=hdr.querySelector('.intel-chev');
-    if(body){
-      if(chev)chev.classList.add('open');
-      hdr.addEventListener('click',()=>{
-        body.classList.toggle('open');
-        if(chev)chev.classList.toggle('open');
-      });
+  sections.forEach((sec,idx)=>{
+    if(idx>0)html+='<div class="intel-divider"></div>';
+    html+=`<div class="intel-section"><div class="intel-section-lbl">${sec.label}</div>`;
+    sec.items.forEach(item=>{
+      html+=`<div class="intel-item"><span class="intel-dot" style="background:${sec.color}"></span><span class="intel-text" data-intel="${sec.key}">${esc(item)}</span></div>`;
+    });
+    if(sec.hidden&&sec.hidden.length){
+      const hid='intel-hidden-'+sec.key;
+      const hb=sec.hidden.map(h=>`<div class="intel-item"><span class="intel-dot" style="background:rgba(255,255,255,0.18)"></span><span class="intel-text">${esc(h)}</span></div>`).join('');
+      html+=`<button class="intel-analysis-btn" data-target="${hid}">Show full analysis →</button><div class="intel-hidden-section" id="${hid}">${hb}</div>`;
     }
+    html+='</div>';
   });
-  container.querySelectorAll('.intel-expand-btn').forEach(btn=>{
+  container.innerHTML=html;
+  container.querySelectorAll('.intel-analysis-btn').forEach(btn=>{
     const targetId=btn.getAttribute('data-target');
     const target=document.getElementById(targetId);
     if(target){
-      btn.addEventListener('click',e=>{
-        e.stopPropagation();
+      btn.addEventListener('click',()=>{
         target.classList.toggle('open');
         btn.textContent=target.classList.contains('open')?'Hide full analysis ↑':'Show full analysis →';
       });
@@ -351,7 +320,7 @@ function renderIntelCards(data){
 
 function getSelectedTips(){
   const tips=[];
-  document.querySelectorAll('.intel-bullet[data-intel="smart"],.intel-bullet[data-intel="unique"]').forEach(el=>{
+  document.querySelectorAll('.intel-text[data-intel="smart"],.intel-text[data-intel="unique"]').forEach(el=>{
     const t=(el.textContent||'').trim();
     if(t)tips.push(t);
   });
@@ -382,8 +351,7 @@ function getParams(){
         (d.profileTips||[]).forEach(t=>all.push(typeof t==='string'?{tip:t,lv:'profile'}:{...t,lv:'profile'}));
         (d.generalTips||[]).forEach(t=>all.push(typeof t==='string'?{tip:t,lv:'general'}:{...t,lv:'general'}));
         if(all.length){
-          const intel={landlordProfile:[],smartPoints:all.filter(t=>t.lv==='listing').map(t=>t.tip),uniqueAngles:all.filter(t=>t.lv==='profile').map(t=>t.tip),watchOut:all.filter(t=>t.lv==='critical').map(t=>t.tip),hiddenSignals:[]};
-          renderIntelCards(intel);
+          renderIntelCards({landlordProfile:[],smartPoints:all.filter(t=>t.lv==='listing').map(t=>t.tip),uniqueAngles:all.filter(t=>t.lv==='profile').map(t=>t.tip),watchOut:all.filter(t=>t.lv==='critical').map(t=>t.tip),hiddenSignals:[]});
         }
       }
     }).catch(()=>{});
@@ -437,7 +405,6 @@ async function ltGenerate(){
     const ld=await letterResp.json();
     if(!letterResp.ok)throw new Error(ld.error||'Letter generation failed');
     ltState.letter=ld.letter||'';
-
     if(snResp.ok){
       const sd=await snResp.json();
       if(sd.message){
@@ -447,20 +414,6 @@ async function ltGenerate(){
       }
     }
     showLetter(ltState.letter);
-  }catch(e){showEL(e.message||'Something went wrong.');}
-  finally{setLtLoad(false);}
-}
-
-async function ltModify(mode){
-  if(!ltState.letter)return;
-  const instr={shorter:'Make this letter shorter. Keep the key points.',personal:'Make this letter more personal and warm while keeping it professional.'};
-  const extra=`${instr[mode]}\n\nOriginal letter:\n${ltState.letter}`;
-  setLtLoad(true);clearEL();
-  try{
-    const r=await fetch('/api/generate-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:[],extraContext:extra,tone:ltState.tone})});
-    const d=await r.json();
-    if(!r.ok)throw new Error(d.error||'Failed');
-    ltState.letter=d.letter||'';showLetter(ltState.letter);
   }catch(e){showEL(e.message||'Something went wrong.');}
   finally{setLtLoad(false);}
 }
@@ -494,10 +447,6 @@ function ltCopy(){
   navigator.clipboard.writeText(ltState.letter).then(()=>{
     const btn=document.getElementById('lt-copy');if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
   }).catch(()=>{});
-}
-function ltDownload(){
-  if(!ltState.letter)return;
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ltState.letter],{type:'text/plain'}));a.download='rental-letter.txt';a.click();URL.revokeObjectURL(a.href);
 }
 function copySN(){
   const t=document.getElementById('sn-txt-1')?.textContent||'';
@@ -557,11 +506,6 @@ function setLoad(tab,on){
 function cpResp(tab){
   const t=lastResp[tab]||'';if(!t)return;
   navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector(`#acts-${tab} .btn-sm`);if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}}).catch(()=>{});
-}
-function followUp(tab){
-  const map={2:'t2-msg',3:'t3-msg'};
-  const el=document.getElementById(map[tab]);if(!el)return;
-  el.value='Follow-up: ';el.focus();el.setSelectionRange(el.value.length,el.value.length);
 }
 
 getParams();
