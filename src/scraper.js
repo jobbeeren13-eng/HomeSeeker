@@ -338,6 +338,10 @@ async function fetchFundaDescriptionAndImage(url) {
     });
     if (!resp.ok) return { description: '', image: '' };
     const html = await resp.text();
+    if (html.includes('fundaCaptchaForm') || html.includes('akam_recaptcha')) {
+      console.log('[scraper] funda CAPTCHA block:', url.slice(-50));
+      return { description: '', image: '' };
+    }
     const descM = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
                || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
     const imgM  = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)
