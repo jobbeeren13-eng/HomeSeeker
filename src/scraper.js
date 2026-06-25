@@ -272,17 +272,25 @@ function parseHits(hits, city, transactionType) {
     const path = s.object_detail_page_relative_url || '';
     const url = path ? `https://www.funda.nl${path}` : null;
 
-    // thumbnail_id is a 9-digit integer; CDN path is three 3-digit segments
+    // thumbnail_id: 9-digit integer (array or scalar) → cloud.funda.nl CDN path
     // e.g. 230146512 → https://cloud.funda.nl/valentina_media/230/146/512.jpg
-    const thumbInt = Array.isArray(s.thumbnail_id) ? s.thumbnail_id[0] : null;
-    const image = thumbInt
+    const thumbRaw = s.thumbnail_id;
+    const thumbInt = Array.isArray(thumbRaw) ? thumbRaw[0] : (thumbRaw != null ? thumbRaw : null);
+    const thumbUrl = thumbInt
       ? `https://cloud.funda.nl/valentina_media/${String(thumbInt).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1/$2/$3')}.jpg`
       : '';
+    // Fallback to other image fields present in some API responses
+    const image = thumbUrl
+      || (Array.isArray(s.media) && s.media[0] && (s.media[0].url || s.media[0].uri || ''))
+      || (Array.isArray(s.images) && s.images[0] && (s.images[0].url || s.images[0].uri || ''))
+      || s.photo_url || s.main_photo_url || s.cover_photo_url || '';
+    if (!image) console.log('[funda] no image for', address, '| raw:', JSON.stringify({ thumbnail_id: s.thumbnail_id, media: (s.media || []).slice(0, 1), images: (s.images || []).slice(0, 1), photo_url: s.photo_url }).slice(0, 300));
 
     const descFull  = (typeof s.description === 'string') ? s.description.trim() : '';
     const descBlurb = (s.blikvanger && typeof s.blikvanger.text === 'string') ? s.blikvanger.text.trim() : '';
     const description = descFull || descBlurb;
 
+    console.log('[scraper] photo result: funda', image ? image.slice(0, 60) : 'EMPTY');
     return {
       url,
       address,
@@ -564,12 +572,16 @@ async function fetchHousingAnywhereDescription(url) {
                   || data?.props?.pageProps?.initialData?.listing
                   || {};
         const desc = unit.description || unit.longDescription || '';
-        const imgUrl = (unit.photos && unit.photos[0] && (unit.photos[0].url || unit.photos[0].original))
-                    || (unit.images && unit.images[0] && (unit.images[0].url || unit.images[0].original))
-                    || (unit.mainPhoto && (unit.mainPhoto.url || unit.mainPhoto.original))
-                    || (unit.photo && (unit.photo.url || unit.photo.original))
-                    || '';
+        const imgUrl = (unit.photos && unit.photos[0] && (unit.photos[0].url || unit.photos[0].original || unit.photos[0].src || ''))
+                    || (unit.images && unit.images[0] && (unit.images[0].url || unit.images[0].original || unit.images[0].src || ''))
+                    || (unit.media && unit.media[0] && (unit.media[0].url || unit.media[0].original || ''))
+                    || (unit.gallery && unit.gallery[0] && (unit.gallery[0].url || unit.gallery[0].original || unit.gallery[0].src || ''))
+                    || (unit.mainPhoto && (unit.mainPhoto.url || unit.mainPhoto.original || unit.mainPhoto.src || ''))
+                    || (unit.coverPhoto && (unit.coverPhoto.url || unit.coverPhoto.original || unit.coverPhoto.src || ''))
+                    || (unit.photo && (typeof unit.photo === 'string' ? unit.photo : (unit.photo.url || unit.photo.original || '')))
+                    || unit.photoUrl || unit.thumbnailUrl || unit.imageUrl || '';
         if (desc && String(desc).trim().length > 20) {
+          if (!imgUrl) console.log('[ha-detail] no image in __NEXT_DATA__ for', url.slice(-50), '| keys:', Object.keys(unit).filter(k => /photo|image|media|gallery|cover|thumb/i.test(k)).join(','));
           return { description: String(desc).slice(0, 1200).trim(), image: String(imgUrl || '') };
         }
       } catch {}
@@ -608,11 +620,16 @@ function parseHousingAnywhereCards(html) {
     const [, propType, priceStr, city, , ] = tp;
     const priceNumber = parseInt(priceStr.replace(/,/g, ''));
     if (!priceNumber) continue;
-    const imgM = chunk.match(/src="(https:\/\/housinganywhere\.imgix\.net\/[^"?]+)/i)
-              || chunk.match(/src="(https:\/\/[^"]+\.imgix\.net\/[^"?]*(?:unit|room|listing|photo)[^"?]*)/i)
-              || chunk.match(/src="(https:\/\/[^"]*housinganywhere[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)/i);
+    // Try src=, data-src= (lazy-load), and srcset= in order; accept imgix.net or housinganywhere CDN
+    const imgM = chunk.match(/(?:src|data-src)="(https:\/\/housinganywhere\.imgix\.net\/[^"?]+)/i)
+              || chunk.match(/(?:src|data-src)="(https:\/\/[^"]+\.imgix\.net\/[^"?]*(?:unit|room|listing|photo|cover|main)[^"?]*)/i)
+              || chunk.match(/srcset="(https:\/\/housinganywhere\.imgix\.net\/[^\s"?]+)/i)
+              || chunk.match(/(?:src|data-src)="(https:\/\/[^"]*housinganywhere[^"]*\.(?:jpg|jpeg|png|webp)[^"]*)/i)
+              || chunk.match(/(?:src|data-src)="(https:\/\/images\.housinganywhere\.com\/[^"?]+)/i)
+              || chunk.match(/(?:src|data-src)="(https:\/\/cdn\.housinganywhere\.com\/[^"?]+)/i);
     const rawImg = imgM ? imgM[1] : '';
     const image = rawImg ? (rawImg.includes('?') ? rawImg : `${rawImg}?fit=crop&auto=format&w=400`) : '';
+    console.log('[scraper] photo result: housinganywhere', image ? image.slice(0, 60) : 'EMPTY');
     const streetSlug = url.split('/').pop();
     const address = streetSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     const cityName = tp[3];
