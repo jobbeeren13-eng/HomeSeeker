@@ -180,7 +180,7 @@ ABSOLUTE RULES — failure on any of these is not acceptable:
   if (extraContext) lines.push(`Additional context: ${extraContext}`);
   if (user.heeft_borg === 'ja') lines.push('Guarantor: available if required.');
   else lines.push('Do NOT mention guarantors or co-applicants.');
-  if (allTips.length > 0) lines.push(`Weave these points in naturally (never list them): ${allTips.slice(0, 3).join(' | ')}`);
+  if (allTips.length > 0) lines.push(`VERIFIED LISTING INSIGHTS — these are facts extracted from this specific listing. Use the most relevant one(s) to make the letter feel genuinely researched for this property: ${allTips.slice(0, 3).join(' | ')}`);
   lines.push(`Use the exact 4-sentence structure. Maximum ${wordLimit} words. NEVER start with "I".`);
   if (noName) lines.push('Sign off with "Kind regards," only (no name below).');
   else lines.push(`Sign off with first name only: ${firstName}.`);

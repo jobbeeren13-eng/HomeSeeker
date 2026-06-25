@@ -647,16 +647,8 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
       console.error('[telegram] sendMessage (post-photo) failed:', e.message);
     }
   } else {
-    try {
-      await sendWithRetry(_bot, 'sendMessage', chatId, fullText, {
-        parse_mode: 'Markdown',
-        reply_markup: keyboard,
-        disable_web_page_preview: true,
-      });
-      atLeastOneSent = true;
-    } catch (e) {
-      console.error('[telegram] sendMessage failed:', e.message);
-    }
+    console.log('[alert] skipped — no photo available for', listing.address);
+    return cacheId;
   }
 
   if (atLeastOneSent && user && user.chat_id) {

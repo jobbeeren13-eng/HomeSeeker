@@ -365,6 +365,159 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
 }
 
 // ─────────────────────────────────────────────
+// LISTING INTELLIGENCE — structured intelligence
+// ─────────────────────────────────────────────
+
+function getListingIntelligence(listing, user) {
+  const descRaw = listing.description || '';
+  const desc = descRaw.toLowerCase();
+  const source = (listing.source || '').toLowerCase();
+  const price = listing.priceNumber || 0;
+  const inkomen = (user.inkomen || 0) + (user.partner_inkomen || 0);
+  const ct = (user.contract_type || '').toLowerCase();
+  const profiel = (user.profiel_type || '').toLowerCase();
+  const isStudent = ct === 'student' || profiel === 'student';
+  const hasPartner = user.met_partner === 'ja';
+
+  const intent = detectLandlordIntent(descRaw);
+
+  const landlordProfile = [];
+  const smartPoints = [];
+  const uniqueAngles = [];
+  const watchOut = [];
+  const hiddenSignals = [];
+
+  // ── landlordProfile ──
+  const intentTips = intent.tips.filter(t => t.source === 'landlord').slice(0, 3);
+  for (const t of intentTips) landlordProfile.push(t.tip);
+  if (landlordProfile.length === 0) {
+    if (/makelaar|makelaardij|NVM|VBO/i.test(descRaw)) {
+      landlordProfile.push('Agency-managed listing — high volume, transactional. Financial proof and immediate availability are the primary selection criteria');
+    } else {
+      landlordProfile.push('Standard rental — financial proof, clean references, and document availability are the primary filters');
+    }
+  }
+  if (/woningcorporatie|sociale huur|objectcode|wachtlijst/i.test(descRaw)) {
+    landlordProfile.unshift('Social housing — requires a valid objectcode, not a motivation letter. Follow the housing corporation process exactly');
+  }
+  landlordProfile.splice(3);
+
+  // ── smartPoints ──
+  if (/\btuin\b|private garden|achtertuin/i.test(descRaw)) {
+    smartPoints.push('Mention the garden in your letter — state you maintain outdoor spaces carefully. Landlords with gardens consistently cite neglect as their biggest fear');
+  }
+  if (/\bbalkon\b|\bdakterras\b|\bterras\b/i.test(descRaw)) {
+    smartPoints.push('Property has outdoor space (balcony/terrace) — mention one concrete way you would use it. Specific details beat generic enthusiasm');
+  }
+  if (/gemeubileerd|furnished|gestoffeerd/i.test(descRaw)) {
+    smartPoints.push('Furnished property — ask for an inventory list in your first message. Most applicants forget, and requesting it signals you are serious');
+  }
+  if (/zonnig|south.facing|zuidgericht|south balcony/i.test(descRaw)) {
+    smartPoints.push('Natural light is highlighted — if you work from home, say so specifically. "The south-facing light fits my working-from-home routine" is memorable');
+  }
+  if (source === 'funda') {
+    smartPoints.push('Funda attracts 50-200 applications — call the agency within 1 hour of sending your application. Candidates who call are 3x more likely to get a viewing');
+  } else if (source === 'kamernet') {
+    smartPoints.push('Kamernet landlords are usually private individuals — a warm, personal tone works better than a formal letter. Use their first name if it appears');
+  } else if (source === 'housinganywhere') {
+    smartPoints.push('HousingAnywhere has many international applicants — end your message with one sentence in Dutch. It signals integration and long-term intent');
+  }
+  if (ct === 'vast') {
+    smartPoints.push('Permanent contract is your strongest asset — lead with it in your very first sentence, not buried later');
+  } else if (ct === 'zzp') {
+    smartPoints.push('Freelance income requires extra documentation — prepare 3 years of annual accounts, current assignment confirmation, and 6 months bank statements');
+  }
+  if (inkomen > 0 && price > 0) {
+    const ratio = inkomen / price;
+    if (ratio >= 4) {
+      smartPoints.push(`Income ${ratio.toFixed(1)}x the rent — lead with your gross annual salary (${fmtEuro(inkomen * 12)}/yr). Annual figures land harder than monthly`);
+    } else if (ratio >= 3) {
+      smartPoints.push(`You meet the 3x requirement at ${ratio.toFixed(1)}x — state your gross annual income clearly: ${fmtEuro(inkomen * 12)}/year`);
+    }
+  }
+  smartPoints.splice(3);
+  if (smartPoints.length === 0) {
+    smartPoints.push('Lead with your job title, contract type, and income-to-rent ratio in the first sentence');
+    smartPoints.push('State your move-in date as a fact: "I can move in on [date]" — not "I would like to"');
+    smartPoints.push('Attach all documents in one PDF: Firstname_Lastname_Application.pdf');
+  }
+
+  // ── uniqueAngles ──
+  if (/\binschrijving\b|\bBRP\b/i.test(descRaw) && !/geen inschrijving|not possible to register/i.test(descRaw)) {
+    uniqueAngles.push('Address registration available — important for expats. Explicitly confirm you plan to register here. Most applicants overlook this');
+  } else if (/geen inschrijving|not possible to register/i.test(descRaw)) {
+    uniqueAngles.push('No municipality registration possible — critical for expats needing a BSN. Verify this works for your situation before applying');
+  }
+  if (/per direct|immediately available|direct beschikbaar|vanaf nu\b/i.test(descRaw)) {
+    uniqueAngles.push('Available immediately — state your exact earliest move-in date as a number ("I can move in within 7 days"). Vague availability loses to candidates who are precise');
+  }
+  if (listing.listedAt) {
+    const ageDays = (Date.now() - new Date(listing.listedAt).getTime()) / (1000 * 60 * 60 * 24);
+    if (ageDays >= 21) {
+      uniqueAngles.push('Older listing — the landlord likely had a previous deal fall through. Apply with emphasis on reliability and ability to sign quickly. This is your real leverage');
+    } else if (ageDays <= 0.5) {
+      uniqueAngles.push('Just listed — applying within the first 2 hours gives a statistically significant advantage. Speed matters more than a perfect letter here');
+    }
+  }
+  if (uniqueAngles.length === 0) {
+    uniqueAngles.push('Name two specific viewing days in your first message — most candidates stay vague. Decisiveness shortcuts the landlord\'s decision process');
+  }
+  uniqueAngles.splice(2);
+
+  // ── watchOut ──
+  if (isStudent && /geen studenten|no students|niet voor studenten/i.test(descRaw)) {
+    watchOut.push('Landlord explicitly excludes students — applying is very unlikely to succeed and wastes your first-hour advantage on a better listing');
+  }
+  if (hasPartner && /geen koppel|geen koppels|no couples|geen stel\b/i.test(descRaw)) {
+    watchOut.push('Landlord states no couples — this directly conflicts with your profile');
+  }
+  if (inkomen > 0 && price > 0 && (inkomen / price) < 2.5) {
+    watchOut.push(`Income ${(inkomen / price).toFixed(1)}x the rent — below the 3x rule. Do not apply without a guarantor earning above ${fmtEuro(price * 3)}/mo or offer of 3 months deposit`);
+  }
+  if (/woningcorporatie|sociale huur|objectcode|wachtlijst/i.test(descRaw)) {
+    watchOut.push('Social housing — a standard motivation letter will be rejected. You need a valid objectcode or registration number');
+  }
+  if (user.application_readiness === 'niet') {
+    watchOut.push('Documents not prepared — you cannot compete with applicants who can deliver documents within the hour');
+  }
+  watchOut.splice(2);
+
+  // ── hiddenSignals ──
+  if (/rustig|quiet|geen overlast|geen feestjes|geen muziek/i.test(descRaw)) {
+    hiddenSignals.push('Quiet household emphasis is a filter, not a preference — landlord has likely had noise problems before. Mention you keep regular hours and respect neighbours');
+  }
+  if (/langdurig|long.term|meerdere jaren|vaste huurder/i.test(descRaw)) {
+    hiddenSignals.push('Long-term preference signals past short-stay tenants — explicitly committing to a duration ("I plan to stay at least 2 years") addresses this anxiety directly');
+  }
+  if (/goed onderhoud|verzorgd|nette huurder|nette bewoner/i.test(descRaw)) {
+    hiddenSignals.push('Landlord emphasises condition — they are anxious about damage. Mention one specific example of how you maintain your current home');
+  }
+  if (/borg|waarborgsom|deposit/i.test(descRaw)) {
+    hiddenSignals.push('Deposit explicitly mentioned — confirming your deposit is ready immediately removes a common last-hurdle hesitation');
+  }
+  if (/corporate lease|company lease|zakelijke huur/i.test(descRaw)) {
+    hiddenSignals.push('Corporate lease signals preference for institutional tenants — applying through your employer (if possible) gives a strong advantage');
+  }
+  if (hiddenSignals.length === 0) {
+    if (source === 'funda') {
+      hiddenSignals.push('Agency listings are transactional — agents select for candidates easiest to close. Document readiness and immediate availability matter more than personality');
+    } else {
+      hiddenSignals.push('Private landlords value tenants who communicate clearly and respond promptly — replying within 2 hours signals this from the start');
+    }
+  }
+  hiddenSignals.splice(3);
+
+  const tips = [
+    ...watchOut.map(t => ({ tip: t, category: 'watch_out', level: 'critical' })),
+    ...landlordProfile.map(t => ({ tip: t, category: 'landlord_profile', level: 'listing' })),
+    ...smartPoints.map(t => ({ tip: t, category: 'smart_point', level: 'listing' })),
+    ...uniqueAngles.map(t => ({ tip: t, category: 'unique_angle', level: 'profile' })),
+  ];
+
+  return { landlordProfile, smartPoints, uniqueAngles, watchOut, hiddenSignals, tips };
+}
+
+// ─────────────────────────────────────────────
 // BUYER TIPS — koop listings only
 // ─────────────────────────────────────────────
 
@@ -817,4 +970,4 @@ function detectLandlordIntent(description) {
   return { signals, tips, warnings };
 }
 
-module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getBuyerTips, getPillarBreakdown, detectLandlordIntent };
+module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getListingIntelligence, getBuyerTips, getPillarBreakdown, detectLandlordIntent };

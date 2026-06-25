@@ -8,7 +8,7 @@ const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
-const { calculateScore, getImprovementTips, getBuyerTips } = require('./src/score');
+const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
 const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect } = require('./src/letter');
 
@@ -356,7 +356,7 @@ app.get('/api/letter-data', (req, res) => {
   });
 });
 
-// Returns all improvement tips for a cached listing (used by assistant panels)
+// Returns listing intelligence for a cached listing (used by assistant panels)
 app.get('/api/listing-tips', (req, res) => {
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'id required' });
@@ -365,18 +365,32 @@ app.get('/api/listing-tips', (req, res) => {
   const { listing, chatId, score, dealScore } = entry;
   const user = chatId ? getUser.get(String(chatId)) : null;
   const isKoop = listing.transactionType === 'koop';
-  const { listingTips, profileTips, generalTips, tips } = isKoop
-    ? getBuyerTips(listing, user || {})
-    : getImprovementTips(listing, user || {});
+
+  if (isKoop) {
+    const { listingTips, profileTips, generalTips, tips } = getBuyerTips(listing, user || {});
+    return res.json({
+      listingTips: listingTips.map(t => ({ tip: t.tip, level: t.level || 'listing' })),
+      profileTips: profileTips.map(t => ({ tip: t.tip })),
+      generalTips: generalTips.map(t => ({ tip: t.tip })),
+      tips: tips.map(t => t.tip),
+      listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
+      score, dealScore, isKoop,
+    });
+  }
+
+  const intel = getListingIntelligence(listing, user || {});
   res.json({
-    listingTips: listingTips.map(t => ({ tip: t.tip, level: t.level || 'listing' })),
-    profileTips: profileTips.map(t => ({ tip: t.tip })),
-    generalTips: generalTips.map(t => ({ tip: t.tip })),
-    tips: tips.map(t => t.tip),
+    landlordProfile: intel.landlordProfile,
+    smartPoints: intel.smartPoints,
+    uniqueAngles: intel.uniqueAngles,
+    watchOut: intel.watchOut,
+    hiddenSignals: intel.hiddenSignals,
+    listingTips: intel.tips.filter(t => t.level === 'critical' || t.level === 'listing').map(t => ({ tip: t.tip, level: t.level })),
+    profileTips: intel.tips.filter(t => t.level === 'profile').map(t => ({ tip: t.tip })),
+    generalTips: [],
+    tips: intel.tips.map(t => t.tip),
     listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
-    score,
-    dealScore,
-    isKoop,
+    score, dealScore, isKoop,
   });
 });
 
