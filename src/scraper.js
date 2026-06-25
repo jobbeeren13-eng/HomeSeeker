@@ -284,16 +284,11 @@ function parseHits(hits, city, transactionType) {
       || (Array.isArray(s.media) && s.media[0] && (s.media[0].url || s.media[0].uri || ''))
       || (Array.isArray(s.images) && s.images[0] && (s.images[0].url || s.images[0].uri || ''))
       || s.photo_url || s.main_photo_url || s.cover_photo_url || '';
-    if (!image) {
-      const imgKeys = Object.keys(s).filter(k => /photo|image|thumb|media|picture|cdn|cover|visual/i.test(k));
-      console.log('[funda] no image for', address, '| img-keys:', imgKeys.join(',') || 'none', '| all-keys:', Object.keys(s).join(',').slice(0, 300));
-    }
 
     const descFull  = (typeof s.description === 'string') ? s.description.trim() : '';
     const descBlurb = (s.blikvanger && typeof s.blikvanger.text === 'string') ? s.blikvanger.text.trim() : '';
     const description = descFull || descBlurb;
 
-    console.log('[scraper] photo result: funda', image ? image.slice(0, 60) : 'EMPTY');
     return {
       url,
       address,
@@ -331,7 +326,7 @@ async function fetchFundaCity(city, transactionType) {
   }
 }
 
-async function fetchFundaDescription(url) {
+async function fetchFundaDescriptionAndImage(url) {
   try {
     const resp = await fetch(url, {
       headers: {
@@ -341,13 +336,18 @@ async function fetchFundaDescription(url) {
       },
       signal: AbortSignal.timeout(8000),
     });
-    if (!resp.ok) return '';
+    if (!resp.ok) return { description: '', image: '' };
     const html = await resp.text();
-    const m = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
-           || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
-    return m ? m[1].trim() : '';
+    const descM = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
+               || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
+    const imgM  = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)
+               || html.match(/<meta\s+content="([^"]+)"\s+property="og:image"/i);
+    return {
+      description: descM ? descM[1].trim() : '',
+      image: imgM ? imgM[1].trim() : '',
+    };
   } catch {
-    return '';
+    return { description: '', image: '' };
   }
 }
 
@@ -422,14 +422,16 @@ async function scrapeFunda() {
     }
   }
 
-  // Batch-fetch descriptions for new listings (concurrency = 3, non-blocking on error)
+  // Batch-fetch description + image for new listings (concurrency = 3, non-blocking on error)
   if (needsDesc.length > 0) {
-    console.log(`[scraper] Enriching ${needsDesc.length} new Funda listing(s) with descriptions…`);
+    console.log(`[scraper] Enriching ${needsDesc.length} new Funda listing(s) with description + image…`);
     const CONCURRENCY = 3;
     for (let i = 0; i < needsDesc.length; i += CONCURRENCY) {
       await Promise.allSettled(needsDesc.slice(i, i + CONCURRENCY).map(async url => {
-        const desc = await fetchFundaDescription(url);
-        if (desc) updateListingDescription.run(desc, url);
+        const { description, image } = await fetchFundaDescriptionAndImage(url);
+        if (description) updateListingDescription.run(description, url);
+        if (image) { try { updateListingImage.run(image, url); } catch {} }
+        console.log('[scraper] funda detail fetch:', url.slice(-50), '| desc:', description ? 'ok' : 'empty', '| img:', image ? image.slice(0, 60) : 'EMPTY');
       }));
     }
   }
@@ -632,7 +634,6 @@ function parseHousingAnywhereCards(html) {
               || chunk.match(/(?:src|data-src)="(https:\/\/cdn\.housinganywhere\.com\/[^"?]+)/i);
     const rawImg = imgM ? imgM[1] : '';
     const image = rawImg ? (rawImg.includes('?') ? rawImg : `${rawImg}?fit=crop&auto=format&w=400`) : '';
-    console.log('[scraper] photo result: housinganywhere', image ? image.slice(0, 60) : 'EMPTY');
     const streetSlug = url.split('/').pop();
     const address = streetSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     const cityName = tp[3];
