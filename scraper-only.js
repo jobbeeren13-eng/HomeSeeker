@@ -9,7 +9,7 @@ const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const ADMIN_KEY   = process.env.ADMIN_KEY;
-const { generateLetterDirect, getAITip, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect } = require('./src/letter');
+const { generateLetterDirect, getAITip, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 const PORT        = parseInt(process.env.MATCH_NOW_PORT || '3001', 10);
 
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
@@ -402,6 +402,21 @@ app.post('/api/generate-agent-script', async (req, res) => {
   if (!situation) return res.status(400).json({ error: 'situation required' });
   try { res.json(await generateAgentScriptDirect({ situation, context: context || '' })); }
   catch (err) { console.error('[generate-agent-script]', err); res.status(500).json({ error: err.message }); }
+});
+
+// Support chat — ANTHROPIC_API_KEY lives only on Hetzner, so this endpoint lives here
+app.post('/api/support-chat', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { message, history } = req.body;
+  if (!message) return res.status(400).json({ error: 'message required' });
+  try {
+    const data = await generateSupportChatDirect({ message, history: Array.isArray(history) ? history : [] });
+    res.json(data);
+  } catch (err) {
+    console.error('[support-chat]', err.message);
+    res.json({ reply: 'I am having trouble right now. Please email support@homeseeker.dev and we will help you directly.' });
+  }
 });
 
 app.listen(PORT, () => console.log(`[match-now] Listening on port ${PORT}`));

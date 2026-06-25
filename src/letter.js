@@ -1197,6 +1197,35 @@ Return only valid JSON. No explanation, no code blocks.`;
   return JSON.parse(jsonMatch[0]);
 }
 
+const SUPPORT_CHAT_SYSTEM = `You are the HomeSeeker support assistant. HomeSeeker is a Dutch housing alert service for expats. Answer questions clearly and briefly - maximum 80 words per answer.
+
+What you know about HomeSeeker:
+- Monitors Funda, Kamernet, and HousingAnywhere 24/7. Sends real-time Telegram alerts for matching listings.
+- Every alert includes: Application Score (0-100, shows profile fit for this listing - not probability of getting the home), Market Value Score (is the price fair), a verdict, and a button to open the AI Rental Assistant.
+- AI Rental Assistant has 3 tools: Write Letter (personalised application letter), Viewing Tips (questions to ask and what to inspect), Negotiation (scripts and market assessment).
+- AI Buyer Assistant has 5 tools: Affordability, Property Analysis, Bid Strategy, Legal Process, VvE Checker.
+- Price: 9.99 euros per month including 21% VAT. 7-day free trial. Cancel anytime via /cancel in Telegram or at homeseeker.dev/cancel.
+- Filters: send /filters to the HomeSeeker bot in Telegram.
+- Covers 19 cities in the Netherlands.
+- Alerts arrive via Telegram - users need Telegram installed.
+- The Application Score is NOT the probability of getting the home. It shows how well your profile matches this listing.
+
+If you cannot answer: say "I am not sure - please email support@homeseeker.dev and we will help you directly."
+Never invent features or prices. Keep answers under 80 words.`;
+
+async function generateSupportChatDirect({ message, history = [] }) {
+  const messages = [
+    ...history.slice(-6).map(h => ({ role: h.role, content: String(h.content) })),
+    { role: 'user', content: String(message).slice(0, 500) },
+  ];
+  const response = await callClaude({
+    max_tokens: 250,
+    system: SUPPORT_CHAT_SYSTEM,
+    messages,
+  });
+  return { reply: response.content?.[0]?.text || 'I am not sure - please email support@homeseeker.dev' };
+}
+
 async function generateAgentScriptDirect({ situation, context }) {
   const systemPrompt = `You are an expert on dealing with Dutch real estate agents (makelaars). Write word-for-word scripts for expats. Return a JSON object with exactly these keys:
 - "script": complete word-for-word script in English for the described situation. Natural, confident, not desperate. Max 150 words.
@@ -1268,4 +1297,4 @@ ABSOLUTE RULES:
   return { message: stripMarkdown(message.content[0].text) };
 }
 
-module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, STYLE_LABELS };
+module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect, STYLE_LABELS };

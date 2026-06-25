@@ -10,7 +10,7 @@ const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing,
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
-const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect } = require('./src/letter');
+const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1063,41 +1063,9 @@ app.post('/api/support-chat', async (req, res) => {
   const { message, history } = req.body;
   if (!message) return res.status(400).json({ error: 'message required' });
   try {
-    const messages = [
-      ...(Array.isArray(history) ? history.slice(-6) : []).map(h => ({ role: h.role, content: String(h.content) })),
-      { role: 'user', content: String(message).slice(0, 500) },
-    ];
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 250,
-        system: `You are the HomeSeeker support assistant. HomeSeeker is a Dutch housing alert service for expats. Answer questions clearly and briefly - maximum 80 words per answer.
-
-What you know about HomeSeeker:
-- Monitors Funda, Kamernet, and HousingAnywhere 24/7. Sends real-time Telegram alerts for matching listings.
-- Every alert includes: Application Score (0-100, shows profile fit for this listing - not probability of getting the home), Market Value Score (is the price fair), a verdict, and a button to open the AI Rental Assistant.
-- AI Rental Assistant has 3 tools: Write Letter (personalised application letter), Viewing Tips (questions to ask and what to inspect), Negotiation (scripts and market assessment).
-- AI Buyer Assistant has 5 tools: Affordability, Property Analysis, Bid Strategy, Legal Process, VvE Checker.
-- Price: 9.99 euros per month including 21% VAT. 7-day free trial. Cancel anytime via /cancel in Telegram or at homeseeker.dev/cancel.
-- Filters: send /filters to the HomeSeeker bot in Telegram.
-- Covers 19 cities in the Netherlands.
-- Alerts arrive via Telegram - users need Telegram installed.
-- The Application Score is NOT the probability of getting the home. It shows how well your profile matches this listing.
-
-If you cannot answer: say "I am not sure - please email support@homeseeker.dev and we will help you directly."
-Never invent features or prices. Keep answers under 80 words.`,
-        messages,
-      }),
-    });
-    const data = await response.json();
-    const reply = data.content?.[0]?.text || 'I am not sure - please email support@homeseeker.dev';
-    res.json({ reply });
+    const hist = Array.isArray(history) ? history.slice(-6) : [];
+    const data = await proxyToHetzner('/api/support-chat', { message, history: hist }, () => generateSupportChatDirect({ message, history: hist }));
+    res.json({ reply: data.reply || 'I am not sure - please email support@homeseeker.dev' });
   } catch (err) {
     console.error('[support-chat]', err.message);
     res.json({ reply: 'I am having trouble right now. Please email support@homeseeker.dev and we will help you directly.' });
