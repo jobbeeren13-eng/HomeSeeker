@@ -284,7 +284,10 @@ function parseHits(hits, city, transactionType) {
       || (Array.isArray(s.media) && s.media[0] && (s.media[0].url || s.media[0].uri || ''))
       || (Array.isArray(s.images) && s.images[0] && (s.images[0].url || s.images[0].uri || ''))
       || s.photo_url || s.main_photo_url || s.cover_photo_url || '';
-    if (!image) console.log('[funda] no image for', address, '| raw:', JSON.stringify({ thumbnail_id: s.thumbnail_id, media: (s.media || []).slice(0, 1), images: (s.images || []).slice(0, 1), photo_url: s.photo_url }).slice(0, 300));
+    if (!image) {
+      const imgKeys = Object.keys(s).filter(k => /photo|image|thumb|media|picture|cdn|cover|visual/i.test(k));
+      console.log('[funda] no image for', address, '| img-keys:', imgKeys.join(',') || 'none', '| all-keys:', Object.keys(s).join(',').slice(0, 300));
+    }
 
     const descFull  = (typeof s.description === 'string') ? s.description.trim() : '';
     const descBlurb = (s.blikvanger && typeof s.blikvanger.text === 'string') ? s.blikvanger.text.trim() : '';
