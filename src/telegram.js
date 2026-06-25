@@ -492,10 +492,8 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     const filled = Math.round((pct / 100) * 10);
     return fill.repeat(filled) + '⬜'.repeat(10 - filled) + ' ' + pct + '%';
   }
-
   function appFill(pct) { return pct >= 70 ? '🟩' : pct >= 40 ? '🟨' : '🟥'; }
   function dealFill(pct) { return pct >= 60 ? '🟩' : pct >= 35 ? '🟨' : '🟥'; }
-
   function appLabel(pct) {
     if (pct >= 85) return 'Excellent';
     if (pct >= 70) return 'Strong';
@@ -503,11 +501,22 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     if (pct >= 30) return 'Fair';
     return 'Weak';
   }
-
   function valueLabel(pct) {
     if (pct >= 60) return 'Good deal';
     if (pct >= 40) return 'Fair price';
     return 'Expensive';
+  }
+  function verdictCTA(sc, huur) {
+    if (huur) {
+      if (sc >= 85) return 'Excellent match — tap AI Rental Assistant for your full strategy.';
+      if (sc >= 70) return 'Strong match — tap AI Rental Assistant to see your best move.';
+      if (sc >= 55) return 'Good match — tap AI Rental Assistant to strengthen your application.';
+      if (sc >= 40) return 'Possible match — tap AI Rental Assistant to close the gaps.';
+      return 'Weak match — tap AI Rental Assistant to see what is blocking you.';
+    }
+    if (sc >= 80) return 'Strong buyer profile — tap AI Buyer Assistant for your full strategy.';
+    if (sc >= 60) return 'Good buyer profile — tap AI Buyer Assistant to prepare your bid.';
+    return 'Review your position — tap AI Buyer Assistant to understand your options.';
   }
 
   const JUNK = ['blikvanger', 'nieuw', 'verhuurd', 'verkocht', 'onder bod'];
@@ -523,13 +532,8 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   const cityDisplay = formatCityDisplay(listing.city);
   const isHuur = listing.transactionType === 'huur';
   const monthlyCost = (isHuur && listing.priceNumber) ? estimateMonthlyCost(listing.priceNumber) : null;
-  const inkomen = user ? ((user.inkomen || 0) + (user.partner_inkomen || 0)) : 0;
-  const price = listing.priceNumber || 0;
-
-  const ageMs = listing.listedAt ? Date.now() - new Date(listing.listedAt).getTime() : null;
 
   const intent = detectLandlordIntent(listing.description || '');
-  const sigKeys = intent.signals.map(s => s.key);
   const warningKeys = intent.warnings.map(w => w.key);
   const conflicts = [];
   if (user) {
@@ -539,65 +543,54 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     if (warningKeys.includes('working_only') && user.contract_type === 'student') conflicts.push('working_only');
   }
 
-  // ── CAPTION (ultra-short, safe for sendPhoto — target under 400 chars) ──
   const cityStr = cityDisplay || listing.city || '';
   const safeAddr = address.replace(/_/g, '\\_');
-  const captionLines = [];
-  captionLines.push(getPlatformBadge(listing.source));
-  captionLines.push(`📍 *${safeAddr}${cityStr ? ', ' + cityStr : ''}*`);
-  if (listing.area) captionLines.push(`• ${listing.area}m²`);
+
+  // Build single complete caption
+  const lines = [];
+  lines.push(getPlatformBadge(listing.source));
+  lines.push(`📍 *${safeAddr}${cityStr ? ', ' + cityStr : ''}*`);
+  if (listing.area) lines.push(`• ${listing.area}m²`);
   if (isHuur && listing.priceNumber) {
-    captionLines.push(`• Rent: ${priceStr}/mo`);
+    lines.push(`• Rent: ${priceStr}/mo`);
     if (listing.area && listing.priceNumber) {
       const ppm2 = Math.round(listing.priceNumber / listing.area);
-      if (ppm2 >= 5 && ppm2 <= 100) captionLines.push(`• €${ppm2}/m²`);
+      if (ppm2 >= 5 && ppm2 <= 100) lines.push(`• €${ppm2}/m²`);
     }
-    if (monthlyCost) captionLines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
+    if (monthlyCost) lines.push(`• Est. total: €${monthlyCost.toLocaleString('nl-NL')}/mo`);
   } else if (!isHuur && listing.priceNumber) {
-    captionLines.push(`• ${priceStr}`);
+    lines.push(`• ${priceStr}`);
     if (listing.area && listing.priceNumber) {
       const ppm2 = Math.round(listing.priceNumber / listing.area);
-      if (ppm2 >= 5 && ppm2 <= 100) captionLines.push(`• €${ppm2}/m²`);
+      if (ppm2 >= 5 && ppm2 <= 100) lines.push(`• €${ppm2}/m²`);
     }
   } else {
-    captionLines.push(`• ${priceStr}${isHuur ? '/mo' : ''}`);
+    lines.push(`• ${priceStr}${isHuur ? '/mo' : ''}`);
   }
-  const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
-  captionLines.push('');
-  captionLines.push(`*Application: ${appLabel(score)}*`);
-  captionLines.push(bar(score, appFill(score)));
-  captionLines.push('');
-  captionLines.push(`*Market Value: ${dealDisplay}*`);
-  if (dealScore != null) captionLines.push(bar(dealScore, dealFill(dealScore)));
-  const captionText = captionLines.join('\n');
-  const hasRealImage = listing.image && /^https?:\/\//.test(listing.image);
-  console.log('[alert] captionLength:', captionText.length, 'hasRealImage:', hasRealImage);
-  if (captionText.length > 600) console.warn('[telegram] caption over 600 chars:', captionText.length);
 
-  // ── SECOND MESSAGE (disclaimer + merged verdict/CTA + profile warnings) ─
-  function verdictCTA(sc, huur) {
-    if (huur) {
-      if (sc >= 85) return 'Excellent match — tap AI Rental Assistant for your full strategy.';
-      if (sc >= 70) return 'Strong match — tap AI Rental Assistant to see your best move.';
-      if (sc >= 55) return 'Good match — tap AI Rental Assistant to strengthen your application.';
-      if (sc >= 40) return 'Possible match — tap AI Rental Assistant to close the gaps.';
-      return 'Weak match — tap AI Rental Assistant to see what is blocking you.';
-    }
-    if (sc >= 80) return 'Strong buyer profile — tap AI Buyer Assistant for your full strategy.';
-    if (sc >= 60) return 'Good buyer profile — tap AI Buyer Assistant to prepare your bid.';
-    return 'Review your position — tap AI Buyer Assistant to understand your options.';
-  }
-  const msgLines = [];
-  msgLines.push('_Score reflects your profile fit — not your odds of getting the home._');
-  msgLines.push('');
-  msgLines.push(verdictCTA(score, isHuur));
-  // Only show mismatch warning when user profile actually conflicts with listing
+  const dealDisplay = dealScore != null ? valueLabel(dealScore) : 'Insufficient data';
+  lines.push('');
+  lines.push(`*Application: ${appLabel(score)}*`);
+  lines.push(bar(score, appFill(score)));
+  lines.push('');
+  lines.push(`*Market Value: ${dealDisplay}*`);
+  if (dealScore != null) lines.push(bar(dealScore, dealFill(dealScore)));
+  lines.push('');
+  const disclaimer = '_Score reflects your profile fit — not your odds of getting the home._';
+  lines.push(disclaimer);
+  lines.push('');
+  lines.push(verdictCTA(score, isHuur));
   if (conflicts.length > 0) {
-    msgLines.push('');
-    msgLines.push('⛔ *Possible profile mismatch. Read landlord requirements carefully.*');
+    lines.push('');
+    lines.push('⛔ *Possible profile mismatch. Read landlord requirements carefully.*');
   }
-  const msgText = msgLines.join('\n');
-  const fullText = captionText + '\n\n' + msgText;
+
+  let captionText = lines.join('\n');
+  // Telegram sendPhoto caption limit is 1024 chars — drop disclaimer if needed
+  if (captionText.length > 1024) {
+    captionText = lines.filter(l => l !== disclaimer).join('\n').slice(0, 1024);
+  }
+  console.log('[alert] captionLength:', captionText.length);
 
   const cacheId = cacheListing(listing, chatId, score, dealScore);
   const keyboard = isHuur ? {
@@ -625,30 +618,42 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     ],
   };
 
+  const hasRealImage = listing.image && /^https?:\/\//.test(listing.image);
   let atLeastOneSent = false;
+
   if (hasRealImage) {
     try {
       await sendWithRetry(_bot, 'sendPhoto', chatId, listing.image, {
         caption: captionText,
         parse_mode: 'Markdown',
+        reply_markup: keyboard,
       });
       atLeastOneSent = true;
     } catch (e) {
       console.error('[telegram] sendPhoto failed:', e.message);
+      // Fall back to text message if photo send fails
+      try {
+        await sendWithRetry(_bot, 'sendMessage', chatId, captionText, {
+          parse_mode: 'Markdown',
+          reply_markup: keyboard,
+          disable_web_page_preview: true,
+        });
+        atLeastOneSent = true;
+      } catch (e2) {
+        console.error('[telegram] sendMessage fallback failed:', e2.message);
+      }
     }
+  } else {
     try {
-      await sendWithRetry(_bot, 'sendMessage', chatId, msgText, {
+      await sendWithRetry(_bot, 'sendMessage', chatId, captionText, {
         parse_mode: 'Markdown',
         reply_markup: keyboard,
         disable_web_page_preview: true,
       });
       atLeastOneSent = true;
     } catch (e) {
-      console.error('[telegram] sendMessage (post-photo) failed:', e.message);
+      console.error('[telegram] sendMessage failed:', e.message);
     }
-  } else {
-    console.log('[alert] skipped — no photo available for', listing.address);
-    return cacheId;
   }
 
   if (atLeastOneSent && user && user.chat_id) {

@@ -701,7 +701,7 @@ Internet: KPN (most reliable), Ziggo (cable, fast), T-Mobile Thuis (good value)
 Renter's insurance: Centraal Beheer, Interpolis, InShared (cheapest)${userProfile}`,
   };
 
-  const system = (systems[tabNum] || systems[2]) + '\n\nIMPORTANT: Follow the exact section structure specified. Every section listed is mandatory. Do not add sections not listed in the structure.';
+  const system = (systems[tabNum] || systems[2]) + '\n\nIMPORTANT: Follow the exact section structure specified. Every section listed is mandatory. Do not add sections not listed in the structure. Do not start your response with a title, H1 header (#), or the user\'s name. Do not use --- as a divider. Start directly with the first ## section.';
   const content = listingContext
     ? `Listing context: ${listingContext}\n\nUser input: ${userMessage}`
     : userMessage;

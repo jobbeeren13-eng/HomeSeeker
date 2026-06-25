@@ -68,15 +68,15 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 @keyframes sh{to{transform:translateX(100%)}}
 .sk:nth-child(2){width:70%}.sk:nth-child(3){width:50%}
 
-.rb{font-size:13px;line-height:1.75;color:rgba(255,255,255,0.8);display:none}
-.rb h2{font-size:13px;font-weight:700;color:#fff;margin:18px 0 7px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.rb{font-size:13px;line-height:1.7;color:rgba(255,255,255,0.75);display:none}
+.rb h2{font-size:13px;font-weight:700;color:#fff;margin:16px 0 6px}
 .rb h2:first-child{margin-top:0}
-.rb ul,.rb ol{padding-left:18px;margin:6px 0 12px}
-.rb li{margin-bottom:5px}
+.rb ul,.rb ol{padding-left:14px;margin:4px 0 8px}
+.rb li{margin-bottom:4px}
 .rb ul li::marker{color:#00c896}
 .rb ol li::marker{color:rgba(255,255,255,0.4);font-weight:600}
-.rb p{margin-bottom:8px}
-.rb strong{color:#fff;font-weight:600}
+.rb p{margin-bottom:6px}
+.rb strong{color:#e8edf3;font-weight:600}
 
 .act-row{display:none;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
 .act-row.on{display:flex}
@@ -163,7 +163,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="card">
       <div class="fld">
         <div class="lbl">Tone</div>
-        <div class="tone-row">
+        <div class="tone-row" id="tone-row">
           <button class="tp on" onclick="setTone(this,'professional')">Professional</button>
           <button class="tp" onclick="setTone(this,'personal')">Personal</button>
           <button class="tp" onclick="setTone(this,'concise')">Concise</button>
@@ -212,8 +212,17 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="psub">Describe the property. Get everything you need to walk in prepared and walk out as the top candidate.</div>
     <div class="card">
       <div class="fld">
+        <div class="lbl">Property type <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)">(optional)</span></div>
+        <div class="tone-row" id="prop-row">
+          <button class="tp" onclick="setPropType(this,'Apartment')">Apartment</button>
+          <button class="tp" onclick="setPropType(this,'House')">House</button>
+          <button class="tp" onclick="setPropType(this,'Studio')">Studio</button>
+          <button class="tp" onclick="setPropType(this,'Room')">Room</button>
+        </div>
+      </div>
+      <div class="fld">
         <div class="lbl">Describe the property <span class="cc" id="cc-2">0 / 2000</span></div>
-        <textarea class="inp" id="t2-msg" rows="5" placeholder="Type, price, location, anything from the listing description..." oninput="uc(this,'cc-2',2000)"></textarea>
+        <textarea class="inp" id="t2-msg" rows="5" placeholder="Paste anything from the listing — price, description, what stood out, how long it's been online" oninput="uc(this,'cc-2',2000)"></textarea>
       </div>
       <button class="btn-main" id="btn-2" onclick="submit(2)">Get viewing tips &#8594;</button>
       <div class="errtxt" id="err-2"></div>
@@ -235,12 +244,11 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="card">
       <div class="fld">
         <div class="lbl">What do you want to negotiate?</div>
-        <select class="inp" id="t3-goal">
-          <option value="lower rent">Lower rent</option>
-          <option value="longer lease">Longer lease</option>
-          <option value="competing offers">Competing offers</option>
-          <option value="something else">Something else</option>
-        </select>
+        <div class="tone-row" id="neg-row">
+          <button class="tp on" onclick="setNegGoal(this,'lower rent')">Lower rent</button>
+          <button class="tp" onclick="setNegGoal(this,'longer lease')">Longer lease</button>
+          <button class="tp" onclick="setNegGoal(this,'competing offer')">Competing offer</button>
+        </div>
       </div>
       <div class="fld">
         <div class="lbl">Your situation <span class="cc" id="cc-3">0 / 2000</span></div>
@@ -262,7 +270,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 </div>
 
 <script>
-let chatId=null,listingContext='',cacheId=null;
+let chatId=null,listingContext='',cacheId=null,negGoal='lower rent',propType='';
 const lastResp={};
 const API_TAB_MAP={2:'3',3:'4'};
 const BTN={2:'Get viewing tips →',3:'Get negotiation advice →'};
@@ -374,8 +382,16 @@ function switchTab(n){
 }
 
 function setTone(btn,tone){
-  document.querySelectorAll('.tp').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#tone-row .tp').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');ltState.tone=tone;
+}
+function setNegGoal(btn,goal){
+  document.querySelectorAll('#neg-row .tp').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');negGoal=goal;
+}
+function setPropType(btn,type){
+  if(btn.classList.contains('on')){btn.classList.remove('on');propType='';}
+  else{document.querySelectorAll('#prop-row .tp').forEach(b=>b.classList.remove('on'));btn.classList.add('on');propType=type;}
 }
 
 function uc(el,ccId,max){
@@ -459,8 +475,8 @@ function clearEL(){const e=document.getElementById('err-lt');if(e)e.classList.re
 
 function buildMsg(tab){
   switch(tab){
-    case 2:{const m=document.getElementById('t2-msg')?.value.trim();return m||null;}
-    case 3:{const g=document.getElementById('t3-goal')?.value,s=document.getElementById('t3-msg')?.value.trim();return s?`Goal: ${g}\n\n${s}`:`Goal: ${g}`;}
+    case 2:{const m=document.getElementById('t2-msg')?.value.trim();if(!m)return null;return propType?`Property type: ${propType}\n\n${m}`:m;}
+    case 3:{const s=document.getElementById('t3-msg')?.value.trim();return s?`Goal: ${negGoal}\n\n${s}`:`Goal: ${negGoal}`;}
     default:return null;
   }
 }
@@ -489,7 +505,8 @@ function renderResp(tab,text){
 }
 
 function renderMd(text){
-  let s=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  let s=text.replace(/^# [^\n]*\n?/,'').replace(/^-{3,}$/gm,'');
+  s=s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   s=s.replace(/((?:^[-*] .+\n?)+)/gm,m=>`<ul>${m.trim().split('\n').map(l=>`<li>${l.replace(/^[-*] /,'')}</li>`).join('')}</ul>`);
   s=s.replace(/((?:^\d+\. .+\n?)+)/gm,m=>`<ol>${m.trim().split('\n').map(l=>`<li>${l.replace(/^\d+\. /,'')}</li>`).join('')}</ol>`);
   return s.split('\n').map(l=>{if(!l.trim())return'';if(/^<(h2|ul|ol|li|p)/.test(l.trim()))return l;return`<p>${l}</p>`;}).join('');
