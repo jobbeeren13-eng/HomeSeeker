@@ -4,7 +4,7 @@ const cron = require('node-cron');
 const TelegramBot = require('node-telegram-bot-api');
 const { scrapeListings, markListingsAsSent, rowToListing } = require('./src/scraper');
 const { findMatches, findMatchesForUser } = require('./src/matcher');
-const { getRecentListings, markListingSent } = require('./src/database');
+const { getRecentListings, markListingSent, insertScraperStat } = require('./src/database');
 const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
@@ -59,10 +59,12 @@ async function dispatchAlerts(matches) {
         if (aiTip) listing = { ...rawListing, aiTip };
       }
 
-      const cacheId = await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user, bot);
-      sentUrls.push(listing.url);
-      markListingSent.run(listing.url, user.chat_id);
-      if (cacheId) {
+      const { cacheId, sent } = await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user, bot);
+      if (sent) {
+        sentUrls.push(listing.url);
+        markListingSent.run(listing.url, user.chat_id);
+      }
+      if (cacheId && sent) {
         fetch(`${RAILWAY_URL}/api/cache-listing`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
@@ -89,6 +91,7 @@ async function runScrapeAndAlert() {
   }
   isRunning = true;
   scraperHealth.lastRunAt = Date.now();
+  const cycleStart = Date.now();
   console.log(`[cron] Starting scrape cycle at ${new Date().toISOString()}`);
   try {
     const listings = await scrapeListings();
@@ -104,7 +107,14 @@ async function runScrapeAndAlert() {
 
     const matches = await findMatches(listings);
     console.log(`[cron] Found ${matches.length} matches`);
-    if (!matches.length) return;
+    if (!matches.length) {
+      const srcCount = {};
+      for (const l of listings) srcCount[l.source] = (srcCount[l.source] || 0) + 1;
+      for (const [src, count] of Object.entries(srcCount)) {
+        try { insertScraperStat.run(src, count, 0, Date.now() - cycleStart, Date.now()); } catch (_) {}
+      }
+      return;
+    }
 
     const sentUrls = await dispatchAlerts(matches);
     if (sentUrls.length) markListingsAsSent(sentUrls);
@@ -112,6 +122,11 @@ async function runScrapeAndAlert() {
     for (const l of listings) srcCount[l.source] = (srcCount[l.source] || 0) + 1;
     const srcStr = Object.entries(srcCount).map(([k, v]) => `${k}:${v}`).join(' ') || 'none';
     console.log(`[cron] Sent ${sentUrls.length} alerts | new: ${srcStr} | matches: ${matches.length}`);
+    const cycleMs = Date.now() - cycleStart;
+    for (const [src, count] of Object.entries(srcCount)) {
+      const srcAlerts = sentUrls.filter(u => matches.find(m => m.listing.url === u && m.listing.source === src)).length;
+      try { insertScraperStat.run(src, count, srcAlerts, cycleMs, Date.now()); } catch (_) {}
+    }
   } catch (err) {
     console.error('[cron] Error:', err.message);
   } finally {

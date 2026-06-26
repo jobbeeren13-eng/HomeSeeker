@@ -368,6 +368,11 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
 // LISTING INTELLIGENCE — structured intelligence
 // ─────────────────────────────────────────────
 
+const CITY_RENT_PM2 = {
+  amsterdam: 28, utrecht: 22, rotterdam: 18, 'den-haag': 17,
+  haarlem: 24, leiden: 21, eindhoven: 15, groningen: 12,
+};
+
 function getListingIntelligence(listing, user) {
   const descRaw = listing.description || '';
   const desc = descRaw.toLowerCase();
@@ -459,6 +464,16 @@ function getListingIntelligence(listing, user) {
       uniqueAngles.push('Just listed — applying within the first 2 hours gives a statistically significant advantage. Speed matters more than a perfect letter here');
     }
   }
+  if (price > 0 && listing.area > 0 && listing.transactionType === 'huur') {
+    const benchmark = CITY_RENT_PM2[(listing.city || '').toLowerCase()];
+    if (benchmark) {
+      const ppm2 = price / listing.area;
+      const dev = (ppm2 - benchmark) / benchmark;
+      if (dev < -0.10) {
+        uniqueAngles.unshift(`Priced ${Math.round(-dev * 100)}% below the neighbourhood average (€${Math.round(ppm2)}/m² vs €${benchmark}/m² benchmark) — expect strong competition. Apply within the first hour`);
+      }
+    }
+  }
   if (uniqueAngles.length === 0) {
     uniqueAngles.push('Name two specific viewing days in your first message — most candidates stay vague. Decisiveness shortcuts the landlord\'s decision process');
   }
@@ -479,6 +494,16 @@ function getListingIntelligence(listing, user) {
   }
   if (user.application_readiness === 'niet') {
     watchOut.push('Documents not prepared — you cannot compete with applicants who can deliver documents within the hour');
+  }
+  if (price > 0 && listing.area > 0 && listing.transactionType === 'huur') {
+    const benchmark = CITY_RENT_PM2[(listing.city || '').toLowerCase()];
+    if (benchmark) {
+      const ppm2 = price / listing.area;
+      const dev = (ppm2 - benchmark) / benchmark;
+      if (dev > 0.15) {
+        watchOut.push(`Priced ${Math.round(dev * 100)}% above the neighbourhood average (€${Math.round(ppm2)}/m² vs €${benchmark}/m² benchmark). Confirm you are comfortable with the premium before applying`);
+      }
+    }
   }
   watchOut.splice(2);
 

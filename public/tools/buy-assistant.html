@@ -65,15 +65,15 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 @keyframes sh{to{transform:translateX(100%)}}
 .sk:nth-child(2){width:70%}.sk:nth-child(3){width:50%}
 
-.rb{font-size:13px;line-height:1.75;color:rgba(255,255,255,0.8);display:none}
-.rb h2{font-size:13px;font-weight:700;color:#fff;margin:18px 0 7px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.rb{font-size:13px;line-height:1.7;color:rgba(255,255,255,0.75);display:none}
+.rb h2{font-size:13px;font-weight:700;color:#fff;margin:16px 0 6px}
 .rb h2:first-child{margin-top:0}
-.rb ul,.rb ol{padding-left:18px;margin:6px 0 12px}
-.rb li{margin-bottom:5px}
+.rb ul,.rb ol{padding-left:14px;margin:4px 0 8px}
+.rb li{margin-bottom:4px}
 .rb ul li::marker{color:#00c896}
 .rb ol li::marker{color:rgba(255,255,255,0.4);font-weight:600}
-.rb p{margin-bottom:8px}
-.rb strong{color:#fff;font-weight:600}
+.rb p{margin-bottom:6px}
+.rb strong{color:#e8edf3;font-weight:600}
 
 .act-row{display:none;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
 .act-row.on{display:flex}
@@ -382,7 +382,8 @@ function renderResp(tab,text){
 }
 
 function renderMd(text){
-  let s=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  let s=text.replace(/^# [^\n]*\n?/,'').replace(/^-{3,}$/gm,'');
+  s=s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
   s=s.replace(/((?:^[-*] .+\n?)+)/gm,m=>`<ul>${m.trim().split('\n').map(l=>`<li>${l.replace(/^[-*] /,'')}</li>`).join('')}</ul>`);
   s=s.replace(/((?:^\d+\. .+\n?)+)/gm,m=>`<ol>${m.trim().split('\n').map(l=>`<li>${l.replace(/^\d+\. /,'')}</li>`).join('')}</ol>`);
   return s.split('\n').map(l=>{if(!l.trim())return'';if(/^<(h2|ul|ol|li|p)/.test(l.trim()))return l;return`<p>${l}</p>`;}).join('');

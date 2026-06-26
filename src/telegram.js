@@ -622,16 +622,31 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   let atLeastOneSent = false;
 
   if (hasRealImage) {
+    // Download to buffer — Telegram can refuse to fetch CDN URLs with restrictive origins
+    let photo = listing.image;
+    let fileOpts;
     try {
-      await sendWithRetry(_bot, 'sendPhoto', chatId, listing.image, {
-        caption: captionText,
-        parse_mode: 'Markdown',
-        reply_markup: keyboard,
+      const imgResp = await fetch(listing.image, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+          'Referer': 'https://www.funda.nl/',
+        },
+        signal: AbortSignal.timeout(8000),
       });
+      if (imgResp.ok) {
+        photo = Buffer.from(await imgResp.arrayBuffer());
+        fileOpts = { filename: 'photo.jpg', contentType: 'image/jpeg' };
+      }
+    } catch (imgErr) {
+      console.log('[telegram] photo buffer fetch failed, using URL:', imgErr.message);
+    }
+    try {
+      const sendPhotoArgs = [chatId, photo, { caption: captionText, parse_mode: 'Markdown', reply_markup: keyboard }];
+      if (fileOpts) sendPhotoArgs.push(fileOpts);
+      await sendWithRetry(_bot, 'sendPhoto', ...sendPhotoArgs);
       atLeastOneSent = true;
     } catch (e) {
       console.error('[telegram] sendPhoto failed:', e.message);
-      // Fall back to text message if photo send fails
       try {
         await sendWithRetry(_bot, 'sendMessage', chatId, captionText, {
           parse_mode: 'Markdown',
@@ -659,7 +674,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   if (atLeastOneSent && user && user.chat_id) {
     try { updateLastAlertSentAt.run(Date.now(), user.chat_id); } catch (_) {}
   }
-  return cacheId;
+  return { cacheId, sent: atLeastOneSent };
 }
 
 async function sendWithRetry(_bot, method, ...args) {

@@ -124,8 +124,17 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now')),
     UNIQUE(chat_id, listing_url)
   );
+
+  CREATE TABLE IF NOT EXISTS scraper_stats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source TEXT,
+    listings_found INTEGER,
+    alerts_sent INTEGER,
+    cycle_time_ms INTEGER,
+    created_at INTEGER
+  );
 `);
- 
+
 try {
   const userCols = db.prepare(`PRAGMA table_info(users)`).all().map(r => r.name);
   if (userCols.includes('document_readiness') && !userCols.includes('application_readiness')) {
@@ -336,6 +345,10 @@ const getUsersForReviewRequest = db.prepare(`
   AND created_at <= datetime('now', '-14 days')
 `);
 
+const insertScraperStat = db.prepare(
+  'INSERT INTO scraper_stats (source, listings_found, alerts_sent, cycle_time_ms, created_at) VALUES (?, ?, ?, ?, ?)'
+);
+
 module.exports = {
   db, dbPath: DB_PATH,
   getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
@@ -351,5 +364,6 @@ module.exports = {
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
+  insertScraperStat,
 };
  
