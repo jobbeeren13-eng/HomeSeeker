@@ -109,28 +109,24 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .next-steps li::marker{color:#00c896;font-weight:700}
 
 /* Intelligence list (watch-out bullets) */
-.intel-wrap{border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;margin-bottom:20px;display:none}
+.intel-wrap{margin-bottom:20px;display:none}
 .intel-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
 .intel-item:last-of-type{margin-bottom:0}
 .intel-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:7px}
 .intel-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7}
 .intel-divider{height:1px;background:rgba(255,255,255,0.06);margin:12px 0}
 
-/* Chip system — full-width stacked checklist */
+/* Tip row system */
 .chip-section{margin-bottom:12px}
 .chip-section:last-child{margin-bottom:0}
 .chip-section-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);font-weight:600;margin-bottom:8px}
-.tip-chip{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:rgba(255,255,255,0.35);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s;text-align:left;margin-bottom:6px}
-.tip-chip:last-child{margin-bottom:0}
-.tip-chip:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.6)}
-.tip-chip.selected{background:rgba(0,200,150,0.1);border:1.5px solid #00c896;color:#e8edf3}
-.tip-chip.selected:hover{background:rgba(0,200,150,0.15)}
-.chip-check{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:700;color:transparent;transition:all .15s}
-.tip-chip.selected .chip-check{background:#00c896;border-color:#00c896;color:#0a0a0a}
-.chip-label{flex:1;line-height:1.4}
-.chip-info{width:16px;height:16px;border-radius:50%;border:1px solid currentColor;font-size:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.5;transition:opacity .15s}
-.chip-info:hover{opacity:1}
-.chip-tooltip{position:absolute;background:#1a1f26;border:1px solid rgba(0,200,150,0.2);border-radius:8px;padding:10px 12px;font-size:12px;color:rgba(255,255,255,0.8);max-width:260px;line-height:1.5;z-index:300;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+.tip-row{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .15s;background:#111318}
+.tip-row:last-child{margin-bottom:0}
+.tip-row.selected{border-color:#00c896;background:rgba(0,200,150,0.06)}
+.tip-check{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;flex-shrink:0;margin-top:1px;transition:all .15s}
+.tip-row.selected .tip-check{background:#00c896;border-color:#00c896;color:#0a0a0a}
+.tip-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6}
+.tip-row.selected .tip-text{color:#ffffff}
 
 /* Scout robot */
 .scout-row{display:flex;align-items:flex-end;gap:12px;margin-bottom:16px}
@@ -358,10 +354,11 @@ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'
 const escAttr=s=>esc(s).replace(/"/g,'&quot;');
 
 const PART_B=[
-  {text:'My income and employment',why:'Confirming your income eliminates the landlord\'s biggest uncertainty — state job title, employer, and contract type'},
-  {text:'Why this specific home',why:'Shows genuine interest — most applicants copy-paste the same letter. One specific detail sets you apart'},
-  {text:'Available immediately',why:'Landlords with a vacancy want it filled fast — stating this clearly is direct leverage'},
-  {text:'Documents ready to send',why:'Offering immediate documents removes friction and puts you ahead of candidates who say "I\'ll send them later"'},
+  {text:'Lead with your permanent contract in the first sentence. Landlords filter by contract type before they read anything else.'},
+  {text:'State your gross annual income — not monthly. €60,000/year sounds more substantial than €5,000/month and lands harder.'},
+  {text:'Mention you can send all documents within the hour of their request. Most landlords shortlist candidates who can deliver immediately.'},
+  {text:'Name two specific days you are available for a viewing. Vague availability loses viewings to candidates who are decisive.'},
+  {text:'Write one sentence about why this specific property suits your life — not why you need a home, but why THIS home.'},
 ];
 
 const DEFAULT_INTEL={
@@ -375,12 +372,6 @@ const DEFAULT_INTEL={
   watchOut:[],
   hiddenSignals:[],
 };
-
-let activeTooltip=null;
-
-function hideTooltip(){
-  if(activeTooltip){activeTooltip.remove();activeTooltip=null;}
-}
 
 function renderChipUI(data){
   const container=document.getElementById('tips-checkboxes');
@@ -399,58 +390,28 @@ function renderChipUI(data){
   if(partA.length){
     html+='<div class="chip-section"><div class="chip-section-lbl" style="color:#00c896">FOR THIS LISTING</div>';
     partA.forEach(t=>{
-      const sep=t.indexOf(' — ');
-      const label=sep>0?t.slice(0,sep):(t.length>80?t.slice(0,80)+'…':t);
-      html+=`<button class="tip-chip selected" data-type="a" data-tip="${escAttr(t)}" data-why="${escAttr(t)}"><span class="chip-check">&#10003;</span><span class="chip-label">${esc(label)}</span><span class="chip-info">&#9432;</span></button>`;
+      html+=`<div class="tip-row selected" data-type="a" data-tip="${escAttr(t)}" onclick="this.classList.toggle('selected')"><div class="tip-check">&#10003;</div><div class="tip-text">${esc(t)}</div></div>`;
     });
     html+='</div><div class="intel-divider" style="margin:12px 0"></div>';
   }
 
-  html+='<div class="chip-section"><div class="chip-section-lbl">INCLUDE IN YOUR LETTER</div>';
+  html+='<div class="chip-section"><div class="chip-section-lbl">ALWAYS USEFUL</div>';
   PART_B.forEach(c=>{
-    html+=`<button class="tip-chip selected" data-type="b" data-tip="${escAttr(c.text)}" data-why="${escAttr(c.why)}"><span class="chip-check">&#10003;</span><span class="chip-label">${esc(c.text)}</span><span class="chip-info">&#9432;</span></button>`;
+    html+=`<div class="tip-row selected" data-type="b" data-tip="${escAttr(c.text)}" onclick="this.classList.toggle('selected')"><div class="tip-check">&#10003;</div><div class="tip-text">${esc(c.text)}</div></div>`;
   });
   html+='</div>';
 
   container.innerHTML=html;
-  container.style.display='';
-
-  if(!container._la){
-    container._la=true;
-    container.addEventListener('click',function(evt){
-      const info=evt.target.closest('.chip-info');
-      const chip=evt.target.closest('.tip-chip');
-      if(info&&chip){
-        evt.stopPropagation();
-        hideTooltip();
-        const why=chip.getAttribute('data-why')||chip.getAttribute('data-tip')||'';
-        const tip=document.createElement('div');
-        tip.className='chip-tooltip';
-        tip.textContent=why;
-        document.body.appendChild(tip);
-        const rect=info.getBoundingClientRect();
-        const scrollY=window.scrollY||window.pageYOffset;
-        const tipW=tip.offsetWidth||240;
-        const left=Math.max(8,Math.min(rect.left-20,window.innerWidth-tipW-8));
-        tip.style.cssText=`position:absolute;left:${left}px;top:${rect.top+scrollY-tip.offsetHeight-8}px`;
-        activeTooltip=tip;
-        setTimeout(()=>{document.addEventListener('click',hideTooltip,{once:true});},50);
-        return;
-      }
-      if(chip&&!evt.target.closest('.chip-info')){
-        chip.classList.toggle('selected');
-      }
-    });
-  }
+  container.style.display='block';
 }
 
 function getSelectedTips(){
   const listingTips=[],generalTips=[];
-  document.querySelectorAll('.tip-chip.selected[data-type="a"]').forEach(el=>{
+  document.querySelectorAll('.tip-row.selected[data-type="a"]').forEach(el=>{
     const t=(el.getAttribute('data-tip')||'').trim();
     if(t)listingTips.push(t);
   });
-  document.querySelectorAll('.tip-chip.selected[data-type="b"]').forEach(el=>{
+  document.querySelectorAll('.tip-row.selected[data-type="b"]').forEach(el=>{
     const t=(el.getAttribute('data-tip')||'').trim();
     if(t)generalTips.push(t);
   });
@@ -685,7 +646,7 @@ getParams();
 #hs-cw{position:fixed;bottom:88px;right:24px;z-index:9998;width:340px;background:#111318;border:1px solid rgba(255,255,255,0.1);border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.5);overflow:hidden;display:none;flex-direction:column;opacity:0;transform:translateY(8px);transition:opacity .2s ease,transform .2s ease}
 #hs-cw.hs-rdy{opacity:1;transform:translateY(0)}
 #hs-ch{background:#0d1117;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:8px;flex-shrink:0}
-#hs-chd{width:8px;height:8px;border-radius:50%;background:#00c896;flex-shrink:0}
+#hs-chd{flex-shrink:0;display:flex;align-items:center}
 #hs-chn{font-size:13px;font-weight:700;color:#fff;flex:1;font-family:inherit}
 #hs-clo{background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;font-family:inherit}
 #hs-clo:hover{color:rgba(255,255,255,0.8)}
@@ -711,17 +672,17 @@ getParams();
   <svg id="hs-ix" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 </button>
 <div id="hs-cw">
-  <div id="hs-ch"><div id="hs-chd"></div><span id="hs-chn">HomeSeeker</span><button id="hs-clo" onclick="hsT()">&#x2715;</button></div>
+  <div id="hs-ch"><div id="hs-chd"><svg width="24" height="30" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle cx="22" cy="31" r="7.5" fill="white"/><circle cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg></div><span id="hs-chn">Scout</span><button id="hs-clo" onclick="hsT()">&#x2715;</button></div>
   <div id="hs-cm"></div>
   <div id="hs-ir"><input id="hs-inp" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')hsS()"><button id="hs-snd" onclick="hsS()" aria-label="Send"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
 </div>
 <script>
 (function(){
-var CHIPS=['How does the Application Score work?','What is the AI Rental Assistant?','How do I cancel?','Why am I not getting alerts?'];
+var CHIPS=['What do the tips mean?','How does the Application Score work?','What tone should I choose?','What is a vast contract?'];
 var hist=[],init=false,open=false;
 function hsT(){open=!open;var w=document.getElementById('hs-cw'),ic=document.getElementById('hs-ic'),ix=document.getElementById('hs-ix');if(open){w.style.display='flex';requestAnimationFrame(function(){setTimeout(function(){w.classList.add('hs-rdy');},10);});ic.style.display='none';ix.style.display='';localStorage.setItem('hs_co','1');if(!init)hsI();}else{w.classList.remove('hs-rdy');setTimeout(function(){w.style.display='none';},200);ic.style.display='';ix.style.display='none';localStorage.setItem('hs_co','0');}}
 window.hsT=hsT;
-function hsI(){init=true;var m=document.getElementById('hs-cm');var b=document.createElement('div');b.className='hs-ai';b.textContent='Hi! I can answer questions about HomeSeeker - alerts, scores, the AI assistant, pricing, or anything else. What would you like to know?';m.appendChild(b);var cd=document.createElement('div');cd.id='hs-chips';CHIPS.forEach(function(q){var btn=document.createElement('button');btn.className='hs-chip';btn.textContent=q;btn.onclick=function(){hsRC();hsSM(q);};cd.appendChild(btn);});m.appendChild(cd);hsScr();}
+function hsI(){init=true;var m=document.getElementById('hs-cm');var b=document.createElement('div');b.className='hs-ai';b.textContent='Hi, I\'m Scout! Ask me anything — how to use this tool, what Dutch housing terms mean, or how to strengthen your application.';m.appendChild(b);var cd=document.createElement('div');cd.id='hs-chips';CHIPS.forEach(function(q){var btn=document.createElement('button');btn.className='hs-chip';btn.textContent=q;btn.onclick=function(){hsRC();hsSM(q);};cd.appendChild(btn);});m.appendChild(cd);hsScr();}
 function hsRC(){var c=document.getElementById('hs-chips');if(c)c.remove();}
 function hsAM(role,text){var m=document.getElementById('hs-cm');var d=document.createElement('div');d.className=role==='user'?'hs-us':'hs-ai';d.textContent=text;m.appendChild(d);hsScr();return d;}
 function hsAL(){var m=document.getElementById('hs-cm');var d=document.createElement('div');d.className='hs-ai';d.innerHTML='<span class="hs-dt"><span class="hs-d"></span><span class="hs-d"></span><span class="hs-d"></span></span>';d.id='hs-ld';m.appendChild(d);hsScr();}

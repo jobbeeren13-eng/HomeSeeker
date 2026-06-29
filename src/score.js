@@ -461,11 +461,24 @@ function getListingIntelligence(listing, user) {
   }
   // Metadata-based fallbacks for listings with short or empty descriptions
   if (descRaw.trim().length < 50) {
-    if (listing.area > 100 && !smartPoints.some(t => /long.term|stay.*year/i.test(t))) {
-      smartPoints.push('Large property — mention your long-term plans. Landlords renting a large home want committed tenants, not 6-month movers');
+    // Price-based fallbacks
+    if (price > 2500 && !smartPoints.some(t => /this price point|financially qualified/i.test(t))) {
+      smartPoints.push('At this price point, most applicants are financially qualified. Stand out by showing you specifically want this property — mention one concrete detail that makes this the right home for you.');
+    } else if (price > 0 && price < 1000 && !smartPoints.some(t => /4 sentences|budget listing/i.test(t))) {
+      smartPoints.push('Budget listings attract extremely high volumes. Keep your first message under 4 sentences and lead immediately with your income and contract type.');
     }
-    if (listing.area > 0 && listing.area < 35 && !smartPoints.some(t => /short|concise|brief/i.test(t))) {
-      smartPoints.push('Small studio or room — keep your message under 120 words. Landlords screening small-unit applicants respond better to concise messages');
+    // Area-based fallbacks
+    if (listing.area > 100 && !smartPoints.some(t => /long.term|stay.*year/i.test(t))) {
+      smartPoints.push('This is a large property. Mention your intention to stay long-term — landlords of large properties want stable tenants, not someone who will move in 12 months.');
+    } else if (listing.area > 0 && listing.area < 40 && !smartPoints.some(t => /under 80 words|concise|get to the point/i.test(t))) {
+      smartPoints.push('Small properties have high competition. Concise tone works best — get to the point in under 80 words.');
+    }
+    // City-based fallbacks
+    const cityLower = (listing.city || '').toLowerCase();
+    if (cityLower === 'amsterdam' && !smartPoints.some(t => /2 hours|first 2 hours/i.test(t))) {
+      smartPoints.push('Amsterdam listings get 50-200 applications. Apply within the first 2 hours — the shortlist forms before the day is out.');
+    } else if ((cityLower === 'rotterdam' || cityLower === 'utrecht') && !smartPoints.some(t => /4 hours|first 4/i.test(t))) {
+      smartPoints.push('Apply within the first 4 hours — slightly less competitive than Amsterdam but still fast-moving.');
     }
   }
 
