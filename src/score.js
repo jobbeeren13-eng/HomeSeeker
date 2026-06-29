@@ -405,6 +405,12 @@ function getListingIntelligence(listing, user) {
   if (/woningcorporatie|sociale huur|objectcode|wachtlijst/i.test(descRaw)) {
     landlordProfile.unshift('Social housing — requires a valid objectcode, not a motivation letter. Follow the housing corporation process exactly');
   }
+  if (/particulier|private owner|eigenaar verhuurt|zelf verhuur/i.test(descRaw) && !landlordProfile.some(t => /private landlord/i.test(t))) {
+    landlordProfile.push('Private landlord — personal connection and reliability matter more than with agencies');
+  }
+  if (/makelaar|makelaardij|vastgoed|NVM|VBO|ERA\b/i.test(descRaw) && !landlordProfile.some(t => /agency/i.test(t))) {
+    landlordProfile.push('Agency listing — professional presentation and complete documentation are the primary filters');
+  }
   landlordProfile.splice(3);
 
   // ── smartPoints ──
@@ -414,8 +420,8 @@ function getListingIntelligence(listing, user) {
   if (/\bbalkon\b|\bdakterras\b|\bterras\b/i.test(descRaw)) {
     smartPoints.push('Property has outdoor space (balcony/terrace) — mention one concrete way you would use it. Specific details beat generic enthusiasm');
   }
-  if (/gemeubileerd|furnished|gestoffeerd/i.test(descRaw)) {
-    smartPoints.push('Furnished property — ask for an inventory list in your first message. Most applicants forget, and requesting it signals you are serious');
+  if (/gemeubileerd|furnished|gestoffeerd|inclusief meubels/i.test(descRaw)) {
+    smartPoints.push('This is a furnished listing — mention that you appreciate having furniture included and will treat it with care');
   }
   if (/zonnig|south.facing|zuidgericht|south balcony/i.test(descRaw)) {
     smartPoints.push('Natural light is highlighted — if you work from home, say so specifically. "The south-facing light fits my working-from-home routine" is memorable');
@@ -426,6 +432,15 @@ function getListingIntelligence(listing, user) {
     smartPoints.push('Kamernet landlords are usually private individuals — a warm, personal tone works better than a formal letter. Use their first name if it appears');
   } else if (source === 'housinganywhere') {
     smartPoints.push('HousingAnywhere has many international applicants — end your message with one sentence in Dutch. It signals integration and long-term intent');
+  }
+  if (/particulier|private owner|eigenaar verhuurt|zelf verhuur/i.test(descRaw)) {
+    smartPoints.push('Address the landlord personally — if their name appears anywhere in the listing, use it in your opening');
+  }
+  if (/gerenoveerd|renovated|nieuw keuken|nieuwe badkamer|recent verbouwd/i.test(descRaw)) {
+    smartPoints.push('This property was recently renovated — acknowledge the investment and state you will maintain it carefully');
+  }
+  if (/direct beschikbaar|immediately available|per direct|z\.s\.m/i.test(descRaw)) {
+    smartPoints.unshift('This listing is available immediately — state your exact move-in date in your first sentence');
   }
   if (ct === 'vast') {
     smartPoints.push('Permanent contract is your strongest asset — lead with it in your very first sentence, not buried later');
@@ -453,8 +468,14 @@ function getListingIntelligence(listing, user) {
   } else if (/geen inschrijving|not possible to register/i.test(descRaw)) {
     uniqueAngles.push('No municipality registration possible — critical for expats needing a BSN. Verify this works for your situation before applying');
   }
-  if (/per direct|immediately available|direct beschikbaar|vanaf nu\b/i.test(descRaw)) {
-    uniqueAngles.push('Available immediately — state your exact earliest move-in date as a number ("I can move in within 7 days"). Vague availability loses to candidates who are precise');
+  if (/per direct|immediately available|direct beschikbaar|vanaf nu\b|z\.s\.m/i.test(descRaw)) {
+    uniqueAngles.push('Available immediately — speed is the differentiator here. Lead with: "I can sign and move in within [X] days of your decision."');
+  }
+  if (/gemeubileerd|furnished|gestoffeerd|inclusief meubels/i.test(descRaw)) {
+    uniqueAngles.push('Furnished listing — most applicants ignore this. Acknowledge explicitly: "I will treat the furnishings as if they were my own."');
+  }
+  if (/particulier|private owner|eigenaar verhuurt|zelf verhuur/i.test(descRaw)) {
+    uniqueAngles.push('Private landlord — they care more about WHO lives there than income alone. Show your personality briefly in the letter');
   }
   if (listing.listedAt) {
     const ageDays = (Date.now() - new Date(listing.listedAt).getTime()) / (1000 * 60 * 60 * 24);

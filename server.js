@@ -432,7 +432,7 @@ app.post('/api/generate-letter-web', async (req, res) => {
 
 // First contact message — short 4-sentence message to send to landlord immediately
 app.post('/api/first-contact-message', async (req, res) => {
-  const { cacheId, extraContext = '' } = req.body;
+  const { cacheId, extraContext = '', selectedTipTexts = [] } = req.body;
   if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
 
   const entry = getCachedEntry(cacheId);
@@ -449,12 +449,12 @@ app.post('/api/first-contact-message', async (req, res) => {
       const resp = await timedFetch(`${hetznerUrl}/api/generate-first-contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ listing, user: user || {}, extraContext }),
+        body: JSON.stringify({ listing, user: user || {}, extraContext, selectedTipTexts }),
       });
       if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
       message = (await resp.json()).message;
     } else {
-      ({ message } = await generateFirstContactMessage({ listing, user: user || {}, extraContext }));
+      ({ message } = await generateFirstContactMessage({ listing, user: user || {}, extraContext, selectedTipTexts }));
     }
     res.json({ message });
   } catch (err) {

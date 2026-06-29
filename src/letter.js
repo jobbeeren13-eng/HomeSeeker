@@ -180,7 +180,7 @@ ABSOLUTE RULES — failure on any of these is not acceptable:
   if (extraContext) lines.push(`Additional context: ${extraContext}`);
   if (user.heeft_borg === 'ja') lines.push('Guarantor: available if required.');
   else lines.push('Do NOT mention guarantors or co-applicants.');
-  if (allTips.length > 0) lines.push(`VERIFIED LISTING INSIGHTS — these are facts extracted from this specific listing. Use the most relevant one(s) to make the letter feel genuinely researched for this property: ${allTips.slice(0, 3).join(' | ')}`);
+  if (allTips.length > 0) lines.push(`CONFIRMED POINTS TO INCLUDE — The user has selected these specific points to include. Treat each as a confirmed fact about their situation and weave it naturally into the letter. Do not list them — integrate them as natural sentences. Listing-specific points appear in the first half of the letter; general strengths appear in the second half: ${allTips.slice(0, 6).join(' | ')}`);
   lines.push(`Use the exact 4-sentence structure. Maximum ${wordLimit} words. NEVER start with "I".`);
   if (noName) lines.push('Sign off with "Kind regards," only (no name below).');
   else lines.push(`Sign off with first name only: ${firstName}.`);
@@ -1248,7 +1248,7 @@ Return only valid JSON. No explanation, no code blocks.`;
   return JSON.parse(jsonMatch[0]);
 }
 
-async function generateFirstContactMessage({ listing, user = null, extraContext = '' }) {
+async function generateFirstContactMessage({ listing, user = null, extraContext = '', selectedTipTexts = [] }) {
   const rawNaam = (user?.naam || '').trim();
   const noName = !rawNaam || rawNaam.toLowerCase() === 'huurder';
   const naam = noName ? '' : rawNaam;
@@ -1286,6 +1286,7 @@ ABSOLUTE RULES:
   lines.push(`Property address: ${address}${city ? `, ${city}` : ''}.`);
   if (description.length > 20) lines.push(`Listing description (extract one specific detail for sentence 2): ${description.slice(0, 350)}`);
   if (extraContext) lines.push(`Additional context: ${extraContext}`);
+  if (selectedTipTexts.length > 0) lines.push(`The user has confirmed they want to emphasise: ${selectedTipTexts.slice(0, 2).join(', ')}. Use the most relevant one in sentence 2 of the message.`);
   lines.push('Write the 4-sentence first contact message. Maximum 80 words. Never start with "I". English only.');
 
   const message = await callClaude({

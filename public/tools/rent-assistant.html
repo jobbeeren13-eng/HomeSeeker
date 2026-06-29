@@ -45,15 +45,16 @@ body.has-lb .wrap{margin-top:88px}
 .cc{font-size:11px;text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.3)}
 .inp{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#ffffff;font-family:inherit;font-size:14px;padding:12px 14px;outline:none;transition:border-color .15s}
 .inp:focus{border-color:#00c896}
-textarea.inp{min-height:120px;resize:vertical;line-height:1.6}
+textarea.inp{min-height:80px;resize:vertical;line-height:1.6}
 select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
 
 .tone-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.tp{padding:7px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:7px;background:transparent;color:rgba(255,255,255,0.45);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.tp{padding:7px 14px;border:1px solid rgba(255,255,255,0.1);border-radius:7px;background:transparent;color:rgba(255,255,255,0.45);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;text-align:left;line-height:1.4}
 .tp:hover{color:rgba(255,255,255,0.8)}
 .tp.on{border-color:#00c896;color:#00c896;background:rgba(0,200,150,0.07)}
+.tp-sub{font-size:10px;opacity:0.6;display:block;font-weight:400}
 
-.btn-main{width:100%;height:46px;background:#00c896;color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-main{width:100%;height:50px;background:#00c896;color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-main:hover:not(:disabled){background:#00b386}
 .btn-main:disabled{opacity:.4;cursor:not-allowed}
 .spin{width:14px;height:14px;border:2.5px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
@@ -78,16 +79,18 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .rb p{margin-bottom:6px}
 .rb strong{color:#e8edf3;font-weight:600}
 
-.act-row{display:none;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.act-row{display:none;flex-direction:column;gap:4px;margin-top:12px}
 .act-row.on{display:flex}
-.btn-sm{height:30px;padding:0 14px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
+.btn-sm{height:30px;padding:0 14px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;background:transparent;color:rgba(255,255,255,0.5);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;align-self:flex-start}
 .btn-sm:hover{border-color:rgba(255,255,255,0.22);color:rgba(255,255,255,0.8)}
 .btn-sm.ok{border-color:#00c896;color:#00c896}
+.btn-link{background:none;border:none;color:rgba(255,255,255,0.4);font-family:inherit;font-size:12px;cursor:pointer;padding:0;text-decoration:underline;transition:color .15s}
+.btn-link:hover{color:rgba(255,255,255,0.7)}
 
 /* Letter output */
 .letter-box{display:none}
 .letter-txt{font-size:13px;line-height:1.9;white-space:pre-wrap;color:rgba(255,255,255,0.85)}
-.wc-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;margin-left:auto}
+.wc-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px}
 .wc-green{color:#00c896;background:rgba(0,200,150,0.1)}
 .wc-amber{color:#f59e0b;background:rgba(245,158,11,0.1)}
 .wc-red{color:#ff6b6b;background:rgba(255,107,107,0.1)}
@@ -108,20 +111,37 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .next-steps li::marker{color:#00c896;font-weight:700}
 .next-steps a{color:#00c896;text-decoration:underline}
 
-/* Intelligence flat list */
-.intel-wrap{border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;margin-bottom:20px}
+/* Intelligence flat list (for watchOut bullets) */
+.intel-wrap{border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;margin-bottom:20px;display:none}
 .intel-section{margin-bottom:14px}
 .intel-section:last-child{margin-bottom:0}
-.intel-section-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);font-weight:600;margin-bottom:8px}
 .intel-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
 .intel-item:last-of-type{margin-bottom:0}
 .intel-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:7px}
 .intel-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.7}
-.intel-divider{height:1px;background:rgba(255,255,255,0.06);margin:14px 0}
-.intel-analysis-btn{font-size:12px;color:#00c896;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;margin-top:8px;display:inline-block}
-.intel-analysis-btn:hover{text-decoration:underline}
-.intel-hidden-section{display:none;margin-top:10px}
-.intel-hidden-section.open{display:block}
+.intel-divider{height:1px;background:rgba(255,255,255,0.06);margin:12px 0}
+
+/* Scout avatar */
+.scout-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.12);border-radius:10px;margin-bottom:16px}
+.scout-av{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.scout-name{font-size:11px;color:#00c896;font-weight:600;margin-top:3px;text-align:center}
+.scout-msg{font-size:13px;color:rgba(255,255,255,0.9);line-height:1.6;flex:1}
+.scout-row-sm{padding:10px 14px;margin-bottom:12px}
+.scout-row-sm .scout-msg{font-size:12px;color:rgba(255,255,255,0.75)}
+
+/* Chip system */
+.chip-section{margin-bottom:12px}
+.chip-section-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);font-weight:600;margin-bottom:8px}
+.chips-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:100px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.35);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;text-align:left}
+.chip.on{background:rgba(0,200,150,0.12);border-color:#00c896;color:#00c896}
+.chip-info{width:16px;height:16px;border-radius:50%;border:1px solid currentColor;font-size:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.7;transition:opacity .15s}
+.chip-info:hover{opacity:1}
+.chip-tooltip{position:absolute;background:#1a1f26;border:1px solid rgba(0,200,150,0.2);border-radius:8px;padding:10px 12px;font-size:12px;color:rgba(255,255,255,0.8);max-width:240px;line-height:1.5;z-index:300;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+
+/* Scout next step after letter */
+.scout-next{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.1);border-radius:8px;width:100%}
+.scout-next-msg{font-size:12px;color:rgba(255,255,255,0.7);line-height:1.55;flex:1}
 
 @media(max-width:600px){
   .wrap{padding:20px 16px 80px}
@@ -155,25 +175,33 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
   <!-- Panel 1: Write Letter -->
   <div id="panel-1" class="panel on">
-    <div class="ptitle">Write your application letter</div>
-    <div class="psub">Generate a personalised letter and get the exact first message to send right now.</div>
 
+    <!-- Scout intro row -->
+    <div class="scout-row" id="scout-intro-lt">
+      <div class="scout-av">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg" id="scout-msg-lt">Hi! I'm Scout. Open this page from a Telegram alert and I'll analyse the listing for you.</div>
+    </div>
+
+    <!-- Intelligence chip block -->
     <div id="tips-checkboxes" class="intel-wrap"></div>
 
     <div class="card">
       <div class="fld">
         <div class="lbl">Tone</div>
         <div class="tone-row" id="tone-row">
-          <button class="tp on" onclick="setTone(this,'professional')">Professional</button>
-          <button class="tp" onclick="setTone(this,'personal')">Personal</button>
-          <button class="tp" onclick="setTone(this,'concise')">Concise</button>
+          <button class="tp on" onclick="setTone(this,'professional')">Professional<span class="tp-sub">Agencies &amp; corporate landlords</span></button>
+          <button class="tp" onclick="setTone(this,'personal')">Personal<span class="tp-sub">Private landlords</span></button>
+          <button class="tp" onclick="setTone(this,'concise')">Concise<span class="tp-sub">High competition listings</span></button>
         </div>
       </div>
       <div class="fld">
-        <div class="lbl">Extra context <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)">(optional)</span> <span class="cc" id="cc-lt">0 / 400</span></div>
-        <textarea class="inp" id="lt-extra" rows="2" oninput="uc(this,'cc-lt',400)"></textarea>
+        <div class="lbl">Anything else Scout should know? <span class="cc" id="cc-lt">0 / 400</span></div>
+        <textarea class="inp" id="lt-extra" rows="2" placeholder="E.g. I have a dog, I work from home 3 days/week, I can move in immediately..." oninput="uc(this,'cc-lt',400)" maxlength="400"></textarea>
       </div>
-      <button class="btn-main" id="btn-lt" onclick="ltGenerate()">Generate my letter &#8594;</button>
+      <button class="btn-main" id="btn-lt" onclick="ltGenerate()">Write my letter &#8594;</button>
       <div class="errtxt" id="err-lt"></div>
     </div>
 
@@ -194,22 +222,54 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
       </ol>
     </div>
 
-    <!-- Letter output -->
+    <!-- Letter output card -->
     <div class="card">
       <div class="skel" id="lt-skel"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="empty-st" id="lt-empty">Your letter appears here.</div>
+
+      <!-- Scout output message (shown after letter generated) -->
+      <div class="scout-row scout-row-sm" id="scout-lt-out" style="display:none">
+        <div class="scout-av">
+          <svg width="32" height="32" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg" style="font-size:12px">Here's your letter. Copy it and send it within the hour — speed matters more than perfection.</div>
+      </div>
+
       <div class="letter-box" id="lt-box"><div class="letter-txt" id="lt-text"></div></div>
+
       <div class="act-row" id="lt-actions">
-        <button class="btn-sm" id="lt-copy" onclick="ltCopy()">Copy</button>
-        <span class="wc-badge wc-green" id="wc-badge" style="display:none"></span>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span class="wc-badge wc-green" id="wc-badge" style="display:none"></span>
+        </div>
+        <button class="btn-main" id="lt-copy" onclick="ltCopy()" style="margin-bottom:8px">Copy letter</button>
+        <div style="display:flex;gap:20px;justify-content:center;width:100%;margin-bottom:4px">
+          <button class="btn-link" onclick="ltModify('shorter')">Make it shorter</button>
+          <button class="btn-link" onclick="ltModify('personal')">Make it more personal</button>
+        </div>
+        <div class="scout-next" id="scout-next-step" style="display:none">
+          <div class="scout-av">
+            <svg width="28" height="28" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+            <div class="scout-name">Scout</div>
+          </div>
+          <div class="scout-next-msg">After sending, call the agency directly. Agents who hear a voice are 3x more likely to book a viewing.</div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Panel 2: Viewing Tips -->
   <div id="panel-2" class="panel">
-    <div class="ptitle">Prepare for your viewing</div>
-    <div class="psub">Describe the property. Get everything you need to walk in prepared and walk out as the top candidate.</div>
+
+    <!-- Scout intro -->
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Tell me about the property and I'll prepare you for the viewing.</div>
+    </div>
+
     <div class="card">
       <div class="fld">
         <div class="lbl">Property type <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)">(optional)</span></div>
@@ -230,6 +290,14 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="card">
       <div class="empty-st" id="empty-2">Your response appears here.</div>
       <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <!-- Scout output -->
+      <div class="scout-row scout-row-sm" id="scout-out-2" style="display:none">
+        <div class="scout-av">
+          <svg width="32" height="32" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg" style="font-size:12px">Here's what to check and ask. Save this before your viewing.</div>
+      </div>
       <div class="rb" id="body-2"></div>
       <div class="act-row" id="acts-2">
         <button class="btn-sm" onclick="cpResp(2)">Copy</button>
@@ -239,8 +307,16 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
   <!-- Panel 3: Negotiation -->
   <div id="panel-3" class="panel">
-    <div class="ptitle">Get negotiation advice</div>
-    <div class="psub">Find out if negotiating is realistic here — then get the exact words to use.</div>
+
+    <!-- Scout intro -->
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">I'll tell you if negotiating is realistic here — and give you the exact words to use.</div>
+    </div>
+
     <div class="card">
       <div class="fld">
         <div class="lbl">What do you want to negotiate?</div>
@@ -260,6 +336,14 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="card">
       <div class="empty-st" id="empty-3">Your response appears here.</div>
       <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <!-- Scout output -->
+      <div class="scout-row scout-row-sm" id="scout-out-3" style="display:none">
+        <div class="scout-av">
+          <svg width="32" height="32" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg" style="font-size:12px">Read the market assessment first. Only use the scripts if Scout says negotiating is realistic.</div>
+      </div>
       <div class="rb" id="body-3"></div>
       <div class="act-row" id="acts-3">
         <button class="btn-sm" onclick="cpResp(3)">Copy</button>
@@ -276,6 +360,14 @@ const API_TAB_MAP={2:'3',3:'4'};
 const BTN={2:'Get viewing tips →',3:'Get negotiation advice →'};
 const ltState={letter:'',tone:'professional'};
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const escAttr=s=>esc(s).replace(/"/g,'&quot;');
+
+const PART_B=[
+  {text:'My income and employment',why:'Confirming your income eliminates the landlord\'s biggest uncertainty'},
+  {text:'Why this specific home',why:'Shows genuine interest — most applicants copy-paste the same letter'},
+  {text:'Available immediately',why:'Landlords with a vacancy want it filled fast — this is leverage'},
+  {text:'Documents ready to send',why:'Offering immediate documents removes friction from the process'},
+];
 
 const DEFAULT_INTEL={
   landlordProfile:['Standard rental — financial proof, clean references, and document availability are the primary filters'],
@@ -284,55 +376,103 @@ const DEFAULT_INTEL={
     'State your move-in date as a fact: "I can move in on [date]" — not "I would like to"',
     'Attach all documents in one PDF: Firstname_Lastname_Application.pdf',
   ],
-  uniqueAngles:["Name two specific viewing days in your first message — most candidates stay vague. Decisiveness shortcuts the landlord's decision process"],
+  uniqueAngles:["Name two specific viewing days in your first message — most candidates stay vague. Decisiveness shortcuts the landlord’s decision process"],
   watchOut:[],
   hiddenSignals:[],
 };
 
-function renderIntelCards(data){
+let activeTooltip=null;
+
+function hideTooltip(){
+  if(activeTooltip){activeTooltip.remove();activeTooltip=null;}
+}
+
+function renderChipUI(data){
   const container=document.getElementById('tips-checkboxes');
   if(!container)return;
-  const sections=[];
-  if(data.watchOut&&data.watchOut.length)sections.push({label:'WATCH OUT',color:'#e24b4a',items:data.watchOut,key:'watch'});
-  if(data.landlordProfile&&data.landlordProfile.length)sections.push({label:'WHAT THIS LANDLORD WANTS',color:'#00c896',items:data.landlordProfile,key:'landlord',hidden:data.hiddenSignals});
-  if(data.smartPoints&&data.smartPoints.length)sections.push({label:'MENTION IN YOUR APPLICATION',color:'#4d9fff',items:data.smartPoints,key:'smart'});
-  if(data.uniqueAngles&&data.uniqueAngles.length)sections.push({label:"WHAT OTHERS WON'T SAY",color:'#f0a020',items:data.uniqueAngles,key:'unique'});
-  if(!sections.length){container.style.display='none';return;}
-  container.style.display='';
+
+  const partA=[...(data.smartPoints||[]),...(data.uniqueAngles||[])];
+
+  const scoutMsg=document.getElementById('scout-msg-lt');
+  if(scoutMsg)scoutMsg.textContent='Scout has analysed this listing for you';
+
   let html='';
-  sections.forEach((sec,idx)=>{
-    if(idx>0)html+='<div class="intel-divider"></div>';
-    html+=`<div class="intel-section"><div class="intel-section-lbl">${sec.label}</div>`;
-    sec.items.forEach(item=>{
-      html+=`<div class="intel-item"><span class="intel-dot" style="background:${sec.color}"></span><span class="intel-text" data-intel="${sec.key}">${esc(item)}</span></div>`;
+
+  if(data.watchOut&&data.watchOut.length){
+    html+='<div class="chip-section">';
+    html+='<div class="chip-section-lbl" style="color:#e24b4a">WATCH OUT</div>';
+    data.watchOut.forEach(t=>{
+      html+=`<div class="intel-item"><span class="intel-dot" style="background:#e24b4a;margin-top:7px"></span><span class="intel-text" style="color:rgba(255,120,120,0.9)">${esc(t)}</span></div>`;
     });
-    if(sec.hidden&&sec.hidden.length){
-      const hid='intel-hidden-'+sec.key;
-      const hb=sec.hidden.map(h=>`<div class="intel-item"><span class="intel-dot" style="background:rgba(255,255,255,0.18)"></span><span class="intel-text">${esc(h)}</span></div>`).join('');
-      html+=`<button class="intel-analysis-btn" data-target="${hid}">Show full analysis →</button><div class="intel-hidden-section" id="${hid}">${hb}</div>`;
-    }
     html+='</div>';
+    if(partA.length)html+='<div class="intel-divider"></div>';
+  }
+
+  if(partA.length){
+    html+='<div class="chip-section">';
+    html+='<div class="chip-section-lbl">WHAT SCOUT RECOMMENDS FOR THIS LISTING</div>';
+    html+='<div class="chips-row">';
+    partA.forEach(t=>{
+      const sep=t.indexOf(' — ');
+      const label=sep>0?t.slice(0,sep):(t.length>65?t.slice(0,65)+'…':t);
+      const why=sep>0?t.slice(sep+3):t;
+      html+=`<button class="chip on" data-type="a" data-full="${escAttr(t)}" data-why="${escAttr(why)}"><span>${esc(label)}</span><span class="chip-info">ⓘ</span></button>`;
+    });
+    html+='</div></div>';
+    html+='<div class="intel-divider" style="margin:14px 0"></div>';
+  }
+
+  html+='<div class="chip-section">';
+  html+='<div class="chip-section-lbl">GENERAL STRENGTHS TO INCLUDE</div>';
+  html+='<div class="chips-row">';
+  PART_B.forEach(c=>{
+    html+=`<button class="chip on" data-type="b" data-full="${escAttr(c.text)}" data-why="${escAttr(c.why)}"><span>${esc(c.text)}</span><span class="chip-info">ⓘ</span></button>`;
   });
+  html+='</div></div>';
+
   container.innerHTML=html;
-  container.querySelectorAll('.intel-analysis-btn').forEach(btn=>{
-    const targetId=btn.getAttribute('data-target');
-    const target=document.getElementById(targetId);
-    if(target){
-      btn.addEventListener('click',()=>{
-        target.classList.toggle('open');
-        btn.textContent=target.classList.contains('open')?'Hide full analysis ↑':'Show full analysis →';
-      });
+  container.style.display='';
+
+  container.addEventListener('click',function(evt){
+    const info=evt.target.closest('.chip-info');
+    const chip=evt.target.closest('.chip');
+    if(info&&chip){
+      evt.stopPropagation();
+      hideTooltip();
+      const why=chip.getAttribute('data-why')||'';
+      const tip=document.createElement('div');
+      tip.className='chip-tooltip';
+      tip.textContent=why;
+      document.body.appendChild(tip);
+      const rect=info.getBoundingClientRect();
+      const scrollY=window.scrollY||window.pageYOffset;
+      tip.style.position='absolute';
+      const tipW=tip.offsetWidth;
+      const left=Math.max(8,Math.min(rect.left-20,window.innerWidth-tipW-8));
+      tip.style.left=left+'px';
+      tip.style.top=(rect.top+scrollY-tip.offsetHeight-8)+'px';
+      activeTooltip=tip;
+      setTimeout(()=>{document.addEventListener('click',hideTooltip,{once:true});},50);
+      return;
+    }
+    if(chip&&!evt.target.closest('.chip-info')){
+      chip.classList.toggle('on');
     }
   });
 }
 
 function getSelectedTips(){
-  const tips=[];
-  document.querySelectorAll('.intel-text[data-intel="smart"],.intel-text[data-intel="unique"]').forEach(el=>{
-    const t=(el.textContent||'').trim();
-    if(t)tips.push(t);
+  const listingTips=[];
+  const generalTips=[];
+  document.querySelectorAll('.chip.on[data-type="a"]').forEach(el=>{
+    const t=(el.getAttribute('data-full')||'').trim();
+    if(t)listingTips.push(t);
   });
-  return tips;
+  document.querySelectorAll('.chip.on[data-type="b"]').forEach(el=>{
+    const t=(el.getAttribute('data-full')||'').trim();
+    if(t)generalTips.push(t);
+  });
+  return{listingTips,generalTips};
 }
 
 function getParams(){
@@ -341,8 +481,10 @@ function getParams(){
   cacheId=p.get('listing')||null;
   const t=parseInt(p.get('tab')||'1',10);
   if(t>=1&&t<=3)switchTab(t);
-  renderIntelCards(DEFAULT_INTEL);
   if(cacheId){
+    const scoutMsg=document.getElementById('scout-msg-lt');
+    if(scoutMsg)scoutMsg.textContent='Scout has analysed this listing for you';
+    renderChipUI(DEFAULT_INTEL);
     fetch(`/api/letter-data?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d||!d.listing)return;
       const l=d.listing;
@@ -352,14 +494,14 @@ function getParams(){
     fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d)return;
       if(d.landlordProfile||d.smartPoints||d.uniqueAngles){
-        renderIntelCards(d);
-      } else {
+        renderChipUI(d);
+      }else{
         const all=[];
         (d.listingTips||[]).forEach(t=>all.push(typeof t==='string'?{tip:t,lv:'listing'}:{...t,lv:t.level||'listing'}));
         (d.profileTips||[]).forEach(t=>all.push(typeof t==='string'?{tip:t,lv:'profile'}:{...t,lv:'profile'}));
         (d.generalTips||[]).forEach(t=>all.push(typeof t==='string'?{tip:t,lv:'general'}:{...t,lv:'general'}));
         if(all.length){
-          renderIntelCards({landlordProfile:[],smartPoints:all.filter(t=>t.lv==='listing').map(t=>t.tip),uniqueAngles:all.filter(t=>t.lv==='profile').map(t=>t.tip),watchOut:all.filter(t=>t.lv==='critical').map(t=>t.tip),hiddenSignals:[]});
+          renderChipUI({landlordProfile:[],smartPoints:all.filter(t=>t.lv==='listing').map(t=>t.tip),uniqueAngles:all.filter(t=>t.lv==='profile').map(t=>t.tip),watchOut:all.filter(t=>t.lv==='critical').map(t=>t.tip),hiddenSignals:[]});
         }
       }
     }).catch(()=>{});
@@ -410,13 +552,14 @@ function wcBadge(text){
 async function ltGenerate(){
   if(!cacheId){showEL('No listing loaded. Open this tool from a listing alert in the Telegram bot.');return;}
   clearEL();
-  const tips=getSelectedTips();
+  const{listingTips,generalTips}=getSelectedTips();
+  const allTips=[...listingTips,...generalTips];
   const extra=document.getElementById('lt-extra')?.value.trim()||'';
   setLtLoad(true);
   try{
-    const [letterResp, snResp]=await Promise.all([
-      fetch('/api/generate-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:tips,extraContext:extra,tone:ltState.tone})}),
-      fetch('/api/first-contact-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,extraContext:extra})})
+    const[letterResp,snResp]=await Promise.all([
+      fetch('/api/generate-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:allTips,extraContext:extra,tone:ltState.tone})}),
+      fetch('/api/first-contact-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,extraContext:extra,selectedTipTexts:listingTips})})
     ]);
     const ld=await letterResp.json();
     if(!letterResp.ok)throw new Error(ld.error||'Letter generation failed');
@@ -440,12 +583,14 @@ function showLetter(text){
   const box=document.getElementById('lt-box');if(box)box.style.display='block';
   const el=document.getElementById('lt-text');if(el)el.textContent=text;
   document.getElementById('lt-actions').classList.add('on');
+  const scoutOut=document.getElementById('scout-lt-out');if(scoutOut)scoutOut.style.display='flex';
+  const nextStep=document.getElementById('scout-next-step');if(nextStep)nextStep.style.display='flex';
   wcBadge(text);
 }
 
 function setLtLoad(on){
   const btn=document.getElementById('btn-lt');
-  if(btn){btn.disabled=on;btn.innerHTML=on?'<span class="spin"></span>Generating...':'Generate my letter →';}
+  if(btn){btn.disabled=on;btn.innerHTML=on?'<span class="spin"></span>Generating...':'Write my letter →';}
   if(on){
     document.getElementById('lt-empty').style.display='none';
     document.getElementById('lt-skel').style.display='block';
@@ -453,15 +598,31 @@ function setLtLoad(on){
     document.getElementById('lt-actions').classList.remove('on');
     document.getElementById('sn-1').style.display='none';
     document.getElementById('next-steps-1').style.display='none';
-  } else {
+    const scoutOut=document.getElementById('scout-lt-out');if(scoutOut)scoutOut.style.display='none';
+  }else{
     document.getElementById('lt-skel').style.display='none';
   }
+}
+
+async function ltModify(type){
+  if(!ltState.letter)return;
+  const btn=document.getElementById('btn-lt');
+  const instruction=type==='shorter'?'Make the letter 25% shorter while keeping all important facts.':'Make the letter warmer and more personal while keeping all facts.';
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>Updating...';}
+  try{
+    const r=await fetch('/api/modify-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({letter:ltState.letter,instruction})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Modification failed');
+    ltState.letter=d.letter||ltState.letter;
+    showLetter(ltState.letter);
+  }catch(e){showEL(e.message||'Something went wrong.');}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='Write my letter →';}}
 }
 
 function ltCopy(){
   if(!ltState.letter)return;
   navigator.clipboard.writeText(ltState.letter).then(()=>{
-    const btn=document.getElementById('lt-copy');if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
+    const btn=document.getElementById('lt-copy');if(btn){btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy letter';},2000);}
   }).catch(()=>{});
 }
 function copySN(){
@@ -497,11 +658,12 @@ async function submit(tab){
 }
 
 function renderResp(tab,text){
-  const body=document.getElementById(`body-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`);
+  const body=document.getElementById(`body-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`),scoutOut=document.getElementById(`scout-out-${tab}`);
   if(body){body.innerHTML=renderMd(text);body.style.display='block';}
   if(empty)empty.style.display='none';
   if(skel)skel.style.display='none';
   if(acts)acts.classList.add('on');
+  if(scoutOut)scoutOut.style.display='flex';
 }
 
 function renderMd(text){
@@ -515,9 +677,9 @@ function renderMd(text){
 function showE(tab,msg){const e=document.getElementById(`err-${tab}`);if(e){e.textContent=msg;e.classList.add('on');}}
 function hideE(tab){const e=document.getElementById(`err-${tab}`);if(e)e.classList.remove('on');}
 function setLoad(tab,on){
-  const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),empty=document.getElementById(`empty-${tab}`),body=document.getElementById(`body-${tab}`),acts=document.getElementById(`acts-${tab}`);
+  const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),empty=document.getElementById(`empty-${tab}`),body=document.getElementById(`body-${tab}`),acts=document.getElementById(`acts-${tab}`),scoutOut=document.getElementById(`scout-out-${tab}`);
   if(btn){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>Working...`:BTN[tab]||'Get advice →';}
-  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(body)body.style.display='none';if(acts)acts.classList.remove('on');}
+  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(body)body.style.display='none';if(acts)acts.classList.remove('on');if(scoutOut)scoutOut.style.display='none';}
   else if(skel)skel.style.display='none';
 }
 function cpResp(tab){

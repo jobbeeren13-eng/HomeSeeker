@@ -81,6 +81,14 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .btn-sm:hover{border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.8)}
 .btn-sm.ok{border-color:#00c896;color:#00c896}
 
+/* Scout avatar */
+.scout-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.12);border-radius:10px;margin-bottom:20px}
+.scout-av{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.scout-name{font-size:11px;color:#00c896;font-weight:600;margin-top:3px;text-align:center}
+.scout-msg{font-size:13px;color:rgba(255,255,255,0.9);line-height:1.6;flex:1}
+.scout-row-sm{padding:10px 14px;margin-bottom:12px}
+.scout-row-sm .scout-msg{font-size:12px;color:rgba(255,255,255,0.75)}
+
 @media(max-width:600px){
   .wrap{padding:20px 16px 80px}
   .tab{padding:8px 14px;font-size:13px}
@@ -116,6 +124,15 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   <div id="panel-1" class="panel on">
     <div class="ptitle">Analyse this property</div>
     <div class="psub">Get a Home Purchase Score, true cost breakdown, hidden risk assessment, and a recommended maximum bid.</div>
+
+    <!-- Scout intro -->
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Tell me about the property and I'll give you an honest assessment — price, risks, and whether to buy, negotiate, or walk away.</div>
+    </div>
 
     <div class="card">
       <div class="fld">
@@ -173,6 +190,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="card">
       <div class="skel" id="skel-1"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="empty-st" id="empty-1">Your property analysis will appear here.</div>
+      <div class="scout-row scout-row-sm" id="scout-out-1" style="display:none">
+        <div class="scout-av">
+          <svg width="32" height="32" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg" style="font-size:12px">The Home Purchase Score is at the top. Start there, then read the risks before making any decisions.</div>
+      </div>
       <div class="rb" id="body-1"></div>
       <div class="act-row" id="acts-1">
         <button class="btn-sm" onclick="cpResp(1)">Copy</button>
@@ -186,6 +210,15 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="ptitle">Prepare for your viewing</div>
     <div class="psub">Describe the property. Get a room-by-room inspection guide, 10 questions to ask the agent, and red flags to watch for.</div>
 
+    <!-- Scout intro -->
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Describe the property and I'll prepare you to inspect it properly. Buyers who inspect carefully avoid the most expensive surprises.</div>
+    </div>
+
     <div class="card">
       <div class="fld">
         <div class="lbl">Describe the property <span class="cc" id="cc-2">0 / 2000</span></div>
@@ -198,6 +231,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="card">
       <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="empty-st" id="empty-2">Your viewing preparation will appear here.</div>
+      <div class="scout-row scout-row-sm" id="scout-out-2" style="display:none">
+        <div class="scout-av">
+          <svg width="32" height="32" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg" style="font-size:12px">Here's your inspection guide. Save it before your viewing — you'll want it on your phone when you're there.</div>
+      </div>
       <div class="rb" id="body-2"></div>
       <div class="act-row" id="acts-2">
         <button class="btn-sm" onclick="cpResp(2)">Copy</button>
@@ -210,6 +250,15 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   <div id="panel-3" class="panel">
     <div class="ptitle">Build your offer strategy</div>
     <div class="psub">Get a specific bid amount, conditions strategy, your winning chance, and ready-to-send bid letters in Dutch and English.</div>
+
+    <!-- Scout intro -->
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">I'll tell you exactly what to bid and give you a formal bid letter ready to send.</div>
+    </div>
 
     <div class="card">
       <div class="row2">
@@ -265,6 +314,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="card">
       <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="empty-st" id="empty-3">Your offer strategy will appear here.</div>
+      <div class="scout-row scout-row-sm" id="scout-out-3" style="display:none">
+        <div class="scout-av">
+          <svg width="32" height="32" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#00c896"/><polygon points="20,5 11,14 29,14" fill="white" opacity="0.95"/><rect x="16" y="11" width="8" height="5" fill="white" opacity="0.95"/><circle cx="14" cy="23" r="2.5" fill="white"/><circle cx="26" cy="23" r="2.5" fill="white"/><path d="M13 30 Q20 35 27 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg" style="font-size:12px">Your recommended bid is at the top. The bid letters are ready to copy and send directly to the agent.</div>
+      </div>
       <div class="rb" id="body-3"></div>
       <div class="act-row" id="acts-3">
         <button class="btn-sm" onclick="cpResp(3)">Copy</button>
@@ -374,11 +430,12 @@ async function submit(tab){
 }
 
 function renderResp(tab,text){
-  const body=document.getElementById(`body-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`);
+  const body=document.getElementById(`body-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`),scoutOut=document.getElementById(`scout-out-${tab}`);
   if(body){body.innerHTML=renderMd(text);body.style.display='block';}
   if(empty)empty.style.display='none';
   if(skel)skel.style.display='none';
   if(acts)acts.classList.add('on');
+  if(scoutOut)scoutOut.style.display='flex';
 }
 
 function renderMd(text){
@@ -392,9 +449,9 @@ function renderMd(text){
 function showE(tab,msg){const e=document.getElementById(`err-${tab}`);if(e){e.textContent=msg;e.classList.add('on');}}
 function hideE(tab){const e=document.getElementById(`err-${tab}`);if(e)e.classList.remove('on');}
 function setLoad(tab,on){
-  const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),empty=document.getElementById(`empty-${tab}`),body=document.getElementById(`body-${tab}`),acts=document.getElementById(`acts-${tab}`);
+  const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),empty=document.getElementById(`empty-${tab}`),body=document.getElementById(`body-${tab}`),acts=document.getElementById(`acts-${tab}`),scoutOut=document.getElementById(`scout-out-${tab}`);
   if(btn){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>Working...`:BTN[tab]||'Get analysis →';}
-  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(body)body.style.display='none';if(acts)acts.classList.remove('on');}
+  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(body)body.style.display='none';if(acts)acts.classList.remove('on');if(scoutOut)scoutOut.style.display='none';}
   else if(skel)skel.style.display='none';
 }
 function cpResp(tab){
