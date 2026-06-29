@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Huur Assistent - HomeSeeker</title>
+<title>AI Rental Assistant - HomeSeeker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -18,11 +18,22 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .logo-name{font-size:13px;font-weight:800;color:var(--g);letter-spacing:1.5px;text-transform:uppercase}
 .hdr-page{font-size:12px;color:var(--muted)}
 
-.lbar{display:none;position:fixed;top:96px;left:0;right:0;z-index:97;background:var(--card);border-bottom:1px solid rgba(255,255,255,0.07);padding:8px 24px;align-items:center;gap:10px}
-.lbar.on{display:flex}
-.lbar-dot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0}
-.lbar-addr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lbar-price{font-size:12px;color:var(--muted);flex-shrink:0}
+/* Property card */
+#property-card{position:fixed;top:52px;left:0;right:0;z-index:99;height:88px;background:#111318;border-bottom:1px solid rgba(255,255,255,0.07);padding:12px 24px;display:none;align-items:center;gap:14px}
+body.has-pc #property-card{display:flex}
+body.has-pc .prog-bar{top:140px}
+body.has-pc .page-outer{margin-top:184px}
+#prop-photo-wrap{width:64px;height:64px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#1a1f26}
+#prop-photo{width:100%;height:100%;object-fit:cover}
+#prop-info{flex:1;min-width:0}
+#prop-address{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#prop-price{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:6px}
+#prop-pills{display:flex;gap:6px;flex-wrap:wrap}
+.prop-pill{font-size:11px;color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.06);border-radius:4px;padding:2px 8px}
+#prop-badge{font-size:10px;font-weight:700;background:#00c896;color:#0a0a0a;border-radius:4px;padding:3px 8px;flex-shrink:0;display:none}
+/* Lbar (legacy, hidden) */
+.lbar{display:none}
+.lbar-dot,.lbar-addr,.lbar-price{}
 
 
 .tabs{display:flex;flex-wrap:wrap;margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.07);padding:0}
@@ -154,7 +165,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 /* Two-column layout */
 .page-outer{display:flex;gap:24px;max-width:1100px;margin:96px auto 0;padding:28px 24px 80px}
-body.has-lb .page-outer{margin-top:128px}
 .main-col{flex:1;min-width:0}
 .sidebar{width:296px;flex-shrink:0;display:none}
 .sb-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 18px;margin-bottom:12px}
@@ -162,17 +172,28 @@ body.has-lb .page-outer{margin-top:128px}
 .sb-card-val{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.55}
 .sb-empty{color:rgba(255,255,255,0.2);font-style:italic;font-size:12px}
 
-/* Analyse panel */
-.an-chips-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.an-chip{padding:6px 14px;background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:100px;font-size:12px;color:rgba(255,255,255,0.5)}
-.an-chip strong{font-weight:600;color:rgba(255,255,255,0.85)}
-.an-chip.comp-hoog strong{color:#ff6b6b}
-.an-chip.comp-gem strong{color:#f59e0b}
-.an-chip.comp-laag strong{color:#00c896}
-.an-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 18px;margin-bottom:12px}
-.an-card-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:600;margin-bottom:10px}
-.an-card-body{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6}
-.an-card-cta{margin-top:14px}
+/* Analyse info chips */
+.info-chips-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.info-chip{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px}
+.chip-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:4px}
+.chip-value{font-size:14px;font-weight:700;color:#fff}
+.chip-value.green{color:#00c896}
+.chip-value.amber{color:#f0a020}
+.chip-value.red{color:#e24b4a}
+/* Analyse cards */
+.analyse-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.analyse-card:hover{border-color:rgba(0,200,150,0.3)}
+.cta-card{border-color:rgba(0,200,150,0.2)}
+.ac-icon{font-size:20px;flex-shrink:0}
+.ac-content{flex:1;min-width:0}
+.ac-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px}
+.ac-badge{font-size:11px;background:rgba(0,200,150,0.15);color:#00c896;border-radius:4px;padding:2px 7px;margin-left:8px;font-weight:600}
+.ac-body{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5}
+.ac-arrow{font-size:20px;color:rgba(255,255,255,0.25);flex-shrink:0}
+.btn-green-sm{background:#00c896;color:#0a0a0a;border:none;border-radius:7px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:inherit}
+/* Scout next-tip */
+.scout-next{font-size:12px;color:#00c896;padding:10px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:12px}
+@media(max-width:767px){.info-chips-row{grid-template-columns:repeat(2,1fr)}}
 
 /* Mobile bottom nav */
 .mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9990;background:#0d1117;border-top:1px solid rgba(255,255,255,0.08);height:60px;align-items:stretch}
@@ -201,18 +222,28 @@ body.has-lb .page-outer{margin-top:128px}
     <div class="logo-box"><svg viewBox="0 0 16 16" fill="none"><path d="M8 1L1.5 6.5V15h4.5v-5h4v5h4.5V6.5L8 1z" fill="#0a0a0a"/></svg></div>
     <span class="logo-name">HomeSeeker</span>
   </a>
-  <span class="hdr-page">AI Huur Assistent</span>
+  <span class="hdr-page">AI Rental Assistant</span>
 </header>
+
+<div id="property-card">
+  <div id="prop-photo-wrap"><img id="prop-photo" src="" alt=""></div>
+  <div id="prop-info">
+    <div id="prop-address"></div>
+    <div id="prop-price"></div>
+    <div id="prop-pills"></div>
+  </div>
+  <div id="prop-badge">New</div>
+</div>
 
 <div class="prog-bar">
   <div class="prog-steps">
     <div class="prog-step" id="ps-0" onclick="switchTab(0)"><div class="prog-step-inner"><div class="prog-dot">1</div><span class="prog-lbl">Analyse</span></div></div>
     <div class="prog-conn"></div>
-    <div class="prog-step" id="ps-1" onclick="switchTab(1)"><div class="prog-step-inner"><div class="prog-dot">2</div><span class="prog-lbl">Brief</span></div></div>
+    <div class="prog-step" id="ps-1" onclick="switchTab(1)"><div class="prog-step-inner"><div class="prog-dot">2</div><span class="prog-lbl">Letter</span></div></div>
     <div class="prog-conn"></div>
-    <div class="prog-step" id="ps-2" onclick="switchTab(2)"><div class="prog-step-inner"><div class="prog-dot">3</div><span class="prog-lbl">Tips</span></div></div>
+    <div class="prog-step" id="ps-2" onclick="switchTab(2)"><div class="prog-step-inner"><div class="prog-dot">3</div><span class="prog-lbl">Viewing Tips</span></div></div>
     <div class="prog-conn"></div>
-    <div class="prog-step" id="ps-3" onclick="switchTab(3)"><div class="prog-step-inner"><div class="prog-dot">4</div><span class="prog-lbl">Onderhandeling</span></div></div>
+    <div class="prog-step" id="ps-3" onclick="switchTab(3)"><div class="prog-step-inner"><div class="prog-dot">4</div><span class="prog-lbl">Negotiation</span></div></div>
   </div>
 </div>
 
@@ -227,9 +258,9 @@ body.has-lb .page-outer{margin-top:128px}
 
   <div class="tabs" id="tabs">
     <button class="tab" data-tab="0" onclick="switchTab(0)">Analyse</button>
-    <button class="tab on" data-tab="1" onclick="switchTab(1)">Brief</button>
-    <button class="tab" data-tab="2" onclick="switchTab(2)">Tips</button>
-    <button class="tab" data-tab="3" onclick="switchTab(3)">Onderhandeling</button>
+    <button class="tab on" data-tab="1" onclick="switchTab(1)">Letter</button>
+    <button class="tab" data-tab="2" onclick="switchTab(2)">Viewing Tips</button>
+    <button class="tab" data-tab="3" onclick="switchTab(3)">Negotiation</button>
   </div>
 
   <!-- Panel 0: Analyse -->
@@ -239,25 +270,49 @@ body.has-lb .page-outer{margin-top:128px}
         <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
         <div class="scout-name">Scout</div>
       </div>
-      <div class="scout-msg" id="scout-msg-0">Open dit vanuit een Telegram-melding om jouw woning te analyseren.</div>
+      <div class="scout-msg" id="scout-msg-0">Open this from a Telegram alert to analyse your listing.</div>
     </div>
-    <div class="an-chips-row">
-      <div class="an-chip" id="an-chip-comp"><strong>Concurrentie</strong> · —</div>
-      <div class="an-chip" id="an-chip-price"><strong>Prijsniveau</strong> · —</div>
-      <div class="an-chip" id="an-chip-kans"><strong>Kans op bezichtiging</strong> · —</div>
+    <div class="info-chips-row">
+      <div class="info-chip">
+        <div class="chip-label">Competition</div>
+        <div class="chip-value" id="chip-comp-val">—</div>
+      </div>
+      <div class="info-chip">
+        <div class="chip-label">Price level</div>
+        <div class="chip-value" id="chip-price-val">—</div>
+      </div>
+      <div class="info-chip">
+        <div class="chip-label">Viewing chance</div>
+        <div class="chip-value" id="chip-chance-val">—</div>
+      </div>
+      <div class="info-chip">
+        <div class="chip-label">Landlord type</div>
+        <div class="chip-value" id="chip-type-val">—</div>
+      </div>
     </div>
-    <div class="an-card">
-      <div class="an-card-lbl">Kansen &amp; Timing</div>
-      <div class="an-card-body" id="an-timing-body">Laad een woning om timing-advies te zien.</div>
+    <div class="analyse-card">
+      <div class="ac-icon">⏱</div>
+      <div class="ac-content">
+        <div class="ac-title">Timing &amp; Chances <span class="ac-badge" id="ac-timing-badge" style="display:none"></span></div>
+        <div class="ac-body" id="ac-timing-body">Load a listing to see timing advice.</div>
+      </div>
+      <div class="ac-arrow">&#8250;</div>
     </div>
-    <div class="an-card">
-      <div class="an-card-lbl">Aanbevolen strategie</div>
-      <div class="an-card-body" id="an-strategy-body">Laad een woning om de aanbevolen strategie te zien.</div>
+    <div class="analyse-card">
+      <div class="ac-icon">🎯</div>
+      <div class="ac-content">
+        <div class="ac-title">Recommended strategy</div>
+        <div class="ac-body" id="ac-strategy-body">Load a listing to see the recommended strategy.</div>
+      </div>
+      <div class="ac-arrow">&#8250;</div>
     </div>
-    <div class="an-card">
-      <div class="an-card-lbl">Jouw brief</div>
-      <div class="an-card-body">Scout schrijft een gepersonaliseerde brief op basis van de analyse van deze woning.</div>
-      <div class="an-card-cta"><button class="btn-main" onclick="switchTab(1)">Schrijf mijn brief &#8594;</button></div>
+    <div class="analyse-card cta-card" onclick="switchTab(1)">
+      <div class="ac-icon">✉</div>
+      <div class="ac-content">
+        <div class="ac-title">Your letter</div>
+        <div class="ac-body">Personalised and optimised for this listing</div>
+      </div>
+      <button class="btn-green-sm" onclick="event.stopPropagation();switchTab(1)">Write letter &#8594;</button>
     </div>
   </div>
 
@@ -316,7 +371,7 @@ body.has-lb .page-outer{margin-top:128px}
           <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
           <div class="scout-name">Scout</div>
         </div>
-        <div class="scout-msg">Here's your letter. Copy it and send it within the hour — speed matters more than perfection.</div>
+        <div class="scout-msg">Done! Copy and send within the hour — speed matters more than a perfect letter.</div>
       </div>
 
       <div class="letter-box" id="lt-box"><div class="letter-txt" id="lt-text"></div></div>
@@ -330,13 +385,7 @@ body.has-lb .page-outer{margin-top:128px}
           <button class="btn-link" onclick="ltModify('shorter')">Make it shorter</button>
           <button class="btn-link" onclick="ltModify('personal')">Make it more personal</button>
         </div>
-        <div class="scout-row scout-row-sm" id="scout-next-step" style="display:none;margin-top:8px">
-          <div class="scout-av">
-            <svg class="scout-char" width="36" height="45" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
-            <div class="scout-name">Scout</div>
-          </div>
-          <div class="scout-msg">After sending, call the agency directly. Agents who hear a voice are 3x more likely to book a viewing.</div>
-        </div>
+        <div id="scout-next-tip" class="scout-next" style="display:none">After sending: call the agency directly. Candidates who call are 3x more likely to get a viewing.</div>
       </div>
     </div>
   </div>
@@ -349,39 +398,39 @@ body.has-lb .page-outer{margin-top:128px}
         <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
         <div class="scout-name">Scout</div>
       </div>
-      <div class="scout-msg">Vertel me over de woning en ik bereid je voor op de bezichtiging.</div>
+      <div class="scout-msg">Describe the property and I'll prepare you for the viewing.</div>
     </div>
 
     <div class="card">
       <div class="fld">
-        <div class="lbl">Type woning <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)">(optioneel)</span></div>
+        <div class="lbl">Property type <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.2)">(optional)</span></div>
         <div class="tone-row" id="prop-row">
-          <button class="tp" onclick="setPropType(this,'Apartment')">Appartement</button>
-          <button class="tp" onclick="setPropType(this,'House')">Huis</button>
+          <button class="tp" onclick="setPropType(this,'Apartment')">Apartment</button>
+          <button class="tp" onclick="setPropType(this,'House')">House</button>
           <button class="tp" onclick="setPropType(this,'Studio')">Studio</button>
-          <button class="tp" onclick="setPropType(this,'Room')">Kamer</button>
+          <button class="tp" onclick="setPropType(this,'Room')">Room</button>
         </div>
       </div>
       <div class="fld">
-        <div class="lbl">Beschrijf de woning <span class="cc" id="cc-2">0 / 2000</span></div>
-        <textarea class="inp" id="t2-msg" rows="5" placeholder="Plak alles van de advertentie — prijs, beschrijving, wat opviel, hoe lang online" oninput="uc(this,'cc-2',2000)"></textarea>
+        <div class="lbl">Describe the property <span class="cc" id="cc-2">0 / 2000</span></div>
+        <textarea class="inp" id="t2-msg" rows="5" placeholder="Paste anything from the listing — type, price, description, what stood out" oninput="uc(this,'cc-2',2000)"></textarea>
       </div>
-      <button class="btn-main" id="btn-2" onclick="submit(2)">Bereid mij voor &#8594;</button>
+      <button class="btn-main" id="btn-2" onclick="submit(2)">Get viewing tips &#8594;</button>
       <div class="errtxt" id="err-2"></div>
     </div>
     <div class="card">
-      <div class="empty-st" id="empty-2">Jouw advies verschijnt hier.</div>
+      <div class="empty-st" id="empty-2">Your response appears here.</div>
       <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="scout-row scout-row-sm" id="scout-out-2" style="display:none">
         <div class="scout-av">
           <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
           <div class="scout-name">Scout</div>
         </div>
-        <div class="scout-msg">Dit zijn de dingen om te checken en te vragen. Sla dit op voor je bezichtiging.</div>
+        <div class="scout-msg">Save these before your viewing. The questions section is most important.</div>
       </div>
       <div class="rb" id="body-2"></div>
       <div class="act-row" id="acts-2">
-        <button class="btn-sm" onclick="cpResp(2)">Kopiëren</button>
+        <button class="btn-sm" onclick="cpResp(2)">Copy</button>
       </div>
     </div>
   </div>
@@ -394,38 +443,38 @@ body.has-lb .page-outer{margin-top:128px}
         <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
         <div class="scout-name">Scout</div>
       </div>
-      <div class="scout-msg">Ik vertel je of onderhandelen realistisch is — en geef je de exacte woorden om te gebruiken.</div>
+      <div class="scout-msg">Tell me your situation and I'll tell you if negotiating is realistic here.</div>
     </div>
 
     <div class="card">
       <div class="fld">
-        <div class="lbl">Wat wil je onderhandelen?</div>
+        <div class="lbl">What do you want to negotiate?</div>
         <div class="tone-row" id="neg-row">
-          <button class="tp on" onclick="setNegGoal(this,'lower rent')">Lagere huur</button>
-          <button class="tp" onclick="setNegGoal(this,'longer lease')">Langere huurperiode</button>
-          <button class="tp" onclick="setNegGoal(this,'competing offer')">Concurrerend aanbod</button>
+          <button class="tp on" onclick="setNegGoal(this,'lower rent')">Lower rent</button>
+          <button class="tp" onclick="setNegGoal(this,'longer lease')">Longer lease</button>
+          <button class="tp" onclick="setNegGoal(this,'competing offer')">Competing offers</button>
         </div>
       </div>
       <div class="fld">
-        <div class="lbl">Jouw situatie <span class="cc" id="cc-3">0 / 2000</span></div>
-        <textarea class="inp" id="t3-msg" rows="4" placeholder="Stad, hoe lang de woning online staat, jouw positie, eventueel voordeel..." oninput="uc(this,'cc-3',2000)"></textarea>
+        <div class="lbl">Your situation <span class="cc" id="cc-3">0 / 2000</span></div>
+        <textarea class="inp" id="t3-msg" rows="4" placeholder="City, how long the listing has been online, your position..." oninput="uc(this,'cc-3',2000)"></textarea>
       </div>
-      <button class="btn-main" id="btn-3" onclick="submit(3)">Krijg advies &#8594;</button>
+      <button class="btn-main" id="btn-3" onclick="submit(3)">Get advice &#8594;</button>
       <div class="errtxt" id="err-3"></div>
     </div>
     <div class="card">
-      <div class="empty-st" id="empty-3">Jouw advies verschijnt hier.</div>
+      <div class="empty-st" id="empty-3">Your response appears here.</div>
       <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="scout-row scout-row-sm" id="scout-out-3" style="display:none">
         <div class="scout-av">
           <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
           <div class="scout-name">Scout</div>
         </div>
-        <div class="scout-msg">Lees eerst de marktbeoordeling. Gebruik de scripts alleen als Scout zegt dat onderhandelen realistisch is.</div>
+        <div class="scout-msg">Read the market assessment first. Only use the scripts if I say negotiating is realistic here.</div>
       </div>
       <div class="rb" id="body-3"></div>
       <div class="act-row" id="acts-3">
-        <button class="btn-sm" onclick="cpResp(3)">Kopiëren</button>
+        <button class="btn-sm" onclick="cpResp(3)">Copy</button>
       </div>
     </div>
   </div>
@@ -434,20 +483,20 @@ body.has-lb .page-outer{margin-top:128px}
 
 <div class="sidebar">
   <div class="sb-card">
-    <div class="sb-card-lbl">Schrijf je brief</div>
-    <button class="btn-main" onclick="switchTab(1)" style="height:42px;font-size:13px">Open Brief &#8594;</button>
+    <div class="sb-card-lbl">Write letter</div>
+    <button class="btn-main" onclick="switchTab(1)" style="height:42px;font-size:13px">Write letter &#8594;</button>
   </div>
   <div class="sb-card">
     <div class="sb-card-lbl">Timing</div>
-    <div class="sb-card-val" id="sb-timing"><span class="sb-empty">Laad een woning voor timing-advies.</span></div>
+    <div class="sb-card-val" id="sb-timing"><span class="sb-empty">Load a listing for timing advice.</span></div>
   </div>
   <div class="sb-card">
-    <div class="sb-card-lbl">Aanbevolen strategie</div>
-    <div class="sb-card-val" id="sb-strategy"><span class="sb-empty">Laad een woning voor strategisch advies.</span></div>
+    <div class="sb-card-lbl">Strategy</div>
+    <div class="sb-card-val" id="sb-strategy"><span class="sb-empty">Load a listing for strategy advice.</span></div>
   </div>
   <div class="sb-card">
     <div class="sb-card-lbl">Pro tip</div>
-    <div class="sb-card-val" id="sb-protip"><span class="sb-empty">Laad een woning voor een pro tip.</span></div>
+    <div class="sb-card-val" id="sb-protip"><span class="sb-empty">Load a listing for a pro tip.</span></div>
   </div>
 </div><!-- /sidebar -->
 
@@ -455,9 +504,9 @@ body.has-lb .page-outer{margin-top:128px}
 
 <nav class="mob-nav">
   <button class="mnav-tab" id="mn-0" onclick="switchTab(0)"><span class="mnav-icon">📊</span><span class="mnav-lbl">Analyse</span></button>
-  <button class="mnav-tab" id="mn-1" onclick="switchTab(1)"><span class="mnav-icon">✉️</span><span class="mnav-lbl">Brief</span></button>
-  <button class="mnav-tab" id="mn-2" onclick="switchTab(2)"><span class="mnav-icon">👁</span><span class="mnav-lbl">Tips</span></button>
-  <button class="mnav-tab" id="mn-3" onclick="switchTab(3)"><span class="mnav-icon">💬</span><span class="mnav-lbl">Onderhandelen</span></button>
+  <button class="mnav-tab" id="mn-1" onclick="switchTab(1)"><span class="mnav-icon">✉️</span><span class="mnav-lbl">Letter</span></button>
+  <button class="mnav-tab" id="mn-2" onclick="switchTab(2)"><span class="mnav-icon">👁</span><span class="mnav-lbl">Viewing</span></button>
+  <button class="mnav-tab" id="mn-3" onclick="switchTab(3)"><span class="mnav-icon">💬</span><span class="mnav-lbl">Negotiate</span></button>
 </nav>
 
 <script>
@@ -465,7 +514,7 @@ let chatId=null,listingContext='',cacheId=null,negGoal='lower rent',propType='';
 let _lastListing=null,_lastIntel=null;
 const lastResp={};
 const API_TAB_MAP={2:'3',3:'4'};
-const BTN={2:'Bereid mij voor →',3:'Krijg advies →'};
+const BTN={2:'Get viewing tips →',3:'Get advice →'};
 const ltState={letter:'',tone:'professional'};
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const escAttr=s=>esc(s).replace(/"/g,'&quot;');
@@ -545,7 +594,7 @@ function getParams(){
   switchTab(t>=0&&t<=3?t:defaultTab);
   const scoutMsg=document.getElementById('scout-msg-lt');
   if(cacheId){
-    if(scoutMsg)scoutMsg.textContent="Ik heb deze woning geanalyseerd. Selecteer wat je in je brief wilt opnemen.";
+    if(scoutMsg)scoutMsg.textContent="I've analysed this listing. Select what to include and I'll write your letter.";
     renderChipUI(DEFAULT_INTEL);
     fetch(`/api/letter-data?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d||!d.listing)return;
@@ -574,17 +623,31 @@ function getParams(){
       }
     }).catch(()=>{});
   }else{
-    if(scoutMsg)scoutMsg.textContent='Open dit vanuit een Telegram-melding voor woningspecifieke tips. Selecteer voor nu wat op jou van toepassing is.';
+    if(scoutMsg)scoutMsg.textContent='Open this from a Telegram alert for listing-specific tips. For now, select what applies to you.';
     renderChipUI({smartPoints:[],uniqueAngles:[],watchOut:[]});
   }
 }
 
 function showLbar(l){
-  const addr=document.getElementById('lbar-addr'),price=document.getElementById('lbar-price');
+  const addr=document.getElementById('prop-address');
+  const price=document.getElementById('prop-price');
+  const photo=document.getElementById('prop-photo');
+  const pills=document.getElementById('prop-pills');
+  const badge=document.getElementById('prop-badge');
   if(addr)addr.textContent=l.address||l.url||'Property';
   if(price)price.textContent=l.price||'';
-  document.getElementById('lbar').classList.add('on');
-  document.body.classList.add('has-lb');
+  if(pills){
+    const ps=[];
+    if(l.area)ps.push(l.area+' m²');
+    if(l.source)ps.push(l.source);
+    pills.innerHTML=ps.map(p=>`<span class="prop-pill">${esc(p)}</span>`).join('');
+  }
+  if(photo&&l.image){photo.src=l.image;}
+  if(badge&&l.listedAt){
+    const ageH=(Date.now()-new Date(l.listedAt))/3600000;
+    if(ageH<48)badge.style.display='block';
+  }
+  document.body.classList.add('has-pc');
 }
 
 function switchTab(n){
@@ -605,7 +668,7 @@ function updateSidebar(d){
   if(strat&&d.landlordProfile&&d.landlordProfile.length)strat.textContent=d.landlordProfile[0];
   if(protip&&d.uniqueAngles&&d.uniqueAngles.length)protip.textContent=d.uniqueAngles[0];
   else if(protip&&d.smartPoints&&d.smartPoints.length)protip.textContent=d.smartPoints[0];
-  if(timing)timing.textContent='Meld je zo snel mogelijk aan — de meeste shortlists vormen zich binnen 4 uur na publicatie.';
+  if(timing)timing.textContent='Apply as soon as possible — most shortlists form within 4 hours of a listing going live.';
 }
 
 function renderAnalyse(listing,intel){
@@ -614,33 +677,67 @@ function renderAnalyse(listing,intel){
   const l=_lastListing,d=_lastIntel;
   const city=(l?.city||'').toLowerCase();
   const price=parseFloat((l?.price||'').toString().replace(/[^\d.]/g,''))||0;
-  const cc=document.getElementById('an-chip-comp');
-  const cp=document.getElementById('an-chip-price');
-  const ck=document.getElementById('an-chip-kans');
-  let comp='Onbekend',compCls='';
-  if(city==='amsterdam'){comp='Hoog';compCls='comp-hoog';}
-  else if(['rotterdam','utrecht','den haag','the hague'].includes(city)){comp='Gemiddeld';compCls='comp-gem';}
-  else if(city){comp='Normaal';}
-  if(cc){cc.innerHTML=`<strong>Concurrentie</strong> · ${comp}`;cc.className='an-chip '+compCls;}
-  let priceLabel='Onbekend';
-  if(price>2500)priceLabel='Hoog';else if(price>1500)priceLabel='Gemiddeld';else if(price>0)priceLabel='Laag';
-  if(cp)cp.innerHTML=`<strong>Prijsniveau</strong> · ${priceLabel}`;
-  let kans='Goed';
-  if(city==='amsterdam'&&price<1200)kans='Laag';else if(city==='amsterdam')kans='Gemiddeld';
-  if(ck)ck.innerHTML=`<strong>Kans op bezichtiging</strong> · ${kans}`;
-  const tb=document.getElementById('an-timing-body');
-  if(tb){
-    if(city==='amsterdam')tb.textContent='Amsterdam woningen ontvangen 50–200 aanmeldingen. Reageer binnen 2 uur — de shortlist sluit voor het einde van de dag.';
-    else if(['rotterdam','utrecht'].includes(city))tb.textContent='Reageer binnen 4 uur — iets minder concurrerend dan Amsterdam, maar nog steeds snel.';
-    else tb.textContent='Reageer zo snel mogelijk na publicatie. Hoe eerder je aanmeldt, hoe groter je kans op een bezichtiging.';
+
+  // Competition chip
+  const ccv=document.getElementById('chip-comp-val');
+  let comp='Unknown',compCls='';
+  if(city==='amsterdam'){comp='High';compCls='red';}
+  else if(['rotterdam','utrecht','den haag','the hague'].includes(city)){comp='Medium';compCls='amber';}
+  else if(city){comp='Low';compCls='green';}
+  if(ccv){ccv.textContent=comp;ccv.className='chip-value '+compCls;}
+
+  // Price chip
+  const cpv=document.getElementById('chip-price-val');
+  let priceLabel='—',priceCls='';
+  if(price>2500){priceLabel='Expensive';priceCls='red';}
+  else if(price>1500){priceLabel='Fair price';priceCls='green';}
+  else if(price>0){priceLabel='Good deal';priceCls='green';}
+  if(cpv){cpv.textContent=priceLabel;cpv.className='chip-value '+priceCls;}
+
+  // Viewing chance chip
+  const ckv=document.getElementById('chip-chance-val');
+  let kans='Good',kansCls='green';
+  if(city==='amsterdam'&&price<1200){kans='Low';kansCls='red';}
+  else if(city==='amsterdam'){kans='Fair';kansCls='amber';}
+  if(ckv){ckv.textContent=kans;ckv.className='chip-value '+kansCls;}
+
+  // Landlord type chip
+  const ctv=document.getElementById('chip-type-val');
+  let ltype='Unknown';
+  if(d?.landlordProfile?.length){
+    const p=d.landlordProfile[0].toLowerCase();
+    if(p.includes('agency')||p.includes('makelaar')||p.includes('bureau'))ltype='Agency';
+    else if(p.includes('corporat')||p.includes('woningcorpor'))ltype='Corporation';
+    else if(p.includes('private')||p.includes('particulier'))ltype='Private';
+    else ltype='Agency';
+  } else if(l?.source){
+    ltype=l.source.includes('funda')||l.source.includes('pararius')?'Agency':'Private';
   }
-  const sb=document.getElementById('an-strategy-body');
+  if(ctv)ctv.textContent=ltype;
+
+  // Timing card
+  const tb=document.getElementById('ac-timing-body');
+  const tbadge=document.getElementById('ac-timing-badge');
+  if(tb){
+    if(city==='amsterdam'){tb.textContent='Amsterdam listings get 50–200 applications. Apply within 2 hours — the shortlist forms before the day is out.';}
+    else if(['rotterdam','utrecht'].includes(city)){tb.textContent='Apply within 4 hours — slightly less competitive than Amsterdam but still fast-moving.';}
+    else{tb.textContent='Apply as soon as possible after publication. The earlier you apply, the better your chances.';}
+  }
+  if(tbadge){
+    tbadge.textContent=compCls==='red'?'High':compCls==='amber'?'Medium':'Low';
+    tbadge.style.display='';
+  }
+
+  // Strategy card
+  const sb=document.getElementById('ac-strategy-body');
   if(sb){
     if(d?.landlordProfile?.length)sb.textContent=d.landlordProfile[0];
-    else sb.textContent='Standaard verhuur — financieel bewijs, schone referenties en beschikbaarheid van documenten zijn de voornaamste selectiecriteria.';
+    else sb.textContent='Standard rental — financial proof, clean references, and document availability are the primary filters.';
   }
+
+  // Scout message
   const sm=document.getElementById('scout-msg-0');
-  if(sm&&l)sm.textContent=`Ik heb ${l.address||'deze woning'} geanalyseerd. Hier is mijn inschatting.`;
+  if(sm&&l)sm.textContent=`I've analysed ${l.address||'this listing'}. Here's my assessment.`;
 }
 
 function setTone(btn,tone){
@@ -670,7 +767,7 @@ function wcBadge(text){
 }
 
 async function ltGenerate(){
-  if(!cacheId){showEL('Open deze pagina vanuit een woning-alert in Telegram om een gepersonaliseerde brief te schrijven.');return;}
+  if(!cacheId){showEL('Open this page from a listing alert in Telegram to generate a personalised letter.');return;}
   clearEL();
   const{listingTips,generalTips}=getSelectedTips();
   const allTips=[...listingTips,...generalTips];
@@ -704,14 +801,14 @@ function showLetter(text){
   const el=document.getElementById('lt-text');if(el)el.textContent=text;
   document.getElementById('lt-actions').classList.add('on');
   const scoutOut=document.getElementById('scout-lt-out');if(scoutOut)scoutOut.style.display='flex';
-  const nextStep=document.getElementById('scout-next-step');if(nextStep)nextStep.style.display='flex';
+  const nextTip=document.getElementById('scout-next-tip');if(nextTip)nextTip.style.display='block';
   wcBadge(text);
 }
 
 function setLtLoad(on){
   const btn=document.getElementById('btn-lt');
   const intro=document.getElementById('scout-intro-lt');
-  if(btn){btn.disabled=on;btn.innerHTML=on?'<span class="spin"></span>Bezig...':'Schrijf mijn brief →';}
+  if(btn){btn.disabled=on;btn.innerHTML=on?'<span class="spin"></span>Writing...':'Write my letter →';}
   if(intro){if(on)intro.classList.add('scout-thinking');else intro.classList.remove('scout-thinking');}
   if(on){
     document.getElementById('lt-empty').style.display='none';
@@ -721,6 +818,7 @@ function setLtLoad(on){
     document.getElementById('sn-1').style.display='none';
     document.getElementById('next-steps-1').style.display='none';
     const scoutOut=document.getElementById('scout-lt-out');if(scoutOut)scoutOut.style.display='none';
+    const nextTip=document.getElementById('scout-next-tip');if(nextTip)nextTip.style.display='none';
   }else{
     document.getElementById('lt-skel').style.display='none';
   }
@@ -738,19 +836,19 @@ async function ltModify(type){
     ltState.letter=d.letter||ltState.letter;
     showLetter(ltState.letter);
   }catch(e){showEL(e.message||'Something went wrong.');}
-  finally{if(btn){btn.disabled=false;btn.innerHTML='Schrijf mijn brief →';}}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='Write my letter →';}}
 }
 
 function ltCopy(){
   if(!ltState.letter)return;
   navigator.clipboard.writeText(ltState.letter).then(()=>{
-    const btn=document.getElementById('lt-copy');if(btn){btn.textContent='Gekopieerd!';setTimeout(()=>{btn.textContent='Brief kopiëren';},2000);}
+    const btn=document.getElementById('lt-copy');if(btn){btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy letter';},2000);}
   }).catch(()=>{});
 }
 function copySN(){
   const t=document.getElementById('sn-txt-1')?.textContent||'';
   navigator.clipboard.writeText(t).then(()=>{
-    const btn=document.getElementById('sn-copy-1');if(btn){btn.textContent='Gekopieerd!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Kopiëren';btn.classList.remove('ok');},2000);}
+    const btn=document.getElementById('sn-copy-1');if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
   }).catch(()=>{});
 }
 function showEL(msg){const e=document.getElementById('err-lt');if(e){e.textContent=msg;e.classList.add('on');}}
@@ -763,7 +861,7 @@ function buildMsg(tab){
     default:return null;
   }
 }
-const ERR={2:'Beschrijf de woning alstublieft.',3:'Beschrijf je situatie alstublieft.'};
+const ERR={2:'Please describe the property.',3:'Please describe your situation.'};
 
 async function submit(tab){
   const msg=buildMsg(tab);
@@ -807,7 +905,7 @@ function setLoad(tab,on){
 }
 function cpResp(tab){
   const t=lastResp[tab]||'';if(!t)return;
-  navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector(`#acts-${tab} .btn-sm`);if(btn){btn.textContent='Gekopieerd!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Kopiëren';btn.classList.remove('ok');},2000);}}).catch(()=>{});
+  navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector(`#acts-${tab} .btn-sm`);if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}}).catch(()=>{});
 }
 
 getParams();
