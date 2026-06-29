@@ -402,6 +402,10 @@ function getListingIntelligence(listing, user) {
       landlordProfile.push('Standard rental — financial proof, clean references, and document availability are the primary filters');
     }
   }
+  // High-end rental landlord profile
+  if (listing.transactionType === 'huur' && price > 2500 && !landlordProfile.some(t => /high.end|premium/i.test(t))) {
+    landlordProfile.push('High-end rental — landlords at this price point expect polished, professional applicants. Presentation quality matters as much as financials');
+  }
   if (/woningcorporatie|sociale huur|objectcode|wachtlijst/i.test(descRaw)) {
     landlordProfile.unshift('Social housing — requires a valid objectcode, not a motivation letter. Follow the housing corporation process exactly');
   }
@@ -455,6 +459,16 @@ function getListingIntelligence(listing, user) {
       smartPoints.push(`You meet the 3x requirement at ${ratio.toFixed(1)}x — state your gross annual income clearly: ${fmtEuro(inkomen * 12)}/year`);
     }
   }
+  // Metadata-based fallbacks for listings with short or empty descriptions
+  if (descRaw.trim().length < 50) {
+    if (listing.area > 100 && !smartPoints.some(t => /long.term|stay.*year/i.test(t))) {
+      smartPoints.push('Large property — mention your long-term plans. Landlords renting a large home want committed tenants, not 6-month movers');
+    }
+    if (listing.area > 0 && listing.area < 35 && !smartPoints.some(t => /short|concise|brief/i.test(t))) {
+      smartPoints.push('Small studio or room — keep your message under 120 words. Landlords screening small-unit applicants respond better to concise messages');
+    }
+  }
+
   smartPoints.splice(3);
   if (smartPoints.length === 0) {
     smartPoints.push('Lead with your job title, contract type, and income-to-rent ratio in the first sentence');
@@ -495,6 +509,22 @@ function getListingIntelligence(listing, user) {
       }
     }
   }
+  // Premium price-per-m² signals quality-tier competition
+  if (price > 0 && listing.area > 0 && listing.transactionType === 'huur') {
+    const benchmark2 = CITY_RENT_PM2[(listing.city || '').toLowerCase()];
+    if (benchmark2) {
+      const ppm2b = price / listing.area;
+      const devb = (ppm2b - benchmark2) / benchmark2;
+      if (devb > 0.15 && !uniqueAngles.some(t => /premium|above.*average|quality/i.test(t))) {
+        uniqueAngles.push('Premium-priced listing — position yourself as a quality tenant: stable income, excellent references, documents ready. The price filters out casual applicants, which works in your favour');
+      }
+    }
+  }
+  // High-end rental (>€2500/mo)
+  if (listing.transactionType === 'huur' && price > 2500 && !uniqueAngles.some(t => /high.end|premium.*rental/i.test(t))) {
+    uniqueAngles.push('Premium rental at this price — competition is lower but standards are higher. Lead with your employer and annual income in sentence one');
+  }
+
   if (uniqueAngles.length === 0) {
     uniqueAngles.push('Name two specific viewing days in your first message — most candidates stay vague. Decisiveness shortcuts the landlord\'s decision process');
   }
