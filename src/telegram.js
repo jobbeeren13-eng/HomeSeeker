@@ -586,14 +586,17 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     : 48;
   const cityRanges = {
     amsterdam: '50-200', utrecht: '30-120', haarlem: '30-100',
-    rotterdam: '15-60', eindhoven: '10-40',
+    rotterdam: '15-60', eindhoven: '10-40', 'den-haag': '20-80',
+    leiden: '20-70', delft: '15-50',
   };
   const range = cityRanges[(listing.city || '').toLowerCase()];
   let contextLine = '';
   if (hoursOnline < 2 && range) {
-    contextLine = `_Just listed — apply before ${range} others do._`;
+    contextLine = `_Just listed. Apply before an estimated ${range} others do._`;
   } else if (hoursOnline < 6 && range) {
-    contextLine = `_Listed ${Math.round(hoursOnline)}h ago — competition is building._`;
+    contextLine = `_Listed ${Math.round(hoursOnline)} hours ago. Competition is building._`;
+  } else if (hoursOnline > 504 && range) {
+    contextLine = `_Listed over 3 weeks ago. Ask the landlord why it has not been rented._`;
   }
   if (contextLine) {
     lines.push('');

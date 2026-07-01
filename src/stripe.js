@@ -92,7 +92,7 @@ async function handleWebhook(payload, sig) {
     console.log(`[stripe] Subscription deleted for ${event.data.object.customer}`);
     try {
       const customer = await getStripe().customers.retrieve(event.data.object.customer);
-      if (customer.email) {
+      if (customer && customer.email && !customer.deleted) {
         sendCancellationEmail(customer.email, customer.name || '').catch(e => console.error('[email] cancellation email failed:', e.message));
       }
     } catch (e) { console.error('[stripe] Could not retrieve customer for cancellation email:', e.message); }
