@@ -76,7 +76,7 @@ async function findMatches(listings) {
 
     for (const user of users) {
       if (!user.chat_id) continue;
-      const stats = userStats.get(user.chat_id) || { checked: 0, matched: 0, alreadySent: 0, noMatch: 0, lowScore: 0, lowDeal: 0, capped: 0 };
+      const stats = userStats.get(user.chat_id) || { checked: 0, matched: 0, alreadySent: 0, noMatch: 0, lowDeal: 0, capped: 0 };
       stats.checked++;
 
       if (isListingSent.get(listing.url, user.chat_id)) { stats.alreadySent++; userStats.set(user.chat_id, stats); continue; }
@@ -104,7 +104,7 @@ async function findMatches(listings) {
   // Log per-user match summary
   for (const [chatId, s] of userStats) {
     if (s.matched > 0 || s.capped > 0) {
-      console.log(`[matcher] user=${chatId} checked=${s.checked} matched=${s.matched} noMatch=${s.noMatch} lowScore=${s.lowScore} lowDeal=${s.lowDeal} capped=${s.capped}`);
+      console.log(`[matcher] user=${chatId} checked=${s.checked} matched=${s.matched} noMatch=${s.noMatch} lowDeal=${s.lowDeal} capped=${s.capped}`);
     }
   }
 

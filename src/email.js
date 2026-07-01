@@ -49,13 +49,13 @@ async function sendWelcomeEmail(email, naam, customerId) {
         </div>
         <div style="${CARD}">
           <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">3. Open the AI Rental Assistant</p>
-          <p style="${MUTED};font-size:13px;line-height:1.6;margin:0">Visit <a href="https://homeseeker.dev/tools/rent-assistant" style="color:${GREEN};text-decoration:none">homeseeker.dev/tools/rent-assistant</a> for your full toolkit — application coaching, viewing prep, lease review, negotiation scripts, and move-in checklist.</p>
+          <p style="${MUTED};font-size:13px;line-height:1.6;margin:0">When an alert arrives, tap AI Rental Assistant to get Scout's full analysis: listing strategy, application letter, viewing preparation, and negotiation scripts. All in one place at <a href="https://homeseeker.dev/tools/rent-assistant" style="color:${GREEN};text-decoration:none">homeseeker.dev/tools/rent-assistant</a></p>
         </div>
 
         <hr style="${DIVIDER}">
         <p style="${MUTED};font-size:12px;line-height:1.7">
           <strong style="color:#fff">This link is personal</strong> — it securely connects your payment to your Telegram account. Do not share it.<br><br>
-          7-day free trial. After your trial, €9,99/month incl. 21% VAT is charged automatically. Cancel anytime before day 7 via /cancel in Telegram or by replying to this email. Questions? support@homeseeker.dev
+          7-day free trial. After your trial, 9,99 euros per month including 21% VAT is charged automatically. Cancel anytime before day 7 via /cancel in Telegram or by replying to this email. Questions? support@homeseeker.dev
         </p>
       </div>
     `,
@@ -72,8 +72,8 @@ async function sendTrialReminderEmail(email, naam) {
     html: `
       <div style="${WRAP}">
         <p style="font-size:20px;font-weight:800;color:${GREEN};letter-spacing:1px;margin-bottom:20px">HOMESEEKER</p>
-        <h2 style="font-size:19px;font-weight:700;margin-bottom:14px;color:#fff">Hi ${naam || 'there'}, your trial ends in 2 days.</h2>
-        <p style="${MUTED};font-size:14px;line-height:1.7;margin-bottom:24px">Your 7-day free trial ends on day 7. After that, €9,99/month incl. 21% VAT is charged automatically — unless you cancel first.</p>
+        <h2 style="font-size:19px;font-weight:700;margin-bottom:14px;color:#fff">Your trial ends in 2 days.</h2>
+        <p style="${MUTED};font-size:14px;line-height:1.7;margin-bottom:24px">Your 7-day free trial ends on day 7. After that, 9,99 euros per month including 21% VAT is charged automatically — unless you cancel before then.</p>
 
         <div style="${CARD};border-top:2px solid ${GREEN}">
           <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">Already set up and receiving alerts?</p>
@@ -86,11 +86,42 @@ async function sendTrialReminderEmail(email, naam) {
 
         <hr style="${DIVIDER}">
         <p style="${MUTED};font-size:12px;line-height:1.7">
-          €9,99/month incl. 21% VAT. Cancel anytime. Questions? support@homeseeker.dev
+          9,99 euros per month including 21% VAT. Cancel anytime. Questions? support@homeseeker.dev
         </p>
       </div>
     `,
   });
 }
 
-module.exports = { sendWelcomeEmail, sendTrialReminderEmail };
+async function sendCancellationEmail(email, naam) {
+  const r = getResend();
+  if (!r) return;
+  await r.emails.send({
+    from: 'HomeSeeker <support@homeseeker.dev>',
+    to: email,
+    subject: 'Your HomeSeeker subscription has been cancelled',
+    html: `
+      <div style="${WRAP}">
+        <p style="font-size:20px;font-weight:800;color:${GREEN};letter-spacing:1px;margin-bottom:20px">HOMESEEKER</p>
+        <h2 style="font-size:19px;font-weight:700;margin-bottom:14px;color:#fff">Your subscription has been cancelled.</h2>
+        <p style="${MUTED};font-size:14px;line-height:1.7;margin-bottom:24px">Your HomeSeeker access has ended. You will no longer receive alerts or have access to the AI tools.</p>
+
+        <div style="${CARD};border-top:2px solid ${GREEN}">
+          <p style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">Changed your mind?</p>
+          <p style="${MUTED};font-size:13px;line-height:1.6;margin:0">You can start a new trial at <a href="https://homeseeker.dev" style="color:${GREEN};text-decoration:none">homeseeker.dev</a> — it takes less than a minute.</p>
+        </div>
+
+        <div style="text-align:center;margin:28px 0">
+          <a href="https://homeseeker.dev" style="background:${GREEN};color:#000;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block">Return to HomeSeeker</a>
+        </div>
+
+        <hr style="${DIVIDER}">
+        <p style="${MUTED};font-size:12px;line-height:1.7">
+          Questions? Reply to this email or contact <a href="mailto:support@homeseeker.dev" style="color:${GREEN};text-decoration:none">support@homeseeker.dev</a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { sendWelcomeEmail, sendTrialReminderEmail, sendCancellationEmail };

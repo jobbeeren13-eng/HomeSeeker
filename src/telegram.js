@@ -9,12 +9,12 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const LINK_SECRET = process.env.LINK_SECRET || 'changeme_set_in_env';
  
 const SOURCE_BADGES = {
-  funda: '🏠 Funda',
-  kamernet: '🚪 Kamernet',
-  housinganywhere: '🌍 HousingAnywhere',
-  pararius: '🔑 Pararius',
-  huurwoningen: '🏠 Huurwoningen',
-  jaap: '🏠 Jaap',
+  funda: 'Funda',
+  kamernet: 'Kamernet',
+  housinganywhere: 'HousingAnywhere',
+  pararius: 'Pararius',
+  huurwoningen: 'Huurwoningen',
+  jaap: 'Jaap',
 };
 
 const SOURCE_PLACEHOLDERS = {
@@ -147,7 +147,7 @@ function clearLetterState(chatId) {
 }
  
 function getPlatformBadge(source) {
-  return SOURCE_BADGES[source] || `🏠 ${source || 'Listing'}`;
+  return SOURCE_BADGES[source] || (source || 'Listing');
 }
  
 function formatCityDisplay(city) {
@@ -549,7 +549,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   // Build single complete caption
   const lines = [];
   lines.push(getPlatformBadge(listing.source));
-  lines.push(`📍 *${safeAddr}${cityStr ? ', ' + cityStr : ''}*`);
+  lines.push(`*${safeAddr}${cityStr ? ', ' + cityStr : ''}*`);
   if (listing.area) lines.push(`• ${listing.area}m²`);
   if (isHuur && listing.priceNumber) {
     lines.push(`• Rent: ${priceStr}/mo`);
@@ -580,9 +580,29 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push(disclaimer);
   lines.push('');
   lines.push(verdictCTA(score, isHuur));
+
+  const hoursOnline = listing.listedAt
+    ? (Date.now() - new Date(listing.listedAt).getTime()) / 3600000
+    : 48;
+  const cityRanges = {
+    amsterdam: '50-200', utrecht: '30-120', haarlem: '30-100',
+    rotterdam: '15-60', eindhoven: '10-40',
+  };
+  const range = cityRanges[(listing.city || '').toLowerCase()];
+  let contextLine = '';
+  if (hoursOnline < 2 && range) {
+    contextLine = `_Just listed — apply before ${range} others do._`;
+  } else if (hoursOnline < 6 && range) {
+    contextLine = `_Listed ${Math.round(hoursOnline)}h ago — competition is building._`;
+  }
+  if (contextLine) {
+    lines.push('');
+    lines.push(contextLine);
+  }
+
   if (conflicts.length > 0) {
     lines.push('');
-    lines.push('⛔ *Possible profile mismatch. Read landlord requirements carefully.*');
+    lines.push('*Possible profile mismatch. Read landlord requirements carefully.*');
   }
 
   let captionText = lines.join('\n');

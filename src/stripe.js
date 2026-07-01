@@ -1,6 +1,6 @@
 const Stripe = require('stripe');
 const { createUserByCustomerId, setUserPaidByCustomerId, cancelUserByStripe } = require('./database');
-const { sendWelcomeEmail } = require('./email');
+const { sendWelcomeEmail, sendCancellationEmail } = require('./email');
  
 let _stripe = null;
 function getStripe() {
@@ -66,10 +66,11 @@ async function handleWebhook(payload, sig) {
     const subscriptionId = session.subscription;
  
     if (customerId) {
-      createUserByCustomerId.run('', email || '', customerId, subscriptionId, Date.now());
+      const naam = session.customer_details?.name || '';
+      createUserByCustomerId.run(naam, email || '', customerId, subscriptionId, Date.now());
       console.log(`[stripe] Trial started for customer ${customerId} (${email})`);
       if (email) {
-        sendWelcomeEmail(email, '', customerId).catch(err => console.error('[email] Failed to send welcome email:', err));
+        sendWelcomeEmail(email, naam, customerId).catch(err => console.error('[email] Failed to send welcome email:', err));
       }
     }
   }
@@ -89,6 +90,12 @@ async function handleWebhook(payload, sig) {
   if (event.type === 'customer.subscription.deleted') {
     cancelUserByStripe.run(event.data.object.customer);
     console.log(`[stripe] Subscription deleted for ${event.data.object.customer}`);
+    try {
+      const customer = await getStripe().customers.retrieve(event.data.object.customer);
+      if (customer.email) {
+        sendCancellationEmail(customer.email, customer.name || '').catch(e => console.error('[email] cancellation email failed:', e.message));
+      }
+    } catch (e) { console.error('[stripe] Could not retrieve customer for cancellation email:', e.message); }
   }
  
   if (event.type === 'invoice.payment_failed') {

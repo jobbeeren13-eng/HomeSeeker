@@ -87,10 +87,10 @@ function calculateDealScore(listing) {
 
 function dealLabel(score, listing = {}) {
   if (score === null || !hasComparisonData(listing)) return 'No data';
-  if (score >= 80) return '🔥 Great deal';
-  if (score >= 60) return '👍 Good deal';
-  if (score >= 40) return '😐 Fair';
-  return '💸 Overpriced';
+  if (score >= 80) return 'Great deal';
+  if (score >= 60) return 'Good deal';
+  if (score >= 40) return 'Fair';
+  return 'Overpriced';
 }
 
 module.exports = { calculateDealScore, dealLabel, hasComparisonData, detectPriceDrop, MARKET_HUUR };
