@@ -1114,10 +1114,17 @@ app.get('/admin/backup-status', (req, res) => {
   res.json({ lastBackupAt, lastBackupStatus, backupPath, backupSizeBytes: backupSize, ts: new Date().toISOString() });
 });
 
-// Health + watchdog endpoint
+// Public healthcheck — Railway probes this without auth
 app.get('/health', (req, res) => {
-  const adminKey = req.headers['x-admin-key'];
-  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const dbOk = (() => { try { db.prepare('SELECT 1').get(); return true; } catch { return false; } })();
+  if (!dbOk) return res.status(503).json({ status: 'error', db: false });
+  res.json({ status: 'ok' });
+});
+
+// Detailed health — admin only
+app.get('/admin/health', (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
   const scraper = getScraperHealth();
   const dbOk = (() => { try { db.prepare('SELECT 1').get(); return true; } catch { return false; } })();
   const activeUsers = (() => { try { return db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald=1 AND actief=1').get().c; } catch { return null; } })();
@@ -1127,7 +1134,7 @@ app.get('/health', (req, res) => {
     memory: process.memoryUsage().heapUsed,
     dbOk,
     activeUsers,
-    ts: new Date().toISOString(),
+    timestamp: new Date().toISOString(),
     scraper,
   });
 });
