@@ -195,6 +195,46 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .scout-next{font-size:12px;color:#00c896;padding:10px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:12px}
 @media(max-width:767px){.info-chips-row{grid-template-columns:repeat(2,1fr)}}
 
+/* Price intelligence card */
+.pi-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.pi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.pi-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);font-weight:600}
+.pi-label{font-size:13px;font-weight:700}
+.pi-label.green{color:#00c896}.pi-label.amber{color:#f0a020}.pi-label.red{color:#e24b4a}
+.pi-action{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6}
+.pi-meta{font-size:11px;color:rgba(255,255,255,0.25);margin-top:6px}
+
+/* Persona card */
+.persona-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-left:3px solid #4d9fff;border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.persona-type{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#4d9fff;font-weight:600;margin-bottom:4px}
+.persona-strategy{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:10px}
+.persona-do-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.3);font-weight:600;margin-bottom:6px}
+.persona-do-item{font-size:12px;color:rgba(255,255,255,0.6);padding:3px 0;display:flex;gap:6px}
+.persona-do-item::before{content:"→";color:#00c896;flex-shrink:0}
+.persona-avoid{font-size:12px;color:rgba(255,120,90,0.7);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)}
+.persona-avoid-label{font-weight:700;color:rgba(255,120,90,0.9)}
+
+/* Competition context card */
+.comp-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.comp-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.comp-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);font-weight:600}
+.comp-level{font-size:13px;font-weight:700;color:#fff}
+.comp-range{font-size:12px;color:rgba(255,255,255,0.4)}
+.comp-timing{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;margin-bottom:10px}
+.comp-factor{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.comp-factor:last-child{border-bottom:none}
+.comp-factor-name{color:rgba(255,255,255,0.65)}
+.comp-factor-imp{color:#00c896;font-weight:600}
+
+/* Document readiness card */
+.doc-card{background:rgba(240,160,32,0.08);border:1px solid rgba(240,160,32,0.25);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:none}
+.doc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.doc-title{font-size:13px;font-weight:700;color:#f0a020}
+.doc-score{font-size:18px;font-weight:800;color:#f0a020}
+.doc-urgency{font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:8px;line-height:1.5}
+.doc-missing-item{font-size:12px;color:rgba(255,255,255,0.55);padding:2px 0;display:flex;gap:6px}
+.doc-missing-item::before{content:"✗";color:#e24b4a;flex-shrink:0}
+
 /* Mobile bottom nav */
 .mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9990;background:#0d1117;border-top:1px solid rgba(255,255,255,0.08);height:60px;align-items:stretch}
 .mnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;font-family:inherit;padding:6px 4px 8px}
@@ -282,7 +322,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
         <div class="chip-value" id="chip-price-val">—</div>
       </div>
       <div class="info-chip">
-        <div class="chip-label">Viewing chance</div>
+        <div class="chip-label">Listing age</div>
         <div class="chip-value" id="chip-chance-val">—</div>
       </div>
       <div class="info-chip">
@@ -306,6 +346,48 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
       </div>
       <div class="ac-arrow">&#8250;</div>
     </div>
+    <!-- Price intelligence -->
+    <div class="pi-card" id="pi-card" style="display:none">
+      <div class="pi-header">
+        <div class="pi-title">Price analysis</div>
+        <div class="pi-label" id="pi-label">—</div>
+      </div>
+      <div class="pi-action" id="pi-action"></div>
+      <div class="pi-meta" id="pi-meta"></div>
+    </div>
+
+    <!-- Competition context -->
+    <div class="comp-card" id="comp-card" style="display:none">
+      <div class="comp-header">
+        <div class="comp-title">Expected competition</div>
+        <div>
+          <div class="comp-level" id="comp-level">—</div>
+          <div class="comp-range" id="comp-range"></div>
+        </div>
+      </div>
+      <div class="comp-timing" id="comp-timing"></div>
+      <div id="comp-factors"></div>
+    </div>
+
+    <!-- Persona card -->
+    <div class="persona-card" id="persona-card" style="display:none">
+      <div class="persona-type" id="persona-type">—</div>
+      <div class="persona-strategy" id="persona-strategy"></div>
+      <div class="persona-do-title">What to do</div>
+      <div id="persona-do-list"></div>
+      <div class="persona-avoid" id="persona-avoid" style="display:none"></div>
+    </div>
+
+    <!-- Document readiness -->
+    <div class="doc-card" id="doc-card">
+      <div class="doc-header">
+        <div class="doc-title">Document readiness</div>
+        <div class="doc-score" id="doc-score">—%</div>
+      </div>
+      <div class="doc-urgency" id="doc-urgency"></div>
+      <div id="doc-missing-list"></div>
+    </div>
+
     <div class="analyse-card cta-card" onclick="switchTab(1)">
       <div class="ac-icon">✉</div>
       <div class="ac-content">
@@ -675,67 +757,146 @@ function renderAnalyse(listing,intel){
   if(listing)_lastListing=listing;
   if(intel)_lastIntel=intel;
   const l=_lastListing,d=_lastIntel;
-  const city=(l?.city||'').toLowerCase();
-  const price=parseFloat((l?.price||'').toString().replace(/[^\d.]/g,''))||0;
 
-  // Competition chip
+  // ── Competition chip (from API competitionContext) ──
   const ccv=document.getElementById('chip-comp-val');
-  let comp='Unknown',compCls='';
-  if(city==='amsterdam'){comp='High';compCls='red';}
-  else if(['rotterdam','utrecht','den haag','the hague'].includes(city)){comp='Medium';compCls='amber';}
-  else if(city){comp='Low';compCls='green';}
-  if(ccv){ccv.textContent=comp;ccv.className='chip-value '+compCls;}
-
-  // Price chip
-  const cpv=document.getElementById('chip-price-val');
-  let priceLabel='—',priceCls='';
-  if(price>2500){priceLabel='Expensive';priceCls='red';}
-  else if(price>1500){priceLabel='Fair price';priceCls='green';}
-  else if(price>0){priceLabel='Good deal';priceCls='green';}
-  if(cpv){cpv.textContent=priceLabel;cpv.className='chip-value '+priceCls;}
-
-  // Viewing chance chip
-  const ckv=document.getElementById('chip-chance-val');
-  let kans='Good',kansCls='green';
-  if(city==='amsterdam'&&price<1200){kans='Low';kansCls='red';}
-  else if(city==='amsterdam'){kans='Fair';kansCls='amber';}
-  if(ckv){ckv.textContent=kans;ckv.className='chip-value '+kansCls;}
-
-  // Landlord type chip
-  const ctv=document.getElementById('chip-type-val');
-  let ltype='Unknown';
-  if(d?.landlordProfile?.length){
-    const p=d.landlordProfile[0].toLowerCase();
-    if(p.includes('agency')||p.includes('makelaar')||p.includes('bureau'))ltype='Agency';
-    else if(p.includes('corporat')||p.includes('woningcorpor'))ltype='Corporation';
-    else if(p.includes('private')||p.includes('particulier'))ltype='Private';
-    else ltype='Agency';
-  } else if(l?.source){
-    ltype=l.source.includes('funda')||l.source.includes('pararius')?'Agency':'Private';
+  if(ccv){
+    if(d?.competitionContext){
+      const lvl=d.competitionContext.level;
+      const cls=lvl==='Very High'||lvl==='High'?'red':lvl==='Medium'?'amber':'green';
+      const est=d.competitionContext.estimated;
+      ccv.textContent=`${lvl} (~${est.low}–${est.high})`;
+      ccv.className='chip-value '+cls;
+    } else {
+      const city=(l?.city||'').toLowerCase();
+      let comp='—',cls='';
+      if(city==='amsterdam'){comp='High';cls='red';}
+      else if(['rotterdam','utrecht','haarlem'].includes(city)){comp='Medium';cls='amber';}
+      else if(city){comp='Low';cls='green';}
+      ccv.textContent=comp;ccv.className='chip-value '+cls;
+    }
   }
-  if(ctv)ctv.textContent=ltype;
 
-  // Timing card
+  // ── Price chip (from API priceIntelligence) ──
+  const cpv=document.getElementById('chip-price-val');
+  if(cpv){
+    if(d?.priceIntelligence){
+      cpv.textContent=d.priceIntelligence.label;
+      cpv.className='chip-value '+(d.priceIntelligence.color||'');
+    } else {
+      const price=parseFloat((l?.price||'').toString().replace(/[^\d.]/g,''))||0;
+      let lbl='—',cls='';
+      if(price>2500){lbl='Expensive';cls='red';}
+      else if(price>1500){lbl='Fair price';cls='green';}
+      else if(price>0){lbl='Good deal';cls='green';}
+      cpv.textContent=lbl;cpv.className='chip-value '+cls;
+    }
+  }
+
+  // ── Timing chip (replaces "Viewing chance" with honest timing signal) ──
+  const ckv=document.getElementById('chip-chance-val');
+  if(ckv){
+    if(d?.competitionContext){
+      const msg=d.competitionContext.timingMessage||'';
+      const short=msg.startsWith('Just listed')?'Just listed'
+        :msg.startsWith('Listed a few hours')?'A few hours ago'
+        :msg.startsWith('Listed today')?'Listed today'
+        :msg.startsWith('Listed a few days')?'A few days old'
+        :'Several days old';
+      const cls=short==='Just listed'?'green':short==='A few hours ago'?'green':short==='Listed today'?'amber':'red';
+      ckv.textContent=short;ckv.className='chip-value '+cls;
+    } else {
+      ckv.textContent='—';ckv.className='chip-value';
+    }
+  }
+
+  // ── Landlord type chip (from API persona) ──
+  const ctv=document.getElementById('chip-type-val');
+  if(ctv){
+    if(d?.persona?.label){
+      ctv.textContent=d.persona.label;ctv.className='chip-value';
+    } else {
+      const src=(l?.source||'').toLowerCase();
+      ctv.textContent=src.includes('funda')?'Agency':src.includes('kamernet')?'Private':'—';
+      ctv.className='chip-value';
+    }
+  }
+
+  // ── Timing & Chances card (competition context) ──
   const tb=document.getElementById('ac-timing-body');
   const tbadge=document.getElementById('ac-timing-badge');
-  if(tb){
-    if(city==='amsterdam'){tb.textContent='Amsterdam listings get 50–200 applications. Apply within 2 hours — the shortlist forms before the day is out.';}
-    else if(['rotterdam','utrecht'].includes(city)){tb.textContent='Apply within 4 hours — slightly less competitive than Amsterdam but still fast-moving.';}
-    else{tb.textContent='Apply as soon as possible after publication. The earlier you apply, the better your chances.';}
-  }
-  if(tbadge){
-    tbadge.textContent=compCls==='red'?'High':compCls==='amber'?'Medium':'Low';
-    tbadge.style.display='';
+  if(tb&&d?.competitionContext){
+    tb.textContent=d.competitionContext.timingMessage;
+    if(tbadge){tbadge.textContent=d.competitionContext.level;tbadge.style.display='';}
+  } else if(tb){
+    const city=(l?.city||'').toLowerCase();
+    if(city==='amsterdam')tb.textContent='Amsterdam listings get 50–200 applications. Apply within 2 hours — the shortlist forms before the day is out.';
+    else if(['rotterdam','utrecht'].includes(city))tb.textContent='Apply within 4 hours — slightly less competitive than Amsterdam but still fast-moving.';
+    else tb.textContent='Apply as soon as possible after publication. The earlier you apply, the better your chances.';
   }
 
-  // Strategy card
+  // ── Strategy card (persona strategy) ──
   const sb=document.getElementById('ac-strategy-body');
   if(sb){
-    if(d?.landlordProfile?.length)sb.textContent=d.landlordProfile[0];
-    else sb.textContent='Standard rental — financial proof, clean references, and document availability are the primary filters.';
+    if(d?.persona?.strategy)sb.textContent=d.persona.strategy;
+    else if(d?.landlordProfile?.length)sb.textContent=d.landlordProfile[0];
+    else sb.textContent='Lead with your contract type, income, and document readiness. These are the primary shortlist filters.';
   }
 
-  // Scout message
+  // ── Price intelligence card ──
+  const piCard=document.getElementById('pi-card');
+  if(piCard&&d?.priceIntelligence){
+    const pi=d.priceIntelligence;
+    document.getElementById('pi-label').textContent=pi.label;
+    document.getElementById('pi-label').className='pi-label '+(pi.color||'');
+    document.getElementById('pi-action').textContent=pi.action;
+    const meta=document.getElementById('pi-meta');
+    if(meta)meta.textContent=pi.source==='live'&&pi.sampleSize?`Based on ${pi.sampleSize} recent listings in this city`:'Based on market benchmarks';
+    piCard.style.display='block';
+  }
+
+  // ── Competition context card ──
+  const compCard=document.getElementById('comp-card');
+  if(compCard&&d?.competitionContext){
+    const cc=d.competitionContext;
+    const lvlEl=document.getElementById('comp-level');
+    if(lvlEl)lvlEl.textContent=cc.level+' competition';
+    const rangeEl=document.getElementById('comp-range');
+    if(rangeEl)rangeEl.textContent=`~${cc.estimated.low}–${cc.estimated.high} estimated applications`;
+    const timEl=document.getElementById('comp-timing');
+    if(timEl)timEl.textContent=cc.timingMessage;
+    const facEl=document.getElementById('comp-factors');
+    if(facEl&&cc.successFactors){
+      facEl.innerHTML=cc.successFactors.map(f=>`<div class="comp-factor"><span class="comp-factor-name">${esc(f.factor)}</span><span class="comp-factor-imp">${esc(f.importance)}</span></div>`).join('');
+    }
+    compCard.style.display='block';
+  }
+
+  // ── Persona card ──
+  const personaCard=document.getElementById('persona-card');
+  if(personaCard&&d?.persona){
+    const p=d.persona;
+    const typeEl=document.getElementById('persona-type');if(typeEl)typeEl.textContent=p.label||'—';
+    const stratEl=document.getElementById('persona-strategy');if(stratEl)stratEl.textContent=p.strategy||'';
+    const doEl=document.getElementById('persona-do-list');
+    if(doEl&&p.doThis)doEl.innerHTML=p.doThis.map(s=>`<div class="persona-do-item">${esc(s)}</div>`).join('');
+    const avoidEl=document.getElementById('persona-avoid');
+    if(avoidEl&&p.avoid){avoidEl.innerHTML=`<span class="persona-avoid-label">Avoid: </span>${esc(p.avoid)}`;avoidEl.style.display='';}
+    personaCard.style.display='block';
+  }
+
+  // ── Document readiness card ──
+  const docCard=document.getElementById('doc-card');
+  if(docCard&&d?.documentReadiness&&!d.documentReadiness.ready){
+    const dr=d.documentReadiness;
+    const scoreEl=document.getElementById('doc-score');if(scoreEl)scoreEl.textContent=dr.score+'%';
+    const urgEl=document.getElementById('doc-urgency');if(urgEl)urgEl.textContent=dr.urgency||'';
+    const misEl=document.getElementById('doc-missing-list');
+    if(misEl)misEl.innerHTML=(dr.missing||[]).map(m=>`<div class="doc-missing-item">${esc(typeof m==='string'?m:m.label)}${m.reason?` <em>(${esc(m.reason)})</em>`:''}</div>`).join('');
+    docCard.style.display='block';
+  }
+
+  // ── Scout message ──
   const sm=document.getElementById('scout-msg-0');
   if(sm&&l)sm.textContent=`I've analysed ${l.address||'this listing'}. Here's my assessment.`;
 }

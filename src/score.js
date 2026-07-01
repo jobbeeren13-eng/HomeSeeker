@@ -1,3 +1,5 @@
+const { getCityPriceBenchmark } = require('./database');
+
 // ─────────────────────────────────────────────
 // APPLICATION STRENGTH — 5 weighted pillars
 // ─────────────────────────────────────────────
@@ -386,36 +388,12 @@ function getListingIntelligence(listing, user) {
 
   const intent = detectLandlordIntent(descRaw);
 
-  const landlordProfile = [];
+  const persona = detectLandlordPersona(listing);
+  const landlordProfile = [persona.whatTheyWant, persona.strategy];
   const smartPoints = [];
   const uniqueAngles = [];
   const watchOut = [];
   const hiddenSignals = [];
-
-  // ── landlordProfile ──
-  const intentTips = intent.tips.filter(t => t.source === 'landlord').slice(0, 3);
-  for (const t of intentTips) landlordProfile.push(t.tip);
-  if (landlordProfile.length === 0) {
-    if (/makelaar|makelaardij|NVM|VBO/i.test(descRaw)) {
-      landlordProfile.push('Agency-managed listing — high volume, transactional. Financial proof and immediate availability are the primary selection criteria');
-    } else {
-      landlordProfile.push('Standard rental — financial proof, clean references, and document availability are the primary filters');
-    }
-  }
-  // High-end rental landlord profile
-  if (listing.transactionType === 'huur' && price > 2500 && !landlordProfile.some(t => /high.end|premium/i.test(t))) {
-    landlordProfile.push('High-end rental — landlords at this price point expect polished, professional applicants. Presentation quality matters as much as financials');
-  }
-  if (/woningcorporatie|sociale huur|objectcode|wachtlijst/i.test(descRaw)) {
-    landlordProfile.unshift('Social housing — requires a valid objectcode, not a motivation letter. Follow the housing corporation process exactly');
-  }
-  if (/particulier|private owner|eigenaar verhuurt|zelf verhuur/i.test(descRaw) && !landlordProfile.some(t => /private landlord/i.test(t))) {
-    landlordProfile.push('Private landlord — personal connection and reliability matter more than with agencies');
-  }
-  if (/makelaar|makelaardij|vastgoed|NVM|VBO|ERA\b/i.test(descRaw) && !landlordProfile.some(t => /agency/i.test(t))) {
-    landlordProfile.push('Agency listing — professional presentation and complete documentation are the primary filters');
-  }
-  landlordProfile.splice(3);
 
   // ── smartPoints ──
   if (/\btuin\b|private garden|achtertuin/i.test(descRaw)) {
@@ -1059,4 +1037,236 @@ function detectLandlordIntent(description) {
   return { signals, tips, warnings };
 }
 
-module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getListingIntelligence, getBuyerTips, getPillarBreakdown, detectLandlordIntent };
+// ─────────────────────────────────────────────
+// PRICE INTELLIGENCE — uses real scraped data
+// ─────────────────────────────────────────────
+
+function buildPriceResult(ppm2, benchmarkPpm2, diffPct, source, city, sampleSize) {
+  let label, color, action;
+  if (diffPct > 20) {
+    label = 'Significantly overpriced';
+    color = 'red';
+    action = `At €${Math.round(ppm2)}/m² vs the ${city} average of €${Math.round(benchmarkPpm2)}/m², this is ${diffPct}% above market. Fewer applicants will compete — but confirm you are comfortable with the premium before applying.`;
+  } else if (diffPct > 8) {
+    label = 'Above market';
+    color = 'amber';
+    action = `Priced ${diffPct}% above the ${city} average of €${Math.round(benchmarkPpm2)}/m². Competition will be moderate — focus on quality of application over speed.`;
+  } else if (diffPct > -8) {
+    label = 'Fair price';
+    color = 'green';
+    action = `Fairly priced at €${Math.round(ppm2)}/m² vs the ${city} average of €${Math.round(benchmarkPpm2)}/m². Expect normal competition — speed and document readiness matter most.`;
+  } else if (diffPct > -20) {
+    label = 'Below market';
+    color = 'green';
+    action = `Priced ${Math.abs(diffPct)}% below the ${city} average — expect high competition. Apply within the first 2 hours. The price advantage will attract many applications.`;
+  } else {
+    label = 'Significantly underpriced';
+    color = 'green';
+    action = `This listing is ${Math.abs(diffPct)}% below market price — expect very high competition, possibly 150+ applications. Apply immediately and call the agency within the hour.`;
+  }
+  return { ppm2: Math.round(ppm2), benchmarkPpm2: Math.round(benchmarkPpm2), diffPct, label, color, action, source, sampleSize: sampleSize || null };
+}
+
+function getPriceIntelligence(listing) {
+  const price = listing.priceNumber || 0;
+  const area = listing.area || 0;
+  const city = (listing.city || '').toLowerCase();
+  const type = listing.transactionType || 'huur';
+  if (!price || !area || !city) return null;
+
+  try {
+    const benchmark = getCityPriceBenchmark.get(city, type);
+    if (benchmark && benchmark.sample_size >= 5 && benchmark.avg_ppm2) {
+      const ppm2 = price / area;
+      const diffPct = Math.round((ppm2 - benchmark.avg_ppm2) / benchmark.avg_ppm2 * 100);
+      return buildPriceResult(ppm2, benchmark.avg_ppm2, diffPct, 'live', city, benchmark.sample_size);
+    }
+  } catch (_) {}
+
+  const STATIC = {
+    amsterdam: 28, haarlem: 24, leiden: 21, utrecht: 22,
+    delft: 19, 'den-haag': 17, rotterdam: 18, eindhoven: 15,
+    groningen: 12, maastricht: 13, almere: 14,
+  };
+  const staticBenchmark = STATIC[city];
+  if (!staticBenchmark) return null;
+  const ppm2 = price / area;
+  const diffPct = Math.round((ppm2 - staticBenchmark) / staticBenchmark * 100);
+  return buildPriceResult(ppm2, staticBenchmark, diffPct, 'static', city);
+}
+
+// ─────────────────────────────────────────────
+// LANDLORD PERSONA — tells user what to do differently
+// ─────────────────────────────────────────────
+
+function detectLandlordPersona(listing) {
+  const desc = (listing.description || '');
+  const source = (listing.source || '').toLowerCase();
+
+  let corporate = 0, private_ = 0, riskAverse = 0;
+
+  if (/makelaar|makelaardij|vastgoed|nvm|vbo|agency|management/i.test(desc)) corporate += 3;
+  if (/inkomensbewijs|werkgeversverklaring|employer statement/i.test(desc)) corporate += 2;
+  if (/3x.*huur|4x.*huur|maandinkomen/i.test(desc)) corporate += 2;
+
+  if (/particulier|private owner|eigenaar verhuurt|zelf verhuur/i.test(desc)) private_ += 4;
+  if (/gezellig|fijne buurt|goede buren|charming|cosy/i.test(desc)) private_ += 2;
+  if (source === 'kamernet') private_ += 2;
+
+  if (/geen huisdieren|geen studenten|no students|no pets/i.test(desc)) riskAverse += 3;
+  if (/referentie|verhuurdersverklaring|landlord reference/i.test(desc)) riskAverse += 2;
+  if (/langdurig|long.?term|minimaal.*jaar/i.test(desc)) riskAverse += 2;
+  if (/netjes|verzorgd|representatief/i.test(desc)) riskAverse += 2;
+
+  const dominant = corporate >= private_ && corporate >= riskAverse ? 'corporate'
+    : private_ >= riskAverse ? 'private'
+    : 'riskAverse';
+
+  const strategies = {
+    corporate: {
+      label: 'Agency / corporate landlord',
+      whatTheyWant: 'Income proof, correct documentation, no complications',
+      strategy: 'Keep your message formal and factual. Lead with income, contract type, and a one-line statement that all documents are ready. Personal stories will not help here.',
+      doThis: [
+        'Open with: job title, employer, gross annual income, contract type',
+        'State explicitly: "I can send payslips, contract, and bank statements within the hour"',
+        'Call the agency after applying — most candidates never do',
+      ],
+      avoid: 'Long personal stories, emotional language, or anything that makes the application harder to process',
+    },
+    private: {
+      label: 'Private landlord',
+      whatTheyWant: 'A reliable person they feel comfortable with in their property',
+      strategy: 'Private landlords choose tenants they trust. One genuine sentence about why you want this specific property outweighs a perfect financial profile.',
+      doThis: [
+        'Use their first name if it appears anywhere in the listing',
+        'Write one specific sentence about why this property appeals to you — not "great location" but something concrete',
+        'Keep your tone warm but professional — not formal, not casual',
+      ],
+      avoid: 'Generic copy-paste letters, overly formal tone, or mass-application feel',
+    },
+    riskAverse: {
+      label: 'Risk-conscious landlord',
+      whatTheyWant: 'Stability, long-term commitment, references',
+      strategy: 'This landlord has been burned before. Every sentence in your application should reduce their perceived risk. Stability signals matter more than income here.',
+      doThis: [
+        'Mention how long you have been at your current employer',
+        'State explicitly that you intend to stay for 2+ years',
+        'Offer a reference from a previous landlord if you have one',
+      ],
+      avoid: 'Mentioning flexibility on lease length, recent job changes, or anything that signals you might leave soon',
+    },
+  };
+
+  return {
+    persona: dominant,
+    confidence: Math.max(corporate, private_, riskAverse) > 4 ? 'High' : 'Medium',
+    ...strategies[dominant],
+  };
+}
+
+// ─────────────────────────────────────────────
+// DOCUMENT READINESS — honest, specific
+// ─────────────────────────────────────────────
+
+function getDocumentReadiness(user, listing) {
+  if (!user) return null;
+  const desc = (listing?.description || '').toLowerCase();
+  const readiness = user.application_readiness || 'niet';
+
+  const alwaysRequired = [
+    { id: 'id', label: 'Passport or ID copy' },
+    { id: 'payslips', label: 'Last 3 payslips' },
+    { id: 'contract', label: 'Employment contract' },
+    { id: 'bank', label: 'Last 3 months bank statements' },
+    { id: 'employer', label: 'Employer statement (werkgeversverklaring)' },
+  ];
+
+  const conditionalRequired = [];
+  if (/verhuurdersverklaring|landlord reference|huurdersreferentie/i.test(desc)) {
+    conditionalRequired.push({ id: 'reference', label: 'Landlord reference letter', reason: 'explicitly required in this listing' });
+  }
+  if (/guarantor|borgsteller|garantsteller/i.test(desc)) {
+    conditionalRequired.push({ id: 'guarantor', label: 'Guarantor documentation', reason: 'required by this landlord' });
+  }
+
+  const doneIds = readiness === 'klaar' ? ['id', 'payslips', 'contract', 'bank', 'employer']
+    : readiness === 'bijna' ? ['id', 'payslips', 'contract']
+    : ['id'];
+
+  const allRequired = [...alwaysRequired, ...conditionalRequired];
+  const done = allRequired.filter(i => doneIds.includes(i.id));
+  const missing = allRequired.filter(i => !doneIds.includes(i.id));
+  const score = Math.round(done.length / allRequired.length * 100);
+
+  const urgency = missing.length === 0 ? null
+    : missing.length === 1 ? `One document missing: ${missing[0].label}`
+    : `${missing.length} documents missing — you cannot compete with applicants who can send everything immediately`;
+
+  return { score, done: done.map(i => i.label), missing: missing.map(i => ({ label: i.label, reason: i.reason || null })), urgency, ready: missing.length === 0 };
+}
+
+// ─────────────────────────────────────────────
+// COMPETITION CONTEXT — honest, no fake %
+// ─────────────────────────────────────────────
+
+function getCompetitionContext(listing) {
+  const city = (listing.city || '').toLowerCase();
+  const price = listing.priceNumber || 0;
+  const area = listing.area || 0;
+  const hoursOnline = listing.listedAt
+    ? (Date.now() - new Date(listing.listedAt).getTime()) / 3600000
+    : 48;
+
+  const cityBase = {
+    amsterdam: { low: 50, high: 200 }, haarlem: { low: 30, high: 100 },
+    leiden: { low: 25, high: 80 }, utrecht: { low: 30, high: 120 },
+    'den-haag': { low: 20, high: 80 }, rotterdam: { low: 15, high: 60 },
+    eindhoven: { low: 10, high: 40 }, groningen: { low: 8, high: 30 },
+    maastricht: { low: 5, high: 20 },
+  };
+  const base = cityBase[city] || { low: 15, high: 50 };
+
+  const STATIC_BENCHMARKS = { amsterdam: 28, utrecht: 22, rotterdam: 18, 'den-haag': 17, haarlem: 24, eindhoven: 15, groningen: 12 };
+  const benchmark = STATIC_BENCHMARKS[city] || 18;
+  const ppm2 = area > 0 ? price / area : 0;
+  let multiplier = 1;
+  if (ppm2 > 0 && ppm2 < benchmark * 0.85) multiplier = 1.5;
+  if (ppm2 > benchmark * 1.2) multiplier = 0.6;
+
+  const estimated = { low: Math.round(base.low * multiplier), high: Math.round(base.high * multiplier) };
+
+  let timingMessage;
+  if (hoursOnline < 2) timingMessage = 'Just listed — you are among the first to see this. Apply now before the shortlist forms.';
+  else if (hoursOnline < 6) timingMessage = 'Listed a few hours ago — competition is building. Apply today.';
+  else if (hoursOnline < 24) timingMessage = 'Listed today — many applications likely already submitted. Speed still matters.';
+  else if (hoursOnline < 72) timingMessage = 'Listed a few days ago — a strong, specific letter matters more than speed now.';
+  else timingMessage = 'Listed over 3 days ago — if not yet rented, the landlord may be selective. Ask why directly.';
+
+  const successFactors = hoursOnline < 6
+    ? [
+        { factor: 'Speed — apply immediately', importance: 'Most important' },
+        { factor: 'Document readiness — send everything within the hour', importance: 'Critical' },
+        { factor: 'First contact message quality', importance: 'Secondary' },
+      ]
+    : hoursOnline < 24
+    ? [
+        { factor: 'Document readiness', importance: 'Most important' },
+        { factor: 'Letter quality and personalisation', importance: 'Critical' },
+        { factor: 'Follow-up call to agency', importance: 'High impact' },
+      ]
+    : [
+        { factor: 'Letter quality — show you specifically want this property', importance: 'Most important' },
+        { factor: 'Document readiness', importance: 'Critical' },
+        { factor: 'Stand out from many identical applications', importance: 'Key differentiator' },
+      ];
+
+  const level = estimated.high > 150 ? 'Very High'
+    : estimated.high > 80 ? 'High'
+    : estimated.high > 40 ? 'Medium'
+    : 'Low';
+
+  return { estimated, level, timingMessage, successFactors };
+}
+
+module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getListingIntelligence, getBuyerTips, getPillarBreakdown, detectLandlordIntent, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext };

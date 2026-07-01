@@ -8,7 +8,7 @@ const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
-const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips } = require('./src/score');
+const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
 const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 
@@ -366,6 +366,11 @@ app.get('/api/listing-tips', (req, res) => {
   const user = chatId ? getUser.get(String(chatId)) : null;
   const isKoop = listing.transactionType === 'koop';
 
+  const priceIntel = getPriceIntelligence(listing);
+  const persona = detectLandlordPersona(listing);
+  const docReadiness = getDocumentReadiness(user, listing);
+  const competitionCtx = getCompetitionContext(listing);
+
   if (isKoop) {
     const { listingTips, profileTips, generalTips, tips } = getBuyerTips(listing, user || {});
     return res.json({
@@ -375,6 +380,10 @@ app.get('/api/listing-tips', (req, res) => {
       tips: tips.map(t => t.tip),
       listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
       score, dealScore, isKoop,
+      priceIntelligence: priceIntel,
+      persona,
+      documentReadiness: docReadiness,
+      competitionContext: competitionCtx,
     });
   }
 
@@ -391,6 +400,10 @@ app.get('/api/listing-tips', (req, res) => {
     tips: intel.tips.map(t => t.tip),
     listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
     score, dealScore, isKoop,
+    priceIntelligence: priceIntel,
+    persona,
+    documentReadiness: docReadiness,
+    competitionContext: competitionCtx,
   });
 });
 

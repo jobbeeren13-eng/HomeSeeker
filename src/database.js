@@ -349,6 +349,20 @@ const insertScraperStat = db.prepare(
   'INSERT INTO scraper_stats (source, listings_found, alerts_sent, cycle_time_ms, created_at) VALUES (?, ?, ?, ?, ?)'
 );
 
+const getCityPriceBenchmark = db.prepare(`
+  SELECT
+    AVG(price_number * 1.0 / NULLIF(area, 0)) as avg_ppm2,
+    COUNT(*) as sample_size,
+    MIN(price_number) as min_price,
+    MAX(price_number) as max_price
+  FROM listings
+  WHERE city = ?
+    AND price_number > 0
+    AND area > 0
+    AND transaction_type = ?
+    AND scraped_at > datetime('now', '-30 days')
+`);
+
 module.exports = {
   db, dbPath: DB_PATH,
   getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
@@ -364,6 +378,6 @@ module.exports = {
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
-  insertScraperStat,
+  insertScraperStat, getCityPriceBenchmark,
 };
  
