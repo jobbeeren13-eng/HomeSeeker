@@ -30,15 +30,28 @@ function stripMarkdown(text) {
     .trim();
 }
 
-// Try primary model, fall back to previous generation if model unavailable
+// Try primary model with 30s timeout, fall back to previous generation if model unavailable
 async function callClaude(params) {
+  let controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
   try {
-    return await client.messages.create({ ...params, model: 'claude-sonnet-4-6' });
+    const result = await client.messages.create({ ...params, model: 'claude-sonnet-4-6' }, { signal: controller.signal });
+    clearTimeout(timer);
+    return result;
   } catch (err) {
+    clearTimeout(timer);
     const status = err.status || err.statusCode;
     if (status === 404 || status === 400) {
       console.warn('[letter] claude-sonnet-4-6 unavailable (status=%s), retrying with claude-sonnet-4-5', status);
-      return await client.messages.create({ ...params, model: 'claude-sonnet-4-5' });
+      controller = new AbortController();
+      const timer2 = setTimeout(() => controller.abort(), 30000);
+      try {
+        const result = await client.messages.create({ ...params, model: 'claude-sonnet-4-5' }, { signal: controller.signal });
+        clearTimeout(timer2);
+        return result;
+      } finally {
+        clearTimeout(timer2);
+      }
     }
     throw err;
   }

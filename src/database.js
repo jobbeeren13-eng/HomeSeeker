@@ -195,6 +195,9 @@ db.exec(`CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_cu
 db.exec(`CREATE INDEX IF NOT EXISTS idx_sent_listings_chat_id ON sent_listings(chat_id)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_favorites_chat_id ON favorites(chat_id)`);
 db.exec(`CREATE INDEX IF NOT EXISTS idx_application_tracker_chat_id ON application_tracker(chat_id)`);
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_city_price ON listings(city, price_number)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_sent ON listings(sent)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_users_chat ON users(chat_id)'); } catch(e) {}
 
 // Startup health check — log path and user count so resets are immediately visible in logs
 {

@@ -1,4 +1,12 @@
 require('dotenv').config();
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err.message, err.stack);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled promise rejection:', reason);
+});
+
 const express = require('express');
 const cron = require('node-cron');
 const TelegramBot = require('node-telegram-bot-api');
@@ -181,7 +189,7 @@ app.post('/api/generate-first-contact', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('[generate-first-contact] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -196,7 +204,7 @@ app.post('/api/generate-letter', async (req, res) => {
     res.json({ letter: result.letter });
   } catch (err) {
     console.error('[generate-letter] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -212,7 +220,7 @@ app.post('/api/generate-package', async (req, res) => {
     res.json(pkg);
   } catch (err) {
     console.error('[generate-package] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -227,7 +235,7 @@ app.post('/api/generate-buyer-letter', async (req, res) => {
     res.json({ letter });
   } catch (err) {
     console.error('[generate-buyer-letter] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -241,7 +249,7 @@ app.post('/api/generate-lease-review', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('[generate-lease-review] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -255,7 +263,7 @@ app.post('/api/generate-negotiate', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('[generate-negotiate] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -270,7 +278,7 @@ app.post('/api/generate-bid-advice', async (req, res) => {
     res.json(advice);
   } catch (err) {
     console.error('[generate-bid-advice] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -285,7 +293,7 @@ app.post('/api/generate-rent-assistant', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('[generate-rent-assistant] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -300,7 +308,7 @@ app.post('/api/generate-buy-assistant', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('[generate-buy-assistant] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -315,7 +323,7 @@ app.post('/api/modify-letter', async (req, res) => {
     res.json({ letter: modified });
   } catch (err) {
     console.error('[modify-letter] Error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });
 
@@ -326,7 +334,7 @@ app.post('/api/generate-landlord-reply', async (req, res) => {
   const { message, userProfile } = req.body;
   if (!message) return res.status(400).json({ error: 'message required' });
   try { res.json(await generateLandlordReplyDirect({ message, userProfile: userProfile || {} })); }
-  catch (err) { console.error('[generate-landlord-reply]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-landlord-reply]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-rejection-analysis', async (req, res) => {
@@ -335,7 +343,7 @@ app.post('/api/generate-rejection-analysis', async (req, res) => {
   const { applications, userProfile } = req.body;
   if (!applications) return res.status(400).json({ error: 'applications required' });
   try { res.json(await generateRejectionAnalysisDirect({ applications, userProfile: userProfile || {} })); }
-  catch (err) { console.error('[generate-rejection-analysis]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-rejection-analysis]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-reference-letter', async (req, res) => {
@@ -344,7 +352,7 @@ app.post('/api/generate-reference-letter', async (req, res) => {
   const { type, details } = req.body;
   if (!type || !details) return res.status(400).json({ error: 'type and details required' });
   try { res.json(await generateReferenceLetterDirect({ type, details })); }
-  catch (err) { console.error('[generate-reference-letter]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-reference-letter]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-income-explain', async (req, res) => {
@@ -353,7 +361,7 @@ app.post('/api/generate-income-explain', async (req, res) => {
   const { income, rent, situation } = req.body;
   if (!income || !rent) return res.status(400).json({ error: 'income and rent required' });
   try { res.json(await generateIncomeExplainDirect({ income, rent, situation: situation || '' })); }
-  catch (err) { console.error('[generate-income-explain]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-income-explain]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-viewing-feedback', async (req, res) => {
@@ -362,7 +370,7 @@ app.post('/api/generate-viewing-feedback', async (req, res) => {
   const { viewingNotes, userProfile } = req.body;
   if (!viewingNotes) return res.status(400).json({ error: 'viewingNotes required' });
   try { res.json(await generateViewingFeedbackDirect({ viewingNotes, userProfile: userProfile || {} })); }
-  catch (err) { console.error('[generate-viewing-feedback]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-viewing-feedback]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-tenant-rights', async (req, res) => {
@@ -371,7 +379,7 @@ app.post('/api/generate-tenant-rights', async (req, res) => {
   const { question } = req.body;
   if (!question) return res.status(400).json({ error: 'question required' });
   try { res.json(await generateTenantRightsAnswerDirect({ question })); }
-  catch (err) { console.error('[generate-tenant-rights]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-tenant-rights]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-deal-explain', async (req, res) => {
@@ -380,7 +388,7 @@ app.post('/api/generate-deal-explain', async (req, res) => {
   const { dealData } = req.body;
   if (!dealData) return res.status(400).json({ error: 'dealData required' });
   try { res.json(await generateDealExplainDirect({ dealData })); }
-  catch (err) { console.error('[generate-deal-explain]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-deal-explain]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-overbid-letter', async (req, res) => {
@@ -389,7 +397,7 @@ app.post('/api/generate-overbid-letter', async (req, res) => {
   const { bidDetails, userProfile } = req.body;
   if (!bidDetails) return res.status(400).json({ error: 'bidDetails required' });
   try { res.json(await generateOverbidLetterDirect({ bidDetails, userProfile: userProfile || {} })); }
-  catch (err) { console.error('[generate-overbid-letter]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-overbid-letter]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-inspection-advice', async (req, res) => {
@@ -398,7 +406,7 @@ app.post('/api/generate-inspection-advice', async (req, res) => {
   const { inspectionText, purchasePrice } = req.body;
   if (!inspectionText) return res.status(400).json({ error: 'inspectionText required' });
   try { res.json(await generateInspectionAdviceDirect({ inspectionText, purchasePrice: purchasePrice || 0 })); }
-  catch (err) { console.error('[generate-inspection-advice]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-inspection-advice]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-erfpacht-analysis', async (req, res) => {
@@ -407,7 +415,7 @@ app.post('/api/generate-erfpacht-analysis', async (req, res) => {
   const { erfpachtText, purchasePrice, city } = req.body;
   if (!erfpachtText) return res.status(400).json({ error: 'erfpachtText required' });
   try { res.json(await generateErfpachtAnalysisDirect({ erfpachtText, purchasePrice: purchasePrice || 0, city: city || '' })); }
-  catch (err) { console.error('[generate-erfpacht-analysis]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-erfpacht-analysis]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 app.post('/api/generate-agent-script', async (req, res) => {
@@ -416,7 +424,7 @@ app.post('/api/generate-agent-script', async (req, res) => {
   const { situation, context } = req.body;
   if (!situation) return res.status(400).json({ error: 'situation required' });
   try { res.json(await generateAgentScriptDirect({ situation, context: context || '' })); }
-  catch (err) { console.error('[generate-agent-script]', err); res.status(500).json({ error: err.message }); }
+  catch (err) { console.error('[generate-agent-script]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 
 // Support chat — ANTHROPIC_API_KEY lives only on Hetzner, so this endpoint lives here

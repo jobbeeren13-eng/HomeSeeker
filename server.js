@@ -1,4 +1,17 @@
 require('dotenv').config();
+
+const REQUIRED_ENV = ['ANTHROPIC_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_ID', 'ADMIN_KEY', 'TELEGRAM_BOT_TOKEN'];
+for (const key of REQUIRED_ENV) {
+  if (!process.env[key]) console.warn(`[startup] WARNING: ${key} is not set`);
+}
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err.message, err.stack);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled promise rejection:', reason);
+});
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -35,6 +48,27 @@ setInterval(() => {
   const now = Date.now();
   for (const [ip, e] of filterRateLimits) { if (e.resetAt < now) filterRateLimits.delete(ip); }
 }, 3600000);
+
+// AI endpoint rate limiter — 10 requests per IP per minute
+const rateLimits = new Map();
+function rateLimit(key, maxPerMinute) {
+  const now = Date.now();
+  const window = rateLimits.get(key) || [];
+  const recent = window.filter(t => now - t < 60000);
+  if (recent.length >= maxPerMinute) return false;
+  recent.push(now);
+  rateLimits.set(key, recent);
+  return true;
+}
+setInterval(() => { const now = Date.now(); for (const [k, v] of rateLimits) { if (v.every(t => now - t > 60000)) rateLimits.delete(k); } }, 300000);
+
+// Listing-tips response cache (30 min TTL) — avoids recomputing intelligence per request
+const tipsCache = new Map();
+const TIPS_CACHE_TTL = 30 * 60 * 1000;
+setInterval(() => { const now = Date.now(); for (const [k, v] of tipsCache) { if (now - v.ts > TIPS_CACHE_TTL) tipsCache.delete(k); } }, 3600000);
+
+// In-flight request dedup for AI assistant endpoints
+const pendingRequests = new Map();
 
 app.use('/webhook/stripe', express.raw({ type: 'application/json' }));
 app.use(express.json());
@@ -360,6 +394,11 @@ app.get('/api/letter-data', (req, res) => {
 app.get('/api/listing-tips', (req, res) => {
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'id required' });
+
+  const cacheKey = `tips:${id}`;
+  const cached = tipsCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < TIPS_CACHE_TTL) return res.json(cached.data);
+
   const entry = getCachedEntry(id);
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
   const { listing, chatId, score, dealScore } = entry;
@@ -371,9 +410,10 @@ app.get('/api/listing-tips', (req, res) => {
   const docReadiness = getDocumentReadiness(user, listing);
   const competitionCtx = getCompetitionContext(listing);
 
+  let data;
   if (isKoop) {
     const { listingTips, profileTips, generalTips, tips } = getBuyerTips(listing, user || {});
-    return res.json({
+    data = {
       listingTips: listingTips.map(t => ({ tip: t.tip, level: t.level || 'listing' })),
       profileTips: profileTips.map(t => ({ tip: t.tip })),
       generalTips: generalTips.map(t => ({ tip: t.tip })),
@@ -384,33 +424,38 @@ app.get('/api/listing-tips', (req, res) => {
       persona,
       documentReadiness: docReadiness,
       competitionContext: competitionCtx,
-    });
+    };
+  } else {
+    const intel = getListingIntelligence(listing, user || {});
+    data = {
+      landlordProfile: intel.landlordProfile,
+      smartPoints: intel.smartPoints,
+      uniqueAngles: intel.uniqueAngles,
+      watchOut: intel.watchOut,
+      hiddenSignals: intel.hiddenSignals,
+      listingTips: intel.tips.filter(t => t.level === 'critical' || t.level === 'listing').map(t => ({ tip: t.tip, level: t.level })),
+      profileTips: intel.tips.filter(t => t.level === 'profile').map(t => ({ tip: t.tip })),
+      generalTips: [],
+      tips: intel.tips.map(t => t.tip),
+      listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
+      score, dealScore, isKoop,
+      priceIntelligence: priceIntel,
+      persona,
+      documentReadiness: docReadiness,
+      competitionContext: competitionCtx,
+    };
   }
-
-  const intel = getListingIntelligence(listing, user || {});
-  res.json({
-    landlordProfile: intel.landlordProfile,
-    smartPoints: intel.smartPoints,
-    uniqueAngles: intel.uniqueAngles,
-    watchOut: intel.watchOut,
-    hiddenSignals: intel.hiddenSignals,
-    listingTips: intel.tips.filter(t => t.level === 'critical' || t.level === 'listing').map(t => ({ tip: t.tip, level: t.level })),
-    profileTips: intel.tips.filter(t => t.level === 'profile').map(t => ({ tip: t.tip })),
-    generalTips: [],
-    tips: intel.tips.map(t => t.tip),
-    listing: { address: listing.address, price: listing.price, area: listing.area, city: listing.city },
-    score, dealScore, isKoop,
-    priceIntelligence: priceIntel,
-    persona,
-    documentReadiness: docReadiness,
-    competitionContext: competitionCtx,
-  });
+  tipsCache.set(cacheKey, { data, ts: Date.now() });
+  return res.json(data);
 });
 
 // Generates letter from web page selections
 app.post('/api/generate-letter-web', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { cacheId, selectedTipTexts = [], extraContext = '', tone = 'professional' } = req.body;
-  if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
+  if (!cacheId || !/^[a-zA-Z0-9_-]+$/.test(String(cacheId))) return res.status(400).json({ error: 'Missing or invalid cacheId' });
+  if (extraContext && String(extraContext).length > 500) return res.status(400).json({ error: 'extraContext must be under 500 characters' });
 
   const entry = getCachedEntry(cacheId);
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
@@ -727,8 +772,16 @@ app.post('/api/modify-letter-web', async (req, res) => {
 
 // AI rental assistant — proxies to Hetzner, falls back to direct
 app.post('/api/rent-assistant', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { tab, userMessage, listingContext, chatId } = req.body;
-  if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
+  if (!userMessage || typeof userMessage !== 'string') return res.status(400).json({ error: 'userMessage required' });
+  if (userMessage.length > 2000) return res.status(400).json({ error: 'userMessage must be under 2000 characters' });
+  if (tab !== undefined && typeof tab !== 'string') return res.status(400).json({ error: 'tab must be a string' });
+  const reqKey = `rent:${tab}:${userMessage.slice(0, 50)}`;
+  if (pendingRequests.has(reqKey)) {
+    try { return res.json(await pendingRequests.get(reqKey)); } catch (err) { return res.status(500).json({ error: 'Assistant response failed. Try again in a moment.' }); }
+  }
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
@@ -736,19 +789,25 @@ app.post('/api/rent-assistant', async (req, res) => {
     if (chatId) {
       try { user = getUser.get(String(chatId)); } catch (_) {}
     }
-    if (hetznerUrl && adminKey) {
-      const r = await timedFetch(`${hetznerUrl}/api/generate-rent-assistant`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ tab, userMessage, user, listingContext }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Hetzner error');
-      return res.json(data);
-    }
-    const result = await generateRentAssistantResponse({ tab, userMessage, user, listingContext });
+    const promise = (async () => {
+      if (hetznerUrl && adminKey) {
+        const r = await timedFetch(`${hetznerUrl}/api/generate-rent-assistant`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ tab, userMessage, user, listingContext }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error('Hetzner error');
+        return data;
+      }
+      return generateRentAssistantResponse({ tab, userMessage, user, listingContext });
+    })();
+    pendingRequests.set(reqKey, promise);
+    const result = await promise;
+    pendingRequests.delete(reqKey);
     return res.json(result);
   } catch (err) {
+    pendingRequests.delete(reqKey);
     console.error('[api/rent-assistant]', err.message);
     res.status(500).json({ error: 'Assistant response failed. Try again in a moment.' });
   }
@@ -756,8 +815,16 @@ app.post('/api/rent-assistant', async (req, res) => {
 
 // AI buyer assistant — proxies to Hetzner, falls back to direct
 app.post('/api/buy-assistant', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { tab, userMessage, listingContext, chatId } = req.body;
-  if (!userMessage) return res.status(400).json({ error: 'userMessage required' });
+  if (!userMessage || typeof userMessage !== 'string') return res.status(400).json({ error: 'userMessage required' });
+  if (userMessage.length > 2000) return res.status(400).json({ error: 'userMessage must be under 2000 characters' });
+  if (tab !== undefined && typeof tab !== 'string') return res.status(400).json({ error: 'tab must be a string' });
+  const reqKey = `buy:${tab}:${userMessage.slice(0, 50)}`;
+  if (pendingRequests.has(reqKey)) {
+    try { return res.json(await pendingRequests.get(reqKey)); } catch (err) { return res.status(500).json({ error: 'Assistant response failed. Try again in a moment.' }); }
+  }
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
@@ -765,19 +832,25 @@ app.post('/api/buy-assistant', async (req, res) => {
     if (chatId) {
       try { user = getUser.get(String(chatId)); } catch (_) {}
     }
-    if (hetznerUrl && adminKey) {
-      const r = await timedFetch(`${hetznerUrl}/api/generate-buy-assistant`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ tab, userMessage, user, listingContext }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Hetzner error');
-      return res.json(data);
-    }
-    const result = await generateBuyAssistantResponse({ tab, userMessage, user, listingContext });
+    const promise = (async () => {
+      if (hetznerUrl && adminKey) {
+        const r = await timedFetch(`${hetznerUrl}/api/generate-buy-assistant`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ tab, userMessage, user, listingContext }),
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error('Hetzner error');
+        return data;
+      }
+      return generateBuyAssistantResponse({ tab, userMessage, user, listingContext });
+    })();
+    pendingRequests.set(reqKey, promise);
+    const result = await promise;
+    pendingRequests.delete(reqKey);
     return res.json(result);
   } catch (err) {
+    pendingRequests.delete(reqKey);
     console.error('[api/buy-assistant]', err.message);
     res.status(500).json({ error: 'Assistant response failed. Try again in a moment.' });
   }
@@ -943,6 +1016,22 @@ async function runDailyJob() {
 
   const now = Date.now();
 
+  // Trial expiry safety net: deactivate users whose 7-day trial started >8 days ago
+  // with no confirmed subscription_id (guards against missed Stripe webhooks)
+  try {
+    const expiryCutoff = now - 8 * 24 * 60 * 60 * 1000;
+    const expiredUsers = db.prepare(
+      `SELECT * FROM users WHERE betaald = 1 AND actief = 1
+       AND trial_start IS NOT NULL AND trial_start < ?
+       AND (stripe_subscription_id IS NULL OR stripe_subscription_id = '')`
+    ).all(expiryCutoff);
+    for (const u of expiredUsers) {
+      db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE chat_id = ?').run(u.chat_id);
+      console.log(`[daily] Trial expired (no subscription confirmed) — deactivated user ${u.email || u.chat_id}`);
+    }
+    if (expiredUsers.length) console.log(`[daily] Expired trial users deactivated: ${expiredUsers.length}`);
+  } catch (e) { console.error('[daily] trial expiry check error:', e.message); }
+
   // FIX 2: Trial expiry reminder on day 5
   try {
     const min = now - 5.5 * 24 * 60 * 60 * 1000;
@@ -1027,9 +1116,17 @@ app.get('/admin/backup-status', (req, res) => {
 
 // Health + watchdog endpoint
 app.get('/health', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
   const scraper = getScraperHealth();
+  const dbOk = (() => { try { db.prepare('SELECT 1').get(); return true; } catch { return false; } })();
+  const activeUsers = (() => { try { return db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald=1 AND actief=1').get().c; } catch { return null; } })();
   res.json({
-    status: scraper.status,
+    status: dbOk ? scraper.status : 'db_error',
+    uptime: Math.round(process.uptime()),
+    memory: process.memoryUsage().heapUsed,
+    dbOk,
+    activeUsers,
     ts: new Date().toISOString(),
     scraper,
   });
@@ -1073,8 +1170,12 @@ app.use((err, _req, res, _next) => {
 });
 
 app.post('/api/support-chat', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { message, history } = req.body;
-  if (!message) return res.status(400).json({ error: 'message required' });
+  if (!message || typeof message !== 'string') return res.status(400).json({ error: 'message required' });
+  if (message.length > 500) return res.status(400).json({ error: 'message must be under 500 characters' });
+  if (history !== undefined && (!Array.isArray(history) || history.length > 10)) return res.status(400).json({ error: 'history must be an array with at most 10 items' });
   try {
     const hist = Array.isArray(history) ? history.slice(-6) : [];
     const data = await proxyToHetzner('/api/support-chat', { message, history: hist }, () => generateSupportChatDirect({ message, history: hist }));
@@ -1111,7 +1212,15 @@ app.get('/api/fetch-funda-photo', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);
   console.log(`[server] Base URL: ${BASE_URL}`);
+});
+
+process.on('SIGTERM', () => {
+  console.log('[server] SIGTERM received — shutting down gracefully');
+  server.close(() => {
+    console.log('[server] HTTP server closed');
+    process.exit(0);
+  });
 });
