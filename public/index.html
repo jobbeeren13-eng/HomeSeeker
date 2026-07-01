@@ -17,206 +17,196 @@
   <meta name="twitter:image" content="https://homeseeker.dev/og-image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
+      --bg: #0a0a0f;
+      --bg-elevated: #0f0f17;
+      --bg-card: #13131a;
+      --bg-card-hover: #16161f;
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.12);
       --green: #00c896;
-      --green-dim: rgba(0,200,150,0.10);
-      --green-border: rgba(0,200,150,0.22);
-      --bg: #0a0a0a;
-      --bg2: #0d1117;
-      --card: #111318;
-      --border: rgba(255,255,255,0.08);
-      --text: #e8edf3;
-      --muted: rgba(255,255,255,0.45);
-      --max-w: 1100px;
+      --green-dim: rgba(0,200,150,0.12);
+      --green-border: rgba(0,200,150,0.25);
+      --text-primary: #f0f0f5;
+      --text-secondary: rgba(240,240,245,0.6);
+      --text-muted: rgba(240,240,245,0.35);
+      --red: #e24b4a;
+      --amber: #f0a020;
+      --radius: 12px;
+      --radius-sm: 8px;
     }
 
     html { scroll-behavior: smooth; }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.65; -webkit-font-smoothing: antialiased; }
 
-    /* NAV */
+    .container { max-width: 1080px; margin: 0 auto; width: 100%; padding: 0 24px; }
+    section { padding: 96px 0; }
+
+    /* ── NAV ── */
     .nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 300;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px; height: 56px;
-      background: rgba(10,10,10,0.95); backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      height: 56px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      background: rgba(10,10,15,0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
     }
     .nav-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-    .nav-brand-text { font-size: 15px; font-weight: 800; letter-spacing: 2px; color: var(--green); text-transform: uppercase; }
+    .nav-logo { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .nav-logo svg { width: 16px; height: 16px; }
+    .nav-brand-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
     .nav-links { display: flex; align-items: center; gap: 24px; }
-    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
-    .nav-links a:hover { color: var(--text); }
-    .nav-cta { background: var(--green) !important; color: #0a0a0a !important; font-weight: 700 !important; font-size: 13px !important; padding: 8px 18px !important; border-radius: 100px !important; transition: opacity .15s !important; }
-    .nav-cta:hover { opacity: .85 !important; color: #0a0a0a !important; }
+    .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
+    .nav-link:hover { color: var(--text-primary); }
+    .nav-cta { background: var(--green); color: #0a0a0f; border: none; border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity .15s; font-family: inherit; }
+    .nav-cta:hover { opacity: .88; }
 
     .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
-    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
-
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-primary); border-radius: 2px; }
     .nav-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; transform: translateX(100%); transition: transform .2s ease; }
     .nav-overlay.open { transform: translateX(0); }
-    .nav-overlay-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--text); font-size: 30px; cursor: pointer; line-height: 1; padding: 4px 8px; }
+    .nav-overlay-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--text-primary); font-size: 30px; cursor: pointer; line-height: 1; padding: 4px 8px; }
     .nav-overlay-links { display: flex; flex-direction: column; align-items: center; gap: 32px; }
-    .nav-overlay-links a { color: var(--text); text-decoration: none; font-size: 22px; font-weight: 700; }
-    .nav-overlay-cta { margin-top: 48px; display: block; background: var(--green); color: #0a0a0a; font-weight: 700; font-size: 16px; padding: 16px 52px; border-radius: 100px; text-decoration: none; }
+    .nav-overlay-links a { color: var(--text-primary); text-decoration: none; font-size: 22px; font-weight: 700; }
+    .nav-overlay-cta { margin-top: 48px; display: block; background: var(--green); color: #0a0a0f; font-weight: 700; font-size: 16px; padding: 16px 52px; border-radius: var(--radius-sm); text-decoration: none; }
 
-    /* LAYOUT */
-    .container { max-width: var(--max-w); margin: 0 auto; width: 100%; padding: 0 24px; }
-    section { padding: 80px 0; }
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 140px 24px 80px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(ellipse, rgba(0,200,150,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 720px; margin: 0 auto; width: 100%; }
 
-    /* HERO */
-    .hero { min-height: 100vh; display: flex; align-items: center; padding: 56px 0 0; background: var(--bg); position: relative; overflow: hidden; }
-    .hero::before { content: ''; position: absolute; top: 0; right: 0; width: 600px; height: 600px; background: radial-gradient(ellipse, rgba(0,200,150,0.07) 0%, transparent 65%); pointer-events: none; }
+    .hero-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--green); margin-bottom: 20px; display: block; }
+    .hero h1 { font-size: 56px; font-weight: 700; letter-spacing: -1.5px; line-height: 1.05; color: var(--text-primary); margin-bottom: 20px; }
+    .hero-sub { font-size: 17px; color: var(--text-secondary); max-width: 520px; margin: 0 auto 28px; line-height: 1.65; }
 
-    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; padding: 48px 24px; max-width: var(--max-w); margin: 0 auto; width: 100%; }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .btn-primary { display: inline-flex; align-items: center; background: var(--green); color: #0a0a0f; border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: opacity .15s; font-family: inherit; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-secondary { display: inline-flex; align-items: center; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; transition: border-color .15s, color .15s; font-family: inherit; }
+    .btn-secondary:hover { border-color: var(--border-hover); color: var(--text-primary); }
 
-    .hero-eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 20px; }
-    .hero h1 { font-size: clamp(34px, 4.5vw, 52px); font-weight: 800; line-height: 1.06; letter-spacing: -1.5px; margin-bottom: 20px; color: #fff; }
-    .hero h1 em { font-style: normal; color: var(--green); }
-    .hero-sub { font-size: 16px; color: var(--muted); max-width: 480px; margin-bottom: 28px; line-height: 1.7; }
+    .hero-trust { font-size: 13px; color: var(--text-muted); margin-bottom: 48px; }
 
-    .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-    .btn-primary { display: inline-block; background: var(--green); color: #0a0a0a; font-weight: 700; font-size: 15px; padding: 13px 26px; border-radius: 10px; text-decoration: none; transition: opacity .15s, transform .1s; }
-    .btn-primary:hover { opacity: .87; transform: translateY(-1px); }
-    .btn-outline { display: inline-block; background: transparent; color: var(--text); font-size: 15px; font-weight: 600; padding: 12px 26px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); text-decoration: none; transition: border-color .15s; }
-    .btn-outline:hover { border-color: var(--green); }
+    /* Telegram bubble */
+    .tg-wrap { max-width: 400px; margin: 0 auto; }
+    .tg-card {
+      background: #1a1a24;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 18px 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      text-align: left;
+    }
+    .tg-card b { color: var(--text-primary); }
+    .tg-card-loc { margin: 6px 0 10px; line-height: 1.5; }
+    .tg-score-block { margin-bottom: 6px; }
+    .tg-score-lbl { font-weight: 600; color: var(--text-primary); font-size: 13px; margin-bottom: 4px; }
+    .tg-score-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .tg-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+    .tg-bar-fill { height: 100%; border-radius: 3px; }
+    .tg-pct-g { color: var(--green); font-weight: 600; font-size: 12px; white-space: nowrap; }
+    .tg-pct-a { color: var(--amber); font-weight: 600; font-size: 12px; white-space: nowrap; }
+    .tg-disc { font-size: 11px; color: var(--text-muted); font-style: italic; margin: 8px 0; line-height: 1.5; }
+    .tg-verdict { font-size: 13px; color: var(--text-primary); margin-bottom: 12px; line-height: 1.5; }
+    .tg-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .tg-btn { background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 8px; padding: 8px 10px; font-size: 11px; text-align: center; color: var(--green); font-weight: 600; }
 
-    .hero-trust { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-bottom: 24px; }
-    .hero-trust span::before { content: '✓ '; color: var(--green); font-weight: 700; }
+    .tg-annotations { display: flex; align-items: center; justify-content: center; margin-top: 14px; gap: 2px; }
+    .tg-ann { font-size: 11px; color: var(--text-muted); }
+    .tg-ann-sep { font-size: 11px; color: var(--text-muted); padding: 0 8px; }
 
-    .hero-sources { display: flex; gap: 8px; flex-wrap: wrap; }
-    .source-pill { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 600; color: var(--muted); }
-    .hero-differentiator { font-size: 13px; color: rgba(255,255,255,0.35); margin-top: 12px; font-style: italic; letter-spacing: 0.1px; }
+    /* ── HOW IT WORKS ── */
+    .how-section { background: var(--bg-elevated); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .section-title { font-size: 36px; font-weight: 700; letter-spacing: -0.8px; color: var(--text-primary); text-align: center; margin-bottom: 10px; }
+    .section-sub { font-size: 15px; color: var(--text-muted); text-align: center; margin-bottom: 48px; }
 
-    /* Telegram mockup */
-    .tg-mock { background: #141920; border-radius: 18px; border: 1px solid rgba(255,255,255,0.09); padding: 16px; max-width: 320px; box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,200,150,0.06); }
-    .tg-mock-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.07); }
-    .tg-mock-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
-    .tg-mock-name { font-weight: 700; font-size: 13px; color: var(--text); }
-    .tg-mock-status { font-size: 11px; color: var(--green); }
-    .tg-bubble { background: #1e2530; border-radius: 4px 14px 14px 14px; padding: 12px 14px; font-size: 11.5px; line-height: 1.7; color: var(--text); margin-bottom: 10px; }
-    .tg-bubble b { color: #fff; }
-    .tg-val-g { color: var(--green); font-weight: 700; }
-    .tg-val-y { color: #f5a623; font-weight: 700; }
-    .tg-bubble-footer { font-size: 11px; color: rgba(255,255,255,0.35); font-style: italic; margin-top: 6px; }
-    .tg-mock-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .tg-mock-btn { background: rgba(0,200,150,0.12); border: 1px solid rgba(0,200,150,0.2); border-radius: 8px; padding: 8px 10px; font-size: 11px; text-align: center; color: var(--green); font-weight: 600; }
+    .steps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .step-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: border-color .15s; }
+    .step-card:hover { border-color: var(--border-hover); }
+    .step-n { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border); font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; flex-shrink: 0; }
+    .step-card h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .step-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
 
-    /* HOW IT WORKS */
-    .how-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .section-title { font-size: clamp(24px, 3vw, 32px); font-weight: 800; color: #fff; text-align: center; margin-bottom: 10px; letter-spacing: -.5px; }
-    .section-sub { font-size: 15px; color: var(--muted); text-align: center; margin-bottom: 48px; }
-
-    .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin-top: 40px; position: relative; }
-    .steps::before { content: ''; position: absolute; top: 24px; left: calc(12.5% + 18px); right: calc(12.5% + 18px); height: 1px; border-top: 1px dashed rgba(0,200,150,0.25); pointer-events: none; }
-    .step { padding: 0 16px; text-align: center; }
-    .step-num { width: 48px; height: 48px; border-radius: 50%; background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.3); color: var(--green); font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; position: relative; z-index: 1; }
-    .step h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #fff; }
-    .step p { color: var(--muted); font-size: 13px; line-height: 1.6; }
-
-    /* TOOLS */
+    /* ── TOOLS ── */
     .tools-section { background: var(--bg); }
-    .accordion { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
-    .acc-item { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .acc-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; cursor: pointer; user-select: none; transition: background .15s; }
-    .acc-header:hover { background: rgba(255,255,255,0.02); }
-    .acc-header-left { display: flex; align-items: center; gap: 10px; }
-    .acc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-    .acc-title { font-size: 16px; font-weight: 700; color: #fff; }
-    .acc-chevron { color: var(--muted); font-size: 18px; transition: transform .25s; flex-shrink: 0; }
-    .acc-item.open .acc-chevron { transform: rotate(180deg); }
-    .acc-body { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
-    .acc-item.open .acc-body { max-height: 1000px; }
-    .acc-body-inner { padding: 0 20px 20px; display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
+    .tools-col-label { font-size: 11px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+    .tool-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: border-color .15s; margin-bottom: 10px; }
+    .tool-card:last-child { margin-bottom: 0; }
+    .tool-card:hover { border-color: var(--border-hover); }
+    .tool-card-featured { border-color: var(--green-border); }
+    .tool-badge { display: inline-block; background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 100px; align-self: flex-start; }
+    .tool-card strong { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .tool-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+    .tool-card-cta { font-size: 12px; font-weight: 600; color: var(--green); margin-top: 2px; }
 
-    .tool-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; text-decoration: none; display: flex; flex-direction: column; gap: 10px; transition: border-color .15s; }
-    .tool-card:hover { border-color: rgba(0,200,150,0.3); }
-    .tool-card-icon { width: 36px; height: 36px; background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
-    .tool-card strong { font-size: 14px; font-weight: 700; color: #fff; display: block; }
-    .tool-card p { font-size: 12px; color: var(--muted); line-height: 1.55; flex: 1; }
-    .tool-card-cta { font-size: 12px; font-weight: 700; color: var(--green); margin-top: auto; }
-
-    /* PRICING */
-    .pricing-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .price-intro { font-size: 14px; color: var(--muted); font-style: italic; text-align: center; max-width: 480px; margin: 0 auto 28px; line-height: 1.7; }
+    /* ── PRICING ── */
+    .pricing-section { background: var(--bg-elevated); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .price-intro { font-size: 14px; color: var(--text-muted); font-style: italic; text-align: center; max-width: 480px; margin: 0 auto 32px; line-height: 1.7; }
     .price-wrap { display: flex; justify-content: center; }
-    .price-card { background: var(--card); border: 1px solid rgba(0,200,150,0.28); border-radius: 18px; padding: 32px 36px; max-width: 480px; width: 100%; box-shadow: 0 0 60px rgba(0,200,150,0.05); }
-    .price-badge { display: inline-block; background: rgba(0,200,150,0.1); border: 1px solid rgba(0,200,150,0.25); color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 5px 14px; border-radius: 100px; margin-bottom: 20px; }
-    .price-amount { font-size: 48px; font-weight: 800; color: var(--green); line-height: 1; letter-spacing: -2px; }
-    .price-period { color: var(--muted); font-size: 14px; margin-top: 4px; }
-    .price-vat { font-size: 11px; color: var(--muted); margin-top: 2px; margin-bottom: 20px; }
-    .price-features { list-style: none; margin-bottom: 20px; }
-    .price-features li { padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; color: var(--text); }
+    .price-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 420px; width: 100%; }
+    .price-amount { font-size: 48px; font-weight: 700; color: var(--green); line-height: 1; letter-spacing: -2px; }
+    .price-period { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
+    .price-vat { font-size: 12px; color: var(--text-muted); margin-top: 2px; margin-bottom: 24px; }
+    .price-features { list-style: none; margin-bottom: 24px; }
+    .price-features li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 10px; line-height: 1.55; }
     .price-features li:last-child { border-bottom: none; }
-    .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-    .price-cta { display: block; background: var(--green); color: #0a0a0a; font-weight: 700; font-size: 15px; padding: 15px; border-radius: 10px; text-decoration: none; text-align: center; transition: opacity .15s; margin-bottom: 12px; }
-    .price-cta:hover { opacity: .87; }
-    .price-disclaimer { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; }
+    .price-features li::before { content: '✓'; color: var(--green); font-weight: 600; flex-shrink: 0; margin-top: 1px; }
+    .price-cta { display: block; background: var(--green); color: #0a0a0f; font-weight: 600; font-size: 14px; padding: 12px; border-radius: var(--radius-sm); text-decoration: none; text-align: center; transition: opacity .15s; margin-bottom: 12px; }
+    .price-cta:hover { opacity: .88; }
+    .price-disclaimer { font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.6; }
 
-    /* FAQ */
+    /* ── FAQ ── */
     .faq-section { background: var(--bg); }
-    .faq-list { max-width: 680px; margin: 0 auto; }
+    .faq-wrap { max-width: 640px; margin: 0 auto; }
     .faq-item { border-bottom: 1px solid var(--border); }
     .faq-item:first-child { border-top: 1px solid var(--border); }
-    .faq-q { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; cursor: pointer; font-weight: 600; font-size: 15px; user-select: none; transition: color .15s; color: var(--text); }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; cursor: pointer; font-weight: 500; font-size: 15px; user-select: none; transition: color .15s; color: var(--text-primary); }
     .faq-q:hover { color: var(--green); }
     .faq-icon { font-size: 20px; color: var(--green); flex-shrink: 0; font-weight: 300; transition: transform .2s; }
     .faq-item.open .faq-icon { transform: rotate(45deg); }
     .faq-a { overflow: hidden; max-height: 0; transition: max-height .25s ease; }
-    .faq-a-inner { padding-bottom: 16px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .faq-a-inner { padding-bottom: 16px; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
     .faq-item.open .faq-a { max-height: 300px; }
 
-    /* FOOTER */
-    footer { background: #070a0d; border-top: 1px solid var(--border); padding: 40px 24px 24px; }
-    .footer-inner { max-width: var(--max-w); margin: 0 auto 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; flex-wrap: wrap; }
-    .footer-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-    .footer-brand-text { font-size: 14px; font-weight: 800; letter-spacing: 2px; color: var(--green); text-transform: uppercase; }
-    .footer-tagline { font-size: 12px; color: var(--muted); }
-    .footer-links { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
-    .footer-links a { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .15s; }
-    .footer-links a:hover { color: var(--text); }
-    .footer-copy { text-align: center; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); padding-top: 20px; max-width: var(--max-w); margin: 0 auto; line-height: 1.7; }
+    /* ── FOOTER ── */
+    footer { background: var(--bg); border-top: 1px solid var(--border); padding: 40px 24px; }
+    .footer-row1 { max-width: 1080px; margin: 0 auto 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+    .footer-brand-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-top: 8px; }
+    .footer-tagline { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+    .footer-links a { color: var(--text-muted); font-size: 13px; text-decoration: none; transition: color .15s; }
+    .footer-links a:hover { color: var(--text-primary); }
+    .footer-copy { text-align: center; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 20px; max-width: 1080px; margin: 0 auto; line-height: 1.7; }
 
-    /* MOBILE */
+    /* ── MOBILE ── */
     @media (max-width: 768px) {
-      section { padding: 48px 0; }
-
+      section { padding: 64px 0; }
       .nav { padding: 0 20px; }
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
       .nav-overlay { display: flex; }
-
-      .hero { min-height: auto; padding: 56px 0 0; }
-      .hero-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; padding: 40px 20px 40px; }
-      .hero-eyebrow { display: block; }
-      .hero-sub { margin-left: auto; margin-right: auto; }
-      .hero-trust { justify-content: center; }
-      .hero-btns { justify-content: center; }
-      .hero-sources { justify-content: center; }
-      .hero-right { display: flex; justify-content: center; }
-      .tg-mock { max-width: 100%; }
-
-      .steps { grid-template-columns: 1fr; gap: 24px; }
-      .steps::before { display: none; }
-      .step { text-align: left; display: flex; gap: 14px; align-items: flex-start; padding: 0; }
-      .step-num { flex-shrink: 0; margin: 0; }
-
-      .acc-body-inner { grid-template-columns: 1fr; }
-      /* Mobile: start collapsed */
-      .acc-item.open .acc-body { max-height: 3000px; }
-
-      .price-card { padding: 24px 18px; }
-      .price-amount { font-size: 40px; }
-
-      .footer-inner { flex-direction: column; gap: 20px; }
+      .hero { padding: 120px 24px 64px; }
+      .hero h1 { font-size: 36px; letter-spacing: -0.8px; }
+      .hero-sub { font-size: 15px; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .tools-grid { grid-template-columns: 1fr; gap: 32px; }
+      .footer-row1 { flex-direction: column; gap: 20px; }
       .footer-links { justify-content: flex-start; }
-    }
-
-    @media (min-width: 769px) {
-      /* Desktop: accordion items open by default (set by JS, but also via class) */
     }
   </style>
 </head>
@@ -225,29 +215,15 @@
 <!-- NAV -->
 <nav class="nav">
   <a class="nav-brand" href="/">
-    <svg width="28" height="28" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
-      <rect width="680" height="680" fill="#0a0a0a"/>
-      <rect x="155" y="145" width="370" height="370" rx="85" fill="#0d1117" stroke="#00c896" stroke-width="2.5"/>
-      <g transform="translate(340,335)">
-        <polygon points="0,-132 138,-20 -138,-20" fill="#00c896"/>
-        <rect x="-6" y="-152" width="16" height="40" rx="4" fill="#00c896"/>
-        <rect x="-115" y="-20" width="230" height="132" fill="#00c896"/>
-        <rect x="-88" y="-8" width="46" height="36" rx="4" fill="#0a0a0a"/>
-        <line x1="-65" y1="-8" x2="-65" y2="28" stroke="#00c896" stroke-width="2"/>
-        <line x1="-88" y1="10" x2="-42" y2="10" stroke="#00c896" stroke-width="2"/>
-        <rect x="42" y="-8" width="46" height="36" rx="4" fill="#0a0a0a"/>
-        <line x1="65" y1="-8" x2="65" y2="28" stroke="#00c896" stroke-width="2"/>
-        <line x1="42" y1="10" x2="88" y2="10" stroke="#00c896" stroke-width="2"/>
-        <rect x="-26" y="28" width="52" height="84" rx="5" fill="#0a0a0a"/>
-        <circle cx="18" cy="70" r="5" fill="#00c896"/>
-      </g>
-    </svg>
-    <span class="nav-brand-text">HomeSeeker</span>
+    <div class="nav-logo">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 1L1.5 6.5V15h4.5v-5h4v5h4.5V6.5L8 1z" fill="#0a0a0f"/></svg>
+    </div>
+    <span class="nav-brand-name">HomeSeeker</span>
   </a>
   <div class="nav-links">
-    <a href="#how-it-works">How it works</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#faq">FAQ</a>
+    <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#faq" class="nav-link">FAQ</a>
     <a href="/subscribe" class="nav-cta">Start free trial</a>
   </div>
   <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
@@ -268,63 +244,50 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-grid">
-    <div>
-      <span class="hero-eyebrow">Built for expats in the Netherlands</span>
-      <h1>Finding a rental is easy.<br /><em>Winning one is not.</em></h1>
-      <p class="hero-sub">HomeSeeker monitors Funda, Kamernet, and HousingAnywhere 24/7. Every alert includes your Application Score, personalised tips, and AI tools to write the application that wins.</p>
-      <div class="hero-btns">
-        <a href="/subscribe" class="btn-primary">Start my 7-day free trial →</a>
-        <a href="#how-it-works" class="btn-outline">See how it works ↓</a>
-      </div>
-      <div class="hero-trust">
-        <span>7-day free trial</span>
-        <span>Cancel anytime</span>
-        <span>Instant setup</span>
-      </div>
-      <div class="hero-sources">
-        <div class="source-pill">Funda</div>
-        <div class="source-pill">Kamernet</div>
-        <div class="source-pill">HousingAnywhere</div>
-      </div>
-      <p class="hero-differentiator">Most alert services stop at the notification. HomeSeeker takes you from alert to signed contract.</p>
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Built for expats in the Netherlands</span>
+    <h1>Finding a rental is easy.<br>Winning one is not.</h1>
+    <p class="hero-sub">HomeSeeker monitors Funda, Kamernet, and HousingAnywhere 24/7. Every alert includes your Application Score, Scout's analysis, and AI tools to write the application that wins.</p>
+
+    <div class="hero-btns">
+      <a href="/subscribe" class="btn-primary">Start my free trial →</a>
+      <a href="#how-it-works" class="btn-secondary">See how it works</a>
     </div>
-    <div class="hero-right">
-      <div class="tg-mock">
-        <div class="tg-mock-header">
-          <div class="tg-mock-avatar">
-            <svg width="20" height="20" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
-              <rect width="680" height="680" fill="#00c896"/>
-              <g transform="translate(340,335)">
-                <polygon points="0,-132 138,-20 -138,-20" fill="#0a0a0a"/>
-                <rect x="-6" y="-152" width="16" height="40" rx="4" fill="#0a0a0a"/>
-                <rect x="-115" y="-20" width="230" height="132" fill="#0a0a0a"/>
-                <rect x="-88" y="-8" width="46" height="36" rx="4" fill="#00c896"/>
-                <rect x="42" y="-8" width="46" height="36" rx="4" fill="#00c896"/>
-                <rect x="-26" y="28" width="52" height="84" rx="5" fill="#00c896"/>
-                <circle cx="18" cy="70" r="5" fill="#0a0a0a"/>
-              </g>
-            </svg>
-          </div>
-          <div>
-            <div class="tg-mock-name">HomeSeeker</div>
-            <div class="tg-mock-status">● online</div>
+    <p class="hero-trust">7-day free trial · Cancel anytime · Instant setup</p>
+
+    <div class="tg-wrap">
+      <div class="tg-card">
+        <div><b>🏠 Funda</b></div>
+        <div class="tg-card-loc">📍 <b>Jan Evertsenstraat 84, Amsterdam</b><br>72m² &nbsp;·&nbsp; Rent: €1.650/mo &nbsp;·&nbsp; Est. total: €1.940/mo</div>
+
+        <div class="tg-score-block">
+          <div class="tg-score-lbl">Application: Strong</div>
+          <div class="tg-score-row">
+            <div class="tg-bar"><div class="tg-bar-fill" style="width:78%;background:var(--green)"></div></div>
+            <span class="tg-pct-g">78%</span>
           </div>
         </div>
-        <div class="tg-bubble">
-          <b>🏠 Funda</b><br />
-          📍 <b>Jan Evertsenstraat 84, Amsterdam</b><br />
-          72m² &nbsp;·&nbsp; Rent: €1.650/mo &nbsp;·&nbsp; Est. total: €1.940/mo<br /><br />
-          <b>Application Score</b><br />
-          🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜ <span class="tg-val-g">78% Strong</span><br /><br />
-          <b>Market Value</b><br />
-          🟨🟨🟨🟨🟨⬜⬜⬜⬜⬜ <span class="tg-val-y">52% Fair price</span><br /><br />
-          <div class="tg-bubble-footer">Strong match. Open the assistant to see your best move.</div>
+        <div class="tg-score-block">
+          <div class="tg-score-lbl">Market Value: Fair price</div>
+          <div class="tg-score-row">
+            <div class="tg-bar"><div class="tg-bar-fill" style="width:52%;background:var(--amber)"></div></div>
+            <span class="tg-pct-a">52%</span>
+          </div>
         </div>
-        <div class="tg-mock-btns">
-          <div class="tg-mock-btn">View listing</div>
-          <div class="tg-mock-btn">AI Rental Assistant</div>
+
+        <div class="tg-disc">Score reflects your profile fit, not your odds of getting the home.</div>
+        <div class="tg-verdict">Strong match — tap AI Rental Assistant to see your best move.</div>
+        <div class="tg-btns">
+          <div class="tg-btn">View listing ↗</div>
+          <div class="tg-btn">AI Rental Assistant ↗</div>
         </div>
+      </div>
+      <div class="tg-annotations">
+        <span class="tg-ann">Application Score</span>
+        <span class="tg-ann-sep">·</span>
+        <span class="tg-ann">Market Value</span>
+        <span class="tg-ann-sep">·</span>
+        <span class="tg-ann">One-tap assistant</span>
       </div>
     </div>
   </div>
@@ -333,36 +296,28 @@
 <!-- HOW IT WORKS -->
 <section class="how-section" id="how-it-works">
   <div class="container">
-    <h2 class="section-title">How it works</h2>
-    <p class="section-sub">Start free. Be set up before the next listing drops.</p>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div>
-          <h3>Set your filters</h3>
-          <p>City, budget, rental or purchase, your income and profile. Takes 2 minutes.</p>
-        </div>
+    <h2 class="section-title">From listing to signed contract</h2>
+    <p class="section-sub">Four steps. All in one place.</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-n">1</div>
+        <h3>Set your filters</h3>
+        <p>Tell HomeSeeker your city, budget, and profile. We monitor all three platforms around the clock.</p>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div>
-          <h3>Get instant alerts</h3>
-          <p>New listings land in Telegram the moment they go live on all three platforms.</p>
-        </div>
+      <div class="step-card">
+        <div class="step-n">2</div>
+        <h3>Get instant alerts</h3>
+        <p>New listings land in your Telegram the moment they go live, with your personal Application Score.</p>
       </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div>
-          <h3>See your score</h3>
-          <p>Every alert includes your personal Application Score and smart tips for this listing.</p>
-        </div>
+      <div class="step-card">
+        <div class="step-n">3</div>
+        <h3>Scout analyses the listing</h3>
+        <p>Scout reads the listing description and tells you what the landlord is looking for, how to position yourself, and what to include in your letter.</p>
       </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div>
-          <h3>Win the home</h3>
-          <p>Tap AI Rental Assistant to get your personalised strategy: the right letter, the right questions, the right negotiation. All built around this specific listing.</p>
-        </div>
+      <div class="step-card">
+        <div class="step-n">4</div>
+        <h3>Win the application</h3>
+        <p>Write your letter, prepare for the viewing, and get negotiation scripts — all guided by AI that knows this specific listing.</p>
       </div>
     </div>
   </div>
@@ -373,85 +328,48 @@
   <div class="container">
     <h2 class="section-title">Everything you need to win</h2>
     <p class="section-sub">From the first alert to the signed contract.</p>
-
-    <div class="accordion">
+    <div class="tools-grid">
 
       <!-- Renting -->
-      <div class="acc-item" id="acc-rent">
-        <div class="acc-header" id="acc-rent-hd">
-          <div class="acc-header-left">
-            <div class="acc-dot"></div>
-            <span class="acc-title">Renting</span>
-          </div>
-          <span class="acc-chevron">&#8964;</span>
-        </div>
-        <div class="acc-body" id="acc-rent-body">
-          <div class="acc-body-inner">
-            <a href="/tools/rent-assistant" class="tool-card">
-              <div class="tool-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              </div>
-              <strong>AI Rental Assistant</strong>
-              <p>Open from any Telegram alert. Analyse the listing, write your application letter, prepare for the viewing, and negotiate with confidence — all guided by AI that knows this specific listing and your profile.</p>
-              <span class="tool-card-cta">Open assistant →</span>
-            </a>
-            <a href="/tools/landlord-reply" class="tool-card">
-              <div class="tool-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              </div>
-              <strong>Landlord Reply Coach</strong>
-              <p>Paste any message from a landlord or agent. Get an instant translation, intent analysis, and a perfect ready-to-send reply.</p>
-              <span class="tool-card-cta">Decode a reply →</span>
-            </a>
-            <a href="/tools/income-check" class="tool-card">
-              <div class="tool-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h2v5H7zM11 10h2v3h-2zM15 6h2v7h-2z"/></svg>
-              </div>
-              <strong>Income Check</strong>
-              <p>Check whether you meet the income requirement before applying. Get an AI explanation for unusual income situations.</p>
-              <span class="tool-card-cta">Check my income →</span>
-            </a>
-          </div>
-        </div>
+      <div>
+        <div class="tools-col-label">Renting</div>
+        <a href="/tools/rent-assistant" class="tool-card tool-card-featured">
+          <span class="tool-badge">Most used</span>
+          <strong>AI Rental Assistant</strong>
+          <p>Scout analyses each listing and guides you through four steps: listing analysis, application letter, viewing preparation, and negotiation.</p>
+          <span class="tool-card-cta">Open assistant →</span>
+        </a>
+        <a href="/tools/landlord-reply" class="tool-card">
+          <strong>Landlord Reply Coach</strong>
+          <p>Paste any message from a landlord or agent. Get an instant translation and the perfect reply.</p>
+          <span class="tool-card-cta">Decode a reply →</span>
+        </a>
+        <a href="/tools/income-check" class="tool-card">
+          <strong>Income Check</strong>
+          <p>Check if you meet the income requirement. Get an explanation for unusual income situations.</p>
+          <span class="tool-card-cta">Check my income →</span>
+        </a>
       </div>
 
       <!-- Buying -->
-      <div class="acc-item" id="acc-buy">
-        <div class="acc-header" id="acc-buy-hd">
-          <div class="acc-header-left">
-            <div class="acc-dot"></div>
-            <span class="acc-title">Buying</span>
-          </div>
-          <span class="acc-chevron">&#8964;</span>
-        </div>
-        <div class="acc-body" id="acc-buy-body">
-          <div class="acc-body-inner">
-            <a href="/tools/buy-assistant" class="tool-card">
-              <div class="tool-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              </div>
-              <strong>AI Buyer Assistant</strong>
-              <p>Know your budget, analyse the property, build your bid strategy, and navigate the legal process. Step-by-step guidance for expats buying in the Netherlands.</p>
-              <span class="tool-card-cta">Open assistant →</span>
-            </a>
-            <a href="/tools/deal-finder" class="tool-card">
-              <div class="tool-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-              </div>
-              <strong>Deal Finder</strong>
-              <p>Price vs benchmark analysis for any listing. Instant deal score, hidden costs, negotiation room, and red flags.</p>
-              <span class="tool-card-cta">Analyse a listing →</span>
-            </a>
-            <a href="/tools/rejection-analyser" class="tool-card">
-              <div class="tool-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00c896" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              </div>
-              <strong>Rejection Analyser</strong>
-              <p>Describe your past applications. Get a specific diagnosis of why you are being rejected and a ranked fix list.</p>
-              <span class="tool-card-cta">Analyse rejections →</span>
-            </a>
-          </div>
-        </div>
+      <div>
+        <div class="tools-col-label">Buying</div>
+        <a href="/tools/buy-assistant" class="tool-card tool-card-featured">
+          <span class="tool-badge">For buyers</span>
+          <strong>AI Buyer Assistant</strong>
+          <p>Analyse properties, build your bid strategy, check the VvE, and navigate the Dutch buying process step by step.</p>
+          <span class="tool-card-cta">Open assistant →</span>
+        </a>
+        <a href="/tools/deal-finder" class="tool-card">
+          <strong>Deal Finder</strong>
+          <p>Price vs benchmark analysis. Instant deal score, hidden costs, and red flags.</p>
+          <span class="tool-card-cta">Analyse a listing →</span>
+        </a>
+        <a href="/tools/rejection-analyser" class="tool-card">
+          <strong>Rejection Analyser</strong>
+          <p>Describe your past applications. Get a specific diagnosis and a ranked fix list.</p>
+          <span class="tool-card-cta">Analyse rejections →</span>
+        </a>
       </div>
 
     </div>
@@ -462,27 +380,22 @@
 <section class="pricing-section" id="pricing">
   <div class="container">
     <h2 class="section-title">One plan. Everything included.</h2>
-    <p class="price-intro">The average expat in the Netherlands searches for a home for 3 months. HomeSeeker users report finding one in 3-6 weeks.</p>
+    <p class="price-intro">The average expat in the Netherlands searches for a home for 3 months. HomeSeeker users report finding one in 3–6 weeks.</p>
     <div class="price-wrap">
       <div class="price-card">
-        <div class="price-badge">7-day free trial</div>
         <div class="price-amount">€9,99</div>
         <div class="price-period">/month</div>
         <div class="price-vat">incl. 21% VAT</div>
         <ul class="price-features">
-          <li>Funda, Kamernet &amp; HousingAnywhere, all in one subscription</li>
-          <li>Real-time Telegram alerts the moment a listing goes live</li>
-          <li>Personal Application Score (0-100) based on your income, docs &amp; timing</li>
-          <li>Smart tips per alert, based on what that specific landlord wants</li>
-          <li>Market Value Score, so you know if a listing is fair vs the local market</li>
-          <li>AI Motivation Letter, one tap in Telegram, personalised and ready to send</li>
-          <li>Full Application Package: letter, intro, WhatsApp one-liner, financial summary</li>
-          <li>All AI tools: AI Rental Assistant, Landlord Reply Coach, Rejection Analyser, Income Check, and more</li>
-          <li>19 cities across the Netherlands</li>
-          <li>Cancel anytime before day 7, no charge</li>
+          <li>Real-time alerts from Funda, Kamernet, and HousingAnywhere</li>
+          <li>Personal Application Score per listing</li>
+          <li>Scout's listing analysis and strategy</li>
+          <li>AI Rental + Buyer Assistant (4 tabs each)</li>
+          <li>Landlord Reply Coach</li>
+          <li>Cancel anytime via Telegram</li>
         </ul>
         <a href="/subscribe" class="price-cta">Start my 7-day free trial →</a>
-        <p class="price-disclaimer">€9,99/month after trial. Cancel anytime before day 7 and pay nothing.</p>
+        <p class="price-disclaimer">€9,99/month after trial. Cancel before day 7 and pay nothing.</p>
       </div>
     </div>
   </div>
@@ -491,8 +404,8 @@
 <!-- FAQ -->
 <section class="faq-section" id="faq">
   <div class="container">
-    <h2 class="section-title" style="text-align:left;margin-bottom:24px">Common questions</h2>
-    <div class="faq-list">
+    <h2 class="section-title" style="text-align:left;margin-bottom:24px">Questions</h2>
+    <div class="faq-wrap">
       <div class="faq-item open">
         <div class="faq-q">Which platforms do you monitor? <span class="faq-icon">+</span></div>
         <div class="faq-a"><div class="faq-a-inner">We monitor Funda, Kamernet, and HousingAnywhere simultaneously across 19 cities. More platforms are being added.</div></div>
@@ -503,7 +416,7 @@
       </div>
       <div class="faq-item">
         <div class="faq-q">What is the Application Score? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">A personal 0-100 score calculated for every listing based on income vs rent, contract type, document readiness, and timing. It tells you how strong your application is and what to fix first.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">A personal 0–100 score calculated for every listing based on income vs rent, contract type, document readiness, and timing. It tells you how strong your application is and what to fix first.</div></div>
       </div>
       <div class="faq-item">
         <div class="faq-q">What is the AI Rental Assistant? <span class="faq-icon">+</span></div>
@@ -523,38 +436,24 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-inner">
+  <div class="footer-row1">
     <div>
-      <div class="footer-brand">
-        <svg width="22" height="22" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
-          <rect width="680" height="680" fill="#070a0d"/>
-          <rect x="155" y="145" width="370" height="370" rx="85" fill="#0d1117" stroke="#00c896" stroke-width="2.5"/>
-          <g transform="translate(340,335)">
-            <polygon points="0,-132 138,-20 -138,-20" fill="#00c896"/>
-            <rect x="-6" y="-152" width="16" height="40" rx="4" fill="#00c896"/>
-            <rect x="-115" y="-20" width="230" height="132" fill="#00c896"/>
-            <rect x="-88" y="-8" width="46" height="36" rx="4" fill="#070a0d"/>
-            <line x1="-65" y1="-8" x2="-65" y2="28" stroke="#00c896" stroke-width="2"/>
-            <line x1="-88" y1="10" x2="-42" y2="10" stroke="#00c896" stroke-width="2"/>
-            <rect x="42" y="-8" width="46" height="36" rx="4" fill="#070a0d"/>
-            <line x1="65" y1="-8" x2="65" y2="28" stroke="#00c896" stroke-width="2"/>
-            <line x1="42" y1="10" x2="88" y2="10" stroke="#00c896" stroke-width="2"/>
-            <rect x="-26" y="28" width="52" height="84" rx="5" fill="#070a0d"/>
-            <circle cx="18" cy="70" r="5" fill="#00c896"/>
-          </g>
-        </svg>
-        <span class="footer-brand-text">HomeSeeker</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="nav-logo" style="width:28px;height:28px">
+          <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><path d="M8 1L1.5 6.5V15h4.5v-5h4v5h4.5V6.5L8 1z" fill="#0a0a0f"/></svg>
+        </div>
+        <span class="footer-brand-name">HomeSeeker</span>
       </div>
       <div class="footer-tagline">Find your home. We'll help you get it.</div>
     </div>
     <div class="footer-links">
-      <a href="/privacy">Privacy Policy</a>
-      <a href="/terms">Terms of Service</a>
-      <a href="/cancel">Cancel Subscription</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+      <a href="/cancel">Cancel</a>
       <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>
     </div>
   </div>
-  <p class="footer-copy">© 2025 HomeSeeker. Built for expats in the Netherlands. Not affiliated with Funda, Kamernet, or HousingAnywhere. · KvK: 85156736</p>
+  <p class="footer-copy">© 2025 HomeSeeker · KvK: 85156736 · Not affiliated with Funda, Kamernet, or HousingAnywhere.</p>
 </footer>
 
 <script>
@@ -587,31 +486,6 @@
       if (!wasOpen) item.classList.add('open');
     });
   });
-
-  // Tools accordion — open on desktop, closed on mobile
-  function initAccordion(itemId, headerId) {
-    const item = document.getElementById(itemId);
-    const header = document.getElementById(headerId);
-    if (!item || !header) return;
-
-    function setDesktopState() {
-      if (window.innerWidth >= 769) {
-        item.classList.add('open');
-      } else {
-        item.classList.remove('open');
-      }
-    }
-
-    header.addEventListener('click', () => {
-      item.classList.toggle('open');
-    });
-
-    setDesktopState();
-    window.addEventListener('resize', setDesktopState);
-  }
-
-  initAccordion('acc-rent', 'acc-rent-hd');
-  initAccordion('acc-buy',  'acc-buy-hd');
 </script>
 
 <!-- AI Support Chat Widget -->
@@ -665,7 +539,7 @@ window.hsT=hsT;
 function hsI(){
   init=true;
   var m=document.getElementById('hs-cm');
-  var b=document.createElement('div');b.className='hs-ai';b.textContent='Hi! I can answer questions about HomeSeeker - alerts, scores, the AI assistant, pricing, or anything else. What would you like to know?';m.appendChild(b);
+  var b=document.createElement('div');b.className='hs-ai';b.textContent='Hi! I can answer questions about HomeSeeker — alerts, scores, the AI assistant, pricing, or anything else. What would you like to know?';m.appendChild(b);
   var cd=document.createElement('div');cd.id='hs-chips';
   CHIPS.forEach(function(q){var btn=document.createElement('button');btn.className='hs-chip';btn.textContent=q;btn.onclick=function(){hsRC();hsSM(q);};cd.appendChild(btn);});
   m.appendChild(cd);hsScr();
