@@ -293,14 +293,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   <!-- Panel 0: Analyse -->
   <div id="panel-0" class="panel">
 
-    <!-- Block 1: Listing summary row -->
-    <div class="an-summary" id="an-summary">
-      <span class="an-addr" id="an-addr"></span>
-      <span class="an-price" id="an-price-tag"></span>
-      <span class="an-area" id="an-area-tag"></span>
-      <span class="an-timing-badge" id="an-timing-badge"></span>
-    </div>
-
     <!-- Block 2: 3 key signals -->
     <div class="an-signals">
       <div class="an-sig">
@@ -711,25 +703,6 @@ function renderAnalyse(listing,intel){
   if(listing)_lastListing=listing;
   if(intel)_lastIntel=intel;
   const l=_lastListing,d=_lastIntel;
-
-  // ── Block 1: Listing summary row ──
-  const sumEl=document.getElementById('an-summary');
-  if(sumEl&&l){
-    const addrEl=document.getElementById('an-addr');
-    if(addrEl)addrEl.textContent=l.address||l.city||'';
-    const priceTagEl=document.getElementById('an-price-tag');
-    if(priceTagEl)priceTagEl.textContent=l.price||'';
-    const areaTagEl=document.getElementById('an-area-tag');
-    if(areaTagEl)areaTagEl.textContent=l.area?l.area+' m²':'';
-    const tbadge=document.getElementById('an-timing-badge');
-    if(tbadge&&l.listedAt){
-      const ageH=(Date.now()-new Date(l.listedAt))/3600000;
-      if(ageH<3){tbadge.textContent='Just listed';tbadge.className='an-timing-badge fresh';}
-      else if(ageH<24){tbadge.textContent='Listed today';tbadge.className='an-timing-badge today';}
-      else{const days=Math.floor(ageH/24);tbadge.textContent=`${days}d old`;tbadge.className='an-timing-badge old';}
-    }
-    sumEl.style.display='flex';
-  }
 
   // ── Block 2: Competition signal ──
   const sigComp=document.getElementById('sig-comp');

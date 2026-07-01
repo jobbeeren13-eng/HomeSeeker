@@ -460,7 +460,6 @@ function getListingIntelligence(listing, user) {
     }
   }
 
-  smartPoints.splice(3);
   if (smartPoints.length === 0) {
     smartPoints.push('Lead with your job title, contract type, and income-to-rent ratio in the first sentence');
     smartPoints.push('State your move-in date as a fact: "I can move in on [date]" — not "I would like to"');
@@ -519,8 +518,6 @@ function getListingIntelligence(listing, user) {
   if (uniqueAngles.length === 0) {
     uniqueAngles.push('Name two specific viewing days in your first message — most candidates stay vague. Decisiveness shortcuts the landlord\'s decision process');
   }
-  uniqueAngles.splice(2);
-
   // ── watchOut ──
   if (isStudent && /geen studenten|no students|niet voor studenten/i.test(descRaw)) {
     watchOut.push('Landlord explicitly excludes students — applying is very unlikely to succeed and wastes your first-hour advantage on a better listing');
