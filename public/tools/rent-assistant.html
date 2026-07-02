@@ -109,20 +109,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .wc-amber{color:#f59e0b;background:rgba(245,158,11,0.1)}
 .wc-red{color:#ff6b6b;background:rgba(255,107,107,0.1)}
 
-/* Send this first */
-.sn{background:rgba(0,200,150,0.06);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:16px 18px;margin-bottom:16px;display:none}
-.sn-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#00c896;font-weight:700;margin-bottom:8px}
-.sn-txt{font-size:13px;line-height:1.75;white-space:pre-wrap;color:rgba(255,255,255,0.9)}
-.sn-copy{margin-top:12px;height:32px;padding:0 16px;border:1px solid rgba(0,200,150,0.3);border-radius:6px;background:transparent;color:#00c896;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
-.sn-copy:hover{background:rgba(0,200,150,0.07)}
-.sn-copy.ok{background:rgba(0,200,150,0.1)}
-
-/* What to do next */
-.next-steps{display:none;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:16px 18px;margin-bottom:16px}
-.next-steps-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:700;margin-bottom:10px}
-.next-steps ol{padding-left:18px}
-.next-steps li{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:6px}
-.next-steps li::marker{color:#00c896;font-weight:700}
 
 /* Intelligence list (watch-out bullets) */
 .intel-wrap{margin-bottom:20px;display:none}
@@ -178,9 +164,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .sb-card-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:600;margin-bottom:10px}
 .sb-card-val{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.55}
 .sb-empty{color:rgba(255,255,255,0.2);font-style:italic;font-size:12px}
-
-/* Scout next-tip (kept for letter panel) */
-.scout-next{font-size:12px;color:#00c896;padding:10px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:12px}
 
 /* ── Analyse tab redesign ── */
 #panel-0{max-width:680px}
@@ -384,21 +367,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <div class="errtxt" id="err-lt"></div>
     </div>
 
-    <div class="sn" id="sn-1">
-      <div class="sn-lbl">Send this first</div>
-      <div class="sn-txt" id="sn-txt-1"></div>
-      <button class="sn-copy" id="sn-copy-1" onclick="copySN()">Copy</button>
-    </div>
-
-    <div class="next-steps" id="next-steps-1">
-      <div class="next-steps-lbl">What to do next</div>
-      <ol>
-        <li>Send the first contact message above right now — within the first hour of the listing going live</li>
-        <li>Call the agency 30 minutes after sending to confirm receipt — candidates who call are 3x more likely to get a viewing</li>
-        <li>Attach your letter and all documents in one PDF: Firstname_Lastname_Application.pdf</li>
-      </ol>
-    </div>
-
     <div class="card">
       <div class="skel" id="lt-skel"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
       <div class="empty-st" id="lt-empty">Your letter appears here.</div>
@@ -422,7 +390,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
           <button class="btn-link" onclick="ltModify('shorter')">Make it shorter</button>
           <button class="btn-link" onclick="ltModify('personal')">Make it more personal</button>
         </div>
-        <div id="scout-next-tip" class="scout-next" style="display:none">After sending: call the agency directly. Candidates who call are 3x more likely to get a viewing.</div>
       </div>
     </div>
   </div>
@@ -858,21 +825,10 @@ async function ltGenerate(){
   const extra=document.getElementById('lt-extra')?.value.trim()||'';
   setLtLoad(true);
   try{
-    const[letterResp,snResp]=await Promise.all([
-      fetch('/api/generate-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:allTips,extraContext:extra,tone:ltState.tone})}),
-      fetch('/api/first-contact-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,extraContext:extra,selectedTipTexts:listingTips})})
-    ]);
+    const letterResp=await fetch('/api/generate-letter-web',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:allTips,extraContext:extra,tone:ltState.tone})});
     const ld=await letterResp.json();
     if(!letterResp.ok)throw new Error(ld.error||'Letter generation failed');
     ltState.letter=ld.letter||'';
-    if(snResp.ok){
-      const sd=await snResp.json();
-      if(sd.message){
-        document.getElementById('sn-txt-1').textContent=sd.message;
-        document.getElementById('sn-1').style.display='block';
-        document.getElementById('next-steps-1').style.display='block';
-      }
-    }
     showLetter(ltState.letter);
   }catch(e){showEL(e.message||'Something went wrong.');}
   finally{setLtLoad(false);}
@@ -885,7 +841,6 @@ function showLetter(text){
   const el=document.getElementById('lt-text');if(el)el.textContent=text;
   document.getElementById('lt-actions').classList.add('on');
   const scoutOut=document.getElementById('scout-lt-out');if(scoutOut)scoutOut.style.display='flex';
-  const nextTip=document.getElementById('scout-next-tip');if(nextTip)nextTip.style.display='block';
   wcBadge(text);
 }
 
@@ -899,10 +854,7 @@ function setLtLoad(on){
     document.getElementById('lt-skel').style.display='block';
     const b=document.getElementById('lt-box');if(b)b.style.display='none';
     document.getElementById('lt-actions').classList.remove('on');
-    document.getElementById('sn-1').style.display='none';
-    document.getElementById('next-steps-1').style.display='none';
     const scoutOut=document.getElementById('scout-lt-out');if(scoutOut)scoutOut.style.display='none';
-    const nextTip=document.getElementById('scout-next-tip');if(nextTip)nextTip.style.display='none';
   }else{
     document.getElementById('lt-skel').style.display='none';
   }
@@ -927,12 +879,6 @@ function ltCopy(){
   if(!ltState.letter)return;
   navigator.clipboard.writeText(ltState.letter).then(()=>{
     const btn=document.getElementById('lt-copy');if(btn){btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy letter';},2000);}
-  }).catch(()=>{});
-}
-function copySN(){
-  const t=document.getElementById('sn-txt-1')?.textContent||'';
-  navigator.clipboard.writeText(t).then(()=>{
-    const btn=document.getElementById('sn-copy-1');if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}
   }).catch(()=>{});
 }
 function showEL(msg){const e=document.getElementById('err-lt');if(e){e.textContent=msg;e.classList.add('on');}}

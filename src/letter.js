@@ -159,8 +159,7 @@ CLOSING (one sentence):
 State viewing availability with two specific days. Confirm documents are ready to send. One sentence only.
 
 SIGN-OFF:
-Kind regards,
-${noName ? '[Your name]' : firstName}
+${noName ? 'Kind regards,' : `Kind regards,\n${firstName}`}
 
 WHAT THE SELECTED TIPS ARE:
 The user has selected points they want emphasised. These are NOT sentences to copy. They are context that shapes the letter's angle — which facts to lead with, what to highlight. Let them guide emphasis, not literal content.
@@ -171,10 +170,27 @@ ABSOLUTE RULES:
 - Never state any number (income, ratio) more than once in the entire letter
 - Never use: "I am writing to", "I came across", "I would like to apply", "I am very interested", "perfect fit", "ideal candidate", "dream home", "passionate about", "reliable", "responsible", "delighted", "pleased"
 - Never use double dashes (--) or em dashes or exclamation marks
-- Never fabricate details — use placeholders [Your name], [Tuesday or Wednesday] if unknown
+- If name is unknown, sign off with "Kind regards," only — no name line. If income is unknown, do not mention it. If viewing days are unknown, write "Tuesday or Wednesday this week". Never write a placeholder like [X] or [date] or [Job title] in the letter — always use real data or omit the detail entirely.
 - Never refuse to write — if description is empty, write the best possible letter using address, city, price, and income data only
 - No markdown, no bold, no lists, no formatting
-- English only${personalNote}`;
+- English only${personalNote}
+
+BANNED PHRASES — never write any of these:
+- "suits my situation directly"
+- "suits my needs precisely"
+- "fits my situation"
+- "I am looking for exactly"
+- "my financial position is straightforward to verify"
+- "stable employment with the same employer long enough"
+- "the speed is intentional"
+- "applying within hours of this listing going live"
+- Never describe the property size without a specific reason why it matters to this applicant
+
+REQUIRED:
+- Every sentence must be concrete and specific
+- If the description has a specific feature, reference it directly by name
+- If no description: lead with income-to-rent ratio and contract type, then one sentence about why the city or address, then documents and viewing
+- The letter must read as if a real confident professional wrote it in 2 minutes, not as if an AI filled in a template`;
 
   const lines = [];
   lines.push(`Write a rental motivation letter for ${noName ? 'an applicant' : naam}.`);
