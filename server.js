@@ -1239,8 +1239,9 @@ app.get('/api/fetch-funda-photo', async (req, res) => {
 let scraperCycleRunning = false;
 
 app.post('/api/run-scraper', async (req, res) => {
-  const secret = req.headers['x-scraper-secret'];
-  if (!secret || secret !== process.env.SCRAPER_SECRET) {
+  const secret = req.headers['x-scraper-secret'] || req.headers['x-admin-key'];
+  const validSecret = process.env.SCRAPER_SECRET || process.env.ADMIN_KEY;
+  if (!secret || secret !== validSecret) {
     console.warn('[scraper-api] Unauthorized attempt from', req.ip);
     return res.status(401).json({ error: 'Unauthorized' });
   }
