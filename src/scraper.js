@@ -9,7 +9,9 @@ const {
   updateListingDescription,
   updateListingImage,
   getSentListingByFingerprint,
+  insertAgencyListing,
 } = require('./database');
+const { analyseDescription } = require('./score');
 
 // Prepared once at module load — used for near-duplicate detection
 const getNearDuplicateAddresses = db.prepare(
@@ -157,6 +159,12 @@ function isValidListing(listing) {
   return true;
 }
 
+function extractAgencyKey(listing) {
+  const url = listing.url || '';
+  const fundaMatch = url.match(/funda\.nl\/[^/]+\/([a-z0-9-]+?)-\d+/i);
+  return fundaMatch ? 'funda:' + fundaMatch[1] : (listing.source || 'unknown');
+}
+
 function saveNewListing(listing) {
   if (!isValidListing(listing)) return false;
   const fingerprint = makeFingerprint(listing);
@@ -178,6 +186,24 @@ function saveNewListing(listing) {
   };
   if (existing) { insertListing.run({ ...base, sent: 1 }); return false; }
   insertListing.run({ ...base, sent: 0 });
+  try {
+    const sigs = analyseDescription(listing.description, listing);
+    const agencyKey = extractAgencyKey(listing);
+    insertAgencyListing.run(
+      listing.source || '',
+      agencyKey,
+      normaliseCity(listing.city),
+      listing.priceNumber || 0,
+      (sigs.requiresEmployerStatement || sigs.requires3x || sigs.requires4x) ? 1 : 0,
+      sigs.prefersExpats ? 1 : 0,
+      sigs.requiresEmployerStatement ? 1 : 0,
+      sigs.excludesStudents ? 1 : 0,
+      sigs.isFurnished ? 1 : 0,
+      sigs.hasGarden ? 1 : 0,
+      listing.url || '',
+      Date.now()
+    );
+  } catch (e) { /* non-critical */ }
   return true;
 }
 

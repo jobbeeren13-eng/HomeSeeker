@@ -133,6 +133,23 @@ db.exec(`
     cycle_time_ms INTEGER,
     created_at INTEGER
   );
+
+  CREATE TABLE IF NOT EXISTS agency_intelligence (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source TEXT,
+    agency_key TEXT,
+    city TEXT,
+    price_number REAL DEFAULT 0,
+    requires_permanent_contract INTEGER DEFAULT 0,
+    mentions_expats INTEGER DEFAULT 0,
+    requires_income_proof INTEGER DEFAULT 0,
+    excludes_students INTEGER DEFAULT 0,
+    is_furnished INTEGER DEFAULT 0,
+    has_garden INTEGER DEFAULT 0,
+    url TEXT,
+    inserted_at INTEGER,
+    scraped_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 try {
@@ -198,6 +215,7 @@ db.exec(`CREATE INDEX IF NOT EXISTS idx_application_tracker_chat_id ON applicati
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_city_price ON listings(city, price_number)'); } catch(e) {}
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_sent ON listings(sent)'); } catch(e) {}
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_users_chat ON users(chat_id)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_agency_intel_key ON agency_intelligence(agency_key)'); } catch(e) {}
 
 // Startup health check — log path and user count so resets are immediately visible in logs
 {
@@ -366,6 +384,33 @@ const getCityPriceBenchmark = db.prepare(`
     AND scraped_at > datetime('now', '-30 days')
 `);
 
+const getListingVolumeByCity = db.prepare(`
+  SELECT COUNT(*) as total, AVG(price_number) as avg_price
+  FROM listings
+  WHERE city = ?
+    AND transaction_type = ?
+    AND scraped_at > datetime('now', '-7 days')
+`);
+
+const insertAgencyListing = db.prepare(`
+  INSERT INTO agency_intelligence
+    (source, agency_key, city, price_number, requires_permanent_contract, mentions_expats,
+     requires_income_proof, excludes_students, is_furnished, has_garden, url, inserted_at)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`);
+
+const getAgencyInsights = db.prepare(`
+  SELECT
+    COUNT(*) as total,
+    ROUND(AVG(requires_permanent_contract) * 100) as pct_contract,
+    ROUND(AVG(mentions_expats) * 100) as pct_expats,
+    ROUND(AVG(requires_income_proof) * 100) as pct_income,
+    ROUND(AVG(excludes_students) * 100) as pct_no_students,
+    ROUND(AVG(is_furnished) * 100) as pct_furnished
+  FROM agency_intelligence
+  WHERE agency_key = ?
+`);
+
 module.exports = {
   db, dbPath: DB_PATH,
   getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
@@ -381,6 +426,7 @@ module.exports = {
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
-  insertScraperStat, getCityPriceBenchmark,
+  insertScraperStat, getCityPriceBenchmark, getListingVolumeByCity,
+  insertAgencyListing, getAgencyInsights,
 };
  
