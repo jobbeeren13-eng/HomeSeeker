@@ -18,6 +18,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text-primary);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
 
+/* Header */
 .hdr{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--bg);border-bottom:1px solid rgba(255,255,255,0.07)}
 .hdr-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
 .logo-box{width:32px;height:32px;background:var(--g);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -25,27 +26,49 @@ body{background:var(--bg);color:var(--text-primary);font-family:'Inter',sans-ser
 .logo-name{font-size:13px;font-weight:800;color:var(--g);letter-spacing:1.5px;text-transform:uppercase}
 .hdr-page{font-size:12px;color:var(--muted)}
 
+/* Listing bar */
 .lbar{display:none;position:fixed;top:56px;left:0;right:0;z-index:99;background:var(--card);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 24px;align-items:center;gap:10px}
 .lbar.on{display:flex}
 .lbar-dot{width:7px;height:7px;border-radius:50%;background:var(--g);flex-shrink:0}
 .lbar-addr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lbar-price{font-size:12px;color:var(--muted);flex-shrink:0}
 
-.wrap{max-width:720px;margin:0 auto;padding:32px 24px 80px;margin-top:56px}
+/* Layout */
+.wrap{max-width:720px;margin:0 auto;padding:32px 24px 120px;margin-top:56px}
 body.has-lb .wrap{margin-top:92px}
 
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07)}
-.tab{padding:9px 18px;border-radius:8px;background:#111318;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
-.tab:hover{color:rgba(255,255,255,0.85);border-color:rgba(255,255,255,0.2)}
-.tab.on{background:#00c896;color:#0a0a0a;font-weight:700;border-color:#00c896;box-shadow:0 0 0 3px rgba(0,200,150,0.2)}
+/* Progress bar */
+.prog{display:flex;align-items:center;margin-bottom:28px}
+.prog-step{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.prog-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);background:transparent;transition:all .2s}
+.prog-step.done .prog-num{background:var(--green);border-color:var(--green);color:#0a0a0a}
+.prog-step.active .prog-num{border-color:var(--green);color:var(--green)}
+.prog-label{font-size:11px;color:rgba(255,255,255,0.3);font-weight:500;transition:color .2s;white-space:nowrap}
+.prog-step.active .prog-label{color:var(--green);font-weight:600}
+.prog-step.done .prog-label{color:rgba(255,255,255,0.5)}
+.prog-line{flex:1;height:1px;background:rgba(255,255,255,0.08);margin:0 8px;transition:background .2s}
+.prog-line.done{background:var(--green)}
 
+/* Tabs — underline style */
+.tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:0}
+.tab{padding:10px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:-1px}
+.tab:hover{color:rgba(255,255,255,0.7)}
+.tab.on{color:#fff;border-bottom-color:var(--green);font-weight:600}
+
+/* More tools row */
+.more-tools-row{display:flex;align-items:center;gap:8px;padding:10px 0 20px;flex-wrap:wrap}
+.more-tools-label{font-size:11px;color:rgba(255,255,255,0.3)}
+.more-tool-btn{font-size:12px;color:rgba(255,255,255,0.5);background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;transition:all .15s}
+.more-tool-btn:hover,.more-tool-btn.on{color:#00c896;border-color:rgba(0,200,150,0.3)}
+
+/* Panels */
 .panel{display:none}
 .panel.on{display:block}
-.ptitle{font-size:22px;font-weight:800;color:#ffffff;margin-bottom:4px}
-.psub{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:24px}
 
-.card{background:#111318;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:20px;margin-bottom:16px}
+/* Cards */
+.card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-bottom:16px}
 
+/* Forms */
 .fld{margin-bottom:16px}
 .fld:last-child{margin-bottom:0}
 .lbl{display:flex;justify-content:space-between;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#e8edf3;font-weight:600;margin-bottom:8px}
@@ -54,10 +77,29 @@ body.has-lb .wrap{margin-top:92px}
 .inp:focus{border-color:#00c896;box-shadow:0 0 0 3px rgba(0,200,150,0.1)}
 textarea.inp{min-height:120px;resize:vertical;line-height:1.6}
 select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
-
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt-lbl{text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)}
+.prefill-note{font-size:11px;color:#00c896;margin-top:6px;display:none}
+.prefill-note.on{display:block}
 
-.btn-main{width:100%;height:50px;background:#00c896;color:#0a0a0a;font-family:inherit;font-size:15px;font-weight:800;border:none;border-radius:10px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+/* Property type pills */
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.pill{padding:6px 14px;border-radius:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.pill:hover{border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.75)}
+.pill.on{background:rgba(0,200,150,0.1);border-color:rgba(0,200,150,0.35);color:#00c896;font-weight:600}
+
+/* Bid highlight */
+.bid-highlight{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.3);border-radius:12px;padding:16px 20px;margin-bottom:16px;display:none;align-items:center;gap:16px;flex-wrap:wrap}
+.bid-highlight.on{display:flex}
+.bid-meta{flex:1;min-width:0}
+.bid-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.4);margin-bottom:4px}
+.bid-amount{font-size:28px;font-weight:800;color:#00c896;line-height:1.1}
+.bid-copy-btn{height:32px;padding:0 14px;border:1px solid rgba(0,200,150,0.3);border-radius:6px;background:transparent;color:#00c896;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;flex-shrink:0}
+.bid-copy-btn:hover{background:rgba(0,200,150,0.07)}
+.bid-copy-btn.ok{background:rgba(0,200,150,0.1)}
+
+/* Buttons */
+.btn-main{width:100%;height:50px;background:#00c896;color:#0a0a0a;font-family:inherit;font-size:15px;font-weight:800;border:none;border-radius:10px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
 .btn-main:hover:not(:disabled){background:#00b386}
 .btn-main:disabled{opacity:.4;cursor:not-allowed}
 .spin{width:14px;height:14px;border:2.5px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
@@ -65,13 +107,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .errtxt{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
 .errtxt.on{display:block}
 
+/* Output */
 .empty-st{text-align:center;padding:40px 20px;color:rgba(255,255,255,0.2);font-size:13px}
 .skel{display:none}
 .sk{height:11px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:10px;overflow:hidden;position:relative}
 .sk::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);transform:translateX(-100%);animation:sh 1.4s infinite}
 @keyframes sh{to{transform:translateX(100%)}}
 .sk:nth-child(2){width:70%}.sk:nth-child(3){width:50%}
-
 .rb{font-size:13px;line-height:1.7;color:rgba(255,255,255,0.75);display:none}
 .rb h2{font-size:13px;font-weight:700;color:#fff;margin:16px 0 6px}
 .rb h2:first-child{margin-top:0}
@@ -81,14 +123,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .rb ol li::marker{color:rgba(255,255,255,0.4);font-weight:600}
 .rb p{margin-bottom:6px}
 .rb strong{color:#e8edf3;font-weight:600}
-
 .act-row{display:none;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
 .act-row.on{display:flex}
 .btn-sm{height:32px;padding:0 14px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:transparent;color:rgba(255,255,255,0.55);font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s}
 .btn-sm:hover{border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.8)}
 .btn-sm.ok{border-color:#00c896;color:#00c896}
 
-/* Scout robot */
+/* Scout */
 .scout-row{display:flex;align-items:flex-end;gap:12px;margin-bottom:20px}
 .scout-row-sm{margin-bottom:12px}
 .scout-av{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
@@ -101,10 +142,19 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .scout-eye{transform-box:fill-box;transform-origin:50% 50%}
 .scout-thinking .scout-eye{animation:scout-think 2s ease-in-out infinite}
 
-@media(max-width:600px){
-  .wrap{padding:20px 16px 80px}
-  .tab{padding:8px 14px;font-size:13px}
+/* Mobile bottom nav */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;background:#111318;border-top:1px solid rgba(255,255,255,0.07)}
+.mob-nav-inner{display:flex}
+.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 12px;background:transparent;border:none;font-family:inherit;font-size:10px;font-weight:600;color:rgba(255,255,255,0.3);cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:color .15s;gap:4px}
+.mob-tab.on{color:#00c896}
+.mob-tab svg{opacity:.4;transition:opacity .15s}
+.mob-tab.on svg{opacity:1}
+
+@media(max-width:767px){
+  .mob-nav{display:block}
+  .wrap{padding:20px 16px 100px}
   .row2{grid-template-columns:1fr}
+  .prog{display:none}
 }
 </style>
 </head>
@@ -126,56 +176,144 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 <div class="wrap">
 
-  <div class="tabs">
-    <button class="tab on" data-tab="1" onclick="switchTab(1)">Analyse Property</button>
-    <button class="tab" data-tab="2" onclick="switchTab(2)">Viewing Prep</button>
-    <button class="tab" data-tab="3" onclick="switchTab(3)">Make Your Offer</button>
+  <!-- Progress bar -->
+  <div class="prog">
+    <div class="prog-step active" id="prog-1">
+      <div class="prog-num">1</div>
+      <span class="prog-label">Affordability</span>
+    </div>
+    <div class="prog-line" id="prog-line-1"></div>
+    <div class="prog-step" id="prog-2">
+      <div class="prog-num">2</div>
+      <span class="prog-label">Property Analysis</span>
+    </div>
+    <div class="prog-line" id="prog-line-2"></div>
+    <div class="prog-step" id="prog-3">
+      <div class="prog-num">3</div>
+      <span class="prog-label">Bid Strategy</span>
+    </div>
   </div>
 
-  <!-- Panel 1: Analyse Property -->
-  <div id="panel-1" class="panel on">
-    <div class="ptitle">Analyse this property</div>
-    <div class="psub">Get a Home Purchase Score, true cost breakdown, hidden risk assessment, and a recommended maximum bid.</div>
+  <!-- Tab row -->
+  <div class="tabs">
+    <button class="tab on" data-tab="1" onclick="switchBuyTab(1)">Affordability</button>
+    <button class="tab" data-tab="2" onclick="switchBuyTab(2)">Property Analysis</button>
+    <button class="tab" data-tab="3" onclick="switchBuyTab(3)">Bid Strategy</button>
+  </div>
 
-    <!-- Scout intro -->
+  <!-- More tools row -->
+  <div class="more-tools-row">
+    <span class="more-tools-label">More buyer tools:</span>
+    <button class="more-tool-btn" id="more-btn-4" onclick="switchBuyTab(4)">VvE Checker</button>
+    <button class="more-tool-btn" id="more-btn-5" onclick="switchBuyTab(5)">Legal Process</button>
+  </div>
+
+  <!-- ── Panel 1: Affordability ── -->
+  <div id="panel-1" class="panel on">
     <div class="scout-row">
       <div class="scout-av">
         <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
         <div class="scout-name">Scout</div>
       </div>
-      <div class="scout-msg">Tell me about the property and I'll give you an honest assessment — price, risks, and whether to buy, negotiate, or walk away.</div>
+      <div class="scout-msg">Tell me your income and savings. I'll calculate exactly what you can afford and what Dutch banks will say.</div>
     </div>
 
     <div class="card">
+      <div class="row2">
+        <div class="fld">
+          <div class="lbl">Gross annual income (EUR)</div>
+          <input class="inp" id="t1-income" type="text" placeholder="e.g. 72000">
+        </div>
+        <div class="fld">
+          <div class="lbl">Partner income (EUR/year) <span class="opt-lbl">(optional)</span></div>
+          <input class="inp" id="t1-partner" type="text" placeholder="Leave blank if none">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <div class="lbl">Employment type</div>
+          <select class="inp" id="t1-contract">
+            <option value="permanent">Permanent contract</option>
+            <option value="temporary">Temporary contract</option>
+            <option value="freelance">Freelance / self-employed</option>
+          </select>
+        </div>
+        <div class="fld">
+          <div class="lbl">Own savings / funds (EUR)</div>
+          <input class="inp" id="t1-savings" type="text" placeholder="e.g. 60000">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <div class="lbl">First-time buyer?</div>
+          <select class="inp" id="t1-ftb">
+            <option value="yes, first home in NL, under 35">Yes — first home in NL, under 35</option>
+            <option value="yes, first home in NL, age 35 or older">Yes — first home in NL, age 35+</option>
+            <option value="no, owned property before">No — owned property before</option>
+          </select>
+        </div>
+        <div class="fld">
+          <div class="lbl">Target price <span class="opt-lbl">(optional)</span></div>
+          <input class="inp" id="t1-target" type="text" placeholder="e.g. 425000">
+        </div>
+      </div>
+      <div class="prefill-note" id="prefill-note">Pre-filled from your profile — update if needed</div>
+      <button class="btn-main" id="btn-1" onclick="submit(1)">Calculate my affordability &#8594;</button>
+      <div class="errtxt" id="err-1"></div>
+    </div>
+
+    <div class="card">
+      <div class="skel" id="skel-1"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="empty-st" id="empty-1">Your affordability analysis will appear here.</div>
+      <div class="scout-row scout-row-sm" id="scout-out-1" style="display:none">
+        <div class="scout-av">
+          <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg">Here's your honest affordability picture. Start with the mortgage capacity number — everything else follows from that.</div>
+      </div>
+      <div class="rb" id="body-1"></div>
+      <div class="act-row" id="acts-1">
+        <button class="btn-sm" onclick="cpResp(1)">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel 2: Property Analysis ── -->
+  <div id="panel-2" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Describe the property. I'll analyse the price, flag risks, and tell you whether to bid, negotiate, or walk away.</div>
+    </div>
+
+    <div class="card">
+      <div class="pill-row" id="prop-type-pills">
+        <button class="pill" data-val="Apartment" onclick="togglePropType(this)">Apartment</button>
+        <button class="pill" data-val="House" onclick="togglePropType(this)">House</button>
+        <button class="pill" data-val="Studio" onclick="togglePropType(this)">Studio</button>
+        <button class="pill" data-val="New build" onclick="togglePropType(this)">New build</button>
+      </div>
       <div class="fld">
-        <div class="lbl">Location / Neighbourhood <span class="cc" id="cc-1l">0 / 60</span></div>
-        <input class="inp" id="t1-loc" type="text" placeholder="e.g. Amsterdam Oost, Utrecht Centrum, Rotterdam Noord" oninput="uc(this,'cc-1l',60)" maxlength="60">
+        <div class="lbl">Location / Neighbourhood <span class="cc" id="cc-2l">0 / 60</span></div>
+        <input class="inp" id="t2-loc" type="text" placeholder="e.g. Amsterdam Oost, Utrecht Centrum, Rotterdam Noord" oninput="uc(this,'cc-2l',60)" maxlength="60">
       </div>
       <div class="row2">
         <div class="fld">
           <div class="lbl">Asking price (EUR)</div>
-          <input class="inp" id="t1-price" type="text" placeholder="e.g. 425000">
+          <input class="inp" id="t2-price" type="text" placeholder="e.g. 425000">
         </div>
         <div class="fld">
           <div class="lbl">Area (m²)</div>
-          <input class="inp" id="t1-area" type="text" placeholder="e.g. 82">
+          <input class="inp" id="t2-area" type="text" placeholder="e.g. 82">
         </div>
       </div>
       <div class="row2">
         <div class="fld">
-          <div class="lbl">Property type</div>
-          <select class="inp" id="t1-type">
-            <option>Apartment</option>
-            <option>House</option>
-            <option>Studio</option>
-            <option>Upstairs flat</option>
-            <option>Ground floor flat</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="fld">
           <div class="lbl">Energy label</div>
-          <select class="inp" id="t1-energy">
+          <select class="inp" id="t2-energy">
             <option>Unknown</option>
             <option>A++ / A+ / A</option>
             <option>B</option>
@@ -186,93 +324,45 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
             <option>G</option>
           </select>
         </div>
-      </div>
-      <div class="fld">
-        <div class="lbl">VvE costs / month <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)">(optional, apartments only)</span></div>
-        <input class="inp" id="t1-vve" type="text" placeholder="e.g. 150 — leave blank if not an apartment or unknown">
-      </div>
-      <div class="fld">
-        <div class="lbl">Listing description <span class="cc" id="cc-1d">0 / 2000</span></div>
-        <textarea class="inp" id="t1-desc" rows="5" placeholder="Paste the listing description here — year built, condition, recent renovations, anything from the listing..." oninput="uc(this,'cc-1d',2000)"></textarea>
-      </div>
-      <button class="btn-main" id="btn-1" onclick="submit(1)">Analyse this property &#8594;</button>
-      <div class="errtxt" id="err-1"></div>
-    </div>
-
-    <div class="card">
-      <div class="skel" id="skel-1"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-      <div class="empty-st" id="empty-1">Your property analysis will appear here.</div>
-      <div class="scout-row scout-row-sm" id="scout-out-1" style="display:none">
-        <div class="scout-av">
-          <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
-          <div class="scout-name">Scout</div>
+        <div class="fld">
+          <div class="lbl">VvE costs / month <span class="opt-lbl">(apartments)</span></div>
+          <input class="inp" id="t2-vve" type="text" placeholder="e.g. 150 — blank if unknown">
         </div>
-        <div class="scout-msg" style="font-size:12px">The Home Purchase Score is at the top. Start there, then read the risks before making any decisions.</div>
       </div>
-      <div class="rb" id="body-1"></div>
-      <div class="act-row" id="acts-1">
-        <button class="btn-sm" onclick="cpResp(1)">Copy</button>
-        <button class="btn-sm" onclick="followUp(1)">Follow up</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Panel 2: Viewing Prep -->
-  <div id="panel-2" class="panel">
-    <div class="ptitle">Prepare for your viewing</div>
-    <div class="psub">Describe the property. Get a room-by-room inspection guide, 10 questions to ask the agent, and red flags to watch for.</div>
-
-    <!-- Scout intro -->
-    <div class="scout-row">
-      <div class="scout-av">
-        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
-        <div class="scout-name">Scout</div>
-      </div>
-      <div class="scout-msg">Describe the property and I'll prepare you to inspect it properly. Buyers who inspect carefully avoid the most expensive surprises.</div>
-    </div>
-
-
-    <div class="card">
       <div class="fld">
-        <div class="lbl">Describe the property <span class="cc" id="cc-2">0 / 2000</span></div>
-        <textarea class="inp" id="t2-msg" rows="5" placeholder="Type, size, year built, location, condition notes, anything from the listing description..." oninput="uc(this,'cc-2',2000)"></textarea>
+        <div class="lbl">Listing description <span class="cc" id="cc-2d">0 / 2000</span></div>
+        <textarea class="inp" id="t2-desc" rows="5" placeholder="Paste the listing description here — year built, condition, recent renovations, anything from the listing..." oninput="uc(this,'cc-2d',2000)"></textarea>
       </div>
-      <button class="btn-main" id="btn-2" onclick="submit(2)">Prepare for my viewing &#8594;</button>
+      <button class="btn-main" id="btn-2" onclick="submit(2)">Analyse this property &#8594;</button>
       <div class="errtxt" id="err-2"></div>
     </div>
 
     <div class="card">
       <div class="skel" id="skel-2"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-      <div class="empty-st" id="empty-2">Your viewing preparation will appear here.</div>
+      <div class="empty-st" id="empty-2">Your property analysis will appear here.</div>
       <div class="scout-row scout-row-sm" id="scout-out-2" style="display:none">
         <div class="scout-av">
           <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
           <div class="scout-name">Scout</div>
         </div>
-        <div class="scout-msg" style="font-size:12px">Here's your inspection guide. Save it before your viewing — you'll want it on your phone when you're there.</div>
+        <div class="scout-msg">Read the red flags section first. Then check the renovation cost reality. The bid decision follows from those two.</div>
       </div>
       <div class="rb" id="body-2"></div>
       <div class="act-row" id="acts-2">
         <button class="btn-sm" onclick="cpResp(2)">Copy</button>
-        <button class="btn-sm" onclick="followUp(2)">Follow up</button>
       </div>
     </div>
   </div>
 
-  <!-- Panel 3: Make Your Offer -->
+  <!-- ── Panel 3: Bid Strategy ── -->
   <div id="panel-3" class="panel">
-    <div class="ptitle">Build your offer strategy</div>
-    <div class="psub">Get a specific bid amount, conditions strategy, your winning chance, and ready-to-send bid letters in Dutch and English.</div>
-
-    <!-- Scout intro -->
     <div class="scout-row">
       <div class="scout-av">
         <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
         <div class="scout-name">Scout</div>
       </div>
-      <div class="scout-msg">I'll tell you exactly what to bid and give you a formal bid letter ready to send.</div>
+      <div class="scout-msg">Tell me the asking price, your budget, and the city. I'll give you a specific bid amount and a formal Dutch bid letter ready to send.</div>
     </div>
-
 
     <div class="card">
       <div class="row2">
@@ -318,58 +408,189 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
         </div>
       </div>
       <div class="fld">
-        <div class="lbl">Extra context <span style="text-transform:none;letter-spacing:0;font-weight:400;color:rgba(255,255,255,0.25)">(optional)</span> <span class="cc" id="cc-3">0 / 400</span></div>
+        <div class="lbl">Extra context <span class="opt-lbl">(optional)</span> <span class="cc" id="cc-3">0 / 400</span></div>
         <textarea class="inp" id="t3-extra" rows="2" placeholder="Property condition, personal details for the letter, special circumstances..." oninput="uc(this,'cc-3',400)"></textarea>
       </div>
-      <button class="btn-main" id="btn-3" onclick="submit(3)">Build my offer strategy &#8594;</button>
+      <button class="btn-main" id="btn-3" onclick="submit(3)">Build my bid strategy &#8594;</button>
       <div class="errtxt" id="err-3"></div>
+    </div>
+
+    <!-- Bid highlight -->
+    <div class="bid-highlight" id="bid-highlight">
+      <div class="bid-meta">
+        <div class="bid-label">Recommended Bid</div>
+        <div class="bid-amount" id="bid-amount-display">€ ---</div>
+      </div>
+      <button class="bid-copy-btn" id="bid-copy-btn" onclick="copyBidAmount()">Copy amount</button>
     </div>
 
     <div class="card">
       <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-      <div class="empty-st" id="empty-3">Your offer strategy will appear here.</div>
+      <div class="empty-st" id="empty-3">Your bid strategy will appear here.</div>
       <div class="scout-row scout-row-sm" id="scout-out-3" style="display:none">
         <div class="scout-av">
           <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
           <div class="scout-name">Scout</div>
         </div>
-        <div class="scout-msg" style="font-size:12px">Your recommended bid is at the top. The bid letters are ready to copy and send directly to the agent.</div>
+        <div class="scout-msg">Your recommended bid is at the top. Copy the Dutch bid letter and send it the same day — speed matters as much as price.</div>
       </div>
       <div class="rb" id="body-3"></div>
       <div class="act-row" id="acts-3">
         <button class="btn-sm" onclick="cpResp(3)">Copy</button>
-        <button class="btn-sm" onclick="followUp(3)">Follow up</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel 4: VvE Checker ── -->
+  <div id="panel-4" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Describe the VvE. I'll tell you whether it's healthy, flag financial risks, and list exactly which documents to demand before signing.</div>
+    </div>
+
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">VvE details <span class="cc" id="cc-4">0 / 2000</span></div>
+        <textarea class="inp" id="t4-msg" rows="6" placeholder="Monthly contribution, building age, reserve fund balance, MJOP existence, number of units, any special assessments, anything you know about the VvE..." oninput="uc(this,'cc-4',2000)"></textarea>
+      </div>
+      <button class="btn-main" id="btn-4" onclick="submit(4)">Check this VvE &#8594;</button>
+      <div class="errtxt" id="err-4"></div>
+    </div>
+
+    <div class="card">
+      <div class="skel" id="skel-4"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="empty-st" id="empty-4">Your VvE assessment will appear here.</div>
+      <div class="scout-row scout-row-sm" id="scout-out-4" style="display:none">
+        <div class="scout-av">
+          <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg">Check the Go / No-Go recommendation first. Then read the documents section — what you demand before signing is more important than what you're told.</div>
+      </div>
+      <div class="rb" id="body-4"></div>
+      <div class="act-row" id="acts-4">
+        <button class="btn-sm" onclick="cpResp(4)">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Panel 5: Legal Process ── -->
+  <div id="panel-5" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Describe the property and your situation. I'll give you a room-by-room inspection checklist, 10 questions to ask the agent, and the decision framework for proceeding or walking away.</div>
+    </div>
+
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">Property details <span class="cc" id="cc-5">0 / 2000</span></div>
+        <textarea class="inp" id="t5-msg" rows="6" placeholder="Type, size, year built, location, condition notes, energy label, anything from the listing description..." oninput="uc(this,'cc-5',2000)"></textarea>
+      </div>
+      <button class="btn-main" id="btn-5" onclick="submit(5)">Get inspection checklist &#8594;</button>
+      <div class="errtxt" id="err-5"></div>
+    </div>
+
+    <div class="card">
+      <div class="skel" id="skel-5"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+      <div class="empty-st" id="empty-5">Your inspection guide will appear here.</div>
+      <div class="scout-row scout-row-sm" id="scout-out-5" style="display:none">
+        <div class="scout-av">
+          <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+          <div class="scout-name">Scout</div>
+        </div>
+        <div class="scout-msg">Save this before your viewing — you'll want it on your phone when you're there.</div>
+      </div>
+      <div class="rb" id="body-5"></div>
+      <div class="act-row" id="acts-5">
+        <button class="btn-sm" onclick="cpResp(5)">Copy</button>
       </div>
     </div>
   </div>
 
 </div>
 
+<!-- Mobile bottom nav -->
+<nav class="mob-nav">
+  <div class="mob-nav-inner">
+    <button class="mob-tab on" id="mob-1" onclick="switchBuyTab(1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      Affordability
+    </button>
+    <button class="mob-tab" id="mob-2" onclick="switchBuyTab(2)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Analysis
+    </button>
+    <button class="mob-tab" id="mob-3" onclick="switchBuyTab(3)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+      Bid
+    </button>
+  </div>
+</nav>
+
 <script>
 let chatId=null,listingContext='',cacheId=null;
 const lastResp={};
-const API_TAB_MAP={1:'2',2:'3',3:'4'};
-const BTN={1:'Analyse this property →',2:'Prepare for my viewing →',3:'Build my offer strategy →'};
-const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let propTypeSel='';
+
+const API_TAB_MAP={1:'1',2:'2',3:'4',4:'5',5:'3'};
+const BTN={
+  1:'Calculate my affordability →',
+  2:'Analyse this property →',
+  3:'Build my bid strategy →',
+  4:'Check this VvE →',
+  5:'Get inspection checklist →'
+};
+const ERR={
+  1:'Please enter your annual income.',
+  2:'Please enter at least a location and asking price.',
+  3:'Please enter the asking price and city.',
+  4:'Please describe the VvE situation.',
+  5:'Please describe the property.'
+};
 
 function getParams(){
   const p=new URLSearchParams(location.search);
   chatId=p.get('chat_id')||null;
   cacheId=p.get('listing')||null;
   const t=parseInt(p.get('tab')||'1',10);
-  if(t>=1&&t<=3)switchTab(t);
+  switchBuyTab(t>=1&&t<=5?t:1);
   if(cacheId){
     fetch(`/api/letter-data?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d||!d.listing)return;
       const l=d.listing;
       listingContext=[l.address,l.city,l.price,l.description].filter(Boolean).join(' - ');
-      if(l.price){const m=String(l.price).replace(/[^0-9]/g,'');if(m){const p1=document.getElementById('t1-price');const p3=document.getElementById('t3-ask');if(p1)p1.value=m;if(p3)p3.value=m;}}
+      if(l.price){const m=String(l.price).replace(/[^0-9]/g,'');if(m){const p2=document.getElementById('t2-price');const p3=document.getElementById('t3-ask');if(p2)p2.value=m;if(p3)p3.value=m;}}
       if(l.city){const c=document.getElementById('t3-city');if(c)c.value=l.city;}
-      if(l.city||l.address){const loc=document.getElementById('t1-loc');if(loc)loc.value=([l.city,l.address?l.address.split(',')[0]:null].filter(Boolean).join(', ')).slice(0,60);}
-      if(l.description){const d1=document.getElementById('t1-desc');const d2=document.getElementById('t2-msg');if(d1)d1.value=l.description.slice(0,2000);if(d2)d2.value=l.description.slice(0,2000);}
+      if(l.city||l.address){const loc=document.getElementById('t2-loc');if(loc)loc.value=([l.city,l.address?l.address.split(',')[0]:null].filter(Boolean).join(', ')).slice(0,60);}
+      if(l.description){const d2=document.getElementById('t2-desc');const d5=document.getElementById('t5-msg');if(d2)d2.value=l.description.slice(0,2000);if(d5)d5.value=l.description.slice(0,2000);}
+      if(d.user)prefillFromUser(d.user);
       showLbar(l);
     }).catch(()=>{});
   }
+  if(chatId&&!cacheId){
+    fetch(`/api/user-profile?chat_id=${encodeURIComponent(chatId)}`).then(r=>r.ok?r.json():null).then(d=>{
+      if(d)prefillFromUser(d);
+    }).catch(()=>{});
+  }
+}
+
+function prefillFromUser(u){
+  if(!u)return;
+  let filled=false;
+  if(u.inkomen&&u.inkomen>0){const f=document.getElementById('t1-income');if(f&&!f.value){f.value=String(Math.round(u.inkomen*12));filled=true;}}
+  if(u.partner_inkomen&&u.partner_inkomen>0){const f=document.getElementById('t1-partner');if(f&&!f.value){f.value=String(Math.round(u.partner_inkomen*12));filled=true;}}
+  if(u.contract_type){
+    const map={'permanent':'permanent','vast':'permanent','tijdelijk':'temporary','temporary':'temporary','freelance':'freelance','zzp':'freelance','self-employed':'freelance'};
+    const sel=document.getElementById('t1-contract');
+    if(sel){const v=map[(u.contract_type||'').toLowerCase()];if(v){for(let o of sel.options){if(o.value===v){o.selected=true;filled=true;break;}}}}
+  }
+  const note=document.getElementById('prefill-note');if(note&&filled)note.classList.add('on');
 }
 
 function showLbar(l){
@@ -380,35 +601,71 @@ function showLbar(l){
   document.body.classList.add('has-lb');
 }
 
-function switchTab(n){
+function switchBuyTab(n){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.mob-tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.more-tool-btn').forEach(b=>b.classList.remove('on'));
   const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
-  document.querySelector(`.tab[data-tab="${n}"]`)?.classList.add('on');
+  const desktopTab=document.querySelector(`.tab[data-tab="${n}"]`);if(desktopTab)desktopTab.classList.add('on');
+  const mobTab=document.getElementById(`mob-${n}`);if(mobTab)mobTab.classList.add('on');
+  if(n===4||n===5){const btn=document.getElementById(`more-btn-${n}`);if(btn)btn.classList.add('on');}
+  for(let i=1;i<=3;i++){
+    const s=document.getElementById(`prog-${i}`);
+    const l=document.getElementById(`prog-line-${i}`);
+    if(!s)continue;
+    s.classList.remove('active','done');
+    if(l)l.classList.remove('done');
+    const mainTab=n<=3?n:0;
+    if(i<mainTab){s.classList.add('done');if(l)l.classList.add('done');}
+    else if(i===mainTab){s.classList.add('active');}
+  }
 }
 
 function uc(el,ccId,max){
   const cc=document.getElementById(ccId);if(cc)cc.textContent=`${el.value.length} / ${max||2000}`;
 }
 
+function togglePropType(btn){
+  const val=btn.dataset.val;
+  if(propTypeSel===val){propTypeSel='';btn.classList.remove('on');}
+  else{
+    document.querySelectorAll('#prop-type-pills .pill').forEach(b=>b.classList.remove('on'));
+    propTypeSel=val;btn.classList.add('on');
+  }
+}
+
 function buildMsg(tab){
   switch(tab){
     case 1:{
-      const loc=(document.getElementById('t1-loc')?.value||'').trim();
-      const price=(document.getElementById('t1-price')?.value||'').trim();
-      const area=(document.getElementById('t1-area')?.value||'').trim();
-      const type=document.getElementById('t1-type')?.value||'';
-      const energy=document.getElementById('t1-energy')?.value||'';
-      const vve=(document.getElementById('t1-vve')?.value||'').trim();
-      const desc=(document.getElementById('t1-desc')?.value||'').trim();
-      if(!loc&&!price)return null;
-      const parts=[`Location: ${loc||'not specified'}`,`Asking price: EUR ${price||'not specified'}`,`Area: ${area||'not specified'} m²`,`Type: ${type}`,`Energy label: ${energy}`];
-      if(vve)parts.push(`VvE costs: EUR ${vve}/month`);
-      if(desc)parts.push(`\nListing description:\n${desc}`);
+      const income=(document.getElementById('t1-income')?.value||'').trim();
+      if(!income)return null;
+      const partner=(document.getElementById('t1-partner')?.value||'').trim();
+      const contract=document.getElementById('t1-contract')?.value||'permanent';
+      const savings=(document.getElementById('t1-savings')?.value||'').trim();
+      const ftb=document.getElementById('t1-ftb')?.value||'';
+      const target=(document.getElementById('t1-target')?.value||'').trim();
+      const parts=[`Gross annual income: EUR ${income}`,`Employment type: ${contract}`];
+      if(partner)parts.push(`Partner gross annual income: EUR ${partner}`);
+      if(savings)parts.push(`Own savings / funds available: EUR ${savings}`);
+      parts.push(`First-time buyer status: ${ftb}`);
+      if(target)parts.push(`Target purchase price: EUR ${target}`);
       return parts.join('\n');
     }
     case 2:{
-      return (document.getElementById('t2-msg')?.value||'').trim()||null;
+      const loc=(document.getElementById('t2-loc')?.value||'').trim();
+      const price=(document.getElementById('t2-price')?.value||'').trim();
+      const area=(document.getElementById('t2-area')?.value||'').trim();
+      const energy=document.getElementById('t2-energy')?.value||'';
+      const vve=(document.getElementById('t2-vve')?.value||'').trim();
+      const desc=(document.getElementById('t2-desc')?.value||'').trim();
+      if(!loc&&!price)return null;
+      const parts=[`Location: ${loc||'not specified'}`,`Asking price: EUR ${price||'not specified'}`,`Area: ${area||'not specified'} m²`];
+      if(propTypeSel)parts.push(`Property type: ${propTypeSel}`);
+      parts.push(`Energy label: ${energy}`);
+      if(vve)parts.push(`VvE costs: EUR ${vve}/month`);
+      if(desc)parts.push(`\nListing description:\n${desc}`);
+      return parts.join('\n');
     }
     case 3:{
       const ask=(document.getElementById('t3-ask')?.value||'').trim();
@@ -423,11 +680,11 @@ function buildMsg(tab){
       if(extra)parts.push(`\nAdditional context:\n${extra}`);
       return parts.join('\n');
     }
+    case 4:{return(document.getElementById('t4-msg')?.value||'').trim()||null;}
+    case 5:{return(document.getElementById('t5-msg')?.value||'').trim()||null;}
     default:return null;
   }
 }
-
-const ERR={1:'Please enter at least a location and asking price.',2:'Please describe the property.',3:'Please enter the asking price and city.'};
 
 async function submit(tab){
   const msg=buildMsg(tab);
@@ -450,6 +707,26 @@ function renderResp(tab,text){
   if(skel)skel.style.display='none';
   if(acts)acts.classList.add('on');
   if(scoutOut)scoutOut.style.display='flex';
+  if(tab===3)parseBidAmount(text);
+}
+
+function parseBidAmount(text){
+  const m=text.match(/(?:EUR|€)\s*([\d.,]+)/i);
+  if(!m)return;
+  const raw=m[1].replace(/\./g,'').replace(',','');
+  const num=parseInt(raw,10);
+  if(isNaN(num)||num<50000)return;
+  const fmt='€ '+num.toLocaleString('nl-NL');
+  const el=document.getElementById('bid-amount-display');if(el)el.textContent=fmt;
+  const h=document.getElementById('bid-highlight');if(h)h.classList.add('on');
+}
+
+function copyBidAmount(){
+  const el=document.getElementById('bid-amount-display');
+  const text=(el?.textContent||'').replace(/ /g,' ');
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('bid-copy-btn');if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy amount';btn.classList.remove('ok');},2000);}
+  }).catch(()=>{});
 }
 
 function renderMd(text){
@@ -465,17 +742,13 @@ function hideE(tab){const e=document.getElementById(`err-${tab}`);if(e)e.classLi
 function setLoad(tab,on){
   const btn=document.getElementById(`btn-${tab}`),skel=document.getElementById(`skel-${tab}`),empty=document.getElementById(`empty-${tab}`),body=document.getElementById(`body-${tab}`),acts=document.getElementById(`acts-${tab}`),scoutOut=document.getElementById(`scout-out-${tab}`);
   if(btn){btn.disabled=on;btn.innerHTML=on?`<span class="spin"></span>Working...`:BTN[tab]||'Get analysis →';}
-  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(body)body.style.display='none';if(acts)acts.classList.remove('on');if(scoutOut)scoutOut.style.display='none';}
-  else if(skel)skel.style.display='none';
+  if(on){if(empty)empty.style.display='none';if(skel)skel.style.display='block';if(body)body.style.display='none';if(acts)acts.classList.remove('on');if(scoutOut)scoutOut.style.display='none';
+    if(tab===3){const h=document.getElementById('bid-highlight');if(h)h.classList.remove('on');}
+  }else if(skel)skel.style.display='none';
 }
 function cpResp(tab){
   const t=lastResp[tab]||'';if(!t)return;
   navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector(`#acts-${tab} .btn-sm`);if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}}).catch(()=>{});
-}
-function followUp(tab){
-  const map={1:'t1-desc',2:'t2-msg',3:'t3-extra'};
-  const el=document.getElementById(map[tab]);if(!el)return;
-  el.focus();el.setSelectionRange(el.value.length,el.value.length);
 }
 
 getParams();

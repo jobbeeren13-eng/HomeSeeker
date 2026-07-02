@@ -354,6 +354,20 @@ app.get('/api/cached-listing/:id', (req, res) => {
   }
 });
 
+// Returns user profile fields for buy-assistant affordability pre-fill
+app.get('/api/user-profile', (req, res) => {
+  const { chat_id } = req.query;
+  if (!chat_id) return res.status(400).json({ error: 'chat_id required' });
+  const user = getUser.get(String(chat_id));
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({
+    inkomen: user.inkomen || 0,
+    partner_inkomen: user.partner_inkomen || 0,
+    contract_type: user.contract_type || '',
+    profiel_type: user.profiel_type || '',
+  });
+});
+
 const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_action']);
 
 // Returns listing details + tips for the /letter page
