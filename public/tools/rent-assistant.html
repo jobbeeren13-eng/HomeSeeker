@@ -980,11 +980,11 @@ getParams();
 </div>
 <script>
 (function(){
-var CHIPS=['What do the tips mean?','How does the Application Score work?','What tone should I choose?','What is a vast contract?'];
+var CHIPS=['What do the tips mean?','Professional vs Personal tone?','What is a vast contract?','When should I call the agency?'];
 var hist=[],init=false,open=false;
 function hsT(){open=!open;var w=document.getElementById('hs-cw'),ic=document.getElementById('hs-ic'),ix=document.getElementById('hs-ix');if(open){w.style.display='flex';requestAnimationFrame(function(){setTimeout(function(){w.classList.add('hs-rdy');},10);});ic.style.display='none';ix.style.display='';localStorage.setItem('hs_co','1');if(!init)hsI();}else{w.classList.remove('hs-rdy');setTimeout(function(){w.style.display='none';},200);ic.style.display='';ix.style.display='none';localStorage.setItem('hs_co','0');}}
 window.hsT=hsT;
-function hsI(){init=true;var m=document.getElementById('hs-cm');var b=document.createElement('div');b.className='hs-ai';b.textContent='Hi, I\'m Scout! Ask me anything — how to use this tool, what Dutch housing terms mean, or how to strengthen your application.';m.appendChild(b);var cd=document.createElement('div');cd.id='hs-chips';CHIPS.forEach(function(q){var btn=document.createElement('button');btn.className='hs-chip';btn.textContent=q;btn.onclick=function(){hsRC();hsSM(q);};cd.appendChild(btn);});m.appendChild(cd);hsScr();}
+function hsI(){init=true;var m=document.getElementById('hs-cm');var b=document.createElement('div');b.className='hs-ai';b.textContent='Hi, I\'m Scout! Ask me anything about HomeSeeker, Dutch housing terms, or how to use this page.';m.appendChild(b);var cd=document.createElement('div');cd.id='hs-chips';CHIPS.forEach(function(q){var btn=document.createElement('button');btn.className='hs-chip';btn.textContent=q;btn.onclick=function(){hsRC();hsSM(q);};cd.appendChild(btn);});m.appendChild(cd);hsScr();}
 function hsRC(){var c=document.getElementById('hs-chips');if(c)c.remove();}
 function hsAM(role,text){var m=document.getElementById('hs-cm');var d=document.createElement('div');d.className=role==='user'?'hs-us':'hs-ai';d.textContent=text;m.appendChild(d);hsScr();return d;}
 function hsAL(){var m=document.getElementById('hs-cm');var d=document.createElement('div');d.className='hs-ai';d.innerHTML='<span class="hs-dt"><span class="hs-d"></span><span class="hs-d"></span><span class="hs-d"></span></span>';d.id='hs-ld';m.appendChild(d);hsScr();}

@@ -68,7 +68,17 @@
       "PowerShell(cd \"C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\"; $env = Get-Content .env | Where-Object { $_ -match \"^HETZNER_URL=\" }; $env)",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('response','ERROR'\\)[:400]\\)\")",
       "PowerShell(ssh root@167.233.22.64 \"cd /root/HomeSeeker && git pull && pm2 restart scraper --update-env\")",
-      "Bash(del _tmp13.json)"
+      "Bash(del _tmp13.json)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); t=d.get\\('response',''\\); print\\('OK' if '##' in t else 'NO HEADERS'\\); print\\(t[:400]\\)\")",
+      "Bash(python -m json.tool)",
+      "Read(//tmp/**)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('reply',''\\)\\)\")",
+      "Bash(powershell -command \"Get-Content 'public/filters.html' | Select-Object -Skip 518 -First 100\")",
+      "Bash(powershell -command \"Get-Content 'public/filters.html' | Select-Object -Skip 548 -First 70\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\public\\\\filters.html\")",
+      "Bash(Select-Object -Skip 439 -First 145)",
+      "PowerShell($r = Invoke-RestMethod -Uri \"https://homeseeker.dev/api/generate-letter-web\" -Method POST -ContentType \"application/json\" -Body '{\"cacheId\":\"21\",\"selectedTipTexts\":[],\"extraContext\":\"\",\"tone\":\"professional\"}'; $letter = $r.letter; Write-Host $letter; $words = \\($letter -split '\\\\s+' | Where-Object { $_ }\\).Count; Write-Host \"Words: $words\"; $banned = \"well-established|easy to verify|consistent and easy|once I am settled|suits the way|qualifying at|I have been in this role|long enough that|international firm\"; Write-Host \"AI phrases detected: $\\([bool]\\($letter -match $banned\\)\\)\")",
+      "PowerShell($r = Invoke-WebRequest -Uri \"https://homeseeker.dev/tools/buy-assistant\" -UseBasicParsing; Write-Host \"Status: $\\($r.StatusCode\\)\"; Write-Host \"Size: $\\($r.Content.Length\\) chars\")"
     ]
   }
 }

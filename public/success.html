@@ -192,5 +192,61 @@
     });
   });
 </script>
+
+<!-- AI Support Chat Widget -->
+<style>
+#hs-cb{position:fixed;bottom:24px;right:24px;z-index:9999;width:52px;height:52px;border-radius:50%;background:#00c896;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(0,200,150,0.35);transition:background .15s,transform .15s;display:flex;align-items:center;justify-content:center}
+#hs-cb:hover{background:#00b386;transform:scale(1.05)}
+#hs-cw{position:fixed;bottom:88px;right:24px;z-index:9998;width:340px;background:#111318;border:1px solid rgba(255,255,255,0.1);border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.5);overflow:hidden;display:none;flex-direction:column;opacity:0;transform:translateY(8px);transition:opacity .2s ease,transform .2s ease}
+#hs-cw.hs-rdy{opacity:1;transform:translateY(0)}
+#hs-ch{background:#0d1117;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:8px;flex-shrink:0}
+#hs-chd{flex-shrink:0;display:flex;align-items:center}
+#hs-chn{font-size:13px;font-weight:700;color:#fff;flex:1;font-family:inherit}
+#hs-clo{background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;font-family:inherit}
+#hs-clo:hover{color:rgba(255,255,255,0.8)}
+#hs-cm{padding:16px;overflow-y:auto;height:280px;display:flex;flex-direction:column;gap:10px}
+.hs-ai{background:#1a1f26;border-radius:12px 12px 12px 4px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,0.85);max-width:88%;align-self:flex-start;line-height:1.5;font-family:inherit}
+.hs-us{background:#00c896;color:#0a0a0a;border-radius:12px 12px 4px 12px;padding:10px 14px;font-size:13px;max-width:88%;align-self:flex-end;font-family:inherit;line-height:1.5}
+.hs-dt{display:inline-flex;gap:4px;align-items:center;padding:2px 0}
+.hs-d{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);animation:hs-p 1.2s infinite}
+.hs-d:nth-child(2){animation-delay:.2s}.hs-d:nth-child(3){animation-delay:.4s}
+@keyframes hs-p{0%,100%{opacity:.3}50%{opacity:1}}
+#hs-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.hs-chip{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:100px;padding:5px 12px;font-size:12px;color:#00c896;cursor:pointer;font-family:inherit}
+.hs-chip:hover{background:rgba(0,200,150,0.15)}
+#hs-ir{border-top:1px solid rgba(255,255,255,0.07);padding:12px 14px;display:flex;gap:8px;flex-shrink:0}
+#hs-inp{flex:1;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;color:#e8edf3;font-size:13px;outline:none;font-family:inherit}
+#hs-inp:focus{border-color:#00c896}
+#hs-snd{width:36px;height:36px;border-radius:50%;background:#00c896;color:#0a0a0a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+#hs-snd:hover{background:#00b386}
+@media(max-width:400px){#hs-cw{right:12px;left:12px;width:auto}}
+</style>
+<button id="hs-cb" aria-label="Support chat" onclick="hsT()">
+  <svg id="hs-ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <svg id="hs-ix" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+</button>
+<div id="hs-cw">
+  <div id="hs-ch"><div id="hs-chd"><svg width="24" height="30" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle cx="22" cy="31" r="7.5" fill="white"/><circle cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg></div><span id="hs-chn">Scout</span><button id="hs-clo" onclick="hsT()">&#x2715;</button></div>
+  <div id="hs-cm"></div>
+  <div id="hs-ir"><input id="hs-inp" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')hsS()"><button id="hs-snd" onclick="hsS()" aria-label="Send"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
+</div>
+<script>
+(function(){
+var CHIPS=['How do I set my filters?','When will I get my first alert?','What is the AI Rental Assistant?','How do I cancel?'];
+var hist=[],init=false,open=false;
+function hsT(){open=!open;var w=document.getElementById('hs-cw'),ic=document.getElementById('hs-ic'),ix=document.getElementById('hs-ix');if(open){w.style.display='flex';requestAnimationFrame(function(){setTimeout(function(){w.classList.add('hs-rdy');},10);});ic.style.display='none';ix.style.display='';localStorage.setItem('hs_co','1');if(!init)hsI();}else{w.classList.remove('hs-rdy');setTimeout(function(){w.style.display='none';},200);ic.style.display='';ix.style.display='none';localStorage.setItem('hs_co','0');}}
+window.hsT=hsT;
+function hsI(){init=true;var m=document.getElementById('hs-cm');var b=document.createElement('div');b.className='hs-ai';b.textContent='Hi, I\'m Scout! Ask me anything about HomeSeeker, Dutch housing terms, or how to use this page.';m.appendChild(b);var cd=document.createElement('div');cd.id='hs-chips';CHIPS.forEach(function(q){var btn=document.createElement('button');btn.className='hs-chip';btn.textContent=q;btn.onclick=function(){hsRC();hsSM(q);};cd.appendChild(btn);});m.appendChild(cd);hsScr();}
+function hsRC(){var c=document.getElementById('hs-chips');if(c)c.remove();}
+function hsAM(role,text){var m=document.getElementById('hs-cm');var d=document.createElement('div');d.className=role==='user'?'hs-us':'hs-ai';d.textContent=text;m.appendChild(d);hsScr();return d;}
+function hsAL(){var m=document.getElementById('hs-cm');var d=document.createElement('div');d.className='hs-ai';d.innerHTML='<span class="hs-dt"><span class="hs-d"></span><span class="hs-d"></span><span class="hs-d"></span></span>';d.id='hs-ld';m.appendChild(d);hsScr();}
+function hsRL(){var e=document.getElementById('hs-ld');if(e)e.remove();}
+function hsScr(){var m=document.getElementById('hs-cm');if(m)m.scrollTop=m.scrollHeight;}
+async function hsSM(msg){hsRC();hsAM('user',msg);hist.push({role:'user',content:msg});hsAL();try{var r=await fetch('/api/support-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,history:hist.slice(-6)})});var d=await r.json();hsRL();var rep=d.reply||'Something went wrong. Email support@homeseeker.dev';hsAM('assistant',rep);hist.push({role:'assistant',content:rep});}catch(e){hsRL();hsAM('assistant','I am having trouble right now. Please email support@homeseeker.dev');}}
+function hsS(){var inp=document.getElementById('hs-inp');var msg=(inp.value||'').trim();if(!msg)return;inp.value='';hsSM(msg);}
+window.hsS=hsS;
+if(localStorage.getItem('hs_co')==='1')setTimeout(hsT,300);
+})();
+</script>
 </body>
 </html>
