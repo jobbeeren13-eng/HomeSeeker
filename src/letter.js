@@ -148,7 +148,7 @@ Open with the single most relevant fact about why this applicant is a strong can
 - If the description mentions a specific feature (garden, balcony, natural light, renovation): open with a concrete personal connection to that feature
 - If the description is empty or generic: open with the income-to-rent ratio and contract type as a direct statement of qualification
 Examples of strong openers:
-"Permanent contract, €[annual] gross — qualifying at [X]x the monthly rent, with all documents ready to send within the hour."
+"Permanent contract, €[annual] gross — [X]x the monthly rent, all documents ready to send."
 "The garden at [address] is the reason I am applying: in every home I have lived in, I have maintained outdoor spaces with genuine care."
 "Working in [city] on a permanent contract — I read your preference for working professionals and am addressing it in the first line."
 
@@ -184,20 +184,60 @@ BANNED PHRASES — never write any of these:
 - "stable employment with the same employer long enough"
 - "the speed is intentional"
 - "applying within hours of this listing going live"
+- "well-established" — never describe an employer this way
+- "international firm" — too vague and formal
+- "income history is consistent" — nobody writes this
+- "easy to verify" — meta-commentary, cut it
+- "consistent and easy"
+- "long enough that" — hedged, cut it
+- "the way I actually live" — trying too hard
+- "suits the way I"
+- "once I am settled" — AI filler
+- "I have been in this role" — too formal
+- "qualifying at" — never use this phrase
 - Never describe the property size without a specific reason why it matters to this applicant
+- Any sentence that explains WHY something is verifiable or provable — just state the fact, do not explain it
+- Never state the income-to-rent ratio if it is below 3.0 — instead focus on contract stability, document readiness, and tenure
 
 REQUIRED:
 - Every sentence must be concrete and specific
 - If the description has a specific feature, reference it directly by name
-- If no description: lead with income-to-rent ratio and contract type, then one sentence about why the city or address, then documents and viewing
-- The letter must read as if a real confident professional wrote it in 2 minutes, not as if an AI filled in a template`;
+- If no description: open with contract type, then state ratio only if it is 3.0 or above — if below 3.0, open with employer or years in role instead; then documents and viewing
+- If ratio is below 3x: emphasise contract type, employer stability, and offer documents immediately
+- The letter must read as if a real confident professional wrote it in 2 minutes, not as if an AI filled in a template
+
+WRITING STYLE — what separates a human letter from an AI letter:
+
+Real examples of AI vs human writing:
+
+AI: "My employer is a well-established international firm based in Amsterdam, and I have been in this role long enough that my income history is consistent and easy to verify."
+Human: "Three years in the same role at [company], permanent contract."
+
+AI: "The 140m² across two floors suits the way I actually live and work."
+Human: "142m² across two floors is exactly the space I need — I work from home three days a week."
+
+AI: "I have no interest in moving again once I am settled."
+Human: "I am looking for somewhere to stay for at least two years."
+
+AI: "All documents are prepared and ready to send as a single PDF the moment you request them."
+Human: "Payslips, contract, and bank statements ready to go."
+
+Three rules that eliminate AI tone:
+1. Never explain WHY something is good — just state it. Not "my income is easy to verify" but "payslips ready to send."
+2. Never describe things with adjectives that try to impress — not "well-established firm" but the actual company name or nothing.
+3. If a sentence has more than 20 words, cut it in half.
+
+PUNCTUATION:
+- Every clause in a sentence must be separated by a comma or period — no run-on sentences
+- Example: "Tuesday or Thursday this week, documents can be in your inbox within the hour." — comma after "this week"
+- Read every sentence aloud — if it needs a breath, it needs a comma or period`;
 
   const lines = [];
   lines.push(`Write a rental motivation letter for ${noName ? 'an applicant' : naam}.`);
   lines.push(`Property: ${address}${city ? `, ${city}` : ''}, ${typeof price === 'number' ? `€${price}` : price}/month.`);
   if (description.length > 20) lines.push(`Listing description (scan for specific hook for sentence 1): ${description.slice(0, 350)}`);
   if (totalInkomen > 0) lines.push(`Employment: ${contract_type} contract, ${profiel_type}.`);
-  if (inkomen > 0) lines.push(`Monthly income: €${inkomen}${partnerInkomen > 0 ? ` + €${partnerInkomen} partner` : ''}. Annual: €${annualIncome}.${incomeRatio ? ` Income ratio: ${incomeRatio}x the rent.` : ''}`);
+  if (inkomen > 0) lines.push(`Monthly income: €${inkomen}${partnerInkomen > 0 ? ` + €${partnerInkomen} partner` : ''}. Annual: €${annualIncome}.${incomeRatio ? (parseFloat(incomeRatio) >= 3 ? ` Income ratio: ${incomeRatio}x the rent.` : ' Do not mention the income-to-rent ratio in the letter — it is below the standard threshold.') : ''}`);
   if (user_description) lines.push(`About applicant: ${user_description}`);
   if (move_reason) lines.push(`Move reason: ${move_reason}`);
   if (extraContext) lines.push(`Additional context: ${extraContext}`);
