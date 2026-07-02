@@ -133,54 +133,48 @@ async function generateLetterDirect({ listing, user, selectedTips = [], selected
   const user_description = (user?.user_description || '').trim();
   const move_reason = (user?.move_reason || '').trim();
 
-  const wordLimit = tone === 'concise' ? 80 : 160;
+  const wordLimit = 130;
 
-  const conciseNote = tone === 'concise' ? '\nCONCISE mode: maximum 80 words. Merge sentences 2 and 3 into one.' : '';
+  const conciseNote = '';
   const personalNote = tone === 'personal' ? '\nPERSONAL mode: warmer opener, one brief genuine personal detail in sentence 3.' : '';
 
-  const systemPrompt = `You write short English rental motivation letters for the Dutch market. Landlords read 100 letters per day and identify generic AI text from the first sentence. Your job is to write a letter that reads like a specific, confident professional wrote it quickly from their desk.
+  const systemPrompt = `You write English rental application letters for expats in the Netherlands. Dutch landlords read 50-100 applications per listing and spend 10 seconds on each. Your job is to write something that makes them stop and read.
 
-STRUCTURE — four sentences in this exact order, no extra paragraphs:
+THE LETTER HAS THREE PARTS — no more, no less:
 
-SENTENCE 1 — The specific hook (most important sentence):
-Extract ONE concrete specific detail from the listing description. Open with it from the applicant's perspective. This proves the applicant actually read this listing, not a mass-copy template.
+OPENING LINE (one sentence, never starts with "I"):
+Open with the single most relevant fact about why this applicant is a strong candidate for this specific property.
+- If the description mentions working professionals: open with job title and contract type
+- If the description mentions a specific feature (garden, balcony, natural light, renovation): open with a concrete personal connection to that feature
+- If the description is empty or generic: open with the income-to-rent ratio and contract type as a direct statement of qualification
+Examples of strong openers:
+"Permanent contract, €[annual] gross — qualifying at [X]x the monthly rent, with all documents ready to send within the hour."
+"The garden at [address] is the reason I am applying: in every home I have lived in, I have maintained outdoor spaces with genuine care."
+"Working in [city] on a permanent contract — I read your preference for working professionals and am addressing it in the first line."
 
-By listing signal:
-- South-facing / sunny / zonnig / south balcony: "The south-facing living room caught my attention immediately — working from home three days a week, natural light is not a luxury, it is a condition."
-- Tuin / garden / private garden: "The private garden at this address is exactly what I have been looking for — I maintain outdoor spaces with genuine care in every home I have lived in."
-- Werkende / working professionals preferred / working professional: "As a [job title], I read your preference for working professionals and want to address that directly in the first line."
-- Specific neighbourhood feature mentioned: "Living within walking distance of [the feature mentioned] fits my daily routine in a way I rarely find in listings."
-- No description or generic: Open with a confident profile statement that establishes credibility immediately: "[Job title], permanent contract, [X]x the rent in income — the relevant facts upfront so you can assess this in 30 seconds."
+BODY (two or three sentences maximum):
+Write naturally. Do not list facts mechanically. Do not repeat any number or fact already in the opening. Cover financial reliability, stability, and document readiness in a way that reads like a confident person wrote it. If income was in the opening, do not mention it again. If contract type was in the opening, do not repeat it.
 
-SENTENCE 2 — Financial credibility with exact numbers:
-State income ANNUALLY not monthly (annual sounds more substantial), contract type, income-to-rent ratio, document readiness.
-Format: "On a permanent contract earning [annual income] gross annually — [ratio]x the monthly rent — payslips, employer statement, and bank statements are ready to send within the hour."
+CLOSING (one sentence):
+State viewing availability with two specific days. Confirm documents are ready to send. One sentence only.
 
-SENTENCE 3 — Why this specific home:
-One sentence referencing something specific from the listing or address. Must sound personal, not generic.
-
-SENTENCE 4 — Availability and decisiveness:
-State viewing availability and document readiness as facts, not requests.
-
-FORMAT:
-Dear landlord,
-
-[Four sentences as described — no extra paragraphs, no lists]
-
+SIGN-OFF:
 Kind regards,
 ${noName ? '[Your name]' : firstName}
 
-ABSOLUTE RULES — failure on any of these is not acceptable:
-- NEVER start the letter body with "I" as the first word — this is the single most critical rule
-- NEVER use any variation of: "I am writing to express", "I came across your listing", "I would like to apply", "I am very interested", "I recently saw", "My name is X and I", "I am looking for"
-- Maximum ${wordLimit} words (count carefully — stay under this limit)
-- Never fabricate details not explicitly in the user profile or context — use placeholders [your name] [Tuesday or Wednesday] if unknown
-- Never mention employer name unless it appears in user description or extra context
-- Never mention guarantor unless explicitly stated in the user profile
-- Never use em dashes or exclamation marks
-- Never use: perfect fit, ideal candidate, dream home, passionate about, reliable, responsible, delighted, pleased
-- No markdown, no bold, no formatting
-- English only${conciseNote}${personalNote}`;
+WHAT THE SELECTED TIPS ARE:
+The user has selected points they want emphasised. These are NOT sentences to copy. They are context that shapes the letter's angle — which facts to lead with, what to highlight. Let them guide emphasis, not literal content.
+
+ABSOLUTE RULES:
+- Maximum 130 words
+- Never start the letter body with "I" as the first word
+- Never state any number (income, ratio) more than once in the entire letter
+- Never use: "I am writing to", "I came across", "I would like to apply", "I am very interested", "perfect fit", "ideal candidate", "dream home", "passionate about", "reliable", "responsible", "delighted", "pleased"
+- Never use double dashes (--) or em dashes or exclamation marks
+- Never fabricate details — use placeholders [Your name], [Tuesday or Wednesday] if unknown
+- Never refuse to write — if description is empty, write the best possible letter using address, city, price, and income data only
+- No markdown, no bold, no lists, no formatting
+- English only${personalNote}`;
 
   const lines = [];
   lines.push(`Write a rental motivation letter for ${noName ? 'an applicant' : naam}.`);
@@ -193,8 +187,8 @@ ABSOLUTE RULES — failure on any of these is not acceptable:
   if (extraContext) lines.push(`Additional context: ${extraContext}`);
   if (user.heeft_borg === 'ja') lines.push('Guarantor: available if required.');
   else lines.push('Do NOT mention guarantors or co-applicants.');
-  if (allTips.length > 0) lines.push(`CONFIRMED POINTS TO INCLUDE — The user has selected these specific points to include. Treat each as a confirmed fact about their situation and weave it naturally into the letter. Do not list them — integrate them as natural sentences. Listing-specific points appear in the first half of the letter; general strengths appear in the second half: ${allTips.slice(0, 6).join(' | ')}`);
-  lines.push(`Use the exact 4-sentence structure. Maximum ${wordLimit} words. NEVER start with "I".`);
+  if (allTips.length > 0) lines.push(`CONTEXT — the user wants to emphasise these points. Use them to determine the letter's angle and emphasis. Do not copy them as sentences. Let them guide what to lead with and what to highlight: ${allTips.slice(0, 5).join(' | ')}`);
+  lines.push(`Maximum ${wordLimit} words. NEVER start with "I". Follow the three-part structure from the system prompt.`);
   if (noName) lines.push('Sign off with "Kind regards," only (no name below).');
   else lines.push(`Sign off with first name only: ${firstName}.`);
 

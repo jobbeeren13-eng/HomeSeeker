@@ -363,13 +363,17 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <!-- Intelligence / chip block — always rendered -->
     <div id="tips-checkboxes" class="intel-wrap"></div>
 
+    <div id="platform-context-block" style="display:none;padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:8px;margin-top:8px">
+      <div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:4px;text-transform:uppercase">Platform tip</div>
+      <div id="platform-context-text" style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6"></div>
+    </div>
+
     <div class="card">
       <div class="fld">
         <div class="lbl">Tone</div>
         <div class="tone-row" id="tone-row">
           <button class="tp on" onclick="setTone(this,'professional')">Professional<span class="tp-sub">Agencies &amp; corporate landlords</span></button>
           <button class="tp" onclick="setTone(this,'personal')">Personal<span class="tp-sub">Private landlords</span></button>
-          <button class="tp" onclick="setTone(this,'concise')">Concise<span class="tp-sub">High competition listings</span></button>
         </div>
       </div>
       <div class="fld">
@@ -638,6 +642,11 @@ function getParams(){
     }).catch(()=>{});
     fetch(`/api/listing-tips?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d)return;
+      if(d.platformContext&&d.platformContext.length>0){
+        const block=document.getElementById('platform-context-block');
+        const text=document.getElementById('platform-context-text');
+        if(block&&text){text.textContent=d.platformContext[0];block.style.display='block';}
+      }
       if(d.landlordProfile||d.smartPoints||d.uniqueAngles){
         renderChipUI(d);
         updateSidebar(d);

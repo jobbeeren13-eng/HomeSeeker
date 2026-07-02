@@ -433,6 +433,7 @@ app.get('/api/listing-tips', (req, res) => {
       uniqueAngles: intel.uniqueAngles,
       watchOut: intel.watchOut,
       hiddenSignals: intel.hiddenSignals,
+      platformContext: intel.platformContext || [],
       listingTips: intel.tips.filter(t => t.level === 'critical' || t.level === 'listing').map(t => ({ tip: t.tip, level: t.level })),
       profileTips: intel.tips.filter(t => t.level === 'profile').map(t => ({ tip: t.tip })),
       generalTips: [],

@@ -549,7 +549,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   // Build single complete caption
   const lines = [];
   lines.push(getPlatformBadge(listing.source));
-  lines.push(`*${safeAddr}${cityStr ? ', ' + cityStr : ''}*`);
+  lines.push(`📍 *${safeAddr}${cityStr ? ', ' + cityStr : ''}*`);
   if (listing.area) lines.push(`• ${listing.area}m²`);
   if (isHuur && listing.priceNumber) {
     lines.push(`• Rent: ${priceStr}/mo`);

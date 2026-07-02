@@ -408,13 +408,6 @@ function getListingIntelligence(listing, user) {
   if (/zonnig|south.facing|zuidgericht|south balcony/i.test(descRaw)) {
     smartPoints.push('Natural light is highlighted — if you work from home, say so specifically. "The south-facing light fits my working-from-home routine" is memorable');
   }
-  if (source === 'funda') {
-    smartPoints.push('Funda attracts 50-200 applications — call the agency within 1 hour of sending your application. Candidates who call are 3x more likely to get a viewing');
-  } else if (source === 'kamernet') {
-    smartPoints.push('Kamernet landlords are usually private individuals — a warm, personal tone works better than a formal letter. Use their first name if it appears');
-  } else if (source === 'housinganywhere') {
-    smartPoints.push('HousingAnywhere has many international applicants — end your message with one sentence in Dutch. It signals integration and long-term intent');
-  }
   if (/particulier|private owner|eigenaar verhuurt|zelf verhuur/i.test(descRaw)) {
     smartPoints.push('Address the landlord personally — if their name appears anywhere in the listing, use it in your opening');
   }
@@ -448,8 +441,8 @@ function getListingIntelligence(listing, user) {
     // Area-based fallbacks
     if (listing.area > 100 && !smartPoints.some(t => /long.term|stay.*year/i.test(t))) {
       smartPoints.push('This is a large property. Mention your intention to stay long-term — landlords of large properties want stable tenants, not someone who will move in 12 months.');
-    } else if (listing.area > 0 && listing.area < 40 && !smartPoints.some(t => /under 80 words|concise|get to the point/i.test(t))) {
-      smartPoints.push('Small properties have high competition. Concise tone works best — get to the point in under 80 words.');
+    } else if (listing.area > 0 && listing.area < 40 && !smartPoints.some(t => /small|compact|direct/i.test(t))) {
+      smartPoints.push('Small properties attract high competition. Keep your first message direct — lead immediately with income and contract type.');
     }
     // City-based fallbacks
     const cityLower = (listing.city || '').toLowerCase();
@@ -464,6 +457,15 @@ function getListingIntelligence(listing, user) {
     smartPoints.push('Lead with your job title, contract type, and income-to-rent ratio in the first sentence');
     smartPoints.push('State your move-in date as a fact: "I can move in on [date]" — not "I would like to"');
     smartPoints.push('Attach all documents in one PDF: Firstname_Lastname_Application.pdf');
+  }
+
+  const platformContext = [];
+  if (source === 'funda') {
+    platformContext.push('Call the agency within 1 hour of applying. Candidates who call are 3x more likely to get a viewing — most applicants never do.');
+  } else if (source === 'kamernet') {
+    platformContext.push('Kamernet landlords are usually private individuals. A warm personal tone works better than a formal letter — use their first name if it appears.');
+  } else if (source === 'housinganywhere') {
+    platformContext.push('HousingAnywhere attracts many international applicants. End your message with one Dutch sentence — it signals integration and long-term intent.');
   }
 
   // ── uniqueAngles ──
@@ -578,7 +580,7 @@ function getListingIntelligence(listing, user) {
     ...uniqueAngles.map(t => ({ tip: t, category: 'unique_angle', level: 'profile' })),
   ];
 
-  return { landlordProfile, smartPoints, uniqueAngles, watchOut, hiddenSignals, tips };
+  return { landlordProfile, smartPoints, uniqueAngles, watchOut, hiddenSignals, platformContext, tips };
 }
 
 // ─────────────────────────────────────────────
