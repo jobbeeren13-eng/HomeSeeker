@@ -16,15 +16,14 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, markListingSent, insertScraperStat } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest } = require('./src/database');
 const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
-const { normaliseCity, getScraperHealth, setAdminBot, scrapeListings, markListingsAsSent } = require('./src/scraper');
-const { findMatches } = require('./src/matcher');
+const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
-const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect, getAITip } = require('./src/letter');
+const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1235,90 +1234,9 @@ app.get('/api/fetch-funda-photo', async (req, res) => {
   }
 });
 
-// ── GitHub Actions scraper trigger ───────────────────────────────────────
-let scraperCycleRunning = false;
-
-async function runScraperCycle(trigger = 'cron') {
-  if (scraperCycleRunning) {
-    console.log(`[scraper] Skipped (${trigger}) — previous cycle still running`);
-    return { skipped: true };
-  }
-  scraperCycleRunning = true;
-  const cycleStart = Date.now();
-  console.log(`[scraper] Cycle started (${trigger}) at ${new Date().toISOString()}`);
-  try {
-    const listings = await scrapeListings();
-    console.log(`[scraper] Scraped ${listings.length} new listings`);
-    if (!listings.length) {
-      console.log('[scraper] No new listings this cycle');
-      return { listings: 0, alerts: 0 };
-    }
-
-    const matches = await findMatches(listings);
-    console.log(`[scraper] Found ${matches.length} matches`);
-
-    const sentUrls = [];
-    const bot = getBot();
-    for (const { listing: rawListing, user, score, label, dealScore, dealLabel } of matches) {
-      try {
-        let listing = rawListing;
-        if (rawListing.description && rawListing.description.length >= 200) {
-          const aiTip = await getAITip(rawListing, user);
-          if (aiTip) listing = { ...rawListing, aiTip };
-        }
-        const { cacheId, sent } = await sendAlert(user.chat_id, listing, score, label, dealScore, dealLabel, user, bot);
-        if (sent) {
-          sentUrls.push(listing.url);
-          markListingSent.run(listing.url, user.chat_id);
-        }
-        if (cacheId && sent) injectCachedListing(cacheId, listing);
-        await new Promise(r => setTimeout(r, 300));
-      } catch (err) {
-        console.error('[scraper] Alert dispatch error:', err.message);
-      }
-    }
-
-    if (sentUrls.length) markListingsAsSent(sentUrls);
-
-    const srcCount = {};
-    for (const l of listings) srcCount[l.source] = (srcCount[l.source] || 0) + 1;
-    const cycleMs = Date.now() - cycleStart;
-    for (const [src, count] of Object.entries(srcCount)) {
-      const srcAlerts = sentUrls.filter(u => matches.find(m => m.listing.url === u && m.listing.source === src)).length;
-      try { insertScraperStat.run(src, count, srcAlerts, cycleMs, Date.now()); } catch (_) {}
-    }
-    console.log(`[scraper] Cycle done — ${sentUrls.length} alerts sent in ${Math.round(cycleMs / 1000)}s`);
-    return { listings: listings.length, alerts: sentUrls.length };
-  } catch (err) {
-    console.error('[scraper] Cycle error:', err.message);
-    return { error: err.message };
-  } finally {
-    scraperCycleRunning = false;
-  }
-}
-
-app.post('/api/run-scraper', async (req, res) => {
-  const secret = req.headers['x-scraper-secret'] || req.headers['x-admin-key'];
-  const validSecret = process.env.SCRAPER_SECRET || process.env.ADMIN_KEY;
-  if (!secret || secret !== validSecret) {
-    console.warn('[scraper-api] Unauthorized attempt from', req.ip);
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  if (scraperCycleRunning) return res.json({ status: 'skipped', reason: 'Previous cycle still running' });
-  res.json({ status: 'started', timestamp: new Date().toISOString() });
-  runScraperCycle('api');
-});
-
 const server = app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);
   console.log(`[server] Base URL: ${BASE_URL}`);
-
-  // Run scraper every 15 minutes, first run after 30s
-  setTimeout(() => {
-    runScraperCycle('boot');
-    setInterval(() => runScraperCycle('cron'), 15 * 60 * 1000);
-  }, 30 * 1000);
-  console.log('[scraper] Internal cron active — runs every 15 minutes');
 });
 
 process.on('SIGTERM', () => {

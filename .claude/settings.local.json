@@ -78,7 +78,11 @@
       "Bash(Get-Content \"C:\\\\Users\\\\marcu\\\\OneDrive\\\\Desktop\\\\woningflash\\\\public\\\\filters.html\")",
       "Bash(Select-Object -Skip 439 -First 145)",
       "PowerShell($r = Invoke-RestMethod -Uri \"https://homeseeker.dev/api/generate-letter-web\" -Method POST -ContentType \"application/json\" -Body '{\"cacheId\":\"21\",\"selectedTipTexts\":[],\"extraContext\":\"\",\"tone\":\"professional\"}'; $letter = $r.letter; Write-Host $letter; $words = \\($letter -split '\\\\s+' | Where-Object { $_ }\\).Count; Write-Host \"Words: $words\"; $banned = \"well-established|easy to verify|consistent and easy|once I am settled|suits the way|qualifying at|I have been in this role|long enough that|international firm\"; Write-Host \"AI phrases detected: $\\([bool]\\($letter -match $banned\\)\\)\")",
-      "PowerShell($r = Invoke-WebRequest -Uri \"https://homeseeker.dev/tools/buy-assistant\" -UseBasicParsing; Write-Host \"Status: $\\($r.StatusCode\\)\"; Write-Host \"Size: $\\($r.Content.Length\\) chars\")"
+      "PowerShell($r = Invoke-WebRequest -Uri \"https://homeseeker.dev/tools/buy-assistant\" -UseBasicParsing; Write-Host \"Status: $\\($r.StatusCode\\)\"; Write-Host \"Size: $\\($r.Content.Length\\) chars\")",
+      "PowerShell($body1 = '{\"message\":\"What is erfpacht and why does it matter?\"}'; $body2 = '{\"message\":\"What is the 3x income rule?\"}'; $body3 = '{\"message\":\"When should I call the agency after applying?\"}'; $h = @{'Content-Type'='application/json'}; $r1 = try { Invoke-RestMethod -Uri 'https://homeseeker.dev/api/support-chat' -Method POST -Body $body1 -Headers $h -TimeoutSec 20 } catch { @{reply=$_.Exception.Message} }; $r2 = try { Invoke-RestMethod -Uri 'https://homeseeker.dev/api/support-chat' -Method POST -Body $body2 -Headers $h -TimeoutSec 20 } catch { @{reply=$_.Exception.Message} }; $r3 = try { Invoke-RestMethod -Uri 'https://homeseeker.dev/api/support-chat' -Method POST -Body $body3 -Headers $h -TimeoutSec 20 } catch { @{reply=$_.Exception.Message} }; Write-Host \"TEST 1 \\(erfpacht\\):\"; Write-Host $r1.reply; Write-Host \"\"; Write-Host \"TEST 2 \\(3x rule\\):\"; Write-Host $r2.reply; Write-Host \"\"; Write-Host \"TEST 3 \\(call agency\\):\"; Write-Host $r3.reply)",
+      "Bash(Start-Sleep -Seconds 65)",
+      "Bash(Write-Host \"Railway deploy window elapsed\")",
+      "Bash(gh workflow *)"
     ]
   }
 }
