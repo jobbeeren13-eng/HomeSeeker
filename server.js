@@ -1238,40 +1238,27 @@ app.get('/api/fetch-funda-photo', async (req, res) => {
 // ── GitHub Actions scraper trigger ───────────────────────────────────────
 let scraperCycleRunning = false;
 
-app.post('/api/run-scraper', async (req, res) => {
-  const secret = req.headers['x-scraper-secret'] || req.headers['x-admin-key'];
-  const validSecret = process.env.SCRAPER_SECRET || process.env.ADMIN_KEY;
-  if (!secret || secret !== validSecret) {
-    console.warn('[scraper-api] Unauthorized attempt from', req.ip);
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
+async function runScraperCycle(trigger = 'cron') {
   if (scraperCycleRunning) {
-    console.log('[scraper-api] Skipped — previous cycle still running');
-    return res.json({ status: 'skipped', reason: 'Previous cycle still running' });
+    console.log(`[scraper] Skipped (${trigger}) — previous cycle still running`);
+    return { skipped: true };
   }
-
-  res.json({ status: 'started', timestamp: new Date().toISOString() });
-
   scraperCycleRunning = true;
   const cycleStart = Date.now();
-
+  console.log(`[scraper] Cycle started (${trigger}) at ${new Date().toISOString()}`);
   try {
-    console.log('[scraper-api] Cycle started via GitHub Actions');
     const listings = await scrapeListings();
-    console.log(`[scraper-api] Scraped ${listings.length} new listings`);
-
+    console.log(`[scraper] Scraped ${listings.length} new listings`);
     if (!listings.length) {
-      console.log('[scraper-api] No new listings this cycle');
-      return;
+      console.log('[scraper] No new listings this cycle');
+      return { listings: 0, alerts: 0 };
     }
 
     const matches = await findMatches(listings);
-    console.log(`[scraper-api] Found ${matches.length} matches`);
+    console.log(`[scraper] Found ${matches.length} matches`);
 
     const sentUrls = [];
     const bot = getBot();
-
     for (const { listing: rawListing, user, score, label, dealScore, dealLabel } of matches) {
       try {
         let listing = rawListing;
@@ -1287,7 +1274,7 @@ app.post('/api/run-scraper', async (req, res) => {
         if (cacheId && sent) injectCachedListing(cacheId, listing);
         await new Promise(r => setTimeout(r, 300));
       } catch (err) {
-        console.error('[scraper-api] Alert dispatch error:', err.message);
+        console.error('[scraper] Alert dispatch error:', err.message);
       }
     }
 
@@ -1300,18 +1287,38 @@ app.post('/api/run-scraper', async (req, res) => {
       const srcAlerts = sentUrls.filter(u => matches.find(m => m.listing.url === u && m.listing.source === src)).length;
       try { insertScraperStat.run(src, count, srcAlerts, cycleMs, Date.now()); } catch (_) {}
     }
-    console.log(`[scraper-api] Cycle done — ${sentUrls.length} alerts sent in ${Math.round(cycleMs / 1000)}s`);
-
+    console.log(`[scraper] Cycle done — ${sentUrls.length} alerts sent in ${Math.round(cycleMs / 1000)}s`);
+    return { listings: listings.length, alerts: sentUrls.length };
   } catch (err) {
-    console.error('[scraper-api] Cycle error:', err.message);
+    console.error('[scraper] Cycle error:', err.message);
+    return { error: err.message };
   } finally {
     scraperCycleRunning = false;
   }
+}
+
+app.post('/api/run-scraper', async (req, res) => {
+  const secret = req.headers['x-scraper-secret'] || req.headers['x-admin-key'];
+  const validSecret = process.env.SCRAPER_SECRET || process.env.ADMIN_KEY;
+  if (!secret || secret !== validSecret) {
+    console.warn('[scraper-api] Unauthorized attempt from', req.ip);
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  if (scraperCycleRunning) return res.json({ status: 'skipped', reason: 'Previous cycle still running' });
+  res.json({ status: 'started', timestamp: new Date().toISOString() });
+  runScraperCycle('api');
 });
 
 const server = app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);
   console.log(`[server] Base URL: ${BASE_URL}`);
+
+  // Run scraper every 15 minutes, first run after 30s
+  setTimeout(() => {
+    runScraperCycle('boot');
+    setInterval(() => runScraperCycle('cron'), 15 * 60 * 1000);
+  }, 30 * 1000);
+  console.log('[scraper] Internal cron active — runs every 15 minutes');
 });
 
 process.on('SIGTERM', () => {
