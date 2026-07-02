@@ -1234,6 +1234,40 @@ app.get('/api/fetch-funda-photo', async (req, res) => {
   }
 });
 
+// ── Funda API proxy (Hetzner IP is blocked by Funda; Railway is not) ─────
+app.post('/api/funda-search', async (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const { payload } = req.body;
+  if (!payload || typeof payload !== 'string') return res.status(400).json({ error: 'payload required' });
+  const traceId = String(Math.floor(Math.random() * 9e18 + 1e18));
+  const parentId = Math.floor(Math.random() * 0xffffffffffff).toString(16).padStart(12, '0');
+  const tid = Math.floor(Date.now() / 1000).toString(16) + '00000000';
+  try {
+    const resp = await fetch('https://listing-search-wonen.funda.io/_msearch/template', {
+      method: 'POST',
+      headers: {
+        'user-agent': 'Dart/3.9 (dart:io)',
+        'x-datadog-sampling-priority': '0',
+        'x-datadog-origin': 'rum',
+        'tracestate': `dd=s:0;o:rum;p:${parentId}`,
+        'x-datadog-parent-id': traceId,
+        'content-type': 'application/json',
+        'referer': 'https://www.funda.nl/',
+        'accept': 'application/json',
+        'traceparent': `00-${tid}${traceId.slice(0, 16)}-${parentId}-00`,
+      },
+      body: payload,
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!resp.ok) return res.json({ status: resp.status, data: null });
+    const data = await resp.json();
+    res.json({ status: resp.status, data });
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
 const server = app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);
   console.log(`[server] Base URL: ${BASE_URL}`);

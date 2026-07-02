@@ -18,7 +18,7 @@ const getNearDuplicateAddresses = db.prepare(
   `SELECT address FROM listings WHERE city = ? AND price_number BETWEEN ? AND ? LIMIT 50`
 );
 
-const SEARCH_HOST = 'listing-search-wonen.funda.io';
+const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const SEARCH_INDEX = 'listings-wonen-searcher-alias-prod';
 const SEARCH_TEMPLATE_ID = 'search_result_20250805';
 const PAGE_SIZE = 15;
@@ -207,25 +207,6 @@ function saveNewListing(listing) {
   return true;
 }
 
-// Generates Datadog trace headers matching the Funda Android app (Dart/Flutter)
-function makeHeaders() {
-  const traceId = String(Math.floor(Math.random() * 9e18 + 1e18));
-  const parentId = Math.floor(Math.random() * 0xffffffffffff).toString(16).padStart(12, '0');
-  const tid = Math.floor(Date.now() / 1000).toString(16) + '00000000';
-  return {
-    'user-agent': 'Dart/3.9 (dart:io)',
-    'x-datadog-sampling-priority': '0',
-    'x-datadog-origin': 'rum',
-    'tracestate': `dd=s:0;o:rum;p:${parentId}`,
-    'accept-encoding': 'gzip',
-    'x-datadog-parent-id': traceId,
-    'content-type': 'application/json',
-    'referer': 'https://www.funda.nl/',
-    'accept': 'application/json',
-    'traceparent': `00-${tid}${traceId.slice(0, 16)}-${parentId}-00`,
-  };
-}
-
 // Builds the NDJSON body for the Elasticsearch msearch template API
 function makePayload(city, offeringType, page) {
   const indexLine = JSON.stringify({ index: SEARCH_INDEX });
@@ -246,31 +227,18 @@ function makePayload(city, offeringType, page) {
   return `${indexLine}\n${queryLine}\n`;
 }
 
-function postSearch(payload) {
-  return new Promise((resolve, reject) => {
-    const body = Buffer.from(payload, 'utf8');
-    const req = https.request({
-      hostname: SEARCH_HOST,
-      path: '/_msearch/template',
-      method: 'POST',
-      headers: { ...makeHeaders(), 'content-length': body.length },
-      timeout: 15000,
-    }, (res) => {
-      const chunks = [];
-      const stream = res.headers['content-encoding'] === 'gzip'
-        ? res.pipe(zlib.createGunzip()) : res;
-      stream.on('data', c => chunks.push(c));
-      stream.on('end', () => {
-        try { resolve({ status: res.statusCode, data: JSON.parse(Buffer.concat(chunks).toString('utf8')) }); }
-        catch (e) { reject(new Error(`JSON parse: ${e.message}`)); }
-      });
-      stream.on('error', reject);
-    });
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
-    req.write(body);
-    req.end();
+async function postSearch(payload) {
+  const res = await fetch(`${RAILWAY_URL}/api/funda-search`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-admin-key': process.env.ADMIN_KEY || '',
+    },
+    body: JSON.stringify({ payload }),
+    signal: AbortSignal.timeout(20000),
   });
+  if (!res.ok) return { status: res.status, data: null };
+  return res.json();
 }
 
 function parseHits(hits, city, transactionType) {
