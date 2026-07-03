@@ -17,7 +17,7 @@ const DIVIDER = 'border:none;border-top:1px solid rgba(255,255,255,0.07);margin:
 async function sendWelcomeEmail(email, naam, customerId) {
   const r = getResend();
   if (!r) return;
-  const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'HomeSeekerBot';
+  const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'PremiumHomeSeekerBot';
 
   const { generateStartPayload } = require('./telegram');
   const signedPayload = generateStartPayload(customerId);

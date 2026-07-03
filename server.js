@@ -344,6 +344,8 @@ app.post('/api/admin/resend-activation', async (req, res) => {
 
 // Returns raw listing for rent-assistant / buy-assistant context loading
 app.get('/api/cached-listing/:id', (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   try {
     const entry = getCachedEntry(req.params.id);
     if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
@@ -356,6 +358,8 @@ app.get('/api/cached-listing/:id', (req, res) => {
 
 // Returns user profile fields for buy-assistant affordability pre-fill
 app.get('/api/user-profile', (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { chat_id } = req.query;
   if (!chat_id) return res.status(400).json({ error: 'chat_id required' });
   const user = getUser.get(String(chat_id));
@@ -372,6 +376,8 @@ const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_ac
 
 // Returns listing details + tips for the /letter page
 app.get('/api/letter-data', (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'Missing id' });
   const entry = getCachedEntry(id);
@@ -396,11 +402,6 @@ app.get('/api/letter-data', (req, res) => {
     score,
     dealScore,
     chatId: chatId || null,
-    user: user ? {
-      naam: user.naam, contract_type: user.contract_type,
-      inkomen: user.inkomen, profiel_type: user.profiel_type,
-      heeft_borg: user.heeft_borg, application_readiness: user.application_readiness,
-    } : null,
   });
 });
 
@@ -505,6 +506,8 @@ app.post('/api/generate-letter-web', async (req, res) => {
 
 // First contact message — short 4-sentence message to send to landlord immediately
 app.post('/api/first-contact-message', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { cacheId, extraContext = '', selectedTipTexts = [] } = req.body;
   if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
 
@@ -538,6 +541,8 @@ app.post('/api/first-contact-message', async (req, res) => {
 
 // Generates full application package (letter + intro + quickFacts + financialSummary)
 app.post('/api/generate-package', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { cacheId, extraContext = '' } = req.body;
   if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
 
@@ -660,6 +665,8 @@ app.post('/api/application-status', (req, res) => {
 
 // AI buyer letter — proxies to Hetzner (ANTHROPIC_API_KEY lives there)
 app.post('/api/buyer-letter', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext } = req.body;
   if (!houseAddress) return res.status(400).json({ error: 'houseAddress required' });
   try {
@@ -686,6 +693,8 @@ app.post('/api/buyer-letter', async (req, res) => {
 
 // AI lease review — proxies to Hetzner, falls back to direct
 app.post('/api/lease-review', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { leaseText, context } = req.body;
   if (!leaseText || leaseText.length < 50) return res.status(400).json({ error: 'leaseText must be at least 50 characters' });
   try {
@@ -711,6 +720,8 @@ app.post('/api/lease-review', async (req, res) => {
 
 // AI negotiation coach — proxies to Hetzner, falls back to direct
 app.post('/api/negotiate', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { goal, property, situation, extraContext } = req.body;
   if (!goal || !situation || situation.length < 20) return res.status(400).json({ error: 'goal and situation are required' });
   try {
@@ -736,6 +747,8 @@ app.post('/api/negotiate', async (req, res) => {
 
 // AI bid advisor — proxies to Hetzner
 app.post('/api/bid-advisor', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { listingPrice, neighborhood, situation, extraContext } = req.body;
   if (!listingPrice) return res.status(400).json({ error: 'listingPrice required' });
   try {
@@ -762,6 +775,8 @@ app.post('/api/bid-advisor', async (req, res) => {
 
 // AI letter modification — proxies to Hetzner, falls back to direct
 app.post('/api/modify-letter-web', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { letter, instruction } = req.body;
   if (!letter || !instruction) return res.status(400).json({ error: 'letter and instruction required' });
   try {
@@ -907,6 +922,8 @@ async function proxyToHetzner(path, body, directFn) {
 }
 
 app.post('/api/landlord-reply', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { message, chatId } = req.body;
   if (!message || message.length < 5) return res.status(400).json({ error: 'message required' });
   try {
@@ -918,6 +935,8 @@ app.post('/api/landlord-reply', async (req, res) => {
 });
 
 app.post('/api/rejection-analyser', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { applications, chatId } = req.body;
   if (!applications) return res.status(400).json({ error: 'applications required' });
   try {
@@ -929,6 +948,8 @@ app.post('/api/rejection-analyser', async (req, res) => {
 });
 
 app.post('/api/reference-letter', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { type, details } = req.body;
   if (!type || !details) return res.status(400).json({ error: 'type and details required' });
   try {
@@ -938,6 +959,8 @@ app.post('/api/reference-letter', async (req, res) => {
 });
 
 app.post('/api/income-explain', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { income, rent, situation } = req.body;
   if (!income || !rent) return res.status(400).json({ error: 'income and rent required' });
   try {
@@ -947,6 +970,8 @@ app.post('/api/income-explain', async (req, res) => {
 });
 
 app.post('/api/viewing-feedback', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { viewingNotes, chatId } = req.body;
   if (!viewingNotes || viewingNotes.length < 20) return res.status(400).json({ error: 'viewingNotes must be at least 20 characters' });
   try {
@@ -958,6 +983,8 @@ app.post('/api/viewing-feedback', async (req, res) => {
 });
 
 app.post('/api/tenant-rights-question', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { question } = req.body;
   if (!question || question.length < 10) return res.status(400).json({ error: 'question required' });
   try {
@@ -967,6 +994,8 @@ app.post('/api/tenant-rights-question', async (req, res) => {
 });
 
 app.post('/api/explain-deal', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { dealData } = req.body;
   if (!dealData) return res.status(400).json({ error: 'dealData required' });
   try {
@@ -976,6 +1005,8 @@ app.post('/api/explain-deal', async (req, res) => {
 });
 
 app.post('/api/overbid-bid-letter', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { bidDetails, chatId } = req.body;
   if (!bidDetails) return res.status(400).json({ error: 'bidDetails required' });
   try {
@@ -987,6 +1018,8 @@ app.post('/api/overbid-bid-letter', async (req, res) => {
 });
 
 app.post('/api/inspection-advisor', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { inspectionText, purchasePrice } = req.body;
   if (!inspectionText || inspectionText.length < 20) return res.status(400).json({ error: 'inspectionText must be at least 20 characters' });
   try {
@@ -996,6 +1029,8 @@ app.post('/api/inspection-advisor', async (req, res) => {
 });
 
 app.post('/api/erfpacht-analysis', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { erfpachtText, purchasePrice, city } = req.body;
   if (!erfpachtText || erfpachtText.length < 20) return res.status(400).json({ error: 'erfpachtText must be at least 20 characters' });
   try {
@@ -1005,6 +1040,8 @@ app.post('/api/erfpacht-analysis', async (req, res) => {
 });
 
 app.post('/api/agent-script', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { situation, context } = req.body;
   if (!situation || situation.length < 10) return res.status(400).json({ error: 'situation required' });
   try {
@@ -1210,6 +1247,8 @@ app.post('/api/support-chat', async (req, res) => {
 
 // Funda photo proxy — called by Hetzner scraper to bypass IP-based CAPTCHA block
 app.get('/api/fetch-funda-photo', async (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { url } = req.query;
   if (!url || !url.startsWith('https://www.funda.nl/')) return res.status(400).json({ error: 'invalid url' });
   try {

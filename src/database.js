@@ -222,7 +222,8 @@ try { db.exec('CREATE INDEX IF NOT EXISTS idx_agency_intel_key ON agency_intelli
   const userCount = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
   const linkedCount = db.prepare("SELECT COUNT(*) as c FROM users WHERE chat_id IS NOT NULL AND chat_id != ''").get().c;
   console.log(`[db] path=${DB_PATH} | users=${userCount} | linked=${linkedCount}`);
-  if (userCount === 0) {
+  const onRailway = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID || process.env.RAILWAY_SERVICE_ID);
+  if (userCount === 0 && onRailway) {
     console.warn('[db] WARNING: no users found — if this is unexpected, the Railway volume at /app/data may not be mounted');
   }
 }

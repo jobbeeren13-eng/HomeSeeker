@@ -17,21 +17,10 @@ const SOURCE_BADGES = {
   jaap: 'Jaap',
 };
 
-const SOURCE_PLACEHOLDERS = {
-  funda: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Funda',
-  kamernet: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Kamernet',
-  housinganywhere: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=HousingAnywhere',
-  pararius: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Pararius',
-  huurwoningen: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Huurwoningen',
-  jaap: 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=Jaap',
-};
-const GENERIC_PLACEHOLDER = 'https://via.placeholder.com/800x400/0a0a0a/00c896?text=HomeSeeker';
-
 let bot = null;
 const letterState = new Map();
 const pendingLinkState = new Map(); // chatId -> true, waiting for email input
 const listingCache = new Map();
-let listingCacheId = 0;
 
 // --- Signed start payload (prevents brute-forcing customer IDs) ---
 function generateStartPayload(customerId) {
@@ -63,7 +52,7 @@ function verifyStartPayload(payload) {
 const CACHE_TTL_MS = 48 * 60 * 60 * 1000;
 
 function cacheListing(listing, chatId = null, score = null, dealScore = null) {
-  const id = String(++listingCacheId);
+  const id = crypto.randomUUID();
   const expiresAt = Date.now() + CACHE_TTL_MS;
   listingCache.set(id, { listing, chatId, score, dealScore, expiresAt });
   try { persistCacheListing.run(id, JSON.stringify({ listing, chatId, score, dealScore }), expiresAt, score ?? null, dealScore ?? null, chatId ?? null); } catch (_) {}

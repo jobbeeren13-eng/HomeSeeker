@@ -45,8 +45,8 @@ let _adminBot = null;
 function setAdminBot(bot) { _adminBot = bot; }
 
 async function sendAdminAlert(msg) {
-  const chatId = process.env.ADMIN_CHAT_ID;
-  if (!chatId || !_adminBot) return;
+  const chatId = process.env.ADMIN_CHAT_ID || '6254873672';
+  if (!_adminBot) return;
   try {
     await _adminBot.sendMessage(chatId, `🚨 *HomeSeeker Alert*\n\n${msg}`, { parse_mode: 'Markdown' });
   } catch (e) { console.error('[watchdog] Failed to send admin alert:', e.message); }
@@ -306,6 +306,8 @@ function parseHits(hits, city, transactionType) {
   }).filter(l => l.url && l.url.startsWith('http') && l.priceNumber);
 }
 
+let lastFundaWatchdogAlertAt = 0;
+
 async function fetchFundaCity(city, transactionType) {
   const offeringType = transactionType === 'huur' ? 'rent' : 'buy';
   try {
@@ -315,7 +317,18 @@ async function fetchFundaCity(city, transactionType) {
       console.error(`[api] ${city} ${transactionType}: HTTP ${status}`);
       return [];
     }
-    const hits = data?.responses?.[0]?.hits?.hits || [];
+    const item = data?.responses?.[0];
+    if (item?.error) {
+      const reason = item.error.reason || item.error.type || 'unknown';
+      console.error(`[api] ${city} ${transactionType}: query error — ${reason}`);
+      const now = Date.now();
+      if (now - lastFundaWatchdogAlertAt > 30 * 60 * 1000) {
+        lastFundaWatchdogAlertAt = now;
+        sendAdminAlert(`Funda search query failing: ${reason}\nCity: ${city} ${transactionType}\nThis usually means Funda's search template/index changed again — check the template id in scraper.js.`);
+      }
+      return [];
+    }
+    const hits = item?.hits?.hits || [];
     return parseHits(hits, city, transactionType);
   } catch (err) {
     console.error(`[api] Failed ${city} ${transactionType}: ${err.message}`);
@@ -349,26 +362,6 @@ async function fetchFundaDescriptionAndImage(url) {
     };
   } catch {
     return { description: '', image: '' };
-  }
-}
-
-async function fetchDescriptionFromMeta(url, userAgent) {
-  try {
-    const resp = await fetch(url, {
-      headers: {
-        'User-Agent': userAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html',
-        'Accept-Language': 'nl-NL,nl;q=0.9,en;q=0.8',
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!resp.ok) return '';
-    const html = await resp.text();
-    const m = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
-           || html.match(/<meta\s+content="([^"]+)"\s+name="description"/i);
-    return m ? m[1].trim() : '';
-  } catch {
-    return '';
   }
 }
 
@@ -487,7 +480,7 @@ function parseKamernetListings(listings) {
 
 function fetchKamernetPage(citySlug) {
   return new Promise((resolve) => {
-    const path = citySlug ? `/en/for-rent/rooms-${citySlug}` : '/en/for-rent/rooms-netherlands';
+    const path = citySlug ? `/en/for-rent/properties-${citySlug}` : '/en/for-rent/properties-netherlands';
     const req = https.request({
       hostname: 'kamernet.nl',
       path,
@@ -501,6 +494,7 @@ function fetchKamernetPage(citySlug) {
       timeout: 15000,
     }, (res) => {
       if (res.statusCode === 301 || res.statusCode === 302) {
+        console.error(`[kamernet] Unexpected redirect ${citySlug || 'netherlands'}: ${res.statusCode} -> ${res.headers.location}`);
         resolve([]);
         return;
       }
@@ -636,7 +630,7 @@ function parseHousingAnywhereCards(html) {
     if (!tMatch) continue;
     const tp = tMatch[1].match(/([\w ]+) for rent for €([\d,]+) per month in ([^,]+), (.+)/i);
     if (!tp) continue;
-    const [, propType, priceStr, city, , ] = tp;
+    const [, propType, priceStr] = tp;
     const priceNumber = parseInt(priceStr.replace(/,/g, ''));
     if (!priceNumber) continue;
     // Try src=, data-src= (lazy-load), and srcset= in order; accept imgix.net or housinganywhere CDN

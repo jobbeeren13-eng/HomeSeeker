@@ -10,7 +10,7 @@ process.on('unhandledRejection', (reason) => {
 const express = require('express');
 const cron = require('node-cron');
 const TelegramBot = require('node-telegram-bot-api');
-const { scrapeListings, markListingsAsSent, rowToListing } = require('./src/scraper');
+const { scrapeListings, markListingsAsSent, rowToListing, setAdminBot } = require('./src/scraper');
 const { findMatches, findMatchesForUser } = require('./src/matcher');
 const { getRecentListings, markListingSent, insertScraperStat } = require('./src/database');
 const { sendAlert } = require('./src/telegram');
@@ -28,6 +28,7 @@ if (missing.length) {
 }
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
+setAdminBot(bot);
 
 // ── Scraper health monitoring ─────────────────────────────────────────────
 const scraperHealth = {
