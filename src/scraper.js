@@ -12,6 +12,7 @@ const {
   insertAgencyListing,
 } = require('./database');
 const { analyseDescription } = require('./score');
+const { enrichListingSignals } = require('./llm-signals');
 
 // Prepared once at module load — used for near-duplicate detection
 const getNearDuplicateAddresses = db.prepare(
@@ -150,6 +151,7 @@ function rowToListing(row) {
     image: row.image, listedAt: row.listed_at, source: row.source, fingerprint: row.fingerprint,
     description: row.description || '',
     postalCode: row.postal_code || null, neighbourhood: row.neighbourhood || null,
+    llmSignals: row.llm_signals || null,
   };
 }
 
@@ -445,6 +447,7 @@ async function scrapeFunda() {
         }
         if (description) updateListingDescription.run(description, url);
         if (image) { try { updateListingImage.run(image, url); } catch {} }
+        if (description) await enrichListingSignals(description, url);
         console.log('[scraper] funda detail fetch:', url.slice(-50), '| desc:', description ? 'ok' : 'empty', '| img:', image ? image.slice(0, 60) : 'EMPTY');
       }));
     }
@@ -553,6 +556,7 @@ async function scrapeKamernet() {
         const desc = await fetchKamernetDescription(url);
         if (desc) {
           updateListingDescription.run(desc, url);
+          await enrichListingSignals(desc, url);
           console.log(`[scraper] Kamernet desc: ${desc.length} chars — ${url.slice(-40)}`);
         } else {
           console.log(`[scraper] Kamernet desc: empty — ${url.slice(-40)}`);
@@ -728,6 +732,7 @@ async function scrapeHousingAnywhere() {
         const result = await fetchHousingAnywhereDescription(url);
         if (result.description) updateListingDescription.run(result.description, url);
         if (result.image) try { updateListingImage.run(result.image, url); } catch {}
+        if (result.description) await enrichListingSignals(result.description, url);
       }));
       await new Promise(r => setTimeout(r, 800));
     }

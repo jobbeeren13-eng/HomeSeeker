@@ -185,6 +185,14 @@ try {
     db.exec(`ALTER TABLE listings ADD COLUMN neighbourhood TEXT`);
     console.log('[db] Added neighbourhood column to listings');
   }
+  if (listingCols.length > 0 && !listingCols.includes('llm_signals')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN llm_signals TEXT`);
+    console.log('[db] Added llm_signals column to listings');
+  }
+  if (listingCols.length > 0 && !listingCols.includes('description_hash')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN description_hash TEXT`);
+    console.log('[db] Added description_hash column to listings');
+  }
 } catch (e) {}
  
 try {
@@ -224,6 +232,7 @@ try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_city_price ON listings(ci
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_sent ON listings(sent)'); } catch(e) {}
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_users_chat ON users(chat_id)'); } catch(e) {}
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_agency_intel_key ON agency_intelligence(agency_key)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_description_hash ON listings(description_hash)'); } catch(e) {}
 
 // Startup health check — log path and user count so resets are immediately visible in logs
 {
@@ -323,6 +332,10 @@ const getUnsentListings = db.prepare('SELECT * FROM listings WHERE sent = 0');
 const markListingGloballySent = db.prepare('UPDATE listings SET sent = 1 WHERE url = ?');
 const updateListingDescription = db.prepare('UPDATE listings SET description = ? WHERE url = ?');
 const updateListingImage = db.prepare("UPDATE listings SET image = ? WHERE url = ? AND (image IS NULL OR image = '')");
+const updateListingLlmSignals = db.prepare('UPDATE listings SET llm_signals = ?, description_hash = ? WHERE url = ?');
+const getLlmSignalsByDescriptionHash = db.prepare(
+  'SELECT llm_signals FROM listings WHERE description_hash = ? AND llm_signals IS NOT NULL LIMIT 1'
+);
 const getRecentListings = db.prepare(
   "SELECT * FROM listings WHERE scraped_at > datetime('now', '-7 days') ORDER BY scraped_at DESC"
 );
@@ -453,6 +466,7 @@ module.exports = {
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
   insertScraperStat, getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getListingVolumeByCity,
+  updateListingLlmSignals, getLlmSignalsByDescriptionHash,
   insertAgencyListing, getAgencyInsights,
 };
  

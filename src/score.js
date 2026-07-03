@@ -386,12 +386,34 @@ const CITY_RENT_PM2 = {
   haarlem: 24, leiden: 21, eindhoven: 15, groningen: 12,
 };
 
+// Merges the LLM-derived signals (src/llm-signals.js) into the regex-based result.
+// Shared boolean keys are OR'd — the LLM only adds nuance regex misses, never removes a regex hit.
+// Never throws: any parse/shape problem silently falls back to the regex-only result.
+function mergeLlmSignals(base, listing) {
+  if (!listing || !listing.llmSignals) return base;
+  let llm;
+  try {
+    llm = typeof listing.llmSignals === 'string' ? JSON.parse(listing.llmSignals) : listing.llmSignals;
+  } catch (_) { return base; }
+  if (!llm || typeof llm !== 'object') return base;
+
+  const merged = { ...base };
+  for (const key of Object.keys(base)) {
+    if (typeof base[key] === 'boolean' && typeof llm[key] === 'boolean') {
+      merged[key] = base[key] || llm[key];
+    }
+  }
+  if (typeof llm.riskNotes === 'string' && llm.riskNotes) merged.llmRiskNotes = llm.riskNotes;
+  if (typeof llm.summary === 'string' && llm.summary) merged.llmSummary = llm.summary;
+  return merged;
+}
+
 function analyseDescription(description, listing) {
   const d = (description || '').toLowerCase();
   const price = listing.priceNumber || 0;
   const area = listing.area || 0;
 
-  return {
+  const base = {
     // Income/contract requirements
     requires3x: /\b3x\b|driedubbel huur|drie maal huur|3 maal|inkomen.*3x|3x.*inkomen/i.test(d),
     requires4x: /\b4x\b|vierdubbel huur|vier maal|4 maal|inkomen.*4x|4x.*inkomen/i.test(d),
@@ -436,6 +458,8 @@ function analyseDescription(description, listing) {
     isLargeProperty: area > 100,
     pricePerM2: area > 0 ? Math.round(price / area) : 0,
   };
+
+  return mergeLlmSignals(base, listing);
 }
 
 function getListingIntelligence(listing, user) {
