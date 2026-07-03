@@ -359,6 +359,24 @@ function getImprovementTips(listing, user, _currentScore, _dealScore) {
     profileTips.push({ tip: 'HousingAnywhere attracts many international applicants. Write your message in English and end with one sentence in Dutch — it signals integration and long-term intent.', category: 'source' });
   }
 
+  // ── NEIGHBOURHOOD CONTEXT — CBS / Leefbaarometer, only when available for this listing ──
+  {
+    const parts = [];
+    if (listing.cbsContext) {
+      try {
+        const cbs = typeof listing.cbsContext === 'string' ? JSON.parse(listing.cbsContext) : listing.cbsContext;
+        if (cbs && cbs.gemInkomen) parts.push(`gemiddeld inkomen in deze buurt is ${fmtEuro(cbs.gemInkomen)}k/jaar`);
+        else if (cbs && cbs.inwoners) parts.push(`deze buurt telt ongeveer ${cbs.inwoners} inwoners`);
+      } catch (_) { /* ignore malformed cache entry */ }
+    }
+    if (listing.leefbaarometerScore != null) {
+      parts.push(`leefbaarheidsscore van deze postcode is ${listing.leefbaarometerScore.toFixed(2)} (Leefbaarometer, meting 2020)`);
+    }
+    if (parts.length) {
+      listingTips.push({ tip: `Buurtcontext: ${parts.join(', ')}.`, category: 'neighbourhood_context', level: 'info' });
+    }
+  }
+
   // ── GENERAL TIPS — universal best practices ─────────────────
   generalTips.push({ tip: 'Send all documents as one PDF named Firstname_Lastname_Application.pdf. Landlords with 50+ applications shortlist candidates who make their job easy — loose files signal disorganisation.', category: 'general_docs' });
   generalTips.push({ tip: "Name two specific days you are available in your first message: 'I am free Tuesday and Thursday this week.' Vague availability loses viewings to candidates who are decisive.", category: 'general_timing' });

@@ -10,9 +10,11 @@ const {
   updateListingImage,
   getSentListingByFingerprint,
   insertAgencyListing,
+  updateListingExternalData,
 } = require('./database');
 const { analyseDescription } = require('./score');
 const { enrichListingSignals } = require('./llm-signals');
+const { getCbsContext, ensureLeefbaarometerLoaded, getLeefbaarometerScore } = require('./external-data');
 
 // Prepared once at module load — used for near-duplicate detection
 const getNearDuplicateAddresses = db.prepare(
@@ -42,16 +44,7 @@ let scraperStats = {
   descriptionFillRate: 0,
 };
 
-let _adminBot = null;
-function setAdminBot(bot) { _adminBot = bot; }
-
-async function sendAdminAlert(msg) {
-  const chatId = process.env.ADMIN_CHAT_ID || '6254873672';
-  if (!_adminBot) return;
-  try {
-    await _adminBot.sendMessage(chatId, `🚨 *HomeSeeker Alert*\n\n${msg}`, { parse_mode: 'Markdown' });
-  } catch (e) { console.error('[watchdog] Failed to send admin alert:', e.message); }
-}
+const { setAdminBot, sendAdminAlert } = require('./admin-alert');
 
 function getScraperHealth() {
   const staleCutoff = 6 * 60 * 60 * 1000;
@@ -152,6 +145,8 @@ function rowToListing(row) {
     description: row.description || '',
     postalCode: row.postal_code || null, neighbourhood: row.neighbourhood || null,
     llmSignals: row.llm_signals || null,
+    cbsContext: row.cbs_context || null, leefbaarometerScore: row.leefbaarometer_score ?? null,
+    energyLabelSource: row.energy_label_source || null,
   };
 }
 
@@ -410,6 +405,7 @@ async function scrapeFunda() {
   const startTime = Date.now();
   let newCount = 0;
   const needsDesc = [];
+  const needsExternalEnrich = [];
   console.log(`[scraper] Starting funda API (${CITIES.length * 2} searches)…`);
 
   for (const city of CITIES) {
@@ -419,6 +415,12 @@ async function scrapeFunda() {
         if (saveNewListing(listing)) {
           newCount++;
           if (!listing.description) needsDesc.push(listing.url);
+          if (listing.neighbourhood || listing.postalCode) {
+            needsExternalEnrich.push({
+              url: listing.url, city: listing.city,
+              neighbourhood: listing.neighbourhood, postalCode: listing.postalCode,
+            });
+          }
         }
       }
       await new Promise(r => setTimeout(r, 300));
@@ -449,6 +451,24 @@ async function scrapeFunda() {
         if (image) { try { updateListingImage.run(image, url); } catch {} }
         if (description) await enrichListingSignals(description, url);
         console.log('[scraper] funda detail fetch:', url.slice(-50), '| desc:', description ? 'ok' : 'empty', '| img:', image ? image.slice(0, 60) : 'EMPTY');
+      }));
+    }
+  }
+
+  // CBS + Leefbaarometer context for new listings that have a neighbourhood/postcode (concurrency = 2, non-blocking on error)
+  if (needsExternalEnrich.length > 0) {
+    console.log(`[scraper] Enriching ${needsExternalEnrich.length} new Funda listing(s) with CBS/Leefbaarometer context…`);
+    try { await ensureLeefbaarometerLoaded(); } catch (e) { console.error('[scraper] Leefbaarometer load failed (non-fatal):', e.message); }
+    const CONCURRENCY2 = 2;
+    for (let i = 0; i < needsExternalEnrich.length; i += CONCURRENCY2) {
+      await Promise.allSettled(needsExternalEnrich.slice(i, i + CONCURRENCY2).map(async item => {
+        try {
+          const cbs = await getCbsContext(item);
+          const lbm = getLeefbaarometerScore(item.postalCode);
+          updateListingExternalData.run(cbs ? JSON.stringify(cbs) : null, lbm ? lbm.score : null, item.url);
+        } catch (e) {
+          console.error('[scraper] external-data enrichment failed (non-fatal):', item.url.slice(-50), e.message);
+        }
       }));
     }
   }

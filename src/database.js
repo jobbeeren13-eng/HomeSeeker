@@ -150,6 +150,31 @@ db.exec(`
     inserted_at INTEGER,
     scraped_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS cbs_neighbourhood_cache (
+    lookup_key TEXT PRIMARY KEY,
+    matched INTEGER DEFAULT 0,
+    buurt_key TEXT,
+    inwoners INTEGER,
+    gem_inkomen REAL,
+    huishoudens INTEGER,
+    fetched_at INTEGER
+  );
+
+  CREATE TABLE IF NOT EXISTS leefbaarometer_pc4 (
+    pc4 TEXT PRIMARY KEY,
+    score REAL,
+    year INTEGER,
+    fetched_at INTEGER
+  );
+
+  CREATE TABLE IF NOT EXISTS ep_online_energylabel_cache (
+    address_key TEXT PRIMARY KEY,
+    postcode TEXT,
+    huisnummer TEXT,
+    energy_label TEXT,
+    fetched_at INTEGER
+  );
 `);
 
 try {
@@ -192,6 +217,18 @@ try {
   if (listingCols.length > 0 && !listingCols.includes('description_hash')) {
     db.exec(`ALTER TABLE listings ADD COLUMN description_hash TEXT`);
     console.log('[db] Added description_hash column to listings');
+  }
+  if (listingCols.length > 0 && !listingCols.includes('cbs_context')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN cbs_context TEXT`);
+    console.log('[db] Added cbs_context column to listings');
+  }
+  if (listingCols.length > 0 && !listingCols.includes('leefbaarometer_score')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN leefbaarometer_score REAL`);
+    console.log('[db] Added leefbaarometer_score column to listings');
+  }
+  if (listingCols.length > 0 && !listingCols.includes('energy_label_source')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN energy_label_source TEXT`);
+    console.log('[db] Added energy_label_source column to listings');
   }
 } catch (e) {}
  
@@ -333,9 +370,37 @@ const markListingGloballySent = db.prepare('UPDATE listings SET sent = 1 WHERE u
 const updateListingDescription = db.prepare('UPDATE listings SET description = ? WHERE url = ?');
 const updateListingImage = db.prepare("UPDATE listings SET image = ? WHERE url = ? AND (image IS NULL OR image = '')");
 const updateListingLlmSignals = db.prepare('UPDATE listings SET llm_signals = ?, description_hash = ? WHERE url = ?');
+const updateListingExternalData = db.prepare('UPDATE listings SET cbs_context = ?, leefbaarometer_score = ? WHERE url = ?');
+const updateListingEnergyLabelFromEpOnline = db.prepare(
+  "UPDATE listings SET energy_label = ?, energy_label_source = 'ep-online' WHERE url = ? AND (energy_label IS NULL OR energy_label = '')"
+);
 const getLlmSignalsByDescriptionHash = db.prepare(
   'SELECT llm_signals FROM listings WHERE description_hash = ? AND llm_signals IS NOT NULL LIMIT 1'
 );
+
+const getCbsNeighbourhoodCache = db.prepare('SELECT * FROM cbs_neighbourhood_cache WHERE lookup_key = ?');
+const upsertCbsNeighbourhoodCache = db.prepare(`
+  INSERT INTO cbs_neighbourhood_cache (lookup_key, matched, buurt_key, inwoners, gem_inkomen, huishoudens, fetched_at)
+  VALUES (@lookupKey, @matched, @buurtKey, @inwoners, @gemInkomen, @huishoudens, @fetchedAt)
+  ON CONFLICT(lookup_key) DO UPDATE SET
+    matched = excluded.matched, buurt_key = excluded.buurt_key, inwoners = excluded.inwoners,
+    gem_inkomen = excluded.gem_inkomen, huishoudens = excluded.huishoudens, fetched_at = excluded.fetched_at
+`);
+
+const getLeefbaarometerPc4 = db.prepare('SELECT * FROM leefbaarometer_pc4 WHERE pc4 = ?');
+const countLeefbaarometerPc4 = db.prepare('SELECT COUNT(*) as c FROM leefbaarometer_pc4');
+const upsertLeefbaarometerPc4 = db.prepare(`
+  INSERT INTO leefbaarometer_pc4 (pc4, score, year, fetched_at)
+  VALUES (@pc4, @score, @year, @fetchedAt)
+  ON CONFLICT(pc4) DO UPDATE SET score = excluded.score, year = excluded.year, fetched_at = excluded.fetched_at
+`);
+
+const getEpOnlineEnergyLabel = db.prepare('SELECT * FROM ep_online_energylabel_cache WHERE address_key = ?');
+const upsertEpOnlineEnergyLabel = db.prepare(`
+  INSERT INTO ep_online_energylabel_cache (address_key, postcode, huisnummer, energy_label, fetched_at)
+  VALUES (@addressKey, @postcode, @huisnummer, @energyLabel, @fetchedAt)
+  ON CONFLICT(address_key) DO UPDATE SET energy_label = excluded.energy_label, fetched_at = excluded.fetched_at
+`);
 const getRecentListings = db.prepare(
   "SELECT * FROM listings WHERE scraped_at > datetime('now', '-7 days') ORDER BY scraped_at DESC"
 );
@@ -467,6 +532,10 @@ module.exports = {
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
   insertScraperStat, getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getListingVolumeByCity,
   updateListingLlmSignals, getLlmSignalsByDescriptionHash,
+  updateListingExternalData, updateListingEnergyLabelFromEpOnline,
+  getCbsNeighbourhoodCache, upsertCbsNeighbourhoodCache,
+  getLeefbaarometerPc4, countLeefbaarometerPc4, upsertLeefbaarometerPc4,
+  getEpOnlineEnergyLabel, upsertEpOnlineEnergyLabel,
   insertAgencyListing, getAgencyInsights,
 };
  
