@@ -16,7 +16,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest } = require('./src/database');
 const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
@@ -608,6 +608,46 @@ app.get('/api/admin/db-status', (req, res) => {
   const linked = db.prepare("SELECT COUNT(*) as c FROM users WHERE chat_id IS NOT NULL AND chat_id != ''").get().c;
   const active = db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald = 1 AND actief = 1').get().c;
   res.json({ dbPath, total, paid, linked, active, ts: new Date().toISOString() });
+});
+
+// Read-only outcome-learning report (Laag 1) — score-band vs. tracked application outcome.
+// Purely informational: does not read into or modify calculateScore's weights in any way.
+app.get('/api/admin/outcome-report', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const rows = getTrackerOutcomesWithScores.all();
+    const totalTrackerEntries = countApplicationTrackerAll.get().c;
+
+    const BANDS = [
+      { label: '0-20', min: 0, max: 20 },
+      { label: '20-40', min: 20, max: 40 },
+      { label: '40-60', min: 40, max: 60 },
+      { label: '60-80', min: 60, max: 80 },
+      { label: '80-100', min: 80, max: 101 },
+    ];
+    const STATUSES = ['applied', 'viewing', 'rejected', 'accepted'];
+    const bands = BANDS.map(b => ({ band: b.label, total: 0, byStatus: Object.fromEntries(STATUSES.map(s => [s, 0])) }));
+
+    for (const row of rows) {
+      if (row.score == null) continue;
+      const bandIdx = BANDS.findIndex(b => row.score >= b.min && row.score < b.max);
+      if (bandIdx === -1) continue;
+      bands[bandIdx].total++;
+      bands[bandIdx].byStatus[row.status] = (bands[bandIdx].byStatus[row.status] || 0) + 1;
+    }
+
+    res.json({
+      bands,
+      matchedRows: rows.length,
+      totalTrackerEntries,
+      note: 'listing_cache is a rolling 48h/~500-row cache, so only application_tracker updates made while the listing was still cached are matched here — a low matchedRows count vs. totalTrackerEntries is expected, not a bug. Read-only: no scoring weights are read or changed by this endpoint.',
+      ts: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[api/admin/outcome-report]', err.message);
+    res.status(500).json({ error: 'Could not build outcome report' });
+  }
 });
 
 // ── Dashboard API ──────────────────────────────────────────────────────────

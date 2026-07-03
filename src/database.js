@@ -422,6 +422,19 @@ const addFavorite = db.prepare('INSERT OR REPLACE INTO favorites (chat_id, listi
 const removeFavorite = db.prepare('DELETE FROM favorites WHERE chat_id = ? AND listing_url = ?');
 
 const getApplicationTracker = db.prepare('SELECT * FROM application_tracker WHERE chat_id = ? ORDER BY updated_at DESC');
+
+// Read-only outcome-learning infra (Laag 1) — joins tracked application status back to the
+// score shown at alert time. listing_cache is a 48h/500-row rolling cache, so this only finds
+// a match for trackers updated while their listing is still in cache — that's expected, not a bug.
+const getTrackerOutcomesWithScores = db.prepare(`
+  SELECT at.chat_id, at.listing_url, at.status, at.updated_at, lc.score, lc.deal_score
+  FROM application_tracker at
+  JOIN listing_cache lc
+    ON at.chat_id = lc.chat_id
+    AND at.listing_url = json_extract(lc.listing_json, '$.url')
+  WHERE lc.score IS NOT NULL
+`);
+const countApplicationTrackerAll = db.prepare('SELECT COUNT(*) as c FROM application_tracker');
 const upsertApplicationStatus = db.prepare(`
   INSERT INTO application_tracker (chat_id, listing_url, listing_address, listing_price, listing_image, status, notes)
   VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -528,6 +541,7 @@ module.exports = {
   getRecentListings,
   getFavorites, addFavorite, removeFavorite,
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
+  getTrackerOutcomesWithScores, countApplicationTrackerAll,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
   insertScraperStat, getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getListingVolumeByCity,
