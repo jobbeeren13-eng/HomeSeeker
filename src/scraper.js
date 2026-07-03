@@ -20,7 +20,7 @@ const getNearDuplicateAddresses = db.prepare(
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const SEARCH_INDEX = 'listings-wonen-searcher-alias-prod';
-const SEARCH_TEMPLATE_ID = 'search_result_20250805';
+const SEARCH_TEMPLATE_ID = 'search_result_20260227';
 const PAGE_SIZE = 15;
 
 const CITIES = [
@@ -266,15 +266,18 @@ function parseHits(hits, city, transactionType) {
     const path = s.object_detail_page_relative_url || '';
     const url = path ? `https://www.funda.nl${path}` : null;
 
-    // thumbnail_id: 9-digit integer (array or scalar) → cloud.funda.nl CDN path
-    // e.g. 230146512 → https://cloud.funda.nl/valentina_media/230/146/512.jpg
+    // photo_image_id: tiara-media UUID path (array) → cloud.funda.nl CDN, current since 20260702 reindex
+    const photoRaw = s.photo_image_id;
+    const photoPath = Array.isArray(photoRaw) ? photoRaw[0] : (photoRaw || null);
+    const photoUrl = photoPath ? `https://cloud.funda.nl/${photoPath}?options=width=720` : '';
+    // thumbnail_id: legacy 9-digit integer (array or scalar) → cloud.funda.nl CDN path
     const thumbRaw = s.thumbnail_id;
     const thumbInt = Array.isArray(thumbRaw) ? thumbRaw[0] : (thumbRaw != null ? thumbRaw : null);
     const thumbUrl = thumbInt
       ? `https://cloud.funda.nl/valentina_media/${String(thumbInt).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1/$2/$3')}.jpg`
       : '';
     // Fallback to other image fields present in some API responses
-    const image = thumbUrl
+    const image = photoUrl || thumbUrl
       || (Array.isArray(s.media) && s.media[0] && (s.media[0].url || s.media[0].uri || ''))
       || (Array.isArray(s.images) && s.images[0] && (s.images[0].url || s.images[0].uri || ''))
       || s.photo_url || s.main_photo_url || s.cover_photo_url || '';
