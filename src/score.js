@@ -1,4 +1,8 @@
-const { getCityPriceBenchmark, getAgencyInsights } = require('./database');
+const { getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getAgencyInsights } = require('./database');
+
+// Kill-switch: set ENABLE_NEIGHBOURHOOD_BENCHMARK=false to disable without a code change
+const NEIGHBOURHOOD_BENCHMARK_ENABLED = process.env.ENABLE_NEIGHBOURHOOD_BENCHMARK !== 'false';
+const NEIGHBOURHOOD_SAMPLE_MIN = 8;
 
 // ─────────────────────────────────────────────
 // APPLICATION STRENGTH — 5 weighted pillars
@@ -1163,6 +1167,17 @@ function getPriceIntelligence(listing) {
   const city = (listing.city || '').toLowerCase();
   const type = listing.transactionType || 'huur';
   if (!price || !area || !city) return null;
+
+  if (NEIGHBOURHOOD_BENCHMARK_ENABLED && listing.neighbourhood) {
+    try {
+      const nb = getNeighbourhoodPriceBenchmark.get(city, listing.neighbourhood, type);
+      if (nb && nb.sample_size >= NEIGHBOURHOOD_SAMPLE_MIN && nb.avg_ppm2) {
+        const ppm2 = price / area;
+        const diffPct = Math.round((ppm2 - nb.avg_ppm2) / nb.avg_ppm2 * 100);
+        return buildPriceResult(ppm2, nb.avg_ppm2, diffPct, 'live', city, nb.sample_size);
+      }
+    } catch (_) { /* fall through to city-level benchmark */ }
+  }
 
   try {
     const benchmark = getCityPriceBenchmark.get(city, type);

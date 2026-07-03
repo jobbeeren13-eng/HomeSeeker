@@ -177,6 +177,14 @@ try {
     db.exec(`ALTER TABLE listings ADD COLUMN description TEXT DEFAULT ''`);
     console.log('[db] Added description column to listings');
   }
+  if (listingCols.length > 0 && !listingCols.includes('postal_code')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN postal_code TEXT`);
+    console.log('[db] Added postal_code column to listings');
+  }
+  if (listingCols.length > 0 && !listingCols.includes('neighbourhood')) {
+    db.exec(`ALTER TABLE listings ADD COLUMN neighbourhood TEXT`);
+    console.log('[db] Added neighbourhood column to listings');
+  }
 } catch (e) {}
  
 try {
@@ -303,10 +311,12 @@ const getSentListingByFingerprint = db.prepare(
 const insertListing = db.prepare(`
   INSERT OR IGNORE INTO listings (
     url, address, city, price, price_number, transaction_type, rooms, area,
-    energy_label, construction_year, property_type, image, listed_at, source, fingerprint, description, sent
+    energy_label, construction_year, property_type, image, listed_at, source, fingerprint, description, sent,
+    postal_code, neighbourhood
   ) VALUES (
     @url, @address, @city, @price, @priceNumber, @transactionType, @rooms, @area,
-    @energyLabel, @constructionYear, @propertyType, @image, @listedAt, @source, @fingerprint, @description, @sent
+    @energyLabel, @constructionYear, @propertyType, @image, @listedAt, @source, @fingerprint, @description, @sent,
+    @postalCode, @neighbourhood
   )
 `);
 const getUnsentListings = db.prepare('SELECT * FROM listings WHERE sent = 0');
@@ -385,6 +395,21 @@ const getCityPriceBenchmark = db.prepare(`
     AND scraped_at > datetime('now', '-30 days')
 `);
 
+const getNeighbourhoodPriceBenchmark = db.prepare(`
+  SELECT
+    AVG(price_number * 1.0 / NULLIF(area, 0)) as avg_ppm2,
+    COUNT(*) as sample_size,
+    MIN(price_number) as min_price,
+    MAX(price_number) as max_price
+  FROM listings
+  WHERE city = ?
+    AND neighbourhood = ?
+    AND price_number > 0
+    AND area > 0
+    AND transaction_type = ?
+    AND scraped_at > datetime('now', '-30 days')
+`);
+
 const getListingVolumeByCity = db.prepare(`
   SELECT COUNT(*) as total, AVG(price_number) as avg_price
   FROM listings
@@ -427,7 +452,7 @@ module.exports = {
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
-  insertScraperStat, getCityPriceBenchmark, getListingVolumeByCity,
+  insertScraperStat, getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getListingVolumeByCity,
   insertAgencyListing, getAgencyInsights,
 };
  

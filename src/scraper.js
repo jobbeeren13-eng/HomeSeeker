@@ -149,6 +149,7 @@ function rowToListing(row) {
     constructionYear: row.construction_year, propertyType: row.property_type,
     image: row.image, listedAt: row.listed_at, source: row.source, fingerprint: row.fingerprint,
     description: row.description || '',
+    postalCode: row.postal_code || null, neighbourhood: row.neighbourhood || null,
   };
 }
 
@@ -183,6 +184,7 @@ function saveNewListing(listing) {
     constructionYear: listing.constructionYear || null, propertyType: listing.propertyType || '',
     image: listing.image || '', listedAt: listing.listedAt || new Date().toISOString(),
     source: listing.source, fingerprint, description: listing.description || '',
+    postalCode: listing.postalCode || null, neighbourhood: listing.neighbourhood || null,
   };
   if (existing) { insertListing.run({ ...base, sent: 1 }); return false; }
   insertListing.run({ ...base, sent: 0 });
@@ -286,6 +288,9 @@ function parseHits(hits, city, transactionType) {
     const descBlurb = (s.blikvanger && typeof s.blikvanger.text === 'string') ? s.blikvanger.text.trim() : '';
     const description = descFull || descBlurb;
 
+    const postalCode = (typeof addr.postal_code === 'string' && addr.postal_code) ? addr.postal_code : null;
+    const neighbourhood = (typeof addr.neighbourhood === 'string' && addr.neighbourhood) ? addr.neighbourhood : null;
+
     return {
       url,
       address,
@@ -302,6 +307,8 @@ function parseHits(hits, city, transactionType) {
       listedAt: s.publish_date || new Date().toISOString(),
       source: 'funda',
       description,
+      postalCode,
+      neighbourhood,
     };
   }).filter(l => l.url && l.url.startsWith('http') && l.priceNumber);
 }
