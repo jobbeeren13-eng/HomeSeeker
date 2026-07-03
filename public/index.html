@@ -41,10 +41,25 @@
     }
 
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.65; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
-    .container { max-width: 1080px; margin: 0 auto; width: 100%; padding: 0 24px; }
-    section { padding: 96px 0; }
+    .container { max-width: 1120px; margin: 0 auto; width: 100%; padding: 0 24px; }
+    section { padding: 140px 0; position: relative; }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
+    .reveal.in-view { opacity: 1; transform: translateY(0); }
+    .reveal-1.in-view { transition-delay: .08s; }
+    .reveal-2.in-view { transition-delay: .16s; }
+    .reveal-3.in-view { transition-delay: .24s; }
+    .reveal-4.in-view { transition-delay: .32s; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* ── AMBIENT GLOW BLOBS ── */
+    .glow-blob { position: absolute; pointer-events: none; z-index: 0; filter: blur(10px); }
+    .glow-blob.top-fade { top: -1px; left: 0; right: 0; height: 140px; background: linear-gradient(to bottom, var(--bg-elevated), transparent); filter: none; }
 
     /* ── NAV ── */
     .nav {
@@ -76,31 +91,44 @@
     /* ── HERO ── */
     .hero {
       min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: 140px 24px 80px; text-align: center;
+      padding: 160px 24px 100px; text-align: center;
       position: relative; overflow: hidden;
     }
     .hero::before {
-      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 900px; height: 600px;
-      background: radial-gradient(ellipse, rgba(0,200,150,0.07) 0%, transparent 65%);
+      content: ''; position: absolute; top: -10%; left: 50%; transform: translateX(-50%);
+      width: 1200px; height: 800px;
+      background: radial-gradient(ellipse, rgba(0,200,150,0.1) 0%, transparent 60%);
       pointer-events: none;
     }
-    .hero-inner { max-width: 720px; margin: 0 auto; width: 100%; }
+    .hero::after {
+      content: ''; position: absolute; bottom: -20%; left: 20%;
+      width: 600px; height: 500px;
+      background: radial-gradient(ellipse, rgba(0,200,150,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 760px; margin: 0 auto; width: 100%; position: relative; z-index: 1; }
 
-    .hero-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--green); margin-bottom: 20px; display: block; }
-    .hero h1 { font-size: 56px; font-weight: 700; letter-spacing: -1.5px; line-height: 1.05; color: var(--text-primary); margin-bottom: 20px; }
-    .hero-sub { font-size: 17px; color: var(--text-secondary); max-width: 520px; margin: 0 auto 28px; line-height: 1.65; }
+    .hero-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); margin-bottom: 24px; display: block; }
+    .hero h1 { font-size: 68px; font-weight: 700; letter-spacing: -2px; line-height: 1.04; color: var(--text-primary); margin-bottom: 24px; }
+    .hero-sub { font-size: 18px; color: var(--text-secondary); max-width: 580px; margin: 0 auto 32px; line-height: 1.7; }
 
-    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
-    .btn-primary { display: inline-flex; align-items: center; background: var(--green); color: #0a0a0f; border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: opacity .15s; font-family: inherit; }
-    .btn-primary:hover { opacity: .88; }
-    .btn-secondary { display: inline-flex; align-items: center; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; transition: border-color .15s, color .15s; font-family: inherit; }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+    .btn-primary { display: inline-flex; align-items: center; background: var(--green); color: #0a0a0f; border-radius: var(--radius-sm); padding: 12px 22px; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: opacity .15s, transform .15s; font-family: inherit; box-shadow: 0 8px 24px rgba(0,200,150,0.25); }
+    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-secondary { display: inline-flex; align-items: center; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 22px; font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; transition: border-color .15s, color .15s; font-family: inherit; }
     .btn-secondary:hover { border-color: var(--border-hover); color: var(--text-primary); }
 
-    .hero-trust { font-size: 13px; color: var(--text-muted); margin-bottom: 48px; }
+    .hero-trust { font-size: 13px; color: var(--text-muted); margin-bottom: 64px; }
+
+    .scroll-cue { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: .5; }
+    .scroll-cue span { font-size: 11px; letter-spacing: .5px; color: var(--text-muted); text-transform: uppercase; }
+    .scroll-cue-line { width: 1px; height: 28px; background: linear-gradient(to bottom, var(--text-muted), transparent); animation: scrollcue 2s ease-in-out infinite; }
+    @keyframes scrollcue { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
 
     /* Telegram bubble */
-    .tg-wrap { max-width: 400px; margin: 0 auto; }
+    .tg-wrap { max-width: 400px; margin: 0 auto; animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @media (prefers-reduced-motion: reduce) { .tg-wrap { animation: none; } }
     .tg-card {
       background: #1a1a24;
       border: 1px solid rgba(255,255,255,0.08);
@@ -108,7 +136,7 @@
       padding: 18px 20px;
       font-size: 13px;
       color: var(--text-secondary);
-      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 60px rgba(0,200,150,0.06);
       text-align: left;
     }
     .tg-card b { color: var(--text-primary); }
@@ -129,25 +157,39 @@
     .tg-ann { font-size: 11px; color: var(--text-muted); }
     .tg-ann-sep { font-size: 11px; color: var(--text-muted); padding: 0 8px; }
 
-    /* ── HOW IT WORKS ── */
-    .how-section { background: var(--bg-elevated); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .section-title { font-size: 36px; font-weight: 700; letter-spacing: -0.8px; color: var(--text-primary); text-align: center; margin-bottom: 10px; }
-    .section-sub { font-size: 15px; color: var(--text-muted); text-align: center; margin-bottom: 48px; }
+    /* ── HOW IT WORKS / JOURNEY ── */
+    .how-section {
+      background: radial-gradient(ellipse 900px 500px at 50% 0%, rgba(0,200,150,0.05), transparent 70%), var(--bg-elevated);
+    }
+    .section-title { font-size: 42px; font-weight: 700; letter-spacing: -1px; color: var(--text-primary); text-align: center; margin-bottom: 14px; }
+    .section-sub { font-size: 16px; color: var(--text-muted); text-align: center; margin-bottom: 64px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6; }
 
-    .steps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .step-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: border-color .15s; }
-    .step-card:hover { border-color: var(--border-hover); }
-    .step-n { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border); font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; flex-shrink: 0; }
-    .step-card h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
-    .step-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+    .journey-badge { display: block; text-align: center; font-size: 13px; color: var(--green); background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 100px; padding: 8px 18px; max-width: fit-content; margin: 0 auto 56px; font-weight: 500; }
+
+    .journey-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; position: relative; }
+    .journey-grid::before {
+      content: ''; position: absolute; top: 21px; left: 12%; right: 12%; height: 1px;
+      background: linear-gradient(to right, transparent, var(--border-hover) 15%, var(--border-hover) 85%, transparent);
+    }
+    .journey-phase { position: relative; }
+    .phase-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .phase-num { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--green-border); color: var(--green); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; box-shadow: 0 0 0 6px var(--bg-elevated); }
+    .phase-title { font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
+    .phase-items { display: flex; flex-direction: column; gap: 10px; }
+    .journey-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; transition: border-color .2s, transform .2s; }
+    .journey-item:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+    .journey-item h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .journey-item p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+    .journey-note { text-align: center; font-size: 14px; color: var(--text-muted); max-width: 560px; margin: 56px auto 0; line-height: 1.7; }
+    .journey-note b { color: var(--green); font-weight: 600; }
 
     /* ── TOOLS ── */
     .tools-section { background: var(--bg); }
     .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
     .tools-col-label { font-size: 11px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
-    .tool-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: border-color .15s; margin-bottom: 10px; }
+    .tool-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: border-color .2s, transform .2s; margin-bottom: 10px; }
     .tool-card:last-child { margin-bottom: 0; }
-    .tool-card:hover { border-color: var(--border-hover); }
+    .tool-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
     .tool-card-featured { border-color: var(--green-border); }
     .tool-badge { display: inline-block; background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 100px; align-self: flex-start; }
     .tool-card strong { font-size: 15px; font-weight: 600; color: var(--text-primary); }
@@ -155,10 +197,10 @@
     .tool-card-cta { font-size: 12px; font-weight: 600; color: var(--green); margin-top: 2px; }
 
     /* ── PRICING ── */
-    .pricing-section { background: var(--bg-elevated); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .pricing-section { background: radial-gradient(ellipse 700px 500px at 50% 40%, rgba(0,200,150,0.06), transparent 70%), var(--bg-elevated); }
     .price-intro { font-size: 14px; color: var(--text-muted); font-style: italic; text-align: center; max-width: 480px; margin: 0 auto 32px; line-height: 1.7; }
     .price-wrap { display: flex; justify-content: center; }
-    .price-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 420px; width: 100%; }
+    .price-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 420px; width: 100%; box-shadow: 0 40px 100px rgba(0,0,0,0.35); }
     .price-amount { font-size: 48px; font-weight: 700; color: var(--green); line-height: 1; letter-spacing: -2px; }
     .price-period { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
     .price-vat { font-size: 12px; color: var(--text-muted); margin-top: 2px; margin-bottom: 24px; }
@@ -194,19 +236,28 @@
     .footer-copy { text-align: center; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 20px; max-width: 1080px; margin: 0 auto; line-height: 1.7; }
 
     /* ── MOBILE ── */
+    @media (max-width: 900px) {
+      .journey-grid { grid-template-columns: 1fr; gap: 40px; }
+      .journey-grid::before { display: none; }
+      .phase-num { box-shadow: none; }
+    }
     @media (max-width: 768px) {
-      section { padding: 64px 0; }
+      section { padding: 80px 0; }
       .nav { padding: 0 20px; }
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
       .nav-overlay { display: flex; }
-      .hero { padding: 120px 24px 64px; }
-      .hero h1 { font-size: 36px; letter-spacing: -0.8px; }
-      .hero-sub { font-size: 15px; }
-      .steps-grid { grid-template-columns: 1fr; }
+      .hero { padding: 120px 24px 72px; }
+      .hero h1 { font-size: 38px; letter-spacing: -1px; }
+      .hero-sub { font-size: 15.5px; }
+      .hero-trust { margin-bottom: 48px; }
+      .section-title { font-size: 30px; }
       .tools-grid { grid-template-columns: 1fr; gap: 32px; }
       .footer-row1 { flex-direction: column; gap: 20px; }
       .footer-links { justify-content: flex-start; }
+    }
+    @media (max-width: 420px) {
+      .hero h1 { font-size: 32px; }
     }
   </style>
 </head>
@@ -247,7 +298,7 @@
   <div class="hero-inner">
     <span class="hero-eyebrow">Built for expats in the Netherlands</span>
     <h1>Finding a rental is easy.<br>Winning one is not.</h1>
-    <p class="hero-sub">HomeSeeker monitors Funda, Kamernet, and HousingAnywhere 24/7. Every alert includes your Application Score, Scout's analysis, and AI tools to write the application that wins.</p>
+    <p class="hero-sub">HomeSeeker monitors Funda, Kamernet, and HousingAnywhere 24/7 — then Scout, your AI rental assistant, guides you the rest of the way: how to position yourself, what to write, how to negotiate. Every outcome sharpens the guidance for the next listing.</p>
 
     <div class="hero-btns">
       <a href="/subscribe" class="btn-primary">Start my free trial →</a>
@@ -291,47 +342,78 @@
       </div>
     </div>
   </div>
+  <div class="scroll-cue">
+    <span>Scroll</span>
+    <div class="scroll-cue-line"></div>
+  </div>
 </section>
 
-<!-- HOW IT WORKS -->
+<!-- HOW IT WORKS / JOURNEY -->
 <section class="how-section" id="how-it-works">
+  <div class="glow-blob top-fade"></div>
   <div class="container">
-    <h2 class="section-title">From listing to signed contract</h2>
-    <p class="section-sub">Four steps. All in one place.</p>
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-n">1</div>
-        <h3>Set your filters</h3>
-        <p>Tell HomeSeeker your city, budget, and profile. We monitor all three platforms around the clock.</p>
+    <h2 class="section-title reveal">Find it. Approach it right. Win it.</h2>
+    <p class="section-sub reveal reveal-1">One continuous journey, guided by Scout at every step — not just an alert bot.</p>
+    <span class="journey-badge reveal reveal-2">Scout gets sharper with every listing, letter, and outcome across HomeSeeker</span>
+
+    <div class="journey-grid">
+      <div class="journey-phase reveal reveal-1">
+        <div class="phase-head">
+          <div class="phase-num">01</div>
+          <div class="phase-title">Find</div>
+        </div>
+        <div class="phase-items">
+          <div class="journey-item">
+            <h3>Set your filters</h3>
+            <p>Tell HomeSeeker your city, budget, and profile. We monitor all three platforms around the clock.</p>
+          </div>
+          <div class="journey-item">
+            <h3>Get instant alerts</h3>
+            <p>New listings land in your Telegram the moment they go live, with your personal Application Score.</p>
+          </div>
+        </div>
       </div>
-      <div class="step-card">
-        <div class="step-n">2</div>
-        <h3>Get instant alerts</h3>
-        <p>New listings land in your Telegram the moment they go live, with your personal Application Score.</p>
+
+      <div class="journey-phase reveal reveal-2">
+        <div class="phase-head">
+          <div class="phase-num">02</div>
+          <div class="phase-title">Approach</div>
+        </div>
+        <div class="phase-items">
+          <div class="journey-item">
+            <h3>Scout analyses the listing</h3>
+            <p>Scout reads the listing description and tells you what the landlord is looking for, how to position yourself, and what to include in your letter.</p>
+          </div>
+        </div>
       </div>
-      <div class="step-card">
-        <div class="step-n">3</div>
-        <h3>Scout analyses the listing</h3>
-        <p>Scout reads the listing description and tells you what the landlord is looking for, how to position yourself, and what to include in your letter.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-n">4</div>
-        <h3>Win the application</h3>
-        <p>Write your letter, prepare for the viewing, and get negotiation scripts — all guided by AI that knows this specific listing.</p>
+
+      <div class="journey-phase reveal reveal-3">
+        <div class="phase-head">
+          <div class="phase-num">03</div>
+          <div class="phase-title">Win</div>
+        </div>
+        <div class="phase-items">
+          <div class="journey-item">
+            <h3>Win the application</h3>
+            <p>Write your letter, prepare for the viewing, and get negotiation scripts — all guided by AI that knows this specific listing.</p>
+          </div>
+        </div>
       </div>
     </div>
+
+    <p class="journey-note reveal">This isn't a stream of alerts you have to figure out alone. <b>Scout stays with you</b> from the first match to the signed contract — and learns from every outcome to guide the next person a little better.</p>
   </div>
 </section>
 
 <!-- TOOLS -->
 <section class="tools-section" id="tools">
   <div class="container">
-    <h2 class="section-title">Everything you need to win</h2>
-    <p class="section-sub">From the first alert to the signed contract.</p>
+    <h2 class="section-title reveal">Everything you need to win</h2>
+    <p class="section-sub reveal reveal-1">Scout's tools for the Approach and Win phases of your journey.</p>
     <div class="tools-grid">
 
       <!-- Renting -->
-      <div>
+      <div class="reveal reveal-1">
         <div class="tools-col-label">Renting</div>
         <a href="/tools/rent-assistant" class="tool-card tool-card-featured">
           <span class="tool-badge">Most used</span>
@@ -352,7 +434,7 @@
       </div>
 
       <!-- Buying -->
-      <div>
+      <div class="reveal reveal-2">
         <div class="tools-col-label">Buying</div>
         <a href="/tools/buy-assistant" class="tool-card tool-card-featured">
           <span class="tool-badge">For buyers</span>
@@ -378,11 +460,12 @@
 
 <!-- PRICING -->
 <section class="pricing-section" id="pricing">
+  <div class="glow-blob top-fade"></div>
   <div class="container">
-    <h2 class="section-title">One plan. Everything included.</h2>
-    <p class="price-intro">The average expat in the Netherlands searches for a home for 3 months. HomeSeeker users report finding one in 3–6 weeks.</p>
+    <h2 class="section-title reveal">One plan. Everything included.</h2>
+    <p class="price-intro reveal reveal-1">The average expat in the Netherlands searches for a home for 3 months. HomeSeeker users report finding one in 3–6 weeks.</p>
     <div class="price-wrap">
-      <div class="price-card">
+      <div class="price-card reveal reveal-2">
         <div class="price-amount">€9,99</div>
         <div class="price-period">/month</div>
         <div class="price-vat">incl. 21% VAT</div>
@@ -404,8 +487,8 @@
 <!-- FAQ -->
 <section class="faq-section" id="faq">
   <div class="container">
-    <h2 class="section-title" style="margin-bottom:24px">Questions</h2>
-    <div class="faq-wrap">
+    <h2 class="section-title reveal" style="margin-bottom:24px">Questions</h2>
+    <div class="faq-wrap reveal reveal-1">
       <div class="faq-item open">
         <div class="faq-q">Which platforms do you monitor? <span class="faq-icon">+</span></div>
         <div class="faq-a"><div class="faq-a-inner">We monitor Funda, Kamernet, and HousingAnywhere simultaneously across 19 cities. More platforms are being added.</div></div>
@@ -486,6 +569,22 @@
       if (!wasOpen) item.classList.add('open');
     });
   });
+
+  // Scroll-reveal animations
+  const revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('in-view'));
+  }
 </script>
 
 <!-- AI Support Chat Widget -->
