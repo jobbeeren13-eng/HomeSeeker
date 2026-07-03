@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
-const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings, updateLastAlertSentAt } = require('./database');
+const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings, updateLastAlertSentAt, insertOutcomeSnapshot } = require('./database');
 const { rowToListing } = require('./scraper');
 const { detectLandlordIntent } = require('./score');
  
@@ -685,6 +685,12 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
 
   if (atLeastOneSent && user && user.chat_id) {
     try { updateLastAlertSentAt.run(Date.now(), user.chat_id); } catch (_) {}
+    try {
+      insertOutcomeSnapshot.run({
+        chatId: user.chat_id, listingUrl: listing.url,
+        score: score ?? null, dealScore: dealScore ?? null, alertedAt: Date.now(),
+      });
+    } catch (e) { console.error('[telegram] insertOutcomeSnapshot failed (non-fatal):', e.message); }
   }
   return { cacheId, sent: atLeastOneSent };
 }

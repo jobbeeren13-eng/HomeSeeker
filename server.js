@@ -641,7 +641,7 @@ app.get('/api/admin/outcome-report', (req, res) => {
       bands,
       matchedRows: rows.length,
       totalTrackerEntries,
-      note: 'listing_cache is a rolling 48h/~500-row cache, so only application_tracker updates made while the listing was still cached are matched here — a low matchedRows count vs. totalTrackerEntries is expected, not a bug. Read-only: no scoring weights are read or changed by this endpoint.',
+      note: 'Joined via outcome_snapshots (permanent, written at every sent alert), not the volatile listing_cache — matchedRows should track totalTrackerEntries closely for any tracker entry created after this fix shipped. Read-only: no scoring weights are read or changed by this endpoint.',
       ts: new Date().toISOString(),
     });
   } catch (err) {

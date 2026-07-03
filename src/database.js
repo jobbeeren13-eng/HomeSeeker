@@ -175,6 +175,15 @@ db.exec(`
     energy_label TEXT,
     fetched_at INTEGER
   );
+
+  CREATE TABLE IF NOT EXISTS outcome_snapshots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id TEXT NOT NULL,
+    listing_url TEXT NOT NULL,
+    score INTEGER,
+    deal_score INTEGER,
+    alerted_at INTEGER NOT NULL
+  );
 `);
 
 try {
@@ -270,6 +279,7 @@ try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_sent ON listings(sent)');
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_users_chat ON users(chat_id)'); } catch(e) {}
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_agency_intel_key ON agency_intelligence(agency_key)'); } catch(e) {}
 try { db.exec('CREATE INDEX IF NOT EXISTS idx_listings_description_hash ON listings(description_hash)'); } catch(e) {}
+try { db.exec('CREATE INDEX IF NOT EXISTS idx_outcome_snapshots_chat_url ON outcome_snapshots(chat_id, listing_url)'); } catch(e) {}
 
 // Startup health check — log path and user count so resets are immediately visible in logs
 {
@@ -423,16 +433,25 @@ const removeFavorite = db.prepare('DELETE FROM favorites WHERE chat_id = ? AND l
 
 const getApplicationTracker = db.prepare('SELECT * FROM application_tracker WHERE chat_id = ? ORDER BY updated_at DESC');
 
-// Read-only outcome-learning infra (Laag 1) — joins tracked application status back to the
-// score shown at alert time. listing_cache is a 48h/500-row rolling cache, so this only finds
-// a match for trackers updated while their listing is still in cache — that's expected, not a bug.
+// Read-only outcome-learning infra (Laag 1) — permanent, no-TTL record of the score shown
+// at alert time, written once per successfully-sent alert. Never pruned like listing_cache.
+const insertOutcomeSnapshot = db.prepare(`
+  INSERT INTO outcome_snapshots (chat_id, listing_url, score, deal_score, alerted_at)
+  VALUES (@chatId, @listingUrl, @score, @dealScore, @alertedAt)
+`);
+// Joins tracked application status back to the score at alert time via outcome_snapshots
+// (permanent), not the volatile 48h/500-row listing_cache. Picks the most recent snapshot
+// per (chat_id, listing_url) in case a listing was alerted more than once.
 const getTrackerOutcomesWithScores = db.prepare(`
-  SELECT at.chat_id, at.listing_url, at.status, at.updated_at, lc.score, lc.deal_score
+  SELECT at.chat_id, at.listing_url, at.status, at.updated_at, os.score, os.deal_score
   FROM application_tracker at
-  JOIN listing_cache lc
-    ON at.chat_id = lc.chat_id
-    AND at.listing_url = json_extract(lc.listing_json, '$.url')
-  WHERE lc.score IS NOT NULL
+  JOIN outcome_snapshots os
+    ON os.id = (
+      SELECT id FROM outcome_snapshots os2
+      WHERE os2.chat_id = at.chat_id AND os2.listing_url = at.listing_url
+      ORDER BY os2.alerted_at DESC LIMIT 1
+    )
+  WHERE os.score IS NOT NULL
 `);
 const countApplicationTrackerAll = db.prepare('SELECT COUNT(*) as c FROM application_tracker');
 const upsertApplicationStatus = db.prepare(`
@@ -541,7 +560,7 @@ module.exports = {
   getRecentListings,
   getFavorites, addFavorite, removeFavorite,
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
-  getTrackerOutcomesWithScores, countApplicationTrackerAll,
+  getTrackerOutcomesWithScores, countApplicationTrackerAll, insertOutcomeSnapshot,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
   insertScraperStat, getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getListingVolumeByCity,
