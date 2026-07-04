@@ -199,13 +199,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <button class="tab on" data-tab="1" onclick="switchBuyTab(1)">Affordability</button>
     <button class="tab" data-tab="2" onclick="switchBuyTab(2)">Property Analysis</button>
     <button class="tab" data-tab="3" onclick="switchBuyTab(3)">Bid Strategy</button>
+    <button class="tab" data-tab="4" onclick="switchBuyTab(4)">VvE Checker</button>
   </div>
 
   <!-- More tools row -->
   <div class="more-tools-row">
     <span class="more-tools-label">More buyer tools:</span>
-    <button class="more-tool-btn" id="more-btn-4" onclick="switchBuyTab(4)">VvE Checker</button>
-    <button class="more-tool-btn" id="more-btn-5" onclick="switchBuyTab(5)">Legal Process</button>
+    <button class="more-tool-btn" id="more-btn-5" onclick="switchBuyTab(5)">Inspection</button>
   </div>
 
   <!-- ── Panel 1: Affordability ── -->
@@ -477,7 +477,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     </div>
   </div>
 
-  <!-- ── Panel 5: Legal Process ── -->
+  <!-- ── Panel 5: Inspection ── -->
   <div id="panel-5" class="panel">
     <div class="scout-row">
       <div class="scout-av">
@@ -529,6 +529,10 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <button class="mob-tab" id="mob-3" onclick="switchBuyTab(3)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
       Bid
+    </button>
+    <button class="mob-tab" id="mob-4" onclick="switchBuyTab(4)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg>
+      VvE
     </button>
   </div>
 </nav>
@@ -609,7 +613,7 @@ function switchBuyTab(n){
   const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
   const desktopTab=document.querySelector(`.tab[data-tab="${n}"]`);if(desktopTab)desktopTab.classList.add('on');
   const mobTab=document.getElementById(`mob-${n}`);if(mobTab)mobTab.classList.add('on');
-  if(n===4||n===5){const btn=document.getElementById(`more-btn-${n}`);if(btn)btn.classList.add('on');}
+  if(n===5){const btn=document.getElementById(`more-btn-${n}`);if(btn)btn.classList.add('on');}
   for(let i=1;i<=3;i++){
     const s=document.getElementById(`prog-${i}`);
     const l=document.getElementById(`prog-line-${i}`);
