@@ -497,15 +497,15 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   }
   function verdictCTA(sc, huur) {
     if (huur) {
-      if (sc >= 85) return 'Excellent match — tap AI Rental Assistant for your full strategy.';
-      if (sc >= 70) return 'Strong match — tap AI Rental Assistant to see your best move.';
-      if (sc >= 55) return 'Good match — tap AI Rental Assistant to strengthen your application.';
-      if (sc >= 40) return 'Possible match — tap AI Rental Assistant to close the gaps.';
-      return 'Weak match — tap AI Rental Assistant to see what is blocking you.';
+      if (sc >= 85) return 'Excellent match. Tap AI Rental Assistant for your full strategy.';
+      if (sc >= 70) return 'Strong match. Tap AI Rental Assistant to see your best move.';
+      if (sc >= 55) return 'Good match. Tap AI Rental Assistant to strengthen your application.';
+      if (sc >= 40) return 'Possible match. Tap AI Rental Assistant to close the gaps.';
+      return 'Weak match. Tap AI Rental Assistant to see what is blocking you.';
     }
-    if (sc >= 80) return 'Strong buyer profile — tap AI Buyer Assistant for your full strategy.';
-    if (sc >= 60) return 'Good buyer profile — tap AI Buyer Assistant to prepare your bid.';
-    return 'Review your position — tap AI Buyer Assistant to understand your options.';
+    if (sc >= 80) return 'Strong buyer profile. Tap AI Buyer Assistant for your full strategy.';
+    if (sc >= 60) return 'Good buyer profile. Tap AI Buyer Assistant to prepare your bid.';
+    return 'Review your position. Tap AI Buyer Assistant to understand your options.';
   }
 
   const JUNK = ['blikvanger', 'nieuw', 'verhuurd', 'verkocht', 'onder bod'];
@@ -565,7 +565,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push(`*Market Value: ${dealDisplay}*`);
   if (dealScore != null) lines.push(bar(dealScore, dealFill(dealScore)));
   lines.push('');
-  const disclaimer = '_Score reflects your profile fit — not your odds of getting the home._';
+  const disclaimer = '_Score reflects your profile fit, not your odds of getting the home._';
   lines.push(disclaimer);
   lines.push('');
   lines.push(verdictCTA(score, isHuur));
@@ -580,9 +580,7 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   };
   const range = cityRanges[(listing.city || '').toLowerCase()];
   let contextLine = '';
-  if (hoursOnline < 2 && range) {
-    contextLine = `_Just listed. Apply before an estimated ${range} others do._`;
-  } else if (hoursOnline < 6 && range) {
+  if (hoursOnline < 6 && range) {
     contextLine = `_Listed ${Math.round(hoursOnline)} hours ago. Competition is building._`;
   } else if (hoursOnline > 504 && range) {
     contextLine = `_Listed over 3 weeks ago. Ask the landlord why it has not been rented._`;

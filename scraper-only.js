@@ -51,7 +51,7 @@ setInterval(async () => {
   if (!scraperHealth.lastRunAt) return;
   if (Date.now() - scraperHealth.lastRunAt > 90 * 60 * 1000) {
     await sendAdminAlert(`Scraper has not completed a cycle in >90 minutes.\nLast run: ${new Date(scraperHealth.lastRunAt).toISOString()}`);
-  } else if (scraperHealth.consecutiveZeroRuns >= 3) {
+  } else if (scraperHealth.consecutiveZeroRuns >= 6) {
     await sendAdminAlert(`${scraperHealth.consecutiveZeroRuns} consecutive cycles returned zero listings.\nLast run: ${new Date(scraperHealth.lastRunAt).toISOString()}`);
   }
 }, 30 * 60 * 1000);

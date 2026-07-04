@@ -1,661 +1,598 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HomeSeeker - Housing Alerts & AI Applications for Expats in the Netherlands</title>
-  <meta name="description" content="Instant Telegram alerts + AI motivation letters. Built for internationals competing in the Dutch rental market. Be first to apply - and actually get it." />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="HomeSeeker" />
-  <meta property="og:url" content="https://homeseeker.dev/" />
-  <meta property="og:title" content="HomeSeeker - Housing Alerts & AI Applications for Expats in the Netherlands" />
-  <meta property="og:description" content="Instant Telegram alerts + AI motivation letters. Built for internationals competing in the Dutch rental market. Be first to apply - and actually get it." />
-  <meta property="og:image" content="https://homeseeker.dev/og-image.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="HomeSeeker - Housing Alerts & AI Applications for Expats" />
-  <meta name="twitter:description" content="Instant Telegram alerts + AI motivation letters. Built for internationals competing in the Dutch rental market." />
-  <meta name="twitter:image" content="https://homeseeker.dev/og-image.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HomeSeeker — Find it. Approach it right. Win it.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07070b;
+    --bg-2:#0b0b12;
+    --card:#101019;
+    --card-2:#13131d;
+    --line:rgba(255,255,255,.07);
+    --line-2:rgba(255,255,255,.12);
+    --green:#00c896;
+    --green-soft:rgba(0,200,150,.12);
+    --green-line:rgba(0,200,150,.35);
+    --amber:#f0a020;
+    --red:#e24b4a;
+    --tx:#f2f2f7;
+    --tx-2:rgba(242,242,247,.62);
+    --tx-3:rgba(242,242,247,.38);
+    --r:16px;
+    --maxw:1120px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--tx);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-.02em;line-height:1.08}
+  a{color:inherit;text-decoration:none}
 
-    :root {
-      --bg: #0a0a0f;
-      --bg-elevated: #0f0f17;
-      --bg-card: #13131a;
-      --bg-card-hover: #16161f;
-      --border: rgba(255,255,255,0.06);
-      --border-hover: rgba(255,255,255,0.12);
-      --green: #00c896;
-      --green-dim: rgba(0,200,150,0.12);
-      --green-border: rgba(0,200,150,0.25);
-      --text-primary: #f0f0f5;
-      --text-secondary: rgba(240,240,245,0.6);
-      --text-muted: rgba(240,240,245,0.35);
-      --red: #e24b4a;
-      --amber: #f0a020;
-      --radius: 12px;
-      --radius-sm: 8px;
-    }
+  /* ambient glows */
+  .glow{position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
 
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); line-height: 1.65; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  /* NAV */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(7,7,11,.72);
+    backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px}
+  .brand-logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--green),#00a37c);display:grid;place-items:center}
+  .brand-logo svg{width:17px;height:17px}
+  .nav-links{display:flex;align-items:center;gap:30px}
+  .nav-links a{color:var(--tx-2);font-size:14px;font-weight:500;transition:color .2s}
+  .nav-links a:hover{color:var(--tx)}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;justify-content:center;
+    font-weight:700;font-size:14px;border-radius:11px;cursor:pointer;border:none;
+    transition:transform .18s ease,box-shadow .18s ease,background .2s;white-space:nowrap;
+  }
+  .btn-primary{background:var(--green);color:#04120d;padding:11px 20px;box-shadow:0 8px 30px -8px rgba(0,200,150,.5)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 40px -8px rgba(0,200,150,.6)}
+  .btn-ghost{background:rgba(255,255,255,.04);color:var(--tx);padding:11px 20px;border:1px solid var(--line-2)}
+  .btn-ghost:hover{background:rgba(255,255,255,.08)}
+  .nav-cta-mobile{display:none}
 
-    .container { max-width: 1120px; margin: 0 auto; width: 100%; padding: 0 24px; }
-    section { padding: 140px 0; position: relative; }
+  /* HERO */
+  .hero{position:relative;padding:110px 0 90px;text-align:center;overflow:hidden}
+  .hero .glow-1{width:620px;height:620px;background:rgba(0,200,150,.14);top:-220px;left:50%;transform:translateX(-50%)}
+  .hero .glow-2{width:420px;height:420px;background:rgba(0,120,255,.08);top:120px;right:-120px}
+  .hero-in{position:relative;z-index:2;max-width:760px;margin:0 auto}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--green-soft);border:1px solid var(--green-line);
+    color:var(--green);font-size:12.5px;font-weight:600;
+    padding:6px 14px;border-radius:100px;margin-bottom:26px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+  .hero h1{font-size:58px;font-weight:800;margin-bottom:22px}
+  .hero h1 .accent{background:linear-gradient(120deg,var(--green),#4de3bd);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p.sub{font-size:18px;color:var(--tx-2);max-width:600px;margin:0 auto 34px}
+  .hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+  .btn-lg{padding:15px 28px;font-size:15px;border-radius:13px}
+  .trust{color:var(--tx-3);font-size:13px}
+  .trust b{color:var(--tx-2);font-weight:600}
 
-    /* ── SCROLL REVEAL ── */
-    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
-    .reveal.in-view { opacity: 1; transform: translateY(0); }
-    .reveal-1.in-view { transition-delay: .08s; }
-    .reveal-2.in-view { transition-delay: .16s; }
-    .reveal-3.in-view { transition-delay: .24s; }
-    .reveal-4.in-view { transition-delay: .32s; }
-    @media (prefers-reduced-motion: reduce) {
-      .reveal { opacity: 1; transform: none; transition: none; }
-    }
+  /* hero mockup */
+  .hero-mock{
+    position:relative;z-index:2;max-width:420px;margin:56px auto 0;
+    background:linear-gradient(180deg,var(--card-2),var(--card));
+    border:1px solid var(--line-2);border-radius:20px;
+    padding:20px;text-align:left;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.8);
+    animation:float 6s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .mock-src{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--tx-2);margin-bottom:12px}
+  .mock-src .pin{color:var(--green)}
+  .mock-addr{font-family:'Plus Jakarta Sans';font-weight:700;font-size:15px;margin-bottom:4px}
+  .mock-meta{font-size:13px;color:var(--tx-2);margin-bottom:16px}
+  .mock-bar-label{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:6px}
+  .mock-bar-label .pct{color:var(--green)}
+  .mock-bar{height:8px;border-radius:100px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:14px}
+  .mock-bar span{display:block;height:100%;border-radius:100px}
+  .mock-bar.green span{width:78%;background:linear-gradient(90deg,var(--green),#4de3bd)}
+  .mock-bar.amber span{width:52%;background:linear-gradient(90deg,var(--amber),#f5c15a)}
+  .mock-bar-label.amber .pct{color:var(--amber)}
+  .mock-note{font-size:12px;color:var(--tx-3);font-style:italic;margin-bottom:14px}
+  .mock-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mock-btn{text-align:center;font-size:12px;font-weight:600;padding:9px;border-radius:9px;background:var(--green-soft);color:var(--green);border:1px solid var(--green-line)}
 
-    /* ── AMBIENT GLOW BLOBS ── */
-    .glow-blob { position: absolute; pointer-events: none; z-index: 0; filter: blur(10px); }
-    .glow-blob.top-fade { top: -1px; left: 0; right: 0; height: 140px; background: linear-gradient(to bottom, var(--bg-elevated), transparent); filter: none; }
+  /* SECTION SHELL */
+  section{position:relative}
+  .sec{padding:96px 0}
+  .sec-head{text-align:center;max-width:640px;margin:0 auto 60px}
+  .sec-eyebrow{color:var(--green);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
+  .sec-head h2{font-size:40px;font-weight:800;margin-bottom:16px}
+  .sec-head p{color:var(--tx-2);font-size:17px}
 
-    /* ── NAV ── */
-    .nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
-      height: 56px; display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px;
-      background: rgba(10,10,15,0.85); backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-    .nav-logo { width: 32px; height: 32px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .nav-logo svg { width: 16px; height: 16px; }
-    .nav-brand-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-    .nav-links { display: flex; align-items: center; gap: 24px; }
-    .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
-    .nav-link:hover { color: var(--text-primary); }
-    .nav-cta { background: var(--green); color: #0a0a0f; border: none; border-radius: var(--radius-sm); padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity .15s; font-family: inherit; }
-    .nav-cta:hover { opacity: .88; }
+  /* JOURNEY — 3 col horizontal timeline */
+  .journey{background:linear-gradient(180deg,transparent,var(--bg-2) 40%,transparent)}
+  .timeline{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .timeline::before{
+    content:"";position:absolute;top:26px;left:16%;right:16%;height:2px;
+    background:linear-gradient(90deg,var(--green-line),var(--green),var(--green-line));
+    z-index:0;opacity:.5;
+  }
+  .step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .step-node{
+    width:54px;height:54px;border-radius:15px;display:grid;place-items:center;
+    background:linear-gradient(180deg,var(--card-2),var(--card));
+    border:1px solid var(--green-line);color:var(--green);
+    font-family:'Plus Jakarta Sans';font-weight:800;font-size:19px;margin-bottom:22px;
+    box-shadow:0 0 0 6px var(--bg),0 10px 30px -10px rgba(0,200,150,.4);
+  }
+  .step-card{
+    background:linear-gradient(180deg,var(--card-2),var(--card));
+    border:1px solid var(--line);border-radius:var(--r);
+    padding:26px 22px;width:100%;height:100%;
+  }
+  .step-card h3{font-size:19px;font-weight:700;margin-bottom:8px}
+  .step-phase{color:var(--green);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:block}
+  .step-card p{color:var(--tx-2);font-size:14.5px}
+  .journey-badge{
+    display:flex;align-items:center;gap:10px;justify-content:center;
+    margin:52px auto 0;max-width:640px;text-align:center;
+    background:var(--green-soft);border:1px solid var(--green-line);
+    color:var(--tx);font-size:14.5px;font-weight:600;
+    padding:16px 24px;border-radius:14px;
+  }
+  .journey-badge svg{width:18px;height:18px;flex-shrink:0;color:var(--green)}
 
-    .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
-    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-primary); border-radius: 2px; }
-    .nav-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: var(--bg); flex-direction: column; align-items: center; justify-content: center; transform: translateX(100%); transition: transform .2s ease; }
-    .nav-overlay.open { transform: translateX(0); }
-    .nav-overlay-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--text-primary); font-size: 30px; cursor: pointer; line-height: 1; padding: 4px 8px; }
-    .nav-overlay-links { display: flex; flex-direction: column; align-items: center; gap: 32px; }
-    .nav-overlay-links a { color: var(--text-primary); text-decoration: none; font-size: 22px; font-weight: 700; }
-    .nav-overlay-cta { margin-top: 48px; display: block; background: var(--green); color: #0a0a0f; font-weight: 700; font-size: 16px; padding: 16px 52px; border-radius: var(--radius-sm); text-decoration: none; }
+  /* TOOLS */
+  .tools-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:40px}
+  .tools-tab{
+    font-size:14px;font-weight:600;color:var(--tx-2);
+    padding:10px 22px;border-radius:100px;cursor:pointer;
+    border:1px solid var(--line);background:rgba(255,255,255,.02);transition:all .2s;
+  }
+  .tools-tab.active{background:var(--green-soft);border-color:var(--green-line);color:var(--green)}
+  .tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .tool{
+    background:linear-gradient(180deg,var(--card-2),var(--card));
+    border:1px solid var(--line);border-radius:var(--r);
+    padding:26px 24px;display:flex;flex-direction:column;
+    transition:transform .2s ease,border-color .2s;
+  }
+  .tool:hover{transform:translateY(-4px);border-color:var(--green-line)}
+  .tool-ic{
+    width:42px;height:42px;border-radius:11px;background:var(--green-soft);
+    border:1px solid var(--green-line);display:grid;place-items:center;margin-bottom:16px;color:var(--green)
+  }
+  .tool-ic svg{width:20px;height:20px}
+  .tool .tag{align-self:flex-start;font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid var(--green-line);padding:3px 10px;border-radius:100px;margin-bottom:12px;letter-spacing:.03em;text-transform:uppercase}
+  .tool h3{font-size:17px;font-weight:700;margin-bottom:8px}
+  .tool p{color:var(--tx-2);font-size:14px;flex:1;margin-bottom:14px}
+  .tool .link{color:var(--green);font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .tool-group{display:none}
+  .tool-group.active{display:block}
 
-    /* ── HERO ── */
-    .hero {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: 160px 24px 100px; text-align: center;
-      position: relative; overflow: hidden;
-    }
-    .hero::before {
-      content: ''; position: absolute; top: -10%; left: 50%; transform: translateX(-50%);
-      width: 1200px; height: 800px;
-      background: radial-gradient(ellipse, rgba(0,200,150,0.1) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .hero::after {
-      content: ''; position: absolute; bottom: -20%; left: 20%;
-      width: 600px; height: 500px;
-      background: radial-gradient(ellipse, rgba(0,200,150,0.05) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .hero-inner { max-width: 760px; margin: 0 auto; width: 100%; position: relative; z-index: 1; }
+  /* SMARTER band */
+  .smarter{background:linear-gradient(180deg,transparent,var(--bg-2),transparent)}
+  .smarter-card{
+    max-width:820px;margin:0 auto;text-align:center;position:relative;
+    background:linear-gradient(180deg,var(--card-2),var(--card));
+    border:1px solid var(--green-line);border-radius:24px;padding:56px 40px;overflow:hidden;
+  }
+  .smarter-card .glow-s{width:400px;height:400px;background:rgba(0,200,150,.1);top:-200px;left:50%;transform:translateX(-50%)}
+  .smarter-card h2{font-size:34px;font-weight:800;margin-bottom:16px;position:relative}
+  .smarter-card p{color:var(--tx-2);font-size:16px;max-width:560px;margin:0 auto;position:relative}
+  .smarter-steps{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:34px;position:relative}
+  .smarter-pill{font-size:13px;font-weight:600;color:var(--tx-2);background:rgba(255,255,255,.03);border:1px solid var(--line-2);padding:10px 18px;border-radius:100px}
+  .smarter-pill b{color:var(--green)}
 
-    .hero-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--green); margin-bottom: 24px; display: block; }
-    .hero h1 { font-size: 68px; font-weight: 700; letter-spacing: -2px; line-height: 1.04; color: var(--text-primary); margin-bottom: 24px; }
-    .hero-sub { font-size: 18px; color: var(--text-secondary); max-width: 580px; margin: 0 auto 32px; line-height: 1.7; }
+  /* PRICING */
+  .pricing-card{
+    max-width:440px;margin:0 auto;position:relative;
+    background:linear-gradient(180deg,var(--card-2),var(--card));
+    border:1px solid var(--green-line);border-radius:22px;padding:40px 34px;
+    box-shadow:0 40px 90px -30px rgba(0,200,150,.25);
+  }
+  .price-tag{display:flex;align-items:baseline;gap:6px;justify-content:center;margin-bottom:6px}
+  .price-tag .amt{font-family:'Plus Jakarta Sans';font-weight:800;font-size:52px}
+  .price-tag .per{color:var(--tx-2);font-size:16px}
+  .price-sub{text-align:center;color:var(--tx-3);font-size:13px;margin-bottom:28px}
+  .price-feats{list-style:none;margin-bottom:28px}
+  .price-feats li{display:flex;align-items:flex-start;gap:11px;padding:9px 0;font-size:14.5px;color:var(--tx)}
+  .price-feats svg{width:18px;height:18px;color:var(--green);flex-shrink:0;margin-top:1px}
+  .pricing-card .btn{width:100%}
 
-    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
-    .btn-primary { display: inline-flex; align-items: center; background: var(--green); color: #0a0a0f; border-radius: var(--radius-sm); padding: 12px 22px; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: opacity .15s, transform .15s; font-family: inherit; box-shadow: 0 8px 24px rgba(0,200,150,0.25); }
-    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
-    .btn-secondary { display: inline-flex; align-items: center; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 22px; font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer; transition: border-color .15s, color .15s; font-family: inherit; }
-    .btn-secondary:hover { border-color: var(--border-hover); color: var(--text-primary); }
+  /* FAQ */
+  .faq{max-width:720px;margin:0 auto}
+  .faq-item{border:1px solid var(--line);border-radius:14px;margin-bottom:12px;background:var(--card);overflow:hidden}
+  .faq-q{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 22px;cursor:pointer;font-weight:600;font-size:15.5px}
+  .faq-q .chev{color:var(--tx-3);transition:transform .25s;flex-shrink:0}
+  .faq-item.open .faq-q .chev{transform:rotate(180deg)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease;color:var(--tx-2);font-size:14.5px}
+  .faq-a p{padding:0 22px 20px}
+  .faq-item.open .faq-a{max-height:240px}
 
-    .hero-trust { font-size: 13px; color: var(--text-muted); margin-bottom: 64px; }
+  /* CTA final */
+  .final{text-align:center;padding:100px 0}
+  .final h2{font-size:42px;font-weight:800;margin-bottom:18px}
+  .final p{color:var(--tx-2);font-size:17px;margin-bottom:32px;max-width:520px;margin-left:auto;margin-right:auto}
 
-    .scroll-cue { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: .5; }
-    .scroll-cue span { font-size: 11px; letter-spacing: .5px; color: var(--text-muted); text-transform: uppercase; }
-    .scroll-cue-line { width: 1px; height: 28px; background: linear-gradient(to bottom, var(--text-muted), transparent); animation: scrollcue 2s ease-in-out infinite; }
-    @keyframes scrollcue { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+  /* FOOTER */
+  footer{border-top:1px solid var(--line);padding:44px 0}
+  .foot-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+  .foot-links{display:flex;gap:26px;flex-wrap:wrap}
+  .foot-links a{color:var(--tx-2);font-size:13.5px;transition:color .2s}
+  .foot-links a:hover{color:var(--tx)}
+  .foot-copy{color:var(--tx-3);font-size:13px}
 
-    /* Telegram bubble */
-    .tg-wrap { max-width: 400px; margin: 0 auto; animation: float 6s ease-in-out infinite; }
-    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    @media (prefers-reduced-motion: reduce) { .tg-wrap { animation: none; } }
-    .tg-card {
-      background: #1a1a24;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 18px 20px;
-      font-size: 13px;
-      color: var(--text-secondary);
-      box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 60px rgba(0,200,150,0.06);
-      text-align: left;
-    }
-    .tg-card b { color: var(--text-primary); }
-    .tg-card-loc { margin: 6px 0 10px; line-height: 1.5; }
-    .tg-score-block { margin-bottom: 6px; }
-    .tg-score-lbl { font-weight: 600; color: var(--text-primary); font-size: 13px; margin-bottom: 4px; }
-    .tg-score-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-    .tg-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
-    .tg-bar-fill { height: 100%; border-radius: 3px; }
-    .tg-pct-g { color: var(--green); font-weight: 600; font-size: 12px; white-space: nowrap; }
-    .tg-pct-a { color: var(--amber); font-weight: 600; font-size: 12px; white-space: nowrap; }
-    .tg-disc { font-size: 11px; color: var(--text-muted); font-style: italic; margin: 8px 0; line-height: 1.5; }
-    .tg-verdict { font-size: 13px; color: var(--text-primary); margin-bottom: 12px; line-height: 1.5; }
-    .tg-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .tg-btn { background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 8px; padding: 8px 10px; font-size: 11px; text-align: center; color: var(--green); font-weight: 600; }
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
 
-    .tg-annotations { display: flex; align-items: center; justify-content: center; margin-top: 14px; gap: 2px; }
-    .tg-ann { font-size: 11px; color: var(--text-muted); }
-    .tg-ann-sep { font-size: 11px; color: var(--text-muted); padding: 0 8px; }
-
-    /* ── HOW IT WORKS / JOURNEY ── */
-    .how-section {
-      background: radial-gradient(ellipse 900px 500px at 50% 0%, rgba(0,200,150,0.05), transparent 70%), var(--bg-elevated);
-    }
-    .section-title { font-size: 42px; font-weight: 700; letter-spacing: -1px; color: var(--text-primary); text-align: center; margin-bottom: 14px; }
-    .section-sub { font-size: 16px; color: var(--text-muted); text-align: center; margin-bottom: 64px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6; }
-
-    .journey-badge { display: block; text-align: center; font-size: 13px; color: var(--green); background: var(--green-dim); border: 1px solid var(--green-border); border-radius: 100px; padding: 8px 18px; max-width: fit-content; margin: 0 auto 56px; font-weight: 500; }
-
-    .journey-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; position: relative; }
-    .journey-grid::before {
-      content: ''; position: absolute; top: 21px; left: 12%; right: 12%; height: 1px;
-      background: linear-gradient(to right, transparent, var(--border-hover) 15%, var(--border-hover) 85%, transparent);
-    }
-    .journey-phase { position: relative; }
-    .phase-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .phase-num { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--green-border); color: var(--green); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; box-shadow: 0 0 0 6px var(--bg-elevated); }
-    .phase-title { font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
-    .phase-items { display: flex; flex-direction: column; gap: 10px; }
-    .journey-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; transition: border-color .2s, transform .2s; }
-    .journey-item:hover { border-color: var(--border-hover); transform: translateY(-2px); }
-    .journey-item h3 { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
-    .journey-item p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
-    .journey-note { text-align: center; font-size: 14px; color: var(--text-muted); max-width: 560px; margin: 56px auto 0; line-height: 1.7; }
-    .journey-note b { color: var(--green); font-weight: 600; }
-
-    /* ── TOOLS ── */
-    .tools-section { background: var(--bg); }
-    .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
-    .tools-col-label { font-size: 11px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
-    .tool-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: border-color .2s, transform .2s; margin-bottom: 10px; }
-    .tool-card:last-child { margin-bottom: 0; }
-    .tool-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
-    .tool-card-featured { border-color: var(--green-border); }
-    .tool-badge { display: inline-block; background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 100px; align-self: flex-start; }
-    .tool-card strong { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-    .tool-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; flex: 1; }
-    .tool-card-cta { font-size: 12px; font-weight: 600; color: var(--green); margin-top: 2px; }
-
-    /* ── PRICING ── */
-    .pricing-section { background: radial-gradient(ellipse 700px 500px at 50% 40%, rgba(0,200,150,0.06), transparent 70%), var(--bg-elevated); }
-    .price-intro { font-size: 14px; color: var(--text-muted); font-style: italic; text-align: center; max-width: 480px; margin: 0 auto 32px; line-height: 1.7; }
-    .price-wrap { display: flex; justify-content: center; }
-    .price-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 420px; width: 100%; box-shadow: 0 40px 100px rgba(0,0,0,0.35); }
-    .price-amount { font-size: 48px; font-weight: 700; color: var(--green); line-height: 1; letter-spacing: -2px; }
-    .price-period { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
-    .price-vat { font-size: 12px; color: var(--text-muted); margin-top: 2px; margin-bottom: 24px; }
-    .price-features { list-style: none; margin-bottom: 24px; }
-    .price-features li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 10px; line-height: 1.55; }
-    .price-features li:last-child { border-bottom: none; }
-    .price-features li::before { content: '✓'; color: var(--green); font-weight: 600; flex-shrink: 0; margin-top: 1px; }
-    .price-cta { display: block; background: var(--green); color: #0a0a0f; font-weight: 600; font-size: 14px; padding: 12px; border-radius: var(--radius-sm); text-decoration: none; text-align: center; transition: opacity .15s; margin-bottom: 12px; }
-    .price-cta:hover { opacity: .88; }
-    .price-disclaimer { font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.6; }
-
-    /* ── FAQ ── */
-    .faq-section { background: var(--bg); }
-    .faq-wrap { max-width: 640px; margin: 0 auto; }
-    .faq-item { border-bottom: 1px solid var(--border); }
-    .faq-item:first-child { border-top: 1px solid var(--border); }
-    .faq-q { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; cursor: pointer; font-weight: 500; font-size: 15px; user-select: none; transition: color .15s; color: var(--text-primary); }
-    .faq-q:hover { color: var(--green); }
-    .faq-icon { font-size: 20px; color: var(--green); flex-shrink: 0; font-weight: 300; transition: transform .2s; }
-    .faq-item.open .faq-icon { transform: rotate(45deg); }
-    .faq-a { overflow: hidden; max-height: 0; transition: max-height .25s ease; }
-    .faq-a-inner { padding-bottom: 16px; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
-    .faq-item.open .faq-a { max-height: 300px; }
-
-    /* ── FOOTER ── */
-    footer { background: var(--bg); border-top: 1px solid var(--border); padding: 40px 24px; }
-    .footer-row1 { max-width: 1080px; margin: 0 auto 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
-    .footer-brand-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-top: 8px; }
-    .footer-tagline { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
-    .footer-links a { color: var(--text-muted); font-size: 13px; text-decoration: none; transition: color .15s; }
-    .footer-links a:hover { color: var(--text-primary); }
-    .footer-copy { text-align: center; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 20px; max-width: 1080px; margin: 0 auto; line-height: 1.7; }
-
-    /* ── MOBILE ── */
-    @media (max-width: 900px) {
-      .journey-grid { grid-template-columns: 1fr; gap: 40px; }
-      .journey-grid::before { display: none; }
-      .phase-num { box-shadow: none; }
-    }
-    @media (max-width: 768px) {
-      section { padding: 80px 0; }
-      .nav { padding: 0 20px; }
-      .nav-links { display: none; }
-      .nav-hamburger { display: flex; }
-      .nav-overlay { display: flex; }
-      .hero { padding: 120px 24px 72px; }
-      .hero h1 { font-size: 38px; letter-spacing: -1px; }
-      .hero-sub { font-size: 15.5px; }
-      .hero-trust { margin-bottom: 48px; }
-      .section-title { font-size: 30px; }
-      .tools-grid { grid-template-columns: 1fr; gap: 32px; }
-      .footer-row1 { flex-direction: column; gap: 20px; }
-      .footer-links { justify-content: flex-start; }
-    }
-    @media (max-width: 420px) {
-      .hero h1 { font-size: 32px; }
-    }
-  </style>
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:900px){
+    .timeline{grid-template-columns:1fr;gap:16px}
+    .timeline::before{display:none}
+    .step{flex-direction:row;align-items:stretch;gap:16px;text-align:left}
+    .step-node{margin-bottom:0;flex-shrink:0;box-shadow:0 10px 30px -10px rgba(0,200,150,.4)}
+    .step-card{padding:20px}
+    .tools-grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:720px){
+    .wrap{padding:0 18px}
+    .nav-links{display:none}
+    .nav .btn-primary{padding:9px 16px;font-size:13px}
+    .sec{padding:68px 0}
+    .hero{padding:72px 0 64px}
+    .hero h1{font-size:38px}
+    .hero p.sub{font-size:16px}
+    .sec-head{margin-bottom:44px}
+    .sec-head h2{font-size:30px}
+    .sec-head p{font-size:15.5px}
+    .tools-grid{grid-template-columns:1fr}
+    .smarter-card{padding:40px 24px}
+    .smarter-card h2{font-size:27px}
+    .final h2{font-size:32px}
+    .foot-row{flex-direction:column;text-align:center;align-items:center}
+  }
+  @media (max-width:420px){
+    .hero h1{font-size:32px}
+    .price-tag .amt{font-size:44px}
+    .btn-lg{padding:14px 22px}
+    .hero-ctas{flex-direction:column}
+    .hero-ctas .btn{width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .hero-mock{animation:none}
+    .reveal{transition:none;opacity:1;transform:none}
+  }
+</style>
 </head>
 <body>
 
 <!-- NAV -->
-<nav class="nav">
-  <a class="nav-brand" href="/">
-    <div class="nav-logo">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M8 1L1.5 6.5V15h4.5v-5h4v5h4.5V6.5L8 1z" fill="#0a0a0f"/></svg>
+<nav>
+  <div class="wrap nav-in">
+    <div class="brand">
+      <span class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 11L12 4l9 7M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9" stroke="#04120d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      HomeSeeker
     </div>
-    <span class="nav-brand-name">HomeSeeker</span>
-  </a>
-  <div class="nav-links">
-    <a href="#how-it-works" class="nav-link">How it works</a>
-    <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="#faq" class="nav-link">FAQ</a>
-    <a href="/subscribe" class="nav-cta">Start free trial</a>
+    <div class="nav-links">
+      <a href="#journey">How it works</a>
+      <a href="#tools">Tools</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a href="#pricing" class="btn btn-primary">Start free trial</a>
   </div>
-  <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
-    <span></span><span></span><span></span>
-  </button>
 </nav>
 
-<div class="nav-overlay" id="nav-overlay">
-  <button class="nav-overlay-close" id="nav-overlay-close">×</button>
-  <nav class="nav-overlay-links">
-    <a href="#how-it-works" class="ov-link">How it works</a>
-    <a href="#tools" class="ov-link">Tools</a>
-    <a href="#pricing" class="ov-link">Pricing</a>
-    <a href="#faq" class="ov-link">FAQ</a>
-  </nav>
-  <a href="/subscribe" class="nav-overlay-cta">Start 7-day free trial →</a>
-</div>
-
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <span class="hero-eyebrow">Built for expats in the Netherlands</span>
-    <h1>Finding a rental is easy.<br>Winning one is not.</h1>
-    <p class="hero-sub">HomeSeeker monitors Funda, Kamernet, and HousingAnywhere 24/7 — then Scout, your AI rental assistant, guides you the rest of the way: how to position yourself, what to write, how to negotiate. Every outcome sharpens the guidance for the next listing.</p>
-
-    <div class="hero-btns">
-      <a href="/subscribe" class="btn-primary">Start my free trial →</a>
-      <a href="#how-it-works" class="btn-secondary">See how it works</a>
+<header class="hero">
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+  <div class="wrap hero-in">
+    <span class="eyebrow"><span class="dot"></span>Funda · Kamernet · HousingAnywhere — monitored 24/7</span>
+    <h1>Find your home.<br><span class="accent">Win it.</span></h1>
+    <p class="sub">HomeSeeker spots every new listing the second it appears — then Scout, your AI assistant, guides you from first match to signed contract. And it gets sharper with every outcome.</p>
+    <div class="hero-ctas">
+      <a href="#pricing" class="btn btn-primary btn-lg">Start free trial →</a>
+      <a href="#journey" class="btn btn-ghost btn-lg">See how it works</a>
     </div>
-    <p class="hero-trust">7-day free trial · Cancel anytime · Instant setup</p>
+    <p class="trust"><b>7-day free trial</b> · Cancel anytime · Instant setup</p>
 
-    <div class="tg-wrap">
-      <div class="tg-card">
-        <div><b>🏠 Funda</b></div>
-        <div class="tg-card-loc">📍 <b>Jan Evertsenstraat 84, Amsterdam</b><br>72m² &nbsp;·&nbsp; Rent: €1.650/mo &nbsp;·&nbsp; Est. total: €1.940/mo</div>
-
-        <div class="tg-score-block">
-          <div class="tg-score-lbl">Application: Strong</div>
-          <div class="tg-score-row">
-            <div class="tg-bar"><div class="tg-bar-fill" style="width:78%;background:var(--green)"></div></div>
-            <span class="tg-pct-g">78%</span>
-          </div>
-        </div>
-        <div class="tg-score-block">
-          <div class="tg-score-lbl">Market Value: Fair price</div>
-          <div class="tg-score-row">
-            <div class="tg-bar"><div class="tg-bar-fill" style="width:52%;background:var(--amber)"></div></div>
-            <span class="tg-pct-a">52%</span>
-          </div>
-        </div>
-
-        <div class="tg-disc">Score reflects your profile fit, not your odds of getting the home.</div>
-        <div class="tg-verdict">Strong match — tap AI Rental Assistant to see your best move.</div>
-        <div class="tg-btns">
-          <div class="tg-btn">View listing ↗</div>
-          <div class="tg-btn">AI Rental Assistant ↗</div>
-        </div>
-      </div>
-      <div class="tg-annotations">
-        <span class="tg-ann">Application Score</span>
-        <span class="tg-ann-sep">·</span>
-        <span class="tg-ann">Market Value</span>
-        <span class="tg-ann-sep">·</span>
-        <span class="tg-ann">One-tap assistant</span>
+    <div class="hero-mock">
+      <div class="mock-src"><span class="pin">📍</span> Funda · Amsterdam</div>
+      <div class="mock-addr">Jan Evertsenstraat 84</div>
+      <div class="mock-meta">72 m² · Rent €1.650/mo · Est. total €1.940/mo</div>
+      <div class="mock-bar-label"><span>Application: Strong</span><span class="pct">78%</span></div>
+      <div class="mock-bar green"><span></span></div>
+      <div class="mock-bar-label amber"><span>Market Value: Fair price</span><span class="pct">52%</span></div>
+      <div class="mock-bar amber"><span></span></div>
+      <div class="mock-note">Score reflects your profile fit — not your odds of getting the home.</div>
+      <div class="mock-btns">
+        <div class="mock-btn">View listing ↗</div>
+        <div class="mock-btn">AI Rental Assistant ↗</div>
       </div>
     </div>
   </div>
-  <div class="scroll-cue">
-    <span>Scroll</span>
-    <div class="scroll-cue-line"></div>
-  </div>
-</section>
+</header>
 
-<!-- HOW IT WORKS / JOURNEY -->
-<section class="how-section" id="how-it-works">
-  <div class="glow-blob top-fade"></div>
-  <div class="container">
-    <h2 class="section-title reveal">Find it. Approach it right. Win it.</h2>
-    <p class="section-sub reveal reveal-1">One continuous journey, guided by Scout at every step — not just an alert bot.</p>
-    <span class="journey-badge reveal reveal-2">Scout gets sharper with every listing, letter, and outcome across HomeSeeker</span>
+<!-- JOURNEY -->
+<section class="sec journey" id="journey">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">The journey</div>
+      <h2>Find it. Approach it right. Win it.</h2>
+      <p>One continuous path, guided by Scout at every step — not just an alert bot.</p>
+    </div>
 
-    <div class="journey-grid">
-      <div class="journey-phase reveal reveal-1">
-        <div class="phase-head">
-          <div class="phase-num">01</div>
-          <div class="phase-title">Find</div>
-        </div>
-        <div class="phase-items">
-          <div class="journey-item">
-            <h3>Set your filters</h3>
-            <p>Tell HomeSeeker your city, budget, and profile. We monitor all three platforms around the clock.</p>
-          </div>
-          <div class="journey-item">
-            <h3>Get instant alerts</h3>
-            <p>New listings land in your Telegram the moment they go live, with your personal Application Score.</p>
-          </div>
+    <div class="timeline">
+      <div class="step reveal">
+        <div class="step-node">01</div>
+        <div class="step-card">
+          <span class="step-phase">Find</span>
+          <h3>Set your filters, we watch</h3>
+          <p>Tell HomeSeeker your city, budget and profile. We monitor all three platforms around the clock and send new listings to Telegram the moment they go live — each with your personal Application Score.</p>
         </div>
       </div>
-
-      <div class="journey-phase reveal reveal-2">
-        <div class="phase-head">
-          <div class="phase-num">02</div>
-          <div class="phase-title">Approach</div>
-        </div>
-        <div class="phase-items">
-          <div class="journey-item">
-            <h3>Scout analyses the listing</h3>
-            <p>Scout reads the listing description and tells you what the landlord is looking for, how to position yourself, and what to include in your letter.</p>
-          </div>
+      <div class="step reveal">
+        <div class="step-node">02</div>
+        <div class="step-card">
+          <span class="step-phase">Approach</span>
+          <h3>Scout reads the room</h3>
+          <p>Scout analyses each listing: what the landlord wants, how you compare, the fair price, and the exact angle for your application letter — tailored to this specific home, not a template.</p>
         </div>
       </div>
-
-      <div class="journey-phase reveal reveal-3">
-        <div class="phase-head">
-          <div class="phase-num">03</div>
-          <div class="phase-title">Win</div>
-        </div>
-        <div class="phase-items">
-          <div class="journey-item">
-            <h3>Win the application</h3>
-            <p>Write your letter, prepare for the viewing, and get negotiation scripts — all guided by AI that knows this specific listing.</p>
-          </div>
+      <div class="step reveal">
+        <div class="step-node">03</div>
+        <div class="step-card">
+          <span class="step-phase">Win</span>
+          <h3>Land the home</h3>
+          <p>Write your letter, prepare for the viewing, and get negotiation scripts — all guided by AI that knows this listing. From first match to signed contract, you're never guessing alone.</p>
         </div>
       </div>
     </div>
 
-    <p class="journey-note reveal">This isn't a stream of alerts you have to figure out alone. <b>Scout stays with you</b> from the first match to the signed contract — and learns from every outcome to guide the next person a little better.</p>
+    <div class="journey-badge reveal">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h7l-1 8 11-14h-7l1-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      Scout gets sharper with every listing, letter and outcome across HomeSeeker.
+    </div>
   </div>
 </section>
 
 <!-- TOOLS -->
-<section class="tools-section" id="tools">
-  <div class="container">
-    <h2 class="section-title reveal">Everything you need to win</h2>
-    <p class="section-sub reveal reveal-1">Scout's tools for the Approach and Win phases of your journey.</p>
-    <div class="tools-grid">
+<section class="sec" id="tools">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Everything you need to win</div>
+      <h2>A full toolkit, guided by Scout</h2>
+      <p>Every tool is powered by the same AI assistant — and every one is tuned to the Approach and Win phases of your journey.</p>
+    </div>
 
-      <!-- Renting -->
-      <div class="reveal reveal-1">
-        <div class="tools-col-label">Renting</div>
-        <a href="/tools/rent-assistant" class="tool-card tool-card-featured">
-          <span class="tool-badge">Most used</span>
-          <strong>AI Rental Assistant</strong>
-          <p>Scout analyses each listing and guides you through four steps: listing analysis, application letter, viewing preparation, and negotiation.</p>
-          <span class="tool-card-cta">Open assistant →</span>
-        </a>
-        <a href="/tools/landlord-reply" class="tool-card">
-          <strong>Landlord Reply Coach</strong>
-          <p>Paste any message from a landlord or agent. Get an instant translation and the perfect reply.</p>
-          <span class="tool-card-cta">Decode a reply →</span>
-        </a>
-        <a href="/tools/income-check" class="tool-card">
-          <strong>Income Check</strong>
-          <p>Check if you meet the income requirement. Get an explanation for unusual income situations.</p>
-          <span class="tool-card-cta">Check my income →</span>
-        </a>
+    <div class="tools-tabs reveal">
+      <div class="tools-tab active" data-tab="rent">Renting</div>
+      <div class="tools-tab" data-tab="buy">Buying</div>
+    </div>
+
+    <!-- RENT -->
+    <div class="tool-group active" data-group="rent">
+      <div class="tools-grid">
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6-5.5-3-5.5 3 1-6L3 8.9 9 8l3-6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+          <span class="tag">Most used</span>
+          <h3>AI Rental Assistant</h3>
+          <p>Scout analyses each listing and guides you through four steps: analysis, application letter, viewing prep and negotiation.</p>
+          <a href="/tools/rent-assistant.html" class="link">Open assistant →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>Application Letter</h3>
+          <p>A human-sounding letter tailored to this listing and your profile — the angle 90% of applicants miss, written in seconds.</p>
+          <a href="/tools/rent-assistant.html" class="link">Write my letter →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+          <h3>Landlord Reply Coach</h3>
+          <p>Paste any message from a landlord or agent. Get an instant read on what they mean — and the perfect reply.</p>
+          <a href="/tools/rent-assistant.html" class="link">Decode a reply →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h3>Income Check</h3>
+          <p>See if you meet the income requirement — and get a clear explanation for freelance, partner or unusual income situations.</p>
+          <a href="/tools/rent-assistant.html" class="link">Check my income →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Viewing Prep</h3>
+          <p>Know exactly what to ask, what to bring and how to leave a lasting impression — matched to the property type.</p>
+          <a href="/tools/rent-assistant.html" class="link">Get viewing tips →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18M18 9l-5 5-3-3-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Rejection Analyser</h3>
+          <p>Describe past applications and get a specific diagnosis plus a ranked list of what to fix before the next one.</p>
+          <a href="/tools/rent-assistant.html" class="link">Analyse rejections →</a>
+        </div>
       </div>
+    </div>
 
-      <!-- Buying -->
-      <div class="reveal reveal-2">
-        <div class="tools-col-label">Buying</div>
-        <a href="/tools/buy-assistant" class="tool-card tool-card-featured">
-          <span class="tool-badge">For buyers</span>
-          <strong>AI Buyer Assistant</strong>
-          <p>Analyse properties, build your bid strategy, check the VvE, and navigate the Dutch buying process step by step.</p>
-          <span class="tool-card-cta">Open assistant →</span>
-        </a>
-        <a href="/tools/deal-finder" class="tool-card">
-          <strong>Deal Finder</strong>
-          <p>Price vs benchmark analysis. Instant deal score, hidden costs, and red flags.</p>
-          <span class="tool-card-cta">Analyse a listing →</span>
-        </a>
-        <a href="/tools/rejection-analyser" class="tool-card">
-          <strong>Rejection Analyser</strong>
-          <p>Describe your past applications. Get a specific diagnosis and a ranked fix list.</p>
-          <span class="tool-card-cta">Analyse rejections →</span>
-        </a>
+    <!-- BUY -->
+    <div class="tool-group" data-group="buy">
+      <div class="tools-grid">
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l3 6 6 .9-4.5 4.3 1 6-5.5-3-5.5 3 1-6L3 8.9 9 8l3-6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+          <span class="tag">For buyers</span>
+          <h3>AI Buyer Assistant</h3>
+          <p>Analyse properties, build your bid strategy, check the VvE and navigate the Dutch buying process step by step.</p>
+          <a href="/tools/buy-assistant.html" class="link">Open assistant →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18M18 9l-5 5-3-3-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Deal Finder</h3>
+          <p>Price vs neighbourhood benchmark analysis. Instant deal score, hidden costs and red flags surfaced for you.</p>
+          <a href="/tools/buy-assistant.html" class="link">Analyse a listing →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 1v22M5 6l7-4 7 4M5 6v9l7 4 7-4V6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Bid Strategy</h3>
+          <p>Get a data-backed bid amount and strategy for a competitive market — so you don't overpay or lose out.</p>
+          <a href="/tools/buy-assistant.html" class="link">Build my bid →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>VvE Checker</h3>
+          <p>Understand the owners' association: reserves, monthly costs and the questions to ask before you commit.</p>
+          <a href="/tools/buy-assistant.html" class="link">Check the VvE →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+          <h3>Legal Process Guide</h3>
+          <p>Walk through the Dutch purchase process — offer, notary, cooling-off period — in plain language, step by step.</p>
+          <a href="/tools/buy-assistant.html" class="link">Understand the process →</a>
+        </div>
+        <div class="tool reveal">
+          <div class="tool-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20" stroke="currentColor" stroke-width="1.8"/></svg></div>
+          <h3>Buyer's Guide</h3>
+          <p>Everything an international buyer needs to know about mortgages, taxes and buying in the Netherlands.</p>
+          <a href="/guide/buy.html" class="link">Read the guide →</a>
+        </div>
       </div>
+    </div>
+  </div>
+</section>
 
+<!-- SMARTER -->
+<section class="sec smarter">
+  <div class="wrap">
+    <div class="smarter-card reveal">
+      <div class="glow glow-s"></div>
+      <h2>It learns as you use it</h2>
+      <p>HomeSeeker doesn't just send alerts and forget. Every listing, every letter and every outcome feeds back in — so the guidance you get tomorrow is sharper than today's. The more the platform is used, the better it gets at helping you win.</p>
+      <div class="smarter-steps">
+        <span class="smarter-pill">Neighbourhood <b>price benchmarks</b></span>
+        <span class="smarter-pill">Listing <b>signal analysis</b></span>
+        <span class="smarter-pill">Outcome <b>learning</b></span>
+        <span class="smarter-pill">Landlord <b>pattern detection</b></span>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- PRICING -->
-<section class="pricing-section" id="pricing">
-  <div class="glow-blob top-fade"></div>
-  <div class="container">
-    <h2 class="section-title reveal">One plan. Everything included.</h2>
-    <p class="price-intro reveal reveal-1">The average expat in the Netherlands searches for a home for 3 months. HomeSeeker users report finding one in 3–6 weeks.</p>
-    <div class="price-wrap">
-      <div class="price-card reveal reveal-2">
-        <div class="price-amount">€9,99</div>
-        <div class="price-period">/month</div>
-        <div class="price-vat">incl. 21% VAT</div>
-        <ul class="price-features">
-          <li>Real-time alerts from Funda, Kamernet, and HousingAnywhere</li>
-          <li>Personal Application Score per listing</li>
-          <li>Scout's listing analysis and strategy</li>
-          <li>AI Rental + Buyer Assistant (4 tabs each)</li>
-          <li>Landlord Reply Coach</li>
-          <li>Cancel anytime via Telegram</li>
-        </ul>
-        <a href="/subscribe" class="price-cta">Start my 7-day free trial →</a>
-        <p class="price-disclaimer">€9,99/month after trial. Cancel before day 7 and pay nothing.</p>
-      </div>
+<section class="sec" id="pricing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">Pricing</div>
+      <h2>One plan. Everything included.</h2>
+      <p>Alerts, all AI tools, and Scout's full guidance — from first match to signed contract.</p>
+    </div>
+    <div class="pricing-card reveal">
+      <div class="price-tag"><span class="amt">€9,99</span><span class="per">/month</span></div>
+      <div class="price-sub">incl. 21% VAT · 7-day free trial · cancel anytime</div>
+      <ul class="price-feats">
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Real-time alerts across Funda, Kamernet &amp; HousingAnywhere</li>
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Application Score &amp; Market Value Score on every listing</li>
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Full AI Rental &amp; Buyer Assistant, guided by Scout</li>
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Tailored letters, viewing prep &amp; negotiation scripts</li>
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>All 19 monitored cities, across renting and buying</li>
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Guidance that gets smarter the more you use it</li>
+      </ul>
+      <a href="/subscribe" class="btn btn-primary btn-lg">Start free trial →</a>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section class="faq-section" id="faq">
-  <div class="container">
-    <h2 class="section-title reveal" style="margin-bottom:24px">Questions</h2>
-    <div class="faq-wrap reveal reveal-1">
-      <div class="faq-item open">
-        <div class="faq-q">Which platforms do you monitor? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">We monitor Funda, Kamernet, and HousingAnywhere simultaneously across 19 cities. More platforms are being added.</div></div>
+<section class="sec" id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow">FAQ</div>
+      <h2>Questions, answered</h2>
+    </div>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">Which platforms does HomeSeeker monitor?<span class="chev">▾</span></div>
+        <div class="faq-a"><p>Funda, Kamernet and HousingAnywhere, 24/7 across 19 Dutch cities — for both renting and buying. New listings reach your Telegram the moment they go live.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">How fast are the alerts? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">As soon as a listing appears that matches your filters, you get a Telegram notification. We run continuous monitoring 24/7. Most alerts arrive within minutes of a listing going live.</div></div>
+        <div class="faq-q">What does the Application Score mean?<span class="chev">▾</span></div>
+        <div class="faq-a"><p>It reflects how well your profile fits a specific listing — income, contract, documents, timing and competition. It's about your fit, not a guarantee of getting the home.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">What is the Application Score? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">A personal 0–100 score calculated for every listing based on income vs rent, contract type, document readiness, and timing. It tells you how strong your application is and what to fix first.</div></div>
+        <div class="faq-q">Who is Scout?<span class="chev">▾</span></div>
+        <div class="faq-a"><p>Scout is your AI assistant. It reads each listing, tells you what the landlord wants, writes your letter, preps you for viewings and coaches you through negotiation — and it gets sharper the more the platform is used.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">What is the AI Rental Assistant? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">A 4-tab tool you open from any Telegram alert. Analyse shows competition, price level, and landlord type so you know your position before you apply. Write Letter generates a personalised application letter in seconds. Viewing Tips prepares you with specific questions and a room-by-room inspection checklist. Negotiation assesses the market and gives you word-for-word scripts.</div></div>
+        <div class="faq-q">How is this different from a normal alert service?<span class="chev">▾</span></div>
+        <div class="faq-a"><p>Most services stop at the notification. HomeSeeker takes you from alert to signed contract — with guidance at every step, not just a link to a listing everyone else already saw.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">Does it work for rentals and purchases? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">Yes. Filter by rental, purchase, or both. Your Application Score and tips adapt to the listing type, and all tools cover both journeys.</div></div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">How do I cancel? <span class="faq-icon">+</span></div>
-        <div class="faq-a"><div class="faq-a-inner">Send /cancel to the HomeSeeker bot in Telegram, or use the link in your confirmation email. Cancel before day 7 and you pay nothing.</div></div>
+        <div class="faq-q">Can I cancel anytime?<span class="chev">▾</span></div>
+        <div class="faq-a"><p>Yes. Start with a 7-day free trial and cancel whenever you like — no lock-in, instant setup.</p></div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="wrap reveal">
+    <h2>Your next home is already listed.</h2>
+    <p>Be the first to know, and the best prepared to win it. Start your free trial today.</p>
+    <a href="/subscribe" class="btn btn-primary btn-lg">Start free trial →</a>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
-  <div class="footer-row1">
-    <div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="nav-logo" style="width:28px;height:28px">
-          <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><path d="M8 1L1.5 6.5V15h4.5v-5h4v5h4.5V6.5L8 1z" fill="#0a0a0f"/></svg>
-        </div>
-        <span class="footer-brand-name">HomeSeeker</span>
-      </div>
-      <div class="footer-tagline">Find your home. We'll help you get it.</div>
+  <div class="wrap foot-row">
+    <div class="brand">
+      <span class="brand-logo"><svg viewBox="0 0 24 24" fill="none"><path d="M3 11L12 4l9 7M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9" stroke="#04120d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      HomeSeeker
     </div>
-    <div class="footer-links">
-      <a href="/privacy">Privacy</a>
-      <a href="/terms">Terms</a>
-      <a href="/cancel">Cancel</a>
-      <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>
+    <div class="foot-links">
+      <a href="/guide/rent.html">Renting guide</a>
+      <a href="/guide/buy.html">Buying guide</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
     </div>
+    <div class="foot-copy">© 2026 HomeSeeker · KvK 85156736</div>
   </div>
-  <p class="footer-copy">© 2025 HomeSeeker · KvK: 85156736 · Not affiliated with Funda, Kamernet, or HousingAnywhere.</p>
 </footer>
 
 <script>
-  // Hamburger nav
-  const hamburger = document.getElementById('nav-hamburger');
-  const overlay   = document.getElementById('nav-overlay');
-  const ovClose   = document.getElementById('nav-overlay-close');
-
-  function openOverlay() {
-    overlay.style.display = 'flex';
-    requestAnimationFrame(() => overlay.classList.add('open'));
-    document.body.style.overflow = 'hidden';
-  }
-  function closeOverlay() {
-    overlay.classList.remove('open');
-    setTimeout(() => { overlay.style.display = 'none'; }, 210);
-    document.body.style.overflow = '';
-  }
-
-  hamburger.addEventListener('click', openOverlay);
-  ovClose.addEventListener('click', closeOverlay);
-  document.querySelectorAll('.ov-link').forEach(l => l.addEventListener('click', closeOverlay));
-  overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
-
-  // FAQ accordion
-  document.querySelectorAll('.faq-item').forEach(item => {
-    item.querySelector('.faq-q').addEventListener('click', () => {
-      const wasOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-      if (!wasOpen) item.classList.add('open');
+  // Tools tabs
+  document.querySelectorAll('.tools-tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.tools-tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tool-group').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.querySelector('.tool-group[data-group="'+t.dataset.tab+'"]').classList.add('active');
     });
   });
-
-  // Scroll-reveal animations
-  const revealEls = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window && revealEls.length) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
-    revealEls.forEach(el => io.observe(el));
-  } else {
-    revealEls.forEach(el => el.classList.add('in-view'));
-  }
-</script>
-
-<!-- AI Support Chat Widget -->
-<style>
-#hs-cb{position:fixed;bottom:24px;right:24px;z-index:9999;width:52px;height:52px;border-radius:50%;background:#00c896;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(0,200,150,0.35);transition:background .15s,transform .15s;display:flex;align-items:center;justify-content:center}
-#hs-cb:hover{background:#00b386;transform:scale(1.05)}
-#hs-cw{position:fixed;bottom:88px;right:24px;z-index:9998;width:340px;background:#111318;border:1px solid rgba(255,255,255,0.1);border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.5);overflow:hidden;display:none;flex-direction:column;opacity:0;transform:translateY(8px);transition:opacity .2s ease,transform .2s ease}
-#hs-cw.hs-rdy{opacity:1;transform:translateY(0)}
-#hs-ch{background:#0d1117;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:8px;flex-shrink:0}
-#hs-chd{width:8px;height:8px;border-radius:50%;background:#00c896;flex-shrink:0}
-#hs-chn{font-size:13px;font-weight:700;color:#fff;flex:1;font-family:inherit}
-#hs-clo{background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;line-height:1;padding:2px 4px;font-family:inherit}
-#hs-clo:hover{color:rgba(255,255,255,0.8)}
-#hs-cm{padding:16px;overflow-y:auto;height:280px;display:flex;flex-direction:column;gap:10px}
-.hs-ai{background:#1a1f26;border-radius:12px 12px 12px 4px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,0.85);max-width:88%;align-self:flex-start;line-height:1.5;font-family:inherit}
-.hs-us{background:#00c896;color:#0a0a0a;border-radius:12px 12px 4px 12px;padding:10px 14px;font-size:13px;max-width:88%;align-self:flex-end;font-family:inherit;line-height:1.5}
-.hs-dt{display:inline-flex;gap:4px;align-items:center;padding:2px 0}
-.hs-d{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);animation:hs-p 1.2s infinite}
-.hs-d:nth-child(2){animation-delay:.2s}.hs-d:nth-child(3){animation-delay:.4s}
-@keyframes hs-p{0%,100%{opacity:.3}50%{opacity:1}}
-#hs-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
-.hs-chip{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:100px;padding:5px 12px;font-size:12px;color:#00c896;cursor:pointer;font-family:inherit}
-.hs-chip:hover{background:rgba(0,200,150,0.15)}
-#hs-ir{border-top:1px solid rgba(255,255,255,0.07);padding:12px 14px;display:flex;gap:8px;flex-shrink:0}
-#hs-inp{flex:1;background:#0d1117;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;color:#e8edf3;font-size:13px;outline:none;font-family:inherit}
-#hs-inp:focus{border-color:#00c896}
-#hs-snd{width:36px;height:36px;border-radius:50%;background:#00c896;color:#0a0a0a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
-#hs-snd:hover{background:#00b386}
-@media(max-width:400px){#hs-cw{right:12px;left:12px;width:auto}}
-</style>
-<button id="hs-cb" aria-label="Support chat" onclick="hsT()">
-  <svg id="hs-ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  <svg id="hs-ix" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-</button>
-<div id="hs-cw">
-  <div id="hs-ch"><div id="hs-chd"><svg width="24" height="30" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle cx="22" cy="31" r="7.5" fill="white"/><circle cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg></div><span id="hs-chn">Scout</span><button id="hs-clo" onclick="hsT()">&#x2715;</button></div>
-  <div id="hs-cm"></div>
-  <div id="hs-ir"><input id="hs-inp" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')hsS()"><button id="hs-snd" onclick="hsS()" aria-label="Send"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
-</div>
-<script>
-(function(){
-var CHIPS=['How does HomeSeeker work?','What is the Application Score?','Which platforms do you monitor?','How do I cancel?'];
-var hist=[],init=false,open=false;
-function hsT(){
-  open=!open;
-  var w=document.getElementById('hs-cw'),ic=document.getElementById('hs-ic'),ix=document.getElementById('hs-ix');
-  if(open){w.style.display='flex';requestAnimationFrame(function(){setTimeout(function(){w.classList.add('hs-rdy');},10);});ic.style.display='none';ix.style.display='';localStorage.setItem('hs_co','1');if(!init)hsI();}
-  else{w.classList.remove('hs-rdy');setTimeout(function(){w.style.display='none';},200);ic.style.display='';ix.style.display='none';localStorage.setItem('hs_co','0');}
-}
-window.hsT=hsT;
-function hsI(){
-  init=true;
-  var m=document.getElementById('hs-cm');
-  var b=document.createElement('div');b.className='hs-ai';b.textContent='Hi, I\'m Scout! Ask me anything about HomeSeeker, Dutch housing terms, or how to use this page.';m.appendChild(b);
-  var cd=document.createElement('div');cd.id='hs-chips';
-  CHIPS.forEach(function(q){var btn=document.createElement('button');btn.className='hs-chip';btn.textContent=q;btn.onclick=function(){hsRC();hsSM(q);};cd.appendChild(btn);});
-  m.appendChild(cd);hsScr();
-}
-function hsRC(){var c=document.getElementById('hs-chips');if(c)c.remove();}
-function hsAM(role,text){var m=document.getElementById('hs-cm');var d=document.createElement('div');d.className=role==='user'?'hs-us':'hs-ai';d.textContent=text;m.appendChild(d);hsScr();return d;}
-function hsAL(){var m=document.getElementById('hs-cm');var d=document.createElement('div');d.className='hs-ai';d.innerHTML='<span class="hs-dt"><span class="hs-d"></span><span class="hs-d"></span><span class="hs-d"></span></span>';d.id='hs-ld';m.appendChild(d);hsScr();}
-function hsRL(){var e=document.getElementById('hs-ld');if(e)e.remove();}
-function hsScr(){var m=document.getElementById('hs-cm');if(m)m.scrollTop=m.scrollHeight;}
-async function hsSM(msg){hsRC();hsAM('user',msg);hist.push({role:'user',content:msg});hsAL();
-  try{var r=await fetch('/api/support-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,history:hist.slice(-6)})});var d=await r.json();hsRL();var rep=d.reply||'Something went wrong. Email support@homeseeker.dev';hsAM('assistant',rep);hist.push({role:'assistant',content:rep});}
-  catch(e){hsRL();hsAM('assistant','I am having trouble right now. Please email support@homeseeker.dev');}
-}
-function hsS(){var inp=document.getElementById('hs-inp');var msg=(inp.value||'').trim();if(!msg)return;inp.value='';hsSM(msg);}
-window.hsS=hsS;
-if(localStorage.getItem('hs_co')==='1')setTimeout(hsT,300);
-})();
+  // FAQ
+  document.querySelectorAll('.faq-q').forEach(q=>{
+    q.addEventListener('click',()=>q.parentElement.classList.toggle('open'));
+  });
+  // Reveal
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
 </body>
 </html>
