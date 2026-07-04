@@ -16,12 +16,12 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, getListingByUrl } = require('./src/database');
 const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
-const { normaliseCity, getScraperHealth, setAdminBot } = require('./src/scraper');
+const { normaliseCity, getScraperHealth, setAdminBot, rowToListing } = require('./src/scraper');
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
-const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext } = require('./src/score');
+const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext, resolveCityKey, UNIFIED_PRICE_BENCHMARK_ENABLED } = require('./src/score');
 const { calculateDealScore } = require('./src/deal_score');
 const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 
@@ -425,6 +425,31 @@ app.get('/api/listing-tips', (req, res) => {
   const docReadiness = getDocumentReadiness(user, listing);
   const competitionCtx = getCompetitionContext(listing);
 
+  // CBS/Leefbaarometer are written to the listings table by the scraper's async external-data
+  // enrichment, which can finish after this listing was already cached for the alert — so the
+  // cached in-memory copy may not have them yet even though the DB row now does. Re-read the
+  // row by URL to catch that case; if anything fails, the neighbourhood card is simply omitted.
+  let neighbourhoodCtx = null;
+  try {
+    let cbsRaw = listing.cbsContext || null;
+    let lbmScore = listing.leefbaarometerScore ?? null;
+    if ((!cbsRaw || lbmScore == null) && listing.url) {
+      const row = getListingByUrl.get(listing.url);
+      if (row) {
+        cbsRaw = cbsRaw || row.cbs_context || null;
+        lbmScore = lbmScore != null ? lbmScore : (row.leefbaarometer_score ?? null);
+      }
+    }
+    const cbs = cbsRaw ? JSON.parse(cbsRaw) : null;
+    if (cbs || lbmScore != null) {
+      neighbourhoodCtx = {
+        leefbaarometerScore: lbmScore != null ? Math.round(lbmScore * 10) / 10 : null,
+        cbsInwoners: cbs?.inwoners ?? null,
+        cbsGemInkomen: cbs?.gemInkomen ?? null,
+      };
+    }
+  } catch (e) { console.error('[api/listing-tips] neighbourhood context failed (non-fatal):', e.message); }
+
   let data;
   if (isKoop) {
     const { listingTips, profileTips, generalTips, tips } = getBuyerTips(listing, user || {});
@@ -439,6 +464,7 @@ app.get('/api/listing-tips', (req, res) => {
       persona,
       documentReadiness: docReadiness,
       competitionContext: competitionCtx,
+      neighbourhoodContext: neighbourhoodCtx,
     };
   } else {
     const intel = getListingIntelligence(listing, user || {});
@@ -459,6 +485,7 @@ app.get('/api/listing-tips', (req, res) => {
       persona,
       documentReadiness: docReadiness,
       competitionContext: competitionCtx,
+      neighbourhoodContext: neighbourhoodCtx,
     };
   }
   tipsCache.set(cacheKey, { data, ts: Date.now() });
@@ -481,6 +508,11 @@ app.post('/api/generate-letter-web', async (req, res) => {
 
   const selectedTips = [...(selectedTipTexts || [])];
   if (extraContext && extraContext.trim()) selectedTips.push(extraContext.trim());
+  try {
+    for (const tip of buildAutoLetterTips(listing, user)) {
+      if (!selectedTips.includes(tip)) selectedTips.push(tip);
+    }
+  } catch (e) { console.error('[api/generate-letter-web] auto tips failed (non-fatal):', e.message); }
 
   try {
     const hetznerUrl = process.env.HETZNER_URL;
@@ -844,7 +876,7 @@ app.post('/api/modify-letter-web', async (req, res) => {
 app.post('/api/rent-assistant', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { tab, userMessage, listingContext, chatId } = req.body;
+  const { tab, userMessage, listingContext, chatId, cacheId } = req.body;
   if (!userMessage || typeof userMessage !== 'string') return res.status(400).json({ error: 'userMessage required' });
   if (userMessage.length > 2000) return res.status(400).json({ error: 'userMessage must be under 2000 characters' });
   if (tab !== undefined && typeof tab !== 'string') return res.status(400).json({ error: 'tab must be a string' });
@@ -859,18 +891,25 @@ app.post('/api/rent-assistant', async (req, res) => {
     if (chatId) {
       try { user = getUser.get(String(chatId)); } catch (_) {}
     }
+    let enrichedContext = listingContext;
+    if (cacheId) {
+      try {
+        const entry = getCachedEntry(cacheId);
+        if (entry && entry.listing) enrichedContext = (listingContext || '') + buildIntelligenceContext(entry.listing, user);
+      } catch (e) { console.error('[api/rent-assistant] intelligence enrichment failed (non-fatal):', e.message); }
+    }
     const promise = (async () => {
       if (hetznerUrl && adminKey) {
         const r = await timedFetch(`${hetznerUrl}/api/generate-rent-assistant`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-          body: JSON.stringify({ tab, userMessage, user, listingContext }),
+          body: JSON.stringify({ tab, userMessage, user, listingContext: enrichedContext }),
         });
         const data = await r.json();
         if (!r.ok) throw new Error('Hetzner error');
         return data;
       }
-      return generateRentAssistantResponse({ tab, userMessage, user, listingContext });
+      return generateRentAssistantResponse({ tab, userMessage, user, listingContext: enrichedContext });
     })();
     pendingRequests.set(reqKey, promise);
     const result = await promise;
@@ -887,7 +926,7 @@ app.post('/api/rent-assistant', async (req, res) => {
 app.post('/api/buy-assistant', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { tab, userMessage, listingContext, chatId } = req.body;
+  const { tab, userMessage, listingContext, chatId, cacheId, dealFields } = req.body;
   if (!userMessage || typeof userMessage !== 'string') return res.status(400).json({ error: 'userMessage required' });
   if (userMessage.length > 2000) return res.status(400).json({ error: 'userMessage must be under 2000 characters' });
   if (tab !== undefined && typeof tab !== 'string') return res.status(400).json({ error: 'tab must be a string' });
@@ -902,18 +941,43 @@ app.post('/api/buy-assistant', async (req, res) => {
     if (chatId) {
       try { user = getUser.get(String(chatId)); } catch (_) {}
     }
+    let enrichedContext = listingContext;
+    if (cacheId) {
+      try {
+        const entry = getCachedEntry(cacheId);
+        if (entry && entry.listing) enrichedContext = (listingContext || '') + buildIntelligenceContext(entry.listing, user);
+      } catch (e) { console.error('[api/buy-assistant] intelligence enrichment failed (non-fatal):', e.message); }
+    }
+    // Property Analysis tab (dealFields): score.js is the single source of truth for the
+    // price benchmark — resolve it here instead of leaning solely on the static table baked
+    // into the systems[2] prompt. Any failure (unknown city, missing fields, flag off) leaves
+    // enrichedContext untouched and the prompt's own static table remains the fallback.
+    if (UNIFIED_PRICE_BENCHMARK_ENABLED && dealFields && dealFields.price && dealFields.area && dealFields.location) {
+      try {
+        const resolved = resolveCityKey(dealFields.location);
+        if (resolved) {
+          const intel = getPriceIntelligence({
+            priceNumber: parseFloat(dealFields.price), area: parseFloat(dealFields.area),
+            city: resolved.city, neighbourhood: resolved.neighbourhood, transactionType: 'koop',
+          });
+          if (intel) {
+            enrichedContext = (enrichedContext || '') + `\n\nLive benchmark for this area: EUR ${intel.benchmarkPpm2}/m2 (${intel.source === 'live' ? `live data, ${intel.sampleSize} recent listings` : 'city estimate'}). This asking price is ${intel.diffPct > 0 ? '+' : ''}${intel.diffPct}% vs that benchmark: ${intel.label}. Use this instead of the static benchmark table above when they conflict.`;
+          }
+        }
+      } catch (e) { console.error('[api/buy-assistant] price benchmark enrichment failed (non-fatal):', e.message); }
+    }
     const promise = (async () => {
       if (hetznerUrl && adminKey) {
         const r = await timedFetch(`${hetznerUrl}/api/generate-buy-assistant`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-          body: JSON.stringify({ tab, userMessage, user, listingContext }),
+          body: JSON.stringify({ tab, userMessage, user, listingContext: enrichedContext }),
         });
         const data = await r.json();
         if (!r.ok) throw new Error('Hetzner error');
         return data;
       }
-      return generateBuyAssistantResponse({ tab, userMessage, user, listingContext });
+      return generateBuyAssistantResponse({ tab, userMessage, user, listingContext: enrichedContext });
     })();
     pendingRequests.set(reqKey, promise);
     const result = await promise;
@@ -927,6 +991,61 @@ app.post('/api/buy-assistant', async (req, res) => {
 });
 
 // New tool API endpoints — all proxy to Hetzner with local fallback
+
+// Fix: rich listing intelligence (price vs benchmark, landlord persona, competition,
+// document readiness) was already computed by score.js for the Analyse-tab display cards,
+// but never reached the actual generation calls (Letter/Viewing/Negotiation/Buy tabs) — those
+// only ever saw a thin "address - city - price - description" string. This turns the same
+// score.js signals into a compact, explicit context block for the generation layer.
+// Best-effort only: any failure just means the block is omitted, callers behave exactly as
+// before.
+const ASSISTANT_INTELLIGENCE_ENABLED = process.env.ENABLE_ASSISTANT_INTELLIGENCE !== 'false';
+function buildIntelligenceContext(listing, user) {
+  if (!ASSISTANT_INTELLIGENCE_ENABLED || !listing) return '';
+  const lines = [];
+  try {
+    const priceIntel = getPriceIntelligence(listing);
+    if (priceIntel) {
+      lines.push(`Price vs market: ${priceIntel.label} (${priceIntel.diffPct > 0 ? '+' : ''}${priceIntel.diffPct}% vs ${priceIntel.source === 'live' ? 'a live' : 'an estimated'} benchmark of EUR ${priceIntel.benchmarkPpm2}/m2).`);
+    }
+  } catch (_) {}
+  try {
+    const persona = detectLandlordPersona(listing);
+    if (persona) lines.push(`Landlord type: ${persona.label} (confidence ${persona.confidence}). What they want: ${persona.whatTheyWant} Strategy: ${persona.strategy}`);
+  } catch (_) {}
+  try {
+    const competitionCtx = getCompetitionContext(listing);
+    if (competitionCtx) lines.push(`Competition: roughly ${competitionCtx.estimated.low}-${competitionCtx.estimated.high} other applicants (${competitionCtx.level}). ${competitionCtx.timingMessage}`);
+  } catch (_) {}
+  try {
+    const docReadiness = getDocumentReadiness(user, listing);
+    if (docReadiness && !docReadiness.ready) lines.push(`Document readiness: ${docReadiness.score}%. ${docReadiness.urgency || ''}`);
+  } catch (_) {}
+  if (!lines.length) return '';
+  return `\n\nVerified listing intelligence (this is computed from real data — prefer it over general assumptions):\n${lines.join('\n')}`;
+}
+
+// Same signals as buildIntelligenceContext, but as short imperative tip strings for the
+// Letter tab, which takes a "selectedTips" array (used to shape angle/emphasis) rather than
+// a free-text context block. Automatic tips are added alongside whatever the user selected
+// manually — this does not replace user choice, only fills the gap when the user selects none.
+function buildAutoLetterTips(listing, user) {
+  if (!ASSISTANT_INTELLIGENCE_ENABLED || !listing) return [];
+  const tips = [];
+  try {
+    const persona = detectLandlordPersona(listing);
+    if (persona && persona.strategy) tips.push(`${persona.label}: ${persona.strategy}`);
+  } catch (_) {}
+  try {
+    const priceIntel = getPriceIntelligence(listing);
+    if (priceIntel && (priceIntel.color === 'green' || priceIntel.color === 'red')) tips.push(priceIntel.action);
+  } catch (_) {}
+  try {
+    const docReadiness = getDocumentReadiness(user, listing);
+    if (docReadiness && docReadiness.urgency) tips.push(docReadiness.urgency);
+  } catch (_) {}
+  return tips;
+}
 
 async function timedFetch(url, options) {
   const controller = new AbortController();
@@ -982,7 +1101,20 @@ app.post('/api/rejection-analyser', async (req, res) => {
   try {
     let userProfile = {};
     if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
-    const data = await proxyToHetzner('/api/generate-rejection-analysis', { applications, userProfile }, () => generateRejectionAnalysisDirect({ applications, userProfile }));
+    // Cross-reference the user's self-reported text with their own objective outcome history
+    // (real Application Score at alert time vs what they later marked as applied/rejected/
+    // accepted) so the diagnosis isn't based purely on what they remember to type in.
+    // Best-effort: any failure just means this list stays empty and the analysis falls back
+    // to self-reported text only, exactly as before.
+    let outcomeHistory = [];
+    if (chatId) {
+      try {
+        outcomeHistory = getTrackerOutcomesWithScoresForChat.all(String(chatId)).map(r => ({
+          address: r.listing_address || null, status: r.status, score: r.score, dealScore: r.deal_score, updatedAt: r.updated_at,
+        }));
+      } catch (e) { console.error('[api/rejection-analyser] outcome history lookup failed (non-fatal):', e.message); }
+    }
+    const data = await proxyToHetzner('/api/generate-rejection-analysis', { applications, userProfile, outcomeHistory }, () => generateRejectionAnalysisDirect({ applications, userProfile, outcomeHistory }));
     res.json(data);
   } catch (err) { console.error('[api/rejection-analyser]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
 });
@@ -1033,13 +1165,57 @@ app.post('/api/tenant-rights-question', async (req, res) => {
   } catch (err) { console.error('[api/tenant-rights-question]', err.message); res.status(500).json({ error: 'Answer generation failed. Try again in a moment.' }); }
 });
 
+// Single source of truth for price-vs-benchmark verdicts computed from free-text listing
+// details (Deal Finder, Buy Assistant Property Analysis) — wraps score.js getPriceIntelligence,
+// the same function that powers real scraped listings and Telegram alerts. Always resolves to
+// { ok:false } rather than an error status on any miss so callers can silently fall back.
+app.post('/api/price-benchmark', (req, res) => {
+  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ ok: false, error: 'Too many requests.' });
+  if (!UNIFIED_PRICE_BENCHMARK_ENABLED) return res.json({ ok: false });
+  try {
+    const { price, area, location, type } = req.body;
+    const priceNumber = parseFloat(price);
+    const areaNumber = parseFloat(area);
+    if (!priceNumber || !areaNumber || !location) return res.json({ ok: false });
+    const resolved = resolveCityKey(location);
+    if (!resolved) return res.json({ ok: false });
+    const intel = getPriceIntelligence({
+      priceNumber, area: areaNumber, city: resolved.city,
+      neighbourhood: resolved.neighbourhood, transactionType: type === 'koop' ? 'koop' : 'huur',
+    });
+    if (!intel) return res.json({ ok: false });
+    return res.json({ ok: true, intel, resolvedCity: resolved.city });
+  } catch (err) {
+    console.error('[api/price-benchmark]', err.message);
+    return res.json({ ok: false });
+  }
+});
+
 app.post('/api/explain-deal', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { dealData } = req.body;
   if (!dealData) return res.status(400).json({ error: 'dealData required' });
   try {
-    const data = await proxyToHetzner('/api/generate-deal-explain', { dealData }, () => generateDealExplainDirect({ dealData }));
+    // score.js is the single source of truth for the benchmark verdict — recompute it
+    // server-side from whatever the client sent and prefer it over the client's own
+    // calculation when it succeeds. Falls back to the client-supplied dealData untouched
+    // if resolution fails for any reason (unknown city, missing fields, flag off).
+    let enrichedDealData = dealData;
+    if (UNIFIED_PRICE_BENCHMARK_ENABLED) {
+      try {
+        const resolved = resolveCityKey(dealData.city || dealData.location || '');
+        if (resolved && dealData.price && dealData.area) {
+          const intel = getPriceIntelligence({
+            priceNumber: parseFloat(dealData.price), area: parseFloat(dealData.area),
+            city: resolved.city, neighbourhood: resolved.neighbourhood, transactionType: 'koop',
+          });
+          if (intel) enrichedDealData = { ...dealData, benchmark: intel.benchmarkPpm2, ppm2verdict: intel.label, benchmarkSource: intel.source };
+        }
+      } catch (e) { console.error('[api/explain-deal] benchmark enrichment failed (non-fatal):', e.message); }
+    }
+    const data = await proxyToHetzner('/api/generate-deal-explain', { dealData: enrichedDealData }, () => generateDealExplainDirect({ dealData: enrichedDealData }));
     res.json(data);
   } catch (err) { console.error('[api/explain-deal]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
 });

@@ -4,6 +4,38 @@ const { getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getAgencyInsights
 const NEIGHBOURHOOD_BENCHMARK_ENABLED = process.env.ENABLE_NEIGHBOURHOOD_BENCHMARK !== 'false';
 const NEIGHBOURHOOD_SAMPLE_MIN = 8;
 
+// Kill-switch for callers outside the alert pipeline (Deal Finder, Buy Assistant free-text
+// forms) that resolve a city from typed text and ask getPriceIntelligence() for a verdict.
+// Disabling this only stops those callers from asking score.js — it does not touch the
+// Telegram alert / Analyse-tab path, which always uses getPriceIntelligence() directly.
+const UNIFIED_PRICE_BENCHMARK_ENABLED = process.env.ENABLE_UNIFIED_PRICE_BENCHMARK !== 'false';
+
+// Known city keys used across every benchmark table in this file — kept as one list so
+// free-text city resolution (resolveCityKey) can never drift out of sync with the tables.
+const KNOWN_CITY_KEYS = [
+  'amsterdam', 'rotterdam', 'utrecht', 'den-haag', 'haarlem', 'eindhoven',
+  'groningen', 'maastricht', 'almere', 'delft', 'leiden', 'amstelveen',
+  'tilburg', 'breda',
+];
+
+// Resolves a free-text location string (e.g. "Amsterdam Oost", "Utrecht Centrum, near the station")
+// to a known city key + the remaining text as a best-effort neighbourhood guess.
+// Returns null if no known city is found — callers must treat that as "cannot benchmark".
+function resolveCityKey(text) {
+  const raw = (text || '').toLowerCase();
+  if (!raw) return null;
+  for (const key of KNOWN_CITY_KEYS) {
+    const spaced = key.replace(/-/g, ' ');
+    const idx = raw.indexOf(spaced) >= 0 ? raw.indexOf(spaced) : raw.indexOf(key);
+    if (idx === -1) continue;
+    const before = raw.slice(0, idx).trim();
+    const after = raw.slice(idx + spaced.length).replace(/^[\s,]+/, '').trim();
+    const neighbourhood = (after || before || '').split(',')[0].trim();
+    return { city: key, neighbourhood: neighbourhood || null };
+  }
+  return null;
+}
+
 // ─────────────────────────────────────────────
 // APPLICATION STRENGTH — 5 weighted pillars
 // ─────────────────────────────────────────────
@@ -1230,11 +1262,24 @@ function getPriceIntelligence(listing) {
     }
   } catch (_) {}
 
-  const STATIC = {
+  // Last-resort static fallback, city-level only (the live tiers above are far more accurate
+  // when data exists). Rent (huur) and purchase (koop) are two different orders of magnitude
+  // per m² — they must never share one table.
+  const STATIC_HUUR = {
     amsterdam: 28, haarlem: 24, leiden: 21, utrecht: 22,
     delft: 19, 'den-haag': 17, rotterdam: 18, eindhoven: 15,
     groningen: 12, maastricht: 13, almere: 14,
+    amstelveen: 26, tilburg: 11, breda: 12,
   };
+  // Consolidated from the 2025 city-level averages formerly hardcoded in the Buy Assistant
+  // and Deal Finder prompts (single source of truth going forward).
+  const STATIC_KOOP = {
+    amsterdam: 7800, haarlem: 5700, leiden: 5300, utrecht: 6000,
+    delft: 4900, 'den-haag': 5200, rotterdam: 4200, eindhoven: 4000,
+    groningen: 3400, maastricht: 3500, almere: 3300,
+    amstelveen: 5800, tilburg: 3200, breda: 3600,
+  };
+  const STATIC = type === 'koop' ? STATIC_KOOP : STATIC_HUUR;
   const staticBenchmark = STATIC[city];
   if (!staticBenchmark) return null;
   const ppm2 = price / area;
@@ -1439,4 +1484,4 @@ function getAgencyTip(listing) {
   return null;
 }
 
-module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getListingIntelligence, getBuyerTips, getPillarBreakdown, detectLandlordIntent, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext, analyseDescription, getAgencyTip };
+module.exports = { calculateScore, scoreLabel, strengthLabel, getImprovementTips, getListingIntelligence, getBuyerTips, getPillarBreakdown, detectLandlordIntent, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext, analyseDescription, getAgencyTip, resolveCityKey, UNIFIED_PRICE_BENCHMARK_ENABLED };

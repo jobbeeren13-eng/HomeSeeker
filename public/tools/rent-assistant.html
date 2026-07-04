@@ -177,6 +177,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .an-timing-badge.old{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.35)}
 
 .an-signals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.an-signals.has-nb{grid-template-columns:repeat(4,1fr)}
 .an-sig{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 16px}
 .an-sig-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);margin-bottom:6px}
 .an-sig-value{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2}
@@ -299,6 +300,11 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
         <div class="an-sig-label">Landlord type</div>
         <div class="an-sig-value" id="sig-type">—</div>
         <div class="an-sig-sub" id="sig-type-sub"></div>
+      </div>
+      <div class="an-sig" id="sig-nb-wrap" style="display:none">
+        <div class="an-sig-label">Neighbourhood</div>
+        <div class="an-sig-value" id="sig-nb">—</div>
+        <div class="an-sig-sub" id="sig-nb-sub"></div>
       </div>
     </div>
 
@@ -745,6 +751,36 @@ function renderAnalyse(listing,intel){
     }
   }
 
+  // ── Block 2: Neighbourhood signal (CBS + Leefbaarometer, shown only when data exists) ──
+  const sigNbWrap=document.getElementById('sig-nb-wrap');
+  const sigNb=document.getElementById('sig-nb');
+  const sigNbSub=document.getElementById('sig-nb-sub');
+  const nb=d?.neighbourhoodContext;
+  if(sigNbWrap){
+    if(nb&&(nb.leefbaarometerScore!=null||nb.cbsGemInkomen!=null)){
+      sigNbWrap.style.display='';
+      document.getElementById('sig-comp')?.closest('.an-signals')?.classList.add('has-nb');
+      if(sigNb){
+        if(nb.leefbaarometerScore!=null){
+          const lb=nb.leefbaarometerScore;
+          const cls=lb>=0.5?'green':lb>=-0.5?'':'red';
+          sigNb.textContent=lb.toFixed(1);sigNb.className='an-sig-value '+cls;
+        } else {
+          sigNb.textContent='—';sigNb.className='an-sig-value';
+        }
+      }
+      if(sigNbSub){
+        const parts=[];
+        if(nb.leefbaarometerScore!=null)parts.push('Livability score');
+        if(nb.cbsGemInkomen)parts.push(`avg income €${Math.round(nb.cbsGemInkomen/1000)}k`);
+        sigNbSub.textContent=parts.join(' · ');
+      }
+    } else {
+      sigNbWrap.style.display='none';
+      document.getElementById('sig-comp')?.closest('.an-signals')?.classList.remove('has-nb');
+    }
+  }
+
   // ── Block 3: Strategy card ──
   const stratCard=document.getElementById('an-strategy');
   if(stratCard&&d?.persona?.strategy){
@@ -898,7 +934,7 @@ async function submit(tab){
   if(!msg){showE(tab,ERR[tab]||'Please fill in the required field.');return;}
   hideE(tab);setLoad(tab,true);
   try{
-    const r=await fetch('/api/rent-assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tab:API_TAB_MAP[tab],userMessage:msg,chatId,listingContext})});
+    const r=await fetch('/api/rent-assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tab:API_TAB_MAP[tab],userMessage:msg,chatId,listingContext,cacheId})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'Request failed');
     lastResp[tab]=d.response;

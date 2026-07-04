@@ -1023,13 +1023,14 @@ Return only valid JSON. No explanation, no code blocks.`;
   return JSON.parse(jsonMatch[0]);
 }
 
-async function generateRejectionAnalysisDirect({ applications, userProfile = {} }) {
+async function generateRejectionAnalysisDirect({ applications, userProfile = {}, outcomeHistory = [] }) {
+  const hasOutcomeHistory = Array.isArray(outcomeHistory) && outcomeHistory.length > 0;
   const systemPrompt = `You are a Dutch rental market expert who analyses rejection patterns and tells expat tenants exactly what to fix. Return a JSON object with exactly these keys:
 - "mostLikelyReasons": array of 2-4 strings, each a specific likely rejection reason (income gap, response speed, document quality, profile mismatch, letter tone, competition level)
 - "fixPriorityList": array of objects with keys "fix" (what to fix), "howToFix" (one sentence), "impact" ("high", "medium", or "low")  - ordered from most to least impactful. Max 5 items.
 - "patternFound": if 3+ rejections provided, identify the common thread in one sentence. Otherwise null.
 - "pivotAdvice": should they keep applying to similar listings or adjust criteria? 2 sentences.
-- "confidenceScore": 0-100 how confident you are in this analysis based on the data provided
+- "confidenceScore": 0-100 how confident you are in this analysis based on the data provided${hasOutcomeHistory ? '\n- "scoreCorrelation": one sentence comparing their objective Application Scores at alert time against the actual outcomes recorded below — e.g. whether high scores still led to rejections (points to a letter/speed problem, not a fit problem) or low scores did (points to a fit problem, not a presentation problem). Only state this if the objective data below actually shows a pattern.' : ''}
 
 Return only valid JSON. No explanation, no code blocks.`;
 
@@ -1037,10 +1038,16 @@ Return only valid JSON. No explanation, no code blocks.`;
     ? applications.map((a, i) => `Application ${i + 1}: ${JSON.stringify(a)}`).join('\n')
     : String(applications).slice(0, 3000);
 
-  const lines = [`Past applications/rejections:\n${appStr}`];
+  const lines = [`Past applications/rejections (self-reported by the user):\n${appStr}`];
   if (userProfile.inkomen) lines.push(`Monthly income: EUR ${userProfile.inkomen}`);
   if (userProfile.contract_type) lines.push(`Contract type: ${userProfile.contract_type}`);
   if (userProfile.profiel_type) lines.push(`Profile: ${userProfile.profiel_type}`);
+  if (hasOutcomeHistory) {
+    const histStr = outcomeHistory
+      .map(h => `${h.address || 'Listing'}: Application Score ${h.score ?? 'n/a'}${h.dealScore != null ? `, Deal Score ${h.dealScore}` : ''} at alert time -> status: ${h.status}`)
+      .join('\n');
+    lines.push(`Objective outcome history from HomeSeeker's own tracking (this is real data, not self-reported — use it to verify or correct the user's account above):\n${histStr}`);
+  }
   lines.push('Analyse and return the JSON.');
 
   // User profile data included in prompt - covered under privacy policy section 4

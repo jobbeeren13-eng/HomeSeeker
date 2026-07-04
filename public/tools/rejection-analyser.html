@@ -123,6 +123,11 @@ h1 span{color:var(--green)}
         <div class="info-block" id="pattern"></div>
       </div>
 
+      <div id="score-correlation-block" style="display:none">
+        <div class="section-label">Your scores vs what actually happened</div>
+        <div class="info-block" id="score-correlation"></div>
+      </div>
+
       <div class="section-label">Strategy advice</div>
       <div class="info-block" id="pivot"></div>
 
@@ -136,6 +141,7 @@ h1 span{color:var(--green)}
 
 <script>
 let appCount = 1;
+const chatId = new URLSearchParams(location.search).get('chat_id') || null;
 
 function addApp() {
   const idx = appCount++;
@@ -174,7 +180,7 @@ async function analyse() {
   try {
     const r = await fetch('/api/rejection-analyser', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ applications: apps, userProfile: { user_description: profile } }),
+      body: JSON.stringify({ applications: apps, userProfile: { user_description: profile }, chatId }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed');
@@ -207,6 +213,12 @@ function render(d) {
   if (d.patternFound) {
     document.getElementById('pattern-block').style.display = 'block';
     document.getElementById('pattern').textContent = d.patternFound;
+  }
+
+  // Score vs actual outcome (only present when the user has tracked application history)
+  if (d.scoreCorrelation) {
+    document.getElementById('score-correlation-block').style.display = 'block';
+    document.getElementById('score-correlation').textContent = d.scoreCorrelation;
   }
 
   document.getElementById('pivot').textContent = d.pivotAdvice || '';

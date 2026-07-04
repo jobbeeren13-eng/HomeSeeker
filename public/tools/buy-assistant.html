@@ -694,8 +694,18 @@ async function submit(tab){
   const msg=buildMsg(tab);
   if(!msg){showE(tab,ERR[tab]||'Please fill in the required fields.');return;}
   hideE(tab);setLoad(tab,true);
+  // Property Analysis (tab 2): send structured fields alongside the free-text message so the
+  // server can look up the real, live price benchmark (score.js) instead of relying only on
+  // the static table baked into the prompt.
+  let dealFields=null;
+  if(tab===2){
+    const price=(document.getElementById('t2-price')?.value||'').trim();
+    const area=(document.getElementById('t2-area')?.value||'').trim();
+    const loc=(document.getElementById('t2-loc')?.value||'').trim();
+    if(price&&area&&loc)dealFields={price,area,location:loc};
+  }
   try{
-    const r=await fetch('/api/buy-assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tab:API_TAB_MAP[tab],userMessage:msg,chatId,listingContext})});
+    const r=await fetch('/api/buy-assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tab:API_TAB_MAP[tab],userMessage:msg,chatId,listingContext,dealFields,cacheId})});
     const d=await r.json();
     if(!r.ok)throw new Error(d.error||'Request failed');
     lastResp[tab]=d.response;

@@ -453,6 +453,21 @@ const getTrackerOutcomesWithScores = db.prepare(`
     )
   WHERE os.score IS NOT NULL
 `);
+// Same join, scoped to one user — used by the Rejection Analyser to cross-reference the
+// user's own objective outcome history (real Application Score at alert time vs what actually
+// happened) alongside whatever they type in about past rejections.
+const getTrackerOutcomesWithScoresForChat = db.prepare(`
+  SELECT at.listing_url, at.listing_address, at.status, at.updated_at, os.score, os.deal_score
+  FROM application_tracker at
+  JOIN outcome_snapshots os
+    ON os.id = (
+      SELECT id FROM outcome_snapshots os2
+      WHERE os2.chat_id = at.chat_id AND os2.listing_url = at.listing_url
+      ORDER BY os2.alerted_at DESC LIMIT 1
+    )
+  WHERE os.score IS NOT NULL AND at.chat_id = ?
+  ORDER BY at.updated_at DESC LIMIT 20
+`);
 const countApplicationTrackerAll = db.prepare('SELECT COUNT(*) as c FROM application_tracker');
 const upsertApplicationStatus = db.prepare(`
   INSERT INTO application_tracker (chat_id, listing_url, listing_address, listing_price, listing_image, status, notes)
@@ -560,7 +575,7 @@ module.exports = {
   getRecentListings,
   getFavorites, addFavorite, removeFavorite,
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
-  getTrackerOutcomesWithScores, countApplicationTrackerAll, insertOutcomeSnapshot,
+  getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, insertOutcomeSnapshot,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
   insertScraperStat, getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getListingVolumeByCity,

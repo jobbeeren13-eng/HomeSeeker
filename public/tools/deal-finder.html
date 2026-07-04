@@ -185,8 +185,26 @@ const BENCHMARKS = {
 const ENERGY_SCORE = { A: 10, B: 8, C: 5, D: 0, E: -5, F: -10, G: -15 };
 
 let calcData = {};
+let benchmarkUpgradeTimer = null;
 
-function calculate() {
+// Best-effort upgrade: score.js (via /api/price-benchmark) is the single source of truth for
+// price benchmarks. This re-runs calculate() with the live/DB-backed figure when available,
+// replacing the hardcoded BENCHMARKS table used for the instant first render. Any failure
+// (network, unknown city, feature flag off) silently leaves the instant estimate as-is.
+function upgradeBenchmark(price, area, city) {
+  clearTimeout(benchmarkUpgradeTimer);
+  if (!price || !area || !city) return;
+  benchmarkUpgradeTimer = setTimeout(() => {
+    fetch('/api/price-benchmark', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price, area, location: city.replace(/-/g, ' '), type: 'koop' }),
+    }).then(r => r.ok ? r.json() : null).then(d => {
+      if (d && d.ok && d.intel && d.intel.benchmarkPpm2) calculate(d.intel.benchmarkPpm2);
+    }).catch(() => {});
+  }, 400);
+}
+
+function calculate(benchmarkOverride) {
   const price = parseFloat(document.getElementById('price').value) || 0;
   const area = parseFloat(document.getElementById('area').value) || 0;
   const city = document.getElementById('city').value;
@@ -200,7 +218,7 @@ function calculate() {
   if (!price) { document.getElementById('result-instant').classList.remove('on'); return; }
 
   const ppm2 = area > 0 ? Math.round(price / area) : 0;
-  const benchmark = BENCHMARKS[city] || null;
+  const benchmark = (benchmarkOverride != null ? benchmarkOverride : BENCHMARKS[city]) || null;
 
   // Deal score
   let score = 50;
@@ -311,6 +329,8 @@ function calculate() {
 
   document.getElementById('result-instant').innerHTML = html;
   document.getElementById('result-instant').classList.add('on');
+
+  if (benchmarkOverride == null) upgradeBenchmark(price, area, city);
 }
 
 async function getAIVerdict() {

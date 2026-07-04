@@ -310,7 +310,7 @@ function createBot(useWebhook = false) {
       reply_markup: {
         inline_keyboard: [
           [{ text: '🤖 Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}` }, { text: '💬 Landlord Reply Coach', url: `${BASE_URL}/tools/landlord-reply` }],
-          [{ text: '🔍 Rejection Analyser', url: `${BASE_URL}/tools/rejection-analyser` }, { text: '💰 Income Check', url: `${BASE_URL}/tools/income-check` }],
+          [{ text: '🔍 Rejection Analyser', url: `${BASE_URL}/tools/rejection-analyser?chat_id=${chatId}` }, { text: '💰 Income Check', url: `${BASE_URL}/tools/income-check` }],
           [{ text: '📄 Reference Letters', url: `${BASE_URL}/tools/reference-letter` }, { text: '👁 Viewing Feedback', url: `${BASE_URL}/tools/viewing-feedback` }],
           [{ text: '⚖️ Tenant Rights', url: `${BASE_URL}/tools/tenant-rights` }, { text: '📖 Rental Guide', url: `${BASE_URL}/guide/rent` }],
           [{ text: '🏡 Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}` }, { text: '🎯 Deal Finder', url: `${BASE_URL}/tools/deal-finder` }],
