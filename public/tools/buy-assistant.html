@@ -52,10 +52,11 @@ body.has-lb .mobile-bar{top:92px}
 }
 body.has-lb .side-nav.mobile-menu-open{top:136px;max-height:calc(100vh - 136px)}
 
-/* Layout: dropdown nav menu (hidden until opened) + wrap (content). .wrap is centered within
-   page-outer instead of sitting left-aligned with bare space to its right — that empty gap is
-   what was left over from the old permanent side-nav column's width. */
-.page-outer{display:flex;gap:24px;max-width:960px;margin:0 auto;margin-top:100px;justify-content:center}
+/* Layout: dropdown nav menu (hidden until opened) + wrap (content). page-outer's own max-width
+   is sized to exactly fit .wrap (720px, no other sidebar content here to fill extra space), so
+   .wrap sits left-aligned with no bare space left over — the whole page-outer box remains
+   horizontally centered on the page via its own auto margins. */
+.page-outer{display:flex;gap:24px;max-width:720px;margin:0 auto;margin-top:100px}
 body.has-lb .page-outer{margin-top:136px}
 .wrap{max-width:720px;flex:1;min-width:0;padding:32px 24px 120px}
 
@@ -167,7 +168,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 @media(max-width:767px){
   .mob-nav{display:block}
-  .page-outer{flex-direction:column;justify-content:flex-start}
+  .page-outer{flex-direction:column;max-width:none}
   .wrap{padding:20px 16px 100px;max-width:none}
   .row2{grid-template-columns:1fr}
   .side-nav.mobile-menu-open{padding:14px 12px 20px}

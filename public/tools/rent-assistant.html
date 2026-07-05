@@ -182,11 +182,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 }
 body.has-pc .side-nav.mobile-menu-open{top:188px;max-height:calc(100vh - 188px)}
 
-/* Content column (main-col) + optional Scout-tips sidebar, centered as a group within
-   page-outer instead of stretching main-col to fill the leftover width the old permanent
-   side-nav column used to occupy — that stretch is what made the page look left-heavy with a
-   bare right half. */
-.page-outer{display:flex;gap:24px;max-width:1300px;margin:100px auto 0;padding:28px 24px 80px;justify-content:center}
+/* Content column (main-col) left-aligned, Scout-tips sidebar filling the space to its right —
+   page-outer's own max-width is sized to exactly fit main-col(720) + gap(24) + sidebar(296) +
+   its own horizontal padding(48), so there is no leftover bare space to the right of the
+   sidebar. When the sidebar is hidden (analyse-mode) page-outer tightens further to just fit
+   main-col alone, for the same reason. */
+.page-outer{display:flex;gap:24px;max-width:1088px;margin:100px auto 0;padding:28px 24px 80px}
+.page-outer.analyse-mode{max-width:768px}
 .main-col{flex:1;max-width:720px;min-width:0}
 .sidebar{width:296px;flex-shrink:0;display:none}
 .sb-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 18px;margin-bottom:12px}
@@ -252,7 +254,8 @@ body.has-pc .side-nav.mobile-menu-open{top:188px;max-height:calc(100vh - 188px)}
 @media(min-width:768px){.sidebar{display:block}.page-outer.analyse-mode .sidebar{display:none}}
 @media(max-width:767px){
   .mob-nav{display:flex}
-  .page-outer{padding:16px 16px 72px;flex-direction:column;justify-content:flex-start}
+  .page-outer{padding:16px 16px 72px;flex-direction:column}
+  .page-outer,.page-outer.analyse-mode{max-width:none}
   .main-col{max-width:none}
   .side-nav.mobile-menu-open{padding:14px 12px 20px}
 }
