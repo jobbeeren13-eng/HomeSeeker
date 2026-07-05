@@ -357,6 +357,8 @@ const linkChatToCustomer = db.prepare(`
 `);
 const cancelUserByStripe = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE stripe_customer_id = ?');
 const cancelUserByChatId = db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE chat_id = ?');
+const createBareUserByChatId = db.prepare('INSERT OR IGNORE INTO users (chat_id, betaald, actief) VALUES (?, 1, 1)');
+const activateUserByChatId = db.prepare('UPDATE users SET betaald = 1, actief = 1 WHERE chat_id = ?');
 const setUserChatId = db.prepare('UPDATE users SET chat_id = ? WHERE email = ?');
  
 const isListingSent = db.prepare('SELECT 1 FROM sent_listings WHERE url = ? AND chat_id = ?');
@@ -603,6 +605,7 @@ module.exports = {
   getUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, upsertUser, setUserActive,
   setUserPaid, setUserPaidByCustomerId, createUserByCustomerId, linkChatToCustomer,
   cancelUserByStripe, cancelUserByChatId, setUserChatId, clearChatIdFromOthers,
+  createBareUserByChatId, activateUserByChatId,
   isListingSent, markListingSent, getChat, upsertChat,
   listingExists, getListingByUrl, getSentListingByFingerprint, insertListing,
   getUnsentListings, markListingGloballySent, updateListingDescription, updateListingImage,

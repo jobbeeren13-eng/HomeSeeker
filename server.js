@@ -26,7 +26,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, getListingByUrl, checkAndIncrementAiUsage, purgeOldAiUsage, purgeOldProcessedStripeEvents } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, createBareUserByChatId, activateUserByChatId, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, getListingByUrl, checkAndIncrementAiUsage, purgeOldAiUsage, purgeOldProcessedStripeEvents } = require('./src/database');
 const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot, rowToListing } = require('./src/scraper');
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry, signChatId, verifyChatToken } = require('./src/telegram');
@@ -430,6 +430,28 @@ app.post('/api/admin/fix-user', (req, res) => {
   } catch (err) {
     console.error('[api/admin/fix-user]', err.message);
     res.status(500).json({ error: 'Could not fix user' });
+  }
+});
+
+// Admin: force a chat_id to actief=1, betaald=1 (e.g. a test account) — creates a bare row if
+// none exists yet for that chat_id, otherwise updates the existing one in place.
+app.post('/api/admin/activate-chat', (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { chat_id } = req.body;
+  if (!chat_id) return res.status(400).json({ error: 'chat_id is required' });
+  const chatIdStr = String(chat_id).trim();
+
+  try {
+    createBareUserByChatId.run(chatIdStr);
+    activateUserByChatId.run(chatIdStr);
+    const updated = getUser.get(chatIdStr);
+    console.log(`[admin] activate-chat: chat_id=${chatIdStr} -> actief=${updated?.actief} betaald=${updated?.betaald}`);
+    res.json({ success: true, user: { chat_id: updated?.chat_id, betaald: updated?.betaald, actief: updated?.actief } });
+  } catch (err) {
+    console.error('[api/admin/activate-chat]', err.message);
+    res.status(500).json({ error: 'Could not activate chat_id' });
   }
 });
 
