@@ -43,13 +43,18 @@ body.has-pc .page-outer{margin-top:188px}
 .lbar-dot,.lbar-addr,.lbar-price{}
 
 
-/* ── Side nav (Linear-style vertical sidebar): main tabs grouped at top,
-   sub-tools grouped below. Desktop = vertical column to the left of the
-   content. Mobile = the "more tools" group re-flows into a horizontal
-   scrollable strip (the main tabs are covered by .mob-nav's bottom bar). ── */
+/* ── Side nav (Linear-style vertical sidebar): "Win a Rental" (the tools
+   that directly help win a rental — Analyse/Letter/Viewing Tips/Income
+   Check/Landlord Reply) is the prominent, primary group at the top.
+   "Resources" (Tenant Rights/Rejection Analyser/Reference Letter/Viewing
+   Feedback) is the quieter, secondary group below. Desktop = vertical
+   column to the left of the content. Mobile = the first 3 core tabs are
+   covered by .mob-nav's bottom bar and hidden here; every other item in
+   both groups re-flows into a horizontal scrollable strip. ── */
 .side-nav{display:flex;flex-direction:column;width:196px;flex-shrink:0}
 .side-nav-group{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
 .side-nav-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.3);padding:4px 12px 8px}
+.side-nav-label-win{color:#00c896}
 .tab{display:block;width:100%;text-align:left;padding:9px 12px;border:none;border-radius:8px;background:transparent;color:rgba(255,255,255,0.5);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
 .tab:hover{background:rgba(255,255,255,0.04);color:#fff}
 .tab.on{background:rgba(0,200,150,0.1);color:#00c896;font-weight:600}
@@ -57,6 +62,11 @@ body.has-pc .page-outer{margin-top:188px}
 .more-tool-btn{display:block;width:100%;text-align:left;font-size:13px;color:rgba(255,255,255,0.45);background:transparent;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
 .more-tool-btn:hover{background:rgba(255,255,255,0.04);color:#fff}
 .more-tool-btn.on{background:rgba(0,200,150,0.1);color:#00c896;font-weight:600}
+/* Win a Rental's two extra tools (Income Check, Landlord Reply) share the primary group's
+   visual weight — same size/weight as .tab, not the dimmer default .more-tool-btn look. */
+.win-tool-btn{font-size:14px;font-weight:500;color:rgba(255,255,255,0.5)}
+.win-tool-btn:hover{color:#fff}
+.win-tool-btn.on{color:#00c896;font-weight:600}
 
 .panel{display:none}
 .panel.on{display:block}
@@ -235,11 +245,11 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 @media(max-width:767px){
   .mob-nav{display:flex}
   .page-outer{padding:16px 16px 72px;flex-direction:column}
-  .side-nav{width:auto;flex-direction:row}
-  .side-nav-group-main{display:none} /* covered by .mob-nav bottom bar */
-  .side-nav-group-more{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-  .side-nav-group-more .side-nav-label{width:100%;padding:0 0 2px}
-  .side-nav-group-more .more-tool-btn{width:auto;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
+  .side-nav{width:auto;flex-direction:row;flex-wrap:wrap}
+  .side-nav .tab{display:none} /* the 3 core tabs are covered by .mob-nav's bottom bar */
+  .side-nav-group{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .side-nav-group .side-nav-label{width:100%;padding:0 0 2px}
+  .side-nav .more-tool-btn{width:auto;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
 }
 @media(max-width:420px){
   .prog-lbl{display:none}
@@ -393,19 +403,20 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 <div class="page-outer">
 <nav class="side-nav" id="side-nav">
-  <div class="side-nav-group side-nav-group-main" id="tabs">
+  <div class="side-nav-group side-nav-group-main side-nav-group-win" id="tabs">
+    <div class="side-nav-label side-nav-label-win">Win a Rental</div>
     <button class="tab" data-tab="0" onclick="switchTab(0)">Analyse</button>
     <button class="tab on" data-tab="1" onclick="switchTab(1)">Letter</button>
     <button class="tab" data-tab="2" onclick="switchTab(2)">Viewing Tips</button>
+    <button class="more-tool-btn win-tool-btn" id="more-btn-5" onclick="switchTab(5)">Income Check</button>
+    <button class="more-tool-btn win-tool-btn" id="more-btn-4" onclick="switchTab(4)">Landlord Reply</button>
   </div>
   <div class="side-nav-group side-nav-group-more">
-    <div class="side-nav-label">More rental tools</div>
-    <button class="more-tool-btn" id="more-btn-4" onclick="switchTab(4)">Landlord Reply</button>
-    <button class="more-tool-btn" id="more-btn-5" onclick="switchTab(5)">Income Check</button>
+    <div class="side-nav-label">Resources</div>
+    <button class="more-tool-btn" id="more-btn-9" onclick="switchTab(9)">Tenant Rights</button>
     <button class="more-tool-btn" id="more-btn-6" onclick="switchTab(6)">Rejection Analyser</button>
     <button class="more-tool-btn" id="more-btn-7" onclick="switchTab(7)">Reference Letter</button>
     <button class="more-tool-btn" id="more-btn-8" onclick="switchTab(8)">Viewing Feedback</button>
-    <button class="more-tool-btn" id="more-btn-9" onclick="switchTab(9)">Tenant Rights</button>
   </div>
 </nav>
 <div class="main-col">
