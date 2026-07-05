@@ -457,7 +457,7 @@
     const qs = chatId ? `chat_id=${chatId}&listing=${cacheId}` : `listing=${cacheId}`;
     document.getElementById('help-coach').href = `${base}?${qs}&tab=1`;
     document.getElementById('help-viewing').href = `${base}?${qs}&tab=2`;
-    document.getElementById('help-reply').href = chatId ? `/tools/landlord-reply?chat_id=${chatId}` : '/tools/landlord-reply';
+    document.getElementById('help-reply').href = chatId ? `${base}?chat_id=${chatId}&tab=4` : `${base}?tab=4`;
     el.style.display = 'block';
   }
 

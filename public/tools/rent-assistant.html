@@ -43,10 +43,15 @@ body.has-pc .page-outer{margin-top:188px}
 .lbar-dot,.lbar-addr,.lbar-price{}
 
 
-.tabs{display:flex;flex-wrap:wrap;margin-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.07);padding:0}
+.tabs{display:flex;flex-wrap:wrap;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.07);padding:0}
 .tab{padding:10px 16px;border:none;background:transparent;color:rgba(255,255,255,0.4);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:color .15s;border-bottom:2px solid transparent;margin-bottom:-1px}
 .tab:hover{color:rgba(255,255,255,0.7)}
 .tab.on{color:#ffffff;border-bottom:2px solid #00c896;font-weight:600}
+
+.more-tools-row{display:flex;align-items:center;gap:8px;padding:10px 0 20px;flex-wrap:wrap}
+.more-tools-label{font-size:12px;color:rgba(255,255,255,0.3)}
+.more-tool-btn{font-size:12px;color:rgba(255,255,255,0.5);background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;transition:all .15s}
+.more-tool-btn:hover,.more-tool-btn.on{color:#00c896;border-color:rgba(0,200,150,0.3)}
 
 .panel{display:none}
 .panel.on{display:block}
@@ -232,6 +237,113 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   .prog-step-inner{justify-content:center}
   .prog-dot{width:26px;height:26px;font-size:11px}
 }
+
+/* ── Ported tool tabs (Landlord Reply, Income Check, Rejection Analyser,
+   Reference Letter, Viewing Feedback, Tenant Rights) — additive, class names
+   below are scoped to these tabs and don't reuse existing host classes. ── */
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;margin-top:16px}
+.info-block{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:14px;line-height:1.7}
+.result-block{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;margin-bottom:14px}
+.result-block p{font-size:14px;line-height:1.7}
+
+/* Landlord Reply */
+.intent-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;margin-bottom:12px}
+.badge-interested{background:rgba(0,200,150,0.15);color:#00c896}
+.badge-stalling{background:rgba(255,200,0,0.12);color:#ffc800}
+.badge-soft{background:rgba(255,150,80,0.12);color:#ff9650}
+.badge-hard{background:rgba(255,100,100,0.12);color:#ff6464}
+.badge-info{background:rgba(100,180,255,0.12);color:#6ab4ff}
+.badge-scheduling{background:rgba(0,200,150,0.12);color:#00c896}
+.badge-negotiating{background:rgba(150,100,255,0.12);color:#9664ff}
+.urgency-row{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-bottom:14px;font-size:13px}
+.urgency-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-now{background:#ff4444}.dot-today{background:#ffc800}.dot-week{background:#00c896}.dot-none{background:rgba(255,255,255,0.3)}
+.reply-box{background:#0d1117;border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:16px;margin-bottom:10px;font-size:14px;line-height:1.7;white-space:pre-wrap}
+
+/* Income Check */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:540px){.field-row{grid-template-columns:1fr}}
+.verdict-big{border-radius:12px;padding:20px 22px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
+.verdict-pass{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.25)}
+.verdict-fail{background:rgba(255,100,100,0.08);border:1px solid rgba(255,100,100,0.2)}
+.verdict-border{background:rgba(255,200,0,0.06);border:1px solid rgba(255,200,0,0.2)}
+.verdict-icon{font-size:32px;flex-shrink:0}
+.verdict-text h3{font-size:16px;font-weight:700;margin-bottom:3px}
+.verdict-text p{font-size:13px;color:rgba(255,255,255,0.4);line-height:1.5}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:480px){.stat-row{grid-template-columns:1fr 1fr}}
+.stat-box{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;text-align:center}
+.stat-box .val{font-size:20px;font-weight:700;color:#00c896;margin-bottom:2px}
+.stat-box .lbl2{font-size:11px;color:rgba(255,255,255,0.4)}
+.explain-box{background:#0d1117;border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7;display:none}
+.explain-box.on{display:block}
+
+/* Rejection Analyser */
+.app-entry{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px;margin-bottom:10px;position:relative}
+.app-entry h4{font-size:13px;font-weight:600;margin-bottom:10px;color:rgba(255,255,255,0.4)}
+.rm-btn{position:absolute;top:10px;right:12px;background:none;border:none;color:rgba(255,255,255,0.4);font-size:16px;cursor:pointer;line-height:1}
+.rm-btn:hover{color:#ff6b6b}
+.add-btn{background:#0d1117;border:1px solid rgba(255,255,255,0.08);color:#00c896;font-family:inherit;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;width:100%;margin-top:4px;transition:border-color .15s}
+.add-btn:hover{border-color:#00c896}
+.fix-item{display:flex;gap:14px;padding:14px 16px;background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:10px;align-items:flex-start}
+.fix-num{width:26px;height:26px;border-radius:50%;background:#00c896;color:#0a0a0a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.fix-body strong{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
+.fix-body span{font-size:13px;color:rgba(255,255,255,0.4)}
+.impact-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-top:4px}
+.impact-high{background:rgba(255,100,100,0.12);color:#ff6464}
+.impact-medium{background:rgba(255,200,0,0.12);color:#ffc800}
+.impact-low{background:rgba(100,180,255,0.12);color:#6ab4ff}
+.confidence-bar{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;margin-bottom:4px;overflow:hidden}
+.confidence-fill{height:100%;background:#00c896;border-radius:3px;transition:width .6s}
+
+/* Reference Letter */
+.rl-tab-bar{display:flex;gap:8px;margin-bottom:16px}
+.rl-tab-btn{padding:9px 18px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(255,255,255,0.4);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.rl-tab-btn:hover{border-color:rgba(255,255,255,0.2);color:#fff}
+.rl-tab-btn.active{background:#00c896;border-color:#00c896;color:#0a0a0a}
+.rl-panel{display:none}
+.rl-panel.active{display:block}
+.rl-letter-box{background:#0d1117;border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:18px;font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px}
+.copy-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.copy-btn,.dl-btn{background:#0d1117;border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-family:inherit;font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block}
+.copy-btn:hover,.dl-btn:hover{border-color:#00c896;color:#00c896}
+.copy-btn.copied{color:#00c896;border-color:#00c896}
+.instructions-block{background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.7}
+
+/* Viewing Feedback */
+.star-row{display:flex;gap:8px;margin-top:4px}
+.star{font-size:28px;cursor:pointer;transition:opacity .15s;color:rgba(255,255,255,0.2)}
+.star.on,.star:hover{color:#ffc800;opacity:1}
+.likelihood-bar{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;margin:8px 0 4px;overflow:hidden}
+.likelihood-fill{height:100%;border-radius:4px;transition:width .6s}
+.action-block{background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7;font-weight:600}
+.msg-box{background:#0d1117;border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.8;white-space:pre-wrap}
+.flag-item{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;background:rgba(255,100,100,0.06);border:1px solid rgba(255,100,100,0.15);border-radius:8px;margin-bottom:6px;font-size:13px}
+
+/* Tenant Rights */
+.topic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:560px){.topic-grid{grid-template-columns:1fr}}
+.topic-btn{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;cursor:pointer;text-align:left;transition:border-color .15s;font-family:inherit}
+.topic-btn:hover{border-color:rgba(255,255,255,0.2)}
+.topic-btn.active{border-color:#00c896;background:rgba(0,200,150,0.05)}
+.topic-btn .icon{font-size:18px;margin-bottom:6px}
+.topic-btn strong{display:block;font-size:13px;font-weight:700;margin-bottom:3px;color:#fff}
+.topic-btn span{font-size:12px;color:rgba(255,255,255,0.4);line-height:1.4}
+.topic-content{display:none}.topic-content.active{display:block}
+.tr-card{background:#111318;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;margin-bottom:16px}
+.tr-card h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.tr-card .tag{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#00c896;margin-bottom:10px}
+.tr-card p{font-size:14px;line-height:1.7;margin-bottom:10px}
+.tr-card p:last-child{margin-bottom:0}
+.action-steps{background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:14px 16px;margin-top:12px}
+.action-steps strong{display:block;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#00c896;margin-bottom:8px}
+.action-steps ol{padding-left:18px;font-size:13px;line-height:1.7}
+.action-steps li{margin-bottom:4px}
+.authority-link{display:inline-flex;align-items:center;gap:6px;background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 14px;font-size:13px;color:#00c896;text-decoration:none;margin-top:12px;font-weight:600;transition:border-color .15s}
+.authority-link:hover{border-color:#00c896}
+.tr-divider{border:none;border-top:1px solid rgba(255,255,255,0.08);margin:20px 0}
+.ai-result{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px;margin-top:14px;font-size:14px;line-height:1.7;display:none}
+.ai-result.on{display:block}
 </style>
 </head>
 <body>
@@ -280,6 +392,16 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <button class="tab on" data-tab="1" onclick="switchTab(1)">Letter</button>
     <button class="tab" data-tab="2" onclick="switchTab(2)">Viewing Tips</button>
     <button class="tab" data-tab="3" onclick="switchTab(3)">Negotiation</button>
+  </div>
+
+  <div class="more-tools-row">
+    <span class="more-tools-label">More rental tools:</span>
+    <button class="more-tool-btn" id="more-btn-4" onclick="switchTab(4)">Landlord Reply</button>
+    <button class="more-tool-btn" id="more-btn-5" onclick="switchTab(5)">Income Check</button>
+    <button class="more-tool-btn" id="more-btn-6" onclick="switchTab(6)">Rejection Analyser</button>
+    <button class="more-tool-btn" id="more-btn-7" onclick="switchTab(7)">Reference Letter</button>
+    <button class="more-tool-btn" id="more-btn-8" onclick="switchTab(8)">Viewing Feedback</button>
+    <button class="more-tool-btn" id="more-btn-9" onclick="switchTab(9)">Tenant Rights</button>
   </div>
 
   <!-- Panel 0: Analyse -->
@@ -496,6 +618,477 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     </div>
   </div>
 
+  <!-- Panel 4: Landlord Reply Coach -->
+  <div id="panel-4" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Paste any message from a landlord or agent. I'll decode what it means and write the perfect reply.</div>
+    </div>
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">Landlord or agent message</div>
+        <textarea class="inp" id="lr-msg" rows="6" placeholder="Paste the message here, in any language..."></textarea>
+      </div>
+      <button class="btn-main" id="lr-btn" onclick="lrAnalyse()">Decode this message &#8594;</button>
+      <div class="errtxt" id="lr-err"></div>
+    </div>
+    <div class="card" id="lr-result" style="display:none">
+      <div id="lr-intent-badge"></div>
+      <div id="lr-urgency-row"></div>
+      <div class="section-label">What the message really means</div>
+      <div class="result-block" id="lr-explanation"></div>
+      <div id="lr-translation-block" style="display:none">
+        <div class="section-label">Dutch translation</div>
+        <div class="result-block" id="lr-translation"></div>
+      </div>
+      <div id="lr-reply-section">
+        <div class="section-label">Ready-to-send reply (English)</div>
+        <div class="reply-box" id="lr-reply-en"></div>
+        <div class="copy-row"><button class="copy-btn" id="lr-copy-en" onclick="lrCopy('lr-reply-en','lr-copy-en','Copy English reply')">Copy English reply</button></div>
+        <div class="section-label">Dutch translation of reply</div>
+        <div class="reply-box" id="lr-reply-nl"></div>
+        <div class="copy-row"><button class="copy-btn" id="lr-copy-nl" onclick="lrCopy('lr-reply-nl','lr-copy-nl','Copy Dutch reply')">Copy Dutch reply</button></div>
+      </div>
+      <div id="lr-no-reply-section" style="display:none">
+        <div class="result-block" style="border-color:rgba(255,100,100,0.2)">
+          <div class="lbl" style="color:#ff6464">Why not to reply</div>
+          <p id="lr-no-reply-reason"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 5: Income Check -->
+  <div id="panel-5" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Enter your income and the rent — I'll check if you meet the requirement and calculate your max rent.</div>
+    </div>
+    <div class="card">
+      <div class="field-row">
+        <div class="fld"><div class="lbl">Gross monthly income (EUR)</div><input class="inp" type="number" id="ic-income" oninput="icCalculate()"></div>
+        <div class="fld"><div class="lbl">Partner income (EUR, optional)</div><input class="inp" type="number" id="ic-partner" oninput="icCalculate()"></div>
+      </div>
+      <div class="field-row">
+        <div class="fld"><div class="lbl">Monthly rent</div><input class="inp" type="number" id="ic-rent" oninput="icCalculate()"></div>
+        <div class="fld">
+          <div class="lbl">Contract type</div>
+          <select class="inp" id="ic-contract" onchange="icCalculate()">
+            <option value="permanent">Permanent contract</option>
+            <option value="temporary">Temporary contract</option>
+            <option value="zzp">Freelance / ZZP</option>
+            <option value="student">Student</option>
+          </select>
+        </div>
+      </div>
+      <div id="ic-result" style="display:none">
+        <div class="verdict-big" id="ic-verdict-box">
+          <div class="verdict-icon" id="ic-verdict-icon"></div>
+          <div class="verdict-text"><h3 id="ic-verdict-title"></h3><p id="ic-verdict-sub"></p></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box"><div class="val" id="ic-stat-ratio"></div><div class="lbl2">Income ratio</div></div>
+          <div class="stat-box"><div class="val" id="ic-stat-maxrent"></div><div class="lbl2">Your max rent</div></div>
+          <div class="stat-box"><div class="val" id="ic-stat-impression"></div><div class="lbl2">Landlord score</div></div>
+        </div>
+        <div class="section-label">Analysis</div>
+        <div class="info-block" id="ic-analysis-text"></div>
+      </div>
+    </div>
+    <div class="card" id="ic-explain-card" style="display:none">
+      <div class="lbl" style="margin-bottom:10px">Unusual income? Get an AI explanation</div>
+      <div class="fld">
+        <div class="lbl">Describe your income situation</div>
+        <input class="inp" type="text" id="ic-situation">
+      </div>
+      <button class="btn-main" id="ic-explain-btn" onclick="icGetExplain()">Generate explanation &#8594;</button>
+      <div class="errtxt" id="ic-explain-err"></div>
+      <div class="explain-box" id="ic-explain-result"></div>
+      <div class="copy-row"><button class="copy-btn" id="ic-copy-explain" onclick="icCopyExplain()" style="display:none">Copy explanation</button></div>
+    </div>
+  </div>
+
+  <!-- Panel 6: Rejection Analyser -->
+  <div id="panel-6" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Describe your past application attempts and I'll diagnose what's going wrong and what to fix first.</div>
+    </div>
+    <div class="card">
+      <div id="ra-apps-container">
+        <div class="app-entry" id="ra-app-0">
+          <h4>Application 1</h4>
+          <button class="rm-btn" onclick="raRemoveApp(0)" title="Remove">x</button>
+          <div class="fld"><div class="lbl">Platform and listing details</div><input class="inp ra-platform" type="text"></div>
+          <div class="fld"><div class="lbl">Your situation</div><input class="inp ra-situation" type="text"></div>
+          <div class="fld">
+            <div class="lbl">What happened</div>
+            <select class="inp ra-outcome">
+              <option value="no response">No response at all</option>
+              <option value="rejection after viewing">Rejection after viewing</option>
+              <option value="rejection before viewing">Rejection before viewing - no viewing offered</option>
+              <option value="rejection after sending docs">Rejection after sending documents</option>
+              <option value="ghosted after showing interest">Ghosted after they showed interest</option>
+            </select>
+          </div>
+          <div class="fld"><div class="lbl">Response time after applying (if known)</div><input class="inp ra-timing" type="text"></div>
+        </div>
+      </div>
+      <button class="add-btn" onclick="raAddApp()">+ Add another application</button>
+      <div class="fld" style="margin-top:16px">
+        <div class="lbl">Your situation (optional — helps the analysis)</div>
+        <input class="inp" type="text" id="ra-profile">
+      </div>
+      <button class="btn-main" id="ra-btn" onclick="raAnalyse()" style="margin-top:16px">Analyse my rejections &#8594;</button>
+      <div class="errtxt" id="ra-err"></div>
+    </div>
+    <div class="card" id="ra-result" style="display:none">
+      <div class="section-label">Most likely reasons</div>
+      <div id="ra-reasons-list"></div>
+      <div class="section-label">Fix priority list</div>
+      <div id="ra-fix-list"></div>
+      <div id="ra-pattern-block" style="display:none">
+        <div class="section-label">Pattern detected</div>
+        <div class="info-block" id="ra-pattern"></div>
+      </div>
+      <div id="ra-score-correlation-block" style="display:none">
+        <div class="section-label">Your scores vs what actually happened</div>
+        <div class="info-block" id="ra-score-correlation"></div>
+      </div>
+      <div class="section-label">Strategy advice</div>
+      <div class="info-block" id="ra-pivot"></div>
+      <div class="section-label">Analysis confidence</div>
+      <div class="confidence-bar"><div class="confidence-fill" id="ra-conf-fill"></div></div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.4)" id="ra-conf-label"></div>
+    </div>
+  </div>
+
+  <!-- Panel 7: Reference Letter -->
+  <div id="panel-7" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Generate a reference letter template — one for your employer, one for your previous landlord.</div>
+    </div>
+    <div class="rl-tab-bar">
+      <button class="rl-tab-btn active" onclick="rlSwitchTab('employer',this)">Employer letter</button>
+      <button class="rl-tab-btn" onclick="rlSwitchTab('landlord',this)">Previous landlord letter</button>
+    </div>
+    <div id="rl-panel-employer" class="rl-panel active">
+      <div class="card">
+        <div class="field-row">
+          <div class="fld"><div class="lbl">Company name</div><input class="inp" type="text" id="rl-e-company"></div>
+          <div class="fld"><div class="lbl">Your job title</div><input class="inp" type="text" id="rl-e-title"></div>
+        </div>
+        <div class="field-row">
+          <div class="fld">
+            <div class="lbl">Contract type</div>
+            <select class="inp" id="rl-e-contract">
+              <option value="permanent (vast contract)">Permanent (vast contract)</option>
+              <option value="fixed-term (tijdelijk contract)">Fixed-term (tijdelijk contract)</option>
+              <option value="freelance / ZZP">Freelance / ZZP</option>
+            </select>
+          </div>
+          <div class="fld"><div class="lbl">Gross monthly salary (EUR)</div><input class="inp" type="number" id="rl-e-salary"></div>
+        </div>
+        <div class="field-row">
+          <div class="fld"><div class="lbl">Employment start date</div><input class="inp" type="text" id="rl-e-start"></div>
+          <div class="fld"><div class="lbl">HR contact person (optional)</div><input class="inp" type="text" id="rl-e-hr"></div>
+        </div>
+        <button class="btn-main" id="rl-btn-employer" onclick="rlGenerate('employer')">Generate letter &#8594;</button>
+        <div class="errtxt" id="rl-err-employer"></div>
+      </div>
+      <div class="card" id="rl-result-employer" style="display:none">
+        <div class="section-label">Letter (English) — for employer to sign</div>
+        <div class="rl-letter-box" id="rl-letter-en-employer"></div>
+        <div class="copy-row">
+          <button class="copy-btn" id="rl-copy-en-employer" onclick="rlCopy('rl-letter-en-employer','rl-copy-en-employer','Copy English')">Copy English</button>
+          <button class="dl-btn" onclick="rlDownload('rl-letter-en-employer','employer-reference-english.txt')">Download .txt</button>
+        </div>
+        <div class="section-label">Dutch translation</div>
+        <div class="rl-letter-box" id="rl-letter-nl-employer"></div>
+        <div class="copy-row">
+          <button class="copy-btn" id="rl-copy-nl-employer" onclick="rlCopy('rl-letter-nl-employer','rl-copy-nl-employer','Copy Dutch')">Copy Dutch</button>
+          <button class="dl-btn" onclick="rlDownload('rl-letter-nl-employer','employer-reference-dutch.txt')">Download .txt</button>
+        </div>
+        <div class="section-label">Email subject line for HR</div>
+        <div class="info-block" id="rl-subject-employer"></div>
+        <div class="section-label">What to do with this letter</div>
+        <div class="instructions-block" id="rl-instructions-employer"></div>
+      </div>
+    </div>
+    <div id="rl-panel-landlord" class="rl-panel">
+      <div class="card">
+        <div class="field-row">
+          <div class="fld"><div class="lbl">Previous landlord name</div><input class="inp" type="text" id="rl-l-name"></div>
+          <div class="fld"><div class="lbl">Rental address</div><input class="inp" type="text" id="rl-l-address"></div>
+        </div>
+        <div class="field-row">
+          <div class="fld"><div class="lbl">Rental period from</div><input class="inp" type="text" id="rl-l-from"></div>
+          <div class="fld"><div class="lbl">Rental period to</div><input class="inp" type="text" id="rl-l-to"></div>
+        </div>
+        <div class="fld"><div class="lbl">Reason for leaving (optional)</div><input class="inp" type="text" id="rl-l-reason"></div>
+        <button class="btn-main" id="rl-btn-landlord" onclick="rlGenerate('landlord')">Generate letter &#8594;</button>
+        <div class="errtxt" id="rl-err-landlord"></div>
+      </div>
+      <div class="card" id="rl-result-landlord" style="display:none">
+        <div class="section-label">Letter (English) — for landlord to sign</div>
+        <div class="rl-letter-box" id="rl-letter-en-landlord"></div>
+        <div class="copy-row">
+          <button class="copy-btn" id="rl-copy-en-landlord" onclick="rlCopy('rl-letter-en-landlord','rl-copy-en-landlord','Copy English')">Copy English</button>
+          <button class="dl-btn" onclick="rlDownload('rl-letter-en-landlord','landlord-reference-english.txt')">Download .txt</button>
+        </div>
+        <div class="section-label">Dutch translation</div>
+        <div class="rl-letter-box" id="rl-letter-nl-landlord"></div>
+        <div class="copy-row">
+          <button class="copy-btn" id="rl-copy-nl-landlord" onclick="rlCopy('rl-letter-nl-landlord','rl-copy-nl-landlord','Copy Dutch')">Copy Dutch</button>
+          <button class="dl-btn" onclick="rlDownload('rl-letter-nl-landlord','landlord-reference-dutch.txt')">Download .txt</button>
+        </div>
+        <div class="section-label">What to do with this letter</div>
+        <div class="instructions-block" id="rl-instructions-landlord"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 8: Viewing Feedback -->
+  <div id="panel-8" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Just got back from a viewing? Describe what happened and I'll give you an honest read on your chances.</div>
+    </div>
+    <div class="card">
+      <div class="fld">
+        <div class="lbl">Rate the viewing</div>
+        <div class="star-row" id="vf-stars">
+          <span class="star" data-v="1" onclick="vfSetStar(1)">★</span>
+          <span class="star" data-v="2" onclick="vfSetStar(2)">★</span>
+          <span class="star" data-v="3" onclick="vfSetStar(3)">★</span>
+          <span class="star" data-v="4" onclick="vfSetStar(4)">★</span>
+          <span class="star" data-v="5" onclick="vfSetStar(5)">★</span>
+        </div>
+      </div>
+      <div class="fld"><div class="lbl">Property address (optional)</div><input class="inp" type="text" id="vf-address"></div>
+      <div class="fld"><div class="lbl">What happened at the viewing?</div><textarea class="inp" id="vf-notes" rows="6"></textarea></div>
+      <button class="btn-main" id="vf-btn" onclick="vfAnalyse()">Analyse my viewing &#8594;</button>
+      <div class="errtxt" id="vf-err"></div>
+    </div>
+    <div class="card" id="vf-result" style="display:none">
+      <div class="section-label">Likelihood of offer</div>
+      <div class="likelihood-bar"><div class="likelihood-fill" id="vf-like-fill"></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <strong id="vf-like-label" style="font-size:15px"></strong>
+        <span id="vf-like-pct" style="font-size:18px;font-weight:700;color:#00c896"></span>
+      </div>
+      <div class="section-label">Read the room</div>
+      <div class="info-block" id="vf-read-room"></div>
+      <div class="section-label">What to do right now</div>
+      <div class="action-block" id="vf-next-action"></div>
+      <div class="section-label">Follow-up message to send now</div>
+      <div class="msg-box" id="vf-follow-msg"></div>
+      <div class="copy-row"><button class="copy-btn" id="vf-copy-msg" onclick="vfCopyMsg()">Copy message</button></div>
+      <div id="vf-flags-section" style="display:none">
+        <div class="section-label">Red flags to watch</div>
+        <div id="vf-flags-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 9: Tenant Rights -->
+  <div id="panel-9" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Plain-English guide to your rights as a tenant in the Netherlands. Select your situation, or ask me directly.</div>
+    </div>
+    <div class="topic-grid">
+      <button class="topic-btn" onclick="trShowTopic('rent-increase',this)"><div class="icon">📈</div><strong>Rent increase mid-contract</strong><span>What is legal, what to do if the landlord demands more</span></button>
+      <button class="topic-btn" onclick="trShowTopic('maintenance',this)"><div class="icon">🔧</div><strong>Landlord not fixing things</strong><span>Who is responsible for what, and how to force action</span></button>
+      <button class="topic-btn" onclick="trShowTopic('deposit',this)"><div class="icon">💰</div><strong>Deposit dispute</strong><span>What they can and cannot deduct, Huurcommissie process</span></button>
+      <button class="topic-btn" onclick="trShowTopic('eviction',this)"><div class="icon">🏃</div><strong>Landlord wants you to leave</strong><span>Notice periods, tenant protection, grounds for eviction</span></button>
+      <button class="topic-btn" onclick="trShowTopic('registration',this)"><div class="icon">📋</div><strong>Landlord refuses BRP registration</strong><span>Your right to register at your address</span></button>
+      <button class="topic-btn" onclick="trShowTopic('service-costs',this)"><div class="icon">🧾</div><strong>Service costs too high</strong><span>How to challenge service costs via Huurcommissie</span></button>
+      <button class="topic-btn" onclick="trShowTopic('temp-vs-perm',this)"><div class="icon">📄</div><strong>Temporary vs permanent contract</strong><span>What the difference means for your rights in practice</span></button>
+      <button class="topic-btn" onclick="trShowTopic('subletting',this)"><div class="icon">🔑</div><strong>Subletting</strong><span>When subletting is allowed and under what conditions</span></button>
+    </div>
+
+    <div id="tr-topic-rent-increase" class="topic-content">
+      <div class="tr-card">
+        <div class="tag">Rent increase</div>
+        <h3>What your landlord can legally do</h3>
+        <p>For free-market rentals (liberale sector, rent above the social sector limit), the landlord can only increase rent once per year and must give at least 2 months written notice. The increase must follow the legal indexation rate set annually by the government - in 2024 this is 5.8% for free-market rentals.</p>
+        <p>The landlord cannot increase rent mid-contract without your agreement unless the contract explicitly allows it. Any clause giving the landlord unlimited or arbitrary rent increase power is legally unenforceable.</p>
+        <p>For social rentals (huurprijs sociale sector), the annual increase is capped by law and is usually lower than free-market increases.</p>
+        <div class="action-steps">
+          <strong>What to do</strong>
+          <ol>
+            <li>Check your contract for the rent increase clause. It must cite a legal indexation method.</li>
+            <li>Calculate what the legal maximum increase is: check Rijksoverheid.nl for the current year's cap.</li>
+            <li>If the increase exceeds the legal cap, send a written objection by registered mail within 6 weeks of receiving the notice.</li>
+            <li>If the landlord insists, file a dispute with the Huurcommissie (free for tenants).</li>
+          </ol>
+        </div>
+        <a href="https://www.huurcommissie.nl" target="_blank" rel="noopener" class="authority-link">Huurcommissie - national rent dispute body</a>
+      </div>
+    </div>
+    <div id="tr-topic-maintenance" class="topic-content">
+      <div class="tr-card">
+        <div class="tag">Maintenance</div>
+        <h3>Who is responsible for what</h3>
+        <p>Under Dutch law (Book 7 BW), the landlord must ensure the property is in a good state of repair and must fix structural defects, major plumbing failures, roof leaks, heating system failures, and other significant issues at their cost.</p>
+        <p>Tenants are responsible for minor daily maintenance - changing light bulbs, minor painting touch-ups, unclogging drains from their own usage, and small repairs under approximately EUR 300 each.</p>
+        <p>Any lease clause that shifts major maintenance obligations to the tenant is legally unenforceable under Dutch law. The landlord cannot make you pay for repairs that are legally their responsibility, regardless of what the lease says.</p>
+        <div class="action-steps">
+          <strong>What to do when landlord refuses to repair</strong>
+          <ol>
+            <li>Send a written notice (email is sufficient) stating the defect and giving a reasonable repair deadline (2-4 weeks).</li>
+            <li>If no action: send a formal written reminder by registered mail with a final 2-week deadline.</li>
+            <li>If still no action: file a maintenance dispute with the Huurcommissie. They can order the landlord to repair and reduce your rent until the work is done.</li>
+            <li>For urgent repairs (no heating in winter, flooding), you can hire a contractor yourself and deduct the cost from rent - but send written notice first and keep all receipts.</li>
+          </ol>
+        </div>
+        <a href="https://www.juridischloket.nl" target="_blank" rel="noopener" class="authority-link">Juridisch Loket - free legal advice</a>
+      </div>
+    </div>
+    <div id="tr-topic-deposit" class="topic-content">
+      <div class="tr-card">
+        <div class="tag">Deposit (waarborgsom)</div>
+        <h3>What landlords can and cannot deduct</h3>
+        <p>The legal maximum deposit since July 2023 (Wet betaalbare huur) is 2 months rent. If your landlord took 3 months or more, you can reclaim the excess.</p>
+        <p>The landlord can only deduct from your deposit for: damage you caused beyond normal wear and tear, unpaid rent, and unpaid service costs. They cannot deduct for: normal wear and tear (fading paint, minor scuffs), pre-existing damage documented at move-in, cleaning costs if you left the property reasonably clean.</p>
+        <p>The landlord must return the deposit or send a detailed itemised breakdown within 14 days of you leaving. If they miss this deadline, they lose the right to deduct.</p>
+        <div class="action-steps">
+          <strong>If the landlord withholds your deposit unfairly</strong>
+          <ol>
+            <li>Send a written demand for the full deposit with a 14-day payment deadline.</li>
+            <li>File a dispute with the Huurcommissie if the issue is related to service costs or rent level.</li>
+            <li>For deposit disputes about damage, go to the Kantonrechter (district court subdistrict division) - this costs a small filing fee.</li>
+            <li>The Juridisch Loket offers free legal advice on whether your case is strong.</li>
+          </ol>
+        </div>
+        <a href="https://www.huurcommissie.nl" target="_blank" rel="noopener" class="authority-link">Huurcommissie - dispute filing</a>
+      </div>
+    </div>
+    <div id="tr-topic-eviction" class="topic-content">
+      <div class="tr-card">
+        <div class="tag">Eviction / Notice to leave</div>
+        <h3>Your tenant protections under Dutch law</h3>
+        <p>Dutch tenants have very strong protection. A landlord cannot force you to leave just because they want to. To legally end your tenancy, they need a valid ground: urgent personal use (genuine need to live there themselves), renovation requiring vacant possession, the property being sold (note: "koop breekt geen huur" - a new buyer must honour your lease), or serious lease violations by you.</p>
+        <p>Notice periods: tenants must give 1 calendar month's notice (or longer if specified in the contract). Landlords must give at least 3 months, increasing by 1 month per year of tenancy up to a maximum of 6 months.</p>
+        <p>A landlord cannot evict you without a court order. Even if they claim you must leave, you have the right to stay until a court rules otherwise - the process takes months and they must have valid grounds.</p>
+        <div class="action-steps">
+          <strong>If you receive a notice to leave</strong>
+          <ol>
+            <li>Do not agree verbally or sign anything. Ask for the formal written notice with stated grounds.</li>
+            <li>Check whether the grounds are legally valid under Book 7 BW.</li>
+            <li>Contact Juridisch Loket immediately for free advice.</li>
+            <li>If the landlord proceeds without valid grounds, they must go to court - this takes 6-12 months minimum and you can legally remain during that time.</li>
+          </ol>
+        </div>
+        <a href="https://www.juridischloket.nl" target="_blank" rel="noopener" class="authority-link">Juridisch Loket - free legal advice</a>
+      </div>
+    </div>
+    <div id="tr-topic-registration" class="topic-content">
+      <div class="tr-card">
+        <div class="tag">BRP registration</div>
+        <h3>Your right to register at your address</h3>
+        <p>You have a legal obligation to register at your address with the gemeente (BRP - Basisregistratie Personen) within 5 days of moving in. The landlord does not have the legal right to prevent this - a lease clause prohibiting registration is unenforceable and is itself a red flag suggesting the property may be illegally subdivided or the landlord is committing tax fraud.</p>
+        <p>Without BRP registration, you cannot get a BSN number, open a Dutch bank account, access healthcare properly, or renew your visa. It is in your direct interest to register.</p>
+        <div class="action-steps">
+          <strong>If the landlord refuses to allow registration</strong>
+          <ol>
+            <li>Inform the landlord in writing that registration is a legal obligation, not optional.</li>
+            <li>Go to the gemeente and register anyway - bring your lease as proof of residence.</li>
+            <li>If the landlord threatens to evict you for registering, this constitutes illegal retaliation. Document everything.</li>
+            <li>Contact Juridisch Loket if the landlord takes action against you.</li>
+          </ol>
+        </div>
+        <a href="https://www.rijksoverheid.nl/onderwerpen/inschrijven-in-nederland" target="_blank" rel="noopener" class="authority-link">Rijksoverheid - BRP registration info</a>
+      </div>
+    </div>
+    <div id="tr-topic-service-costs" class="topic-content">
+      <div class="tr-card">
+        <div class="tag">Service costs (servicekosten)</div>
+        <h3>What landlords can charge and how to challenge it</h3>
+        <p>Service costs must be specified separately from rent and must reflect actual costs. Allowable service costs include: gas, water, electricity for common areas, building cleaning, garden maintenance, lift maintenance, and internet if provided. The landlord must provide a yearly breakdown of actual costs and must refund any overpayment.</p>
+        <p>Lump-sum service costs with no itemisation are a red flag. If the landlord refuses to provide a breakdown, the Huurcommissie can order them to do so and can reduce or eliminate service costs that are not substantiated.</p>
+        <div class="action-steps">
+          <strong>If service costs seem too high</strong>
+          <ol>
+            <li>Request an itemised breakdown in writing. The landlord must provide this within 1 month of the end of each year.</li>
+            <li>Check: are the costs for services you actually receive? Internet you do not use is not a valid service cost.</li>
+            <li>If you believe service costs are unreasonably high or not substantiated, file a dispute with the Huurcommissie. This is free for tenants.</li>
+            <li>The Huurcommissie can reduce service costs retroactively and order refunds.</li>
+          </ol>
+        </div>
+        <a href="https://www.huurcommissie.nl" target="_blank" rel="noopener" class="authority-link">Huurcommissie - service cost disputes</a>
+      </div>
+    </div>
+    <div id="tr-topic-temp-vs-perm" class="topic-content">
+      <div class="tr-card">
+        <div class="tag">Contract type</div>
+        <h3>Temporary vs permanent contracts in practice</h3>
+        <p>A temporary contract (tijdelijk huurcontract) under the Wet toelating verhuur (2024) is legally capped at 2 years for independent homes and 5 years for shared accommodation. After it expires, you have no automatic right to stay - the landlord can ask you to leave without giving a reason. These contracts do not auto-convert to permanent.</p>
+        <p>A permanent contract (huurcontract voor onbepaalde tijd) gives you very strong tenant protection. The landlord can only end it with valid legal grounds and a court order. Your rent is also eligible for Huurcommissie protection and the annual indexation cap applies.</p>
+        <p>From January 2024, new temporary contracts cannot be renewed as temporary - a second contract at the same address automatically becomes permanent.</p>
+        <div class="action-steps">
+          <strong>What to watch for</strong>
+          <ol>
+            <li>Check whether your contract is for a fixed term. If it is, mark the end date.</li>
+            <li>At least 1 month before expiry, contact the landlord about extending or converting to a permanent contract.</li>
+            <li>If the landlord tries to renew as another temporary contract for the same address, this is now illegal (since 2024) and converts to permanent automatically.</li>
+            <li>If the landlord claims you must leave at the end of a temporary contract, confirm the contract type first - many contracts labelled "temporary" are actually permanent under Dutch law due to their terms.</li>
+          </ol>
+        </div>
+        <a href="https://www.juridischloket.nl" target="_blank" rel="noopener" class="authority-link">Juridisch Loket - contract questions</a>
+      </div>
+    </div>
+    <div id="tr-topic-subletting" class="topic-content">
+      <div class="tr-card">
+        <div class="tag">Subletting</div>
+        <h3>When subletting is allowed</h3>
+        <p>Subletting is banned by default unless your lease explicitly permits it. Subletting the entire property without permission is grounds for termination. However, Dutch law allows tenants to sublet part of their home (a room, not the whole property) under certain conditions, even without landlord permission, if you demonstrate genuine need and the property will remain your primary residence.</p>
+        <p>If you want to sublet a room, send a written request to the landlord with your reasons. If they refuse without valid grounds, you can apply to the Kantonrechter for permission. Valid landlord objections include: overcrowding, the sublettee not being able to meet the house rules, or genuine security concerns.</p>
+        <div class="action-steps">
+          <strong>Before subletting</strong>
+          <ol>
+            <li>Read your lease carefully for any subletting clause.</li>
+            <li>If the lease prohibits subletting entirely, check whether it covers partial subletting too.</li>
+            <li>Send a written request to your landlord if you want to sublet a room. Keep their response.</li>
+            <li>Never sublet the entire property without permission - this is a valid ground for eviction.</li>
+          </ol>
+        </div>
+        <a href="https://www.juridischloket.nl" target="_blank" rel="noopener" class="authority-link">Juridisch Loket - subletting advice</a>
+      </div>
+    </div>
+
+    <hr class="tr-divider">
+
+    <div class="card">
+      <div class="lbl" style="margin-bottom:10px">Ask a specific question</div>
+      <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:14px;line-height:1.6">Your situation is not listed above? Ask anything about Dutch tenant rights and get a specific, law-based answer.</p>
+      <div class="fld"><textarea class="inp" id="tr-ai-q" rows="3"></textarea></div>
+      <button class="btn-main" id="tr-btn" onclick="trAskAI()">Get answer &#8594;</button>
+      <div class="errtxt" id="tr-err"></div>
+      <div class="ai-result" id="tr-ai-result"></div>
+    </div>
+  </div>
+
 </div><!-- /main-col -->
 
 <div class="sidebar">
@@ -608,7 +1201,7 @@ function getParams(){
   const tParam=p.get('tab');
   const defaultTab=cacheId?0:1;
   const t=tParam!=null?parseInt(tParam,10):defaultTab;
-  switchTab(t>=0&&t<=3?t:defaultTab);
+  switchTab(t>=0&&t<=9?t:defaultTab);
   const scoutMsg=document.getElementById('scout-msg-lt');
   const scoutMsg2=document.getElementById('scout-msg-2');
   if(cacheId){
@@ -679,10 +1272,12 @@ function switchTab(n){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   document.querySelectorAll('.prog-step').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.mnav-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.more-tool-btn').forEach(b=>b.classList.remove('on'));
   const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
   document.querySelector(`.tab[data-tab="${n}"]`)?.classList.add('on');
   document.getElementById(`ps-${n}`)?.classList.add('on');
   document.getElementById(`mn-${n}`)?.classList.add('on');
+  document.getElementById(`more-btn-${n}`)?.classList.add('on');
   const po=document.querySelector('.page-outer');
   if(po){if(n===0)po.classList.add('analyse-mode');else po.classList.remove('analyse-mode');}
 }
@@ -1014,6 +1609,305 @@ function cpResp(tab){
   const t=lastResp[tab]||'';if(!t)return;
   navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector(`#acts-${tab} .btn-sm`);if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}}).catch(()=>{});
 }
+
+// ── Panel 4: Landlord Reply Coach ──
+const LR_INTENT_LABELS={Interested:{label:'Interested',css:'badge-interested',emoji:'🟢'},Stalling:{label:'Stalling',css:'badge-stalling',emoji:'🟡'},SoftRejection:{label:'Soft rejection',css:'badge-soft',emoji:'🟠'},HardRejection:{label:'Hard rejection',css:'badge-hard',emoji:'🔴'},RequestForInfo:{label:'Request for info',css:'badge-info',emoji:'🔵'},Scheduling:{label:'Scheduling',css:'badge-scheduling',emoji:'📅'},NegotiatingTerms:{label:'Negotiating terms',css:'badge-negotiating',emoji:'💬'}};
+const LR_URGENCY={'act-now':{label:'Act now',dotClass:'dot-now'},'today':{label:'Respond today',dotClass:'dot-today'},'this-week':{label:'Respond this week',dotClass:'dot-week'},'no-action':{label:'No action needed',dotClass:'dot-none'}};
+async function lrAnalyse(){
+  const msg=document.getElementById('lr-msg').value.trim();
+  if(!msg||msg.length<5){lrShowErr('Please paste the message first.');return;}
+  lrHideErr();lrSetLoading(true);
+  try{
+    const r=await fetch('/api/landlord-reply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    lrRender(d);
+  }catch(e){lrShowErr(e.message||'Something went wrong.');}
+  finally{lrSetLoading(false);}
+}
+function lrRender(d){
+  const intentInfo=LR_INTENT_LABELS[d.intent]||{label:d.intent,css:'badge-info',emoji:'?'};
+  document.getElementById('lr-intent-badge').innerHTML=`<div class="intent-badge ${intentInfo.css}">${intentInfo.emoji} ${intentInfo.label}</div><p style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:6px;margin-bottom:16px">${escHtml(d.intentExplanation||'')}</p>`;
+  const urg=LR_URGENCY[d.urgency]||LR_URGENCY['no-action'];
+  document.getElementById('lr-urgency-row').innerHTML=`<div class="urgency-row"><div class="urgency-dot ${urg.dotClass}"></div><strong style="font-size:13px">${urg.label}</strong><span style="color:rgba(255,255,255,0.4);font-size:13px"> - ${escHtml(d.urgencyNote||'')}</span></div>`;
+  let expHtml=`<p>${escHtml(d.plainExplanation||'')}</p>`;
+  if(d.translation&&d.translation!==d.plainExplanation){
+    document.getElementById('lr-translation-block').style.display='block';
+    document.getElementById('lr-translation').innerHTML=`<p>${escHtml(d.translation)}</p>`;
+  }
+  document.getElementById('lr-explanation').innerHTML=expHtml;
+  if(d.shouldReply){
+    document.getElementById('lr-reply-section').style.display='block';
+    document.getElementById('lr-no-reply-section').style.display='none';
+    document.getElementById('lr-reply-en').textContent=d.reply||'';
+    document.getElementById('lr-reply-nl').textContent=d.replyDutch||'';
+  }else{
+    document.getElementById('lr-reply-section').style.display='none';
+    document.getElementById('lr-no-reply-section').style.display='block';
+    document.getElementById('lr-no-reply-reason').textContent=typeof d.reply==='string'?d.reply:'Replying is not recommended for this type of message.';
+  }
+  document.getElementById('lr-result').style.display='block';
+  document.getElementById('lr-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function lrCopy(elId,btnId,label){
+  const text=document.getElementById(elId).textContent;
+  navigator.clipboard.writeText(text).then(()=>{const btn=document.getElementById(btnId);btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent=label;btn.classList.remove('copied');},2000);}).catch(()=>{});
+}
+function lrShowErr(m){const e=document.getElementById('lr-err');e.textContent=m;e.classList.add('on');}
+function lrHideErr(){document.getElementById('lr-err').classList.remove('on');}
+function lrSetLoading(on){const b=document.getElementById('lr-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Decode this message →';}}
+
+// ── Panel 5: Income Check ──
+const IC_THRESHOLDS={permanent:3.0,temporary:3.5,zzp:4.0,student:4.0};
+function icCalculate(){
+  const income=parseFloat(document.getElementById('ic-income').value)||0;
+  const partner=parseFloat(document.getElementById('ic-partner').value)||0;
+  const rent=parseFloat(document.getElementById('ic-rent').value)||0;
+  const contract=document.getElementById('ic-contract').value;
+  if(!income&&!rent){document.getElementById('ic-result').style.display='none';return;}
+  const total=income+partner;
+  const threshold=IC_THRESHOLDS[contract]||3.0;
+  const maxRent=Math.floor(total/threshold/10)*10;
+  const ratio=rent>0?(total/rent):null;
+  const needed=rent*threshold;
+  const meets=total>=needed;
+  const borderline=total>=needed*0.85&&total<needed;
+  const vb=document.getElementById('ic-verdict-box'),vi=document.getElementById('ic-verdict-icon'),vt=document.getElementById('ic-verdict-title'),vs=document.getElementById('ic-verdict-sub');
+  vb.className='verdict-big '+(meets?'verdict-pass':borderline?'verdict-border':'verdict-fail');
+  vi.textContent=meets?'✅':borderline?'⚠️':'❌';
+  if(meets){
+    vt.textContent='You meet the income requirement';
+    vs.textContent=ratio?`Your ratio is ${ratio.toFixed(1)}x rent. The minimum required is ${threshold}x for a ${contract} contract.`:`Combined income of €${total.toLocaleString()} meets the ${threshold}x threshold.`;
+  }else if(borderline){
+    vt.textContent='Borderline - apply with a strong letter';
+    vs.textContent=`You need €${Math.ceil(needed).toLocaleString()}/mo but earn €${total.toLocaleString()}/mo. Some landlords accept this with a strong application or guarantor.`;
+  }else{
+    vt.textContent='Income too low for this listing';
+    vs.textContent=`You need €${Math.ceil(needed).toLocaleString()}/mo. With your income, your max rent is €${maxRent.toLocaleString()}/mo.`;
+  }
+  document.getElementById('ic-stat-ratio').textContent=ratio?ratio.toFixed(1)+'x':'-';
+  document.getElementById('ic-stat-maxrent').textContent=`€${maxRent.toLocaleString()}`;
+  const impression=ratio?(ratio>=threshold*1.3?'Excellent':ratio>=threshold?'Good':ratio>=threshold*0.9?'Borderline':'Weak'):'-';
+  document.getElementById('ic-stat-impression').textContent=impression;
+  let analysis='';
+  if(income>0&&rent>0){
+    if(meets&&ratio>=threshold*1.3)analysis='Your income is well above the minimum. Focus on document quality and response speed. Your income strength is a real asset.';
+    else if(meets)analysis='You meet the requirement but only just. Mention your income ratio explicitly in your application letter. If you have a guarantor available, mention it.';
+    else if(borderline)analysis=`You are slightly below the standard ${threshold}x threshold. Consider mentioning long-term stability, adding partner income if applicable, or offering a guarantor. Some private landlords are flexible.`;
+    else analysis=`The income gap is significant. Your realistic maximum rent is €${maxRent.toLocaleString()}/mo at ${threshold}x income. Applying to listings above this risks rejection.`;
+    if(contract==='zzp')analysis+=' As a ZZP contractor, landlords will want 3 years of tax returns. Prepare your jaaropgave documents.';
+    if(contract==='temporary')analysis+=' Temporary contracts often trigger 3.5x requirements. Include a renewal letter from your employer if possible.';
+  }
+  document.getElementById('ic-analysis-text').textContent=analysis;
+  document.getElementById('ic-result').style.display='block';
+  document.getElementById('ic-explain-card').style.display='block';
+}
+async function icGetExplain(){
+  const income=document.getElementById('ic-income').value.trim();
+  const rent=document.getElementById('ic-rent').value.trim();
+  const situation=document.getElementById('ic-situation').value.trim();
+  const errEl=document.getElementById('ic-explain-err');
+  errEl.style.display='none';
+  if(!income||!rent){errEl.textContent='Please enter your income and rent first.';errEl.style.display='block';return;}
+  const btn=document.getElementById('ic-explain-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>Working...';}
+  try{
+    const r=await fetch('/api/income-explain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({income,rent,situation,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    const box=document.getElementById('ic-explain-result');
+    box.textContent=d.explanation||'';
+    box.classList.add('on');
+    document.getElementById('ic-copy-explain').style.display='inline-block';
+  }catch(e){errEl.textContent=e.message||'Something went wrong.';errEl.style.display='block';}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='Generate explanation →';}}
+}
+function icCopyExplain(){
+  const text=document.getElementById('ic-explain-result').textContent;
+  navigator.clipboard.writeText(text).then(()=>{const btn=document.getElementById('ic-copy-explain');btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy explanation';btn.classList.remove('copied');},2000);}).catch(()=>{});
+}
+
+// ── Panel 6: Rejection Analyser ──
+let raAppCount=1;
+function raAddApp(){
+  const idx=raAppCount++;
+  const div=document.createElement('div');
+  div.className='app-entry';div.id=`ra-app-${idx}`;
+  div.innerHTML=`<h4>Application ${idx+1}</h4><button class="rm-btn" onclick="raRemoveApp(${idx})" title="Remove">x</button>
+    <div class="fld"><div class="lbl">Platform and listing details</div><input class="inp ra-platform" type="text"></div>
+    <div class="fld"><div class="lbl">Your situation</div><input class="inp ra-situation" type="text"></div>
+    <div class="fld"><div class="lbl">What happened</div><select class="inp ra-outcome"><option value="no response">No response at all</option><option value="rejection after viewing">Rejection after viewing</option><option value="rejection before viewing">Rejection before viewing</option><option value="rejection after sending docs">Rejection after sending documents</option><option value="ghosted after showing interest">Ghosted after they showed interest</option></select></div>
+    <div class="fld"><div class="lbl">Response time</div><input class="inp ra-timing" type="text"></div>`;
+  document.getElementById('ra-apps-container').appendChild(div);
+}
+function raRemoveApp(idx){
+  const el=document.getElementById(`ra-app-${idx}`);
+  if(el&&document.querySelectorAll('.app-entry').length>1)el.remove();
+}
+function raCollectApps(){
+  const entries=document.querySelectorAll('.app-entry');
+  return Array.from(entries).map(e=>({
+    platform:e.querySelector('.ra-platform')?.value.trim()||'',
+    situation:e.querySelector('.ra-situation')?.value.trim()||'',
+    outcome:e.querySelector('.ra-outcome')?.value||'',
+    timing:e.querySelector('.ra-timing')?.value.trim()||'',
+  })).filter(a=>a.platform||a.situation);
+}
+async function raAnalyse(){
+  const apps=raCollectApps();
+  if(!apps.length){raShowErr('Please fill in at least one application.');return;}
+  const profile=document.getElementById('ra-profile').value.trim();
+  raHideErr();raSetLoading(true);
+  try{
+    const r=await fetch('/api/rejection-analyser',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({applications:apps,userProfile:{user_description:profile},chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    raRender(d);
+  }catch(e){raShowErr(e.message||'Something went wrong.');}
+  finally{raSetLoading(false);}
+}
+function raRender(d){
+  document.getElementById('ra-reasons-list').innerHTML=(d.mostLikelyReasons||[]).map(r=>`<div class="info-block" style="margin-bottom:8px;padding:10px 14px;font-size:13px">- ${escHtml(r)}</div>`).join('');
+  document.getElementById('ra-fix-list').innerHTML=(d.fixPriorityList||[]).map((f,i)=>`<div class="fix-item"><div class="fix-num">${i+1}</div><div class="fix-body"><strong>${escHtml(f.fix||'')}</strong><span>${escHtml(f.howToFix||'')}</span><br><span class="impact-badge impact-${(f.impact||'low').toLowerCase()}">${(f.impact||'Low')} impact</span></div></div>`).join('');
+  if(d.patternFound){document.getElementById('ra-pattern-block').style.display='block';document.getElementById('ra-pattern').textContent=d.patternFound;}
+  if(d.scoreCorrelation){document.getElementById('ra-score-correlation-block').style.display='block';document.getElementById('ra-score-correlation').textContent=d.scoreCorrelation;}
+  document.getElementById('ra-pivot').textContent=d.pivotAdvice||'';
+  const conf=Math.min(100,Math.max(0,d.confidenceScore||0));
+  document.getElementById('ra-conf-fill').style.width=conf+'%';
+  document.getElementById('ra-conf-label').textContent=`${conf}% confidence based on the data provided`;
+  document.getElementById('ra-result').style.display='block';
+  document.getElementById('ra-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function raShowErr(m){const e=document.getElementById('ra-err');e.textContent=m;e.classList.add('on');}
+function raHideErr(){document.getElementById('ra-err').classList.remove('on');}
+function raSetLoading(on){const b=document.getElementById('ra-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Analyse my rejections →';}}
+
+// ── Panel 7: Reference Letter ──
+function rlSwitchTab(type,btn){
+  document.querySelectorAll('.rl-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.rl-tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`rl-panel-${type}`).classList.add('active');
+  btn.classList.add('active');
+}
+async function rlGenerate(type){
+  let details={};
+  if(type==='employer'){
+    const company=document.getElementById('rl-e-company').value.trim();
+    if(!company){rlShowErr('employer','Please enter the company name.');return;}
+    details={companyName:company,jobTitle:document.getElementById('rl-e-title').value.trim(),contractType:document.getElementById('rl-e-contract').value,salary:document.getElementById('rl-e-salary').value.trim(),startDate:document.getElementById('rl-e-start').value.trim(),hrContact:document.getElementById('rl-e-hr').value.trim()};
+  }else{
+    const landlordName=document.getElementById('rl-l-name').value.trim();
+    if(!landlordName){rlShowErr('landlord','Please enter the landlord name.');return;}
+    details={landlordName,address:document.getElementById('rl-l-address').value.trim(),from:document.getElementById('rl-l-from').value.trim(),to:document.getElementById('rl-l-to').value.trim(),reason:document.getElementById('rl-l-reason').value.trim()};
+  }
+  rlHideErr(type);rlSetLoading(type,true);
+  try{
+    const r=await fetch('/api/reference-letter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,details,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    rlRenderLetter(type,d);
+  }catch(e){rlShowErr(type,e.message||'Something went wrong.');}
+  finally{rlSetLoading(type,false);}
+}
+function rlRenderLetter(type,d){
+  document.getElementById(`rl-letter-en-${type}`).textContent=d.letter||'';
+  document.getElementById(`rl-letter-nl-${type}`).textContent=d.letterDutch||'';
+  if(type==='employer'&&document.getElementById('rl-subject-employer'))document.getElementById('rl-subject-employer').textContent=d.subject||'';
+  document.getElementById(`rl-instructions-${type}`).textContent=Array.isArray(d.instructions)?d.instructions.join('\n\n'):(d.instructions||'');
+  document.getElementById(`rl-result-${type}`).style.display='block';
+  document.getElementById(`rl-result-${type}`).scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function rlCopy(boxId,btnId,label){
+  const text=document.getElementById(boxId).textContent;
+  navigator.clipboard.writeText(text).then(()=>{const btn=document.getElementById(btnId);btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent=label;btn.classList.remove('copied');},2000);}).catch(()=>{});
+}
+function rlDownload(boxId,filename){
+  const text=document.getElementById(boxId).textContent;
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+}
+function rlShowErr(type,m){const e=document.getElementById(`rl-err-${type}`);e.textContent=m;e.classList.add('on');}
+function rlHideErr(type){document.getElementById(`rl-err-${type}`).classList.remove('on');}
+function rlSetLoading(type,on){const b=document.getElementById(`rl-btn-${type}`);if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Generate letter →';}}
+
+// ── Panel 8: Viewing Feedback ──
+let vfStarVal=0;
+function vfSetStar(v){
+  vfStarVal=v;
+  document.querySelectorAll('#vf-stars .star').forEach(s=>{s.classList.toggle('on',parseInt(s.dataset.v)<=v);});
+}
+async function vfAnalyse(){
+  const notes=document.getElementById('vf-notes').value.trim();
+  if(notes.length<20){vfShowErr('Please describe what happened at the viewing.');return;}
+  const address=document.getElementById('vf-address').value.trim();
+  const fullNotes=(vfStarVal?`Rating: ${vfStarVal}/5 stars.\n`:'')+(address?`Property: ${address}\n`:'')+notes;
+  vfHideErr();vfSetLoading(true);
+  try{
+    const r=await fetch('/api/viewing-feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({viewingNotes:fullNotes,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    vfRender(d);
+  }catch(e){vfShowErr(e.message||'Something went wrong.');}
+  finally{vfSetLoading(false);}
+}
+function vfRender(d){
+  const pct=Math.min(100,Math.max(0,d.likelihoodScore||0));
+  const fill=document.getElementById('vf-like-fill');
+  fill.style.width=pct+'%';
+  fill.style.background=pct>=60?'#00c896':pct>=35?'#ffc800':'#ff6464';
+  document.getElementById('vf-like-label').textContent=d.likelihoodLabel||'';
+  document.getElementById('vf-like-pct').textContent=pct+'%';
+  document.getElementById('vf-read-room').textContent=d.readTheRoom||'';
+  document.getElementById('vf-next-action').textContent=d.nextAction||'';
+  document.getElementById('vf-follow-msg').textContent=d.followUpMessage||'';
+  if(d.redFlags&&d.redFlags.length){
+    document.getElementById('vf-flags-section').style.display='block';
+    document.getElementById('vf-flags-list').innerHTML=d.redFlags.map(f=>`<div class="flag-item">⚠️ <span>${escHtml(f)}</span></div>`).join('');
+  }
+  document.getElementById('vf-result').style.display='block';
+  document.getElementById('vf-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function vfCopyMsg(){
+  const text=document.getElementById('vf-follow-msg').textContent;
+  navigator.clipboard.writeText(text).then(()=>{const btn=document.getElementById('vf-copy-msg');btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy message';btn.classList.remove('copied');},2000);}).catch(()=>{});
+}
+function vfShowErr(m){const e=document.getElementById('vf-err');e.textContent=m;e.classList.add('on');}
+function vfHideErr(){document.getElementById('vf-err').classList.remove('on');}
+function vfSetLoading(on){const b=document.getElementById('vf-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Analyse my viewing →';}}
+
+// ── Panel 9: Tenant Rights ──
+function trShowTopic(id,btn){
+  document.querySelectorAll('.topic-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.topic-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`tr-topic-${id}`).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById(`tr-topic-${id}`).scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+async function trAskAI(){
+  const q=document.getElementById('tr-ai-q').value.trim();
+  if(q.length<10){trShowErr('Please enter a question (at least 10 characters).');return;}
+  trHideErr();trSetLoading(true);
+  try{
+    const r=await fetch('/api/tenant-rights-question',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    const res=document.getElementById('tr-ai-result');
+    res.innerHTML=`<p style="font-size:14px;line-height:1.7;margin-bottom:12px">${escHtml(d.answer)}</p>`+
+      `<strong style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#00c896">Next steps</strong>`+
+      `<p style="font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7;margin-top:6px">${escHtml(d.whatToDoNext)}</p>`+
+      (d.authority?`<p style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:8px">Relevant authority: <strong style="color:#fff">${escHtml(d.authority)}</strong> - ${escHtml(d.authorityNote||'')}</p>`:'');
+    res.classList.add('on');
+    res.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){trShowErr(e.message||'Something went wrong.');}
+  finally{trSetLoading(false);}
+}
+function trShowErr(m){const e=document.getElementById('tr-err');e.textContent=m;e.classList.add('on');}
+function trHideErr(){document.getElementById('tr-err').classList.remove('on');}
+function trSetLoading(on){const b=document.getElementById('tr-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Get answer →';}}
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 getParams();
 </script>

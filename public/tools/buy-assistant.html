@@ -157,6 +157,99 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   .row2{grid-template-columns:1fr}
   .prog{display:none}
 }
+
+/* ── Ported tool tabs (Buyer Letter, Lease Review, Deal Finder, Inspection
+   Advisor, Erfpacht Checker, Agent Scripts) — additive, scoped class names. ── */
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:8px;margin-top:16px}
+.info-block{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:14px;line-height:1.7}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.field-row{grid-template-columns:1fr}}
+.copy-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.copy-btn,.dl-btn{background:#0d1117;border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);font-family:inherit;font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block}
+.copy-btn:hover,.dl-btn:hover{border-color:#00c896;color:#00c896}
+.copy-btn.copied{color:#00c896;border-color:#00c896}
+
+/* Buyer Letter */
+.bl-letter-box{background:#0d1117;border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:18px;font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px}
+
+/* Lease Review */
+.flags{display:flex;flex-direction:column;gap:10px}
+.flag{border-radius:10px;padding:14px 16px;border:1px solid}
+.flag-warn{background:rgba(255,179,71,0.07);border-color:rgba(255,179,71,0.25)}
+.flag-ok{background:rgba(0,200,150,0.05);border-color:rgba(0,200,150,0.2)}
+.flag-info{background:#0d1117;border-color:rgba(255,255,255,0.08)}
+.flag-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
+.flag-warn .flag-label{color:#ffb347}
+.flag-ok .flag-label{color:#00c896}
+.flag-info .flag-label{color:rgba(255,255,255,0.4)}
+.flag-text{font-size:13px;line-height:1.6}
+
+/* Deal Finder */
+.score-big{text-align:center;padding:28px;background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:14px;margin-bottom:16px}
+.score-num{font-size:64px;font-weight:800;line-height:1}
+.score-lbl{font-size:14px;color:rgba(255,255,255,0.4);margin-top:4px}
+.score-bar{height:10px;background:rgba(255,255,255,0.08);border-radius:5px;margin:12px auto;max-width:280px;overflow:hidden}
+.score-fill{height:100%;border-radius:5px;transition:width .8s}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:520px){.grid-3{grid-template-columns:1fr 1fr}}
+.stat-box2{background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px}
+.stat-box2 .lbl2{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px}
+.stat-box2 .val{font-size:16px;font-weight:700;color:#00c896}
+.stat-box2 .sub{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#0d1117;border-radius:6px;margin-bottom:4px;font-size:13px}
+.cost-row .k{color:rgba(255,255,255,0.4)}.cost-row .v{font-weight:600}
+.cost-total{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2)}
+.cost-total .v{color:#00c896;font-size:14px}
+.flag-item{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:8px;margin-bottom:6px;font-size:13px}
+.flag-red{background:rgba(255,100,100,0.06);border:1px solid rgba(255,100,100,0.2)}
+.flag-yellow{background:rgba(255,200,0,0.06);border:1px solid rgba(255,200,0,0.15)}
+.ai-verdict{background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7;margin-top:12px;display:none}
+.ai-verdict.on{display:block}
+
+/* Inspection Advisor */
+.issue-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 14px;background:#0d1117;border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-bottom:6px;font-size:13px}
+.issue-name{font-weight:600}
+.sev-badge{padding:2px 10px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap}
+.sev-Cosmetic{background:rgba(100,180,255,0.12);color:#6ab4ff}
+.sev-Minor{background:rgba(255,200,0,0.1);color:#ffc800}
+.sev-Significant{background:rgba(255,150,80,0.12);color:#ff9650}
+.sev-Major{background:rgba(255,100,100,0.12);color:#ff6464}
+.sev-DealBreaker{background:rgba(200,50,50,0.2);color:#ff3333;font-size:12px}
+.cost-val{font-size:12px;color:rgba(255,255,255,0.4);white-space:nowrap}
+.priority-tag{font-size:10px;color:#ff6464;font-weight:700;margin-top:2px}
+.total-box{background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.total-box .label2{font-size:13px;color:rgba(255,255,255,0.4)}
+.total-box .val{font-size:22px;font-weight:800;color:#00c896}
+.walk-away-box{background:rgba(255,50,50,0.07);border:1px solid rgba(255,50,50,0.25);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7;margin-bottom:14px;display:none}
+.walk-away-box.on{display:block}
+.script-box{background:#0d1117;border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.7;white-space:pre-wrap;margin-bottom:8px}
+
+/* Erfpacht Checker */
+.explainer{background:rgba(255,200,0,0.05);border:1px solid rgba(255,200,0,0.15);border-radius:12px;padding:16px 18px;margin-bottom:16px;font-size:13px;line-height:1.7}
+.explainer strong{color:#ffc800}
+.risk-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:14px}
+.risk-Low{background:rgba(0,200,150,0.12);color:#00c896}
+.risk-Medium{background:rgba(255,200,0,0.1);color:#ffc800}
+.risk-High{background:rgba(255,150,80,0.12);color:#ff9650}
+.risk-Critical{background:rgba(255,50,50,0.12);color:#ff3333}
+.data-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 14px;background:#0d1117;border-radius:6px;margin-bottom:4px;font-size:13px}
+.data-row .k{color:rgba(255,255,255,0.4);flex-shrink:0;margin-right:12px}
+.data-row .v{font-weight:600;text-align:right}
+.verdict-block{background:rgba(0,200,150,0.05);border:1px solid rgba(0,200,150,0.2);border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.75}
+
+/* Agent Scripts */
+.script-block{background:#0d1117;border:1px solid rgba(0,200,150,0.15);border-radius:10px;padding:16px;margin-bottom:10px;font-size:14px;line-height:1.8;position:relative}
+.script-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#00c896;margin-bottom:8px}
+.script-text{padding-right:60px}
+.as-copy-btn{position:absolute;top:12px;right:12px;background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-family:inherit;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;transition:all .15s}
+.as-copy-btn:hover{border-color:#00c896;color:#00c896}
+.as-copy-btn.copied{color:#00c896;border-color:#00c896}
+.tip-box{background:rgba(0,200,150,0.04);border:1px solid rgba(0,200,150,0.1);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;margin-bottom:8px}
+.tip-box strong{color:#00c896}
+.avoid-box{background:rgba(255,100,100,0.05);border:1px solid rgba(255,100,100,0.15);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:12px}
+.avoid-box strong{color:#ff6464}
+.as-divider{border:none;border-top:1px solid rgba(255,255,255,0.08);margin:20px 0}
+.result-script{background:#0d1117;border:1px solid rgba(0,200,150,0.2);border-radius:10px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -207,6 +300,12 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   <div class="more-tools-row">
     <span class="more-tools-label">More buyer tools:</span>
     <button class="more-tool-btn" id="more-btn-5" onclick="switchBuyTab(5)">Viewing Checklist</button>
+    <button class="more-tool-btn" id="more-btn-6" onclick="switchBuyTab(6)">Buyer Letter</button>
+    <button class="more-tool-btn" id="more-btn-7" onclick="switchBuyTab(7)">Lease Review</button>
+    <button class="more-tool-btn" id="more-btn-8" onclick="switchBuyTab(8)">Deal Finder</button>
+    <button class="more-tool-btn" id="more-btn-9" onclick="switchBuyTab(9)">Inspection Advisor</button>
+    <button class="more-tool-btn" id="more-btn-10" onclick="switchBuyTab(10)">Erfpacht Checker</button>
+    <button class="more-tool-btn" id="more-btn-11" onclick="switchBuyTab(11)">Agent Scripts</button>
   </div>
 
   <!-- ── Panel 1: Affordability ── -->
@@ -515,6 +614,318 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     </div>
   </div>
 
+  <!-- Panel 6: Buyer Letter -->
+  <div id="panel-6" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Send a personal introduction to the selling agent — it can tip the balance when bids are close.</div>
+    </div>
+    <div class="card">
+      <div class="field-row">
+        <div class="fld"><div class="lbl">Property address</div><input class="inp" type="text" id="bl-address"></div>
+        <div class="fld"><div class="lbl">City</div><input class="inp" type="text" id="bl-city"></div>
+      </div>
+      <div class="fld"><div class="lbl">Asking price</div><input class="inp" type="text" id="bl-price"></div>
+      <div class="fld"><div class="lbl">Why do you want this property?</div><textarea class="inp" id="bl-whylove" rows="3"></textarea></div>
+      <div class="fld"><div class="lbl">Your situation</div><textarea class="inp" id="bl-situation" rows="3"></textarea></div>
+      <div class="fld">
+        <div class="lbl">Your offer intent</div>
+        <select class="inp" id="bl-offer-intent">
+          <option value="">Select...</option>
+          <option value="bidding at asking price">Bidding at asking price</option>
+          <option value="bidding above asking price and prepared to move fast">Bidding above asking price and prepared to move fast</option>
+          <option value="exploring and planning to make a serious offer after a viewing">Exploring and planning to make a serious offer after a viewing</option>
+          <option value="pre-approved for a mortgage and ready to proceed quickly">Pre-approved for a mortgage and ready to proceed quickly</option>
+        </select>
+      </div>
+      <div class="fld"><div class="lbl">Anything else to include <span class="cc">(optional)</span></div><textarea class="inp" id="bl-extra" rows="2"></textarea></div>
+      <button class="btn-main" id="bl-btn" onclick="blGenerate()">Generate my letter &#8594;</button>
+      <div class="errtxt" id="bl-err"></div>
+    </div>
+    <div class="card" id="bl-result" style="display:none">
+      <div class="section-label">Your buyer introduction letter</div>
+      <div class="bl-letter-box" id="bl-letter-text"></div>
+      <div class="copy-row">
+        <button class="copy-btn" onclick="blCopy()">Copy</button>
+        <button class="dl-btn" onclick="blDownload()">Download .txt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel 7: Lease Review -->
+  <div id="panel-7" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Paste clauses from your Dutch lease — I'll translate, flag anything unusual, and tell you what to ask before signing.</div>
+    </div>
+    <div class="card">
+      <div class="fld"><div class="lbl">Lease clauses to review</div><textarea class="inp" id="lr2-text" rows="8" placeholder="Minimum 50 characters..."></textarea></div>
+      <div class="fld"><div class="lbl">Your situation <span class="cc">(optional)</span></div><textarea class="inp" id="lr2-context" rows="2"></textarea></div>
+      <button class="btn-main" id="lr2-btn" onclick="lr2Review()">Review my lease &#8594;</button>
+      <div class="errtxt" id="lr2-err"></div>
+    </div>
+    <div class="card" id="lr2-result" style="display:none">
+      <div class="section-label">Summary</div>
+      <div class="info-block" id="lr2-summary"></div>
+      <div class="section-label">Clause analysis</div>
+      <div class="flags" id="lr2-flags"></div>
+      <div class="section-label">Questions to ask your landlord</div>
+      <div class="info-block" id="lr2-questions"></div>
+      <div class="copy-row"><button class="copy-btn" onclick="lr2Copy()">Copy full review</button></div>
+    </div>
+  </div>
+
+  <!-- Panel 8: Deal Finder -->
+  <div id="panel-8" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Enter listing details for an instant deal score, hidden costs, negotiation room and red flags.</div>
+    </div>
+    <div class="card">
+      <div class="field-row">
+        <div class="fld"><div class="lbl">Asking price (EUR)</div><input class="inp" type="number" id="df-price" oninput="dfCalculate()"></div>
+        <div class="fld"><div class="lbl">Area (m²)</div><input class="inp" type="number" id="df-area" oninput="dfCalculate()"></div>
+      </div>
+      <div class="field-row">
+        <div class="fld">
+          <div class="lbl">City / neighbourhood</div>
+          <select class="inp" id="df-city" onchange="dfCalculate()">
+            <option value="">Select city</option>
+            <optgroup label="Amsterdam">
+              <option value="amsterdam-centrum">Amsterdam Centrum</option>
+              <option value="amsterdam-west">Amsterdam West</option>
+              <option value="amsterdam-oost">Amsterdam Oost</option>
+              <option value="amsterdam-zuid">Amsterdam Zuid</option>
+              <option value="amsterdam">Amsterdam (other)</option>
+            </optgroup>
+            <option value="rotterdam-centrum">Rotterdam Centrum</option>
+            <option value="rotterdam-noord">Rotterdam Noord</option>
+            <option value="rotterdam">Rotterdam (other)</option>
+            <option value="utrecht-centrum">Utrecht Centrum</option>
+            <option value="utrecht-west">Utrecht West</option>
+            <option value="utrecht">Utrecht (other)</option>
+            <option value="den-haag-centrum">Den Haag Centrum</option>
+            <option value="den-haag">Den Haag (other)</option>
+            <option value="eindhoven">Eindhoven</option>
+            <option value="haarlem">Haarlem</option>
+            <option value="leiden">Leiden</option>
+            <option value="delft">Delft</option>
+            <option value="groningen">Groningen</option>
+            <option value="maastricht">Maastricht</option>
+          </select>
+        </div>
+        <div class="fld">
+          <div class="lbl">Property type</div>
+          <select class="inp" id="df-ptype" onchange="dfCalculate()">
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="studio">Studio</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="fld"><div class="lbl">Year built <span class="cc">(optional)</span></div><input class="inp" type="number" id="df-year" oninput="dfCalculate()"></div>
+        <div class="fld">
+          <div class="lbl">Energy label <span class="cc">(optional)</span></div>
+          <select class="inp" id="df-elabel" onchange="dfCalculate()">
+            <option value="">Unknown</option>
+            <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+            <option value="D">D</option><option value="E">E</option><option value="F">F</option><option value="G">G</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="fld"><div class="lbl">Monthly VvE costs <span class="cc">(apartments)</span></div><input class="inp" type="number" id="df-vve" oninput="dfCalculate()"></div>
+        <div class="fld"><div class="lbl">Days on market <span class="cc">(optional)</span></div><input class="inp" type="number" id="df-days" oninput="dfCalculate()"></div>
+      </div>
+      <div class="fld">
+        <div class="lbl">Is there erfpacht (ground lease)?</div>
+        <select class="inp" id="df-erfpacht" onchange="dfCalculate()">
+          <option value="no">No / Not sure</option>
+          <option value="yes">Yes - erfpacht</option>
+        </select>
+      </div>
+      <div id="df-result-instant"></div>
+      <button class="btn-main" id="df-btn" onclick="dfGetAIVerdict()">Get AI verdict &#8594;</button>
+      <div class="errtxt" id="df-err"></div>
+      <div class="ai-verdict" id="df-ai-verdict"></div>
+    </div>
+  </div>
+
+  <!-- Panel 9: Inspection Advisor -->
+  <div id="panel-9" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Paste your bouwkundige keuring findings — I'll classify severity, estimate repair costs, and give you a renegotiation script.</div>
+    </div>
+    <div class="card">
+      <div class="fld"><div class="lbl">Purchase price (EUR)</div><input class="inp" type="number" id="ia-price"></div>
+      <div class="fld"><div class="lbl">Inspection report findings</div><textarea class="inp" id="ia-findings" rows="8"></textarea></div>
+      <button class="btn-main" id="ia-btn" onclick="iaAnalyse()">Analyse inspection &#8594;</button>
+      <div class="errtxt" id="ia-err"></div>
+    </div>
+    <div class="card" id="ia-result" style="display:none">
+      <div class="total-box">
+        <div><div class="label2">Total estimated repair costs</div><div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px">Dutch 2024 contractor rates</div></div>
+        <div class="val" id="ia-total-cost"></div>
+      </div>
+      <div class="walk-away-box" id="ia-walk-away"></div>
+      <div class="section-label">Issue classification</div>
+      <div id="ia-issues-list"></div>
+      <div class="section-label">Priority repairs (do before moving in)</div>
+      <div class="info-block" id="ia-priority-repairs"></div>
+      <div class="section-label">Renegotiation strategy</div>
+      <div class="info-block" id="ia-reneg-strategy"></div>
+      <div class="section-label">Script for the conversation with the agent</div>
+      <div class="script-box" id="ia-reneg-script"></div>
+      <div class="copy-row"><button class="copy-btn" id="ia-copy-script" onclick="iaCopyScript()">Copy script</button></div>
+    </div>
+  </div>
+
+  <!-- Panel 10: Erfpacht Checker -->
+  <div id="panel-10" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Ground lease is the single biggest hidden risk for expat buyers — let's check your terms before you bid.</div>
+    </div>
+    <div class="explainer"><strong>What is erfpacht?</strong> You buy the building but not the land beneath it, and pay an annual fee (canon) to the land owner — usually the municipality. The canon can increase dramatically at revision points. Common in Amsterdam Centrum, IJburg, Watergraafsmeer, parts of Den Haag, Leiden and Eindhoven.</div>
+    <div class="card">
+      <div class="fld"><div class="lbl">Erfpacht terms (paste from contract, or describe)</div><textarea class="inp" id="ec-text" rows="7"></textarea></div>
+      <div class="field-row">
+        <div class="fld"><div class="lbl">Purchase price (EUR)</div><input class="inp" type="number" id="ec-price"></div>
+        <div class="fld">
+          <div class="lbl">City</div>
+          <select class="inp" id="ec-city">
+            <option value="">Select city</option>
+            <option value="Amsterdam">Amsterdam</option>
+            <option value="Den Haag">Den Haag</option>
+            <option value="Leiden">Leiden</option>
+            <option value="Eindhoven">Eindhoven</option>
+            <option value="other">Other city</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-main" id="ec-btn" onclick="ecAnalyse()">Analyse erfpacht &#8594;</button>
+      <div class="errtxt" id="ec-err"></div>
+    </div>
+    <div class="card" id="ec-result" style="display:none">
+      <div id="ec-risk-badge"></div>
+      <div class="section-label">Key terms</div>
+      <div id="ec-key-terms"></div>
+      <div id="ec-flags-section" style="display:none">
+        <div class="section-label">Red flags</div>
+        <div id="ec-flags-list"></div>
+      </div>
+      <div class="section-label">Verdict</div>
+      <div class="verdict-block" id="ec-verdict"></div>
+      <div id="ec-buyout-block" style="display:none">
+        <div class="section-label">Canon buyout option</div>
+        <div class="info-block" id="ec-buyout-info"></div>
+      </div>
+      <div class="section-label">Mortgage risk</div>
+      <div class="info-block" id="ec-mortgage-risk"></div>
+    </div>
+  </div>
+
+  <!-- Panel 11: Agent Scripts -->
+  <div id="panel-11" class="panel">
+    <div class="scout-row">
+      <div class="scout-av">
+        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
+        <div class="scout-name">Scout</div>
+      </div>
+      <div class="scout-msg">Word-for-word scripts for every stage of dealing with Dutch agents — from first contact to bid negotiation.</div>
+    </div>
+    <div class="card">
+      <div class="section-label">First contact with the selling agent</div>
+      <div class="script-block">
+        <div class="script-label">Script — calling the agent</div>
+        <button class="as-copy-btn" onclick="asCopyScript(this)">Copy</button>
+        <div class="script-text">"Good morning, my name is [your name]. I am calling about the property at [address] — I saw it on Funda this morning and I am very interested. I have a permanent contract, I earn [X] times the monthly rent, and all my documents are ready to send today. Is it possible to schedule a viewing? I am available any day this week."</div>
+      </div>
+      <div class="tip-box"><strong>Why this works:</strong> You immediately signal the three things Dutch agents care about most — income qualification, document readiness, and availability.</div>
+      <div class="script-block">
+        <div class="script-label">If they say all viewing slots are full</div>
+        <button class="as-copy-btn" onclick="asCopyScript(this)">Copy</button>
+        <div class="script-text">"I completely understand — it sounds like there is a lot of interest. Would it be possible to put me on a waiting list in case a slot opens? Or if another viewer cancels, I can be there within an hour."</div>
+      </div>
+      <div class="avoid-box"><strong>Avoid:</strong> Never say "I love it from the photos" or describe the apartment as "perfect" before you have seen it.</div>
+    </div>
+    <div class="card">
+      <div class="section-label">At the viewing</div>
+      <div class="script-block">
+        <div class="script-label">Opening the conversation</div>
+        <button class="as-copy-btn" onclick="asCopyScript(this)">Copy</button>
+        <div class="script-text">"Thanks for having me. I read the listing carefully before coming — I noticed [specific detail from the listing]. That is specifically what drew me here. A few practical questions when you have a moment."</div>
+      </div>
+      <div class="script-block">
+        <div class="script-label">Signalling you are a serious buyer</div>
+        <button class="as-copy-btn" onclick="asCopyScript(this)">Copy</button>
+        <div class="script-text">"I want to be upfront: I have my mortgage pre-approval confirmed, so there is no uncertainty on the financing side. I am also flexible on the transfer date. If everything checks out today I would be in a position to submit an offer quickly."</div>
+      </div>
+      <div class="tip-box"><strong>5 behaviours that impress Dutch agents:</strong> arrive 5 minutes early; reference a specific detail from the listing; state your documents/mortgage approval are ready; ask specific practical questions; don't bring children or pets unless the listing welcomes families.</div>
+    </div>
+    <div class="card">
+      <div class="section-label">After the viewing</div>
+      <div class="script-block">
+        <div class="script-label">Thank-you / follow-up (send within 1 hour)</div>
+        <button class="as-copy-btn" onclick="asCopyScript(this)">Copy</button>
+        <div class="script-text">"Hi [agent name], thank you for showing me the property at [address] today. I am very interested and would like to submit a formal offer. My documents are ready and my financing is confirmed. Please let me know what the next step is."</div>
+      </div>
+      <div class="script-block">
+        <div class="script-label">Asking about other offers without sounding weak</div>
+        <button class="as-copy-btn" onclick="asCopyScript(this)">Copy</button>
+        <div class="script-text">"Could you tell me roughly how many offers you are expecting, or what the seller's timeline for deciding looks like? I want to make sure I structure my offer appropriately."</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">During bid negotiation</div>
+      <div class="script-block">
+        <div class="script-label">Responding to a counter-offer</div>
+        <button class="as-copy-btn" onclick="asCopyScript(this)">Copy</button>
+        <div class="script-text">"Thank you for the counter. Let me think about that and come back to you by [specific time]. Can you confirm whether there are any other bids currently on the table at this level?"</div>
+      </div>
+      <div class="script-block">
+        <div class="script-label">Handling "we have another offer at the same level"</div>
+        <button class="as-copy-btn" onclick="asCopyScript(this)">Copy</button>
+        <div class="script-text">"I understand. Can I ask — is the decision purely on price, or are other factors like transfer date and conditions also being weighted? I may be able to improve my offer on one or more of those dimensions."</div>
+      </div>
+      <div class="avoid-box"><strong>Do not:</strong> offer 3 months rent upfront instead of income proof; threaten to walk unless you mean it; cite Funda comparisons without solid data; negotiate only by email — call first, confirm in writing after.</div>
+    </div>
+
+    <hr class="as-divider">
+
+    <div class="card">
+      <div class="lbl" style="margin-bottom:10px">Generate a script for your specific situation</div>
+      <div class="fld"><div class="lbl">Describe the situation</div><input class="inp" type="text" id="as-situation"></div>
+      <div class="fld"><div class="lbl">Additional context <span class="cc">(optional)</span></div><textarea class="inp" id="as-context" rows="2"></textarea></div>
+      <button class="btn-main" id="as-btn" onclick="asGenerateScript()">Generate my script &#8594;</button>
+      <div class="errtxt" id="as-err"></div>
+      <div id="as-result" style="display:none">
+        <div class="result-script" id="as-script-en"></div>
+        <div class="copy-row"><button class="copy-btn" id="as-copy-en" onclick="asCopyEl('as-script-en','as-copy-en','Copy English script')">Copy English script</button></div>
+        <div class="result-script" id="as-script-nl" style="display:none"></div>
+        <div class="copy-row" id="as-nl-row" style="display:none"><button class="copy-btn" id="as-copy-nl" onclick="asCopyEl('as-script-nl','as-copy-nl','Copy Dutch script')">Copy Dutch script</button></div>
+        <div id="as-key-points"></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Mobile bottom nav -->
@@ -565,7 +976,7 @@ function getParams(){
   chatId=p.get('chat_id')||null;
   cacheId=p.get('listing')||null;
   const t=parseInt(p.get('tab')||'1',10);
-  switchBuyTab(t>=1&&t<=5?t:1);
+  switchBuyTab(t>=1&&t<=11?t:1);
   if(cacheId){
     fetch(`/api/letter-data?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d||!d.listing)return;
@@ -615,7 +1026,7 @@ function switchBuyTab(n){
   const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
   const desktopTab=document.querySelector(`.tab[data-tab="${n}"]`);if(desktopTab)desktopTab.classList.add('on');
   const mobTab=document.getElementById(`mob-${n}`);if(mobTab)mobTab.classList.add('on');
-  if(n===5){const btn=document.getElementById(`more-btn-${n}`);if(btn)btn.classList.add('on');}
+  if(n>=5){const btn=document.getElementById(`more-btn-${n}`);if(btn)btn.classList.add('on');}
   for(let i=1;i<=3;i++){
     const s=document.getElementById(`prog-${i}`);
     const l=document.getElementById(`prog-line-${i}`);
@@ -767,6 +1178,311 @@ function cpResp(tab){
   const t=lastResp[tab]||'';if(!t)return;
   navigator.clipboard.writeText(t).then(()=>{const btn=document.querySelector(`#acts-${tab} .btn-sm`);if(btn){btn.textContent='Copied!';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok');},2000);}}).catch(()=>{});
 }
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── Panel 6: Buyer Letter ──
+async function blGenerate(){
+  const address=document.getElementById('bl-address').value.trim();
+  if(!address){blShowErr('Property address is required.');return;}
+  const whyLove=document.getElementById('bl-whylove').value.trim();
+  if(!whyLove){blShowErr('Please describe why you want this property.');return;}
+  blHideErr();blSetLoading(true);
+  try{
+    const resp=await fetch('/api/buyer-letter',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      houseAddress:address,houseCity:document.getElementById('bl-city').value.trim(),housePrice:document.getElementById('bl-price').value.trim(),
+      whyLove,situation:document.getElementById('bl-situation').value.trim(),offerIntent:document.getElementById('bl-offer-intent').value,
+      extraContext:document.getElementById('bl-extra').value.trim(),chatId,
+    })});
+    const data=await resp.json();
+    if(!resp.ok)throw new Error(data.error||'Generation failed');
+    document.getElementById('bl-letter-text').textContent=data.letter;
+    const box=document.getElementById('bl-result');box.style.display='block';box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){blShowErr(e.message||'Letter generation failed.');}
+  finally{blSetLoading(false);}
+}
+function blCopy(){
+  const text=document.getElementById('bl-letter-text').textContent;
+  navigator.clipboard.writeText(text).catch(()=>{});
+}
+function blDownload(){
+  const text=document.getElementById('bl-letter-text').textContent;
+  const blob=new Blob([text],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='buyer-letter.txt';a.click();URL.revokeObjectURL(a.href);
+}
+function blShowErr(m){const e=document.getElementById('bl-err');e.textContent=m;e.classList.add('on');}
+function blHideErr(){document.getElementById('bl-err').classList.remove('on');}
+function blSetLoading(on){const b=document.getElementById('bl-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Generate my letter →';}}
+
+// ── Panel 7: Lease Review ──
+async function lr2Review(){
+  const text=document.getElementById('lr2-text').value.trim();
+  if(text.length<50){lr2ShowErr('Please paste at least 50 characters of lease text.');return;}
+  lr2HideErr();lr2SetLoading(true);
+  try{
+    const resp=await fetch('/api/lease-review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({leaseText:text,context:document.getElementById('lr2-context').value.trim(),chatId})});
+    const data=await resp.json();
+    if(!resp.ok)throw new Error(data.error||'Review failed');
+    lr2Render(data);
+  }catch(e){lr2ShowErr(e.message||'Lease review failed.');}
+  finally{lr2SetLoading(false);}
+}
+function lr2Render(data){
+  document.getElementById('lr2-summary').textContent=data.summary||'';
+  const flagsEl=document.getElementById('lr2-flags');
+  flagsEl.innerHTML=(data.flags||[]).map(f=>{
+    const cls=f.type==='warning'?'flag-warn':f.type==='ok'?'flag-ok':'flag-info';
+    const labelText=f.type==='warning'?'Watch out':f.type==='ok'?'Standard':'Note';
+    return `<div class="flag ${cls}"><div class="flag-label">${labelText}</div><div class="flag-text">${escHtml(f.text)}</div></div>`;
+  }).join('');
+  document.getElementById('lr2-questions').textContent=data.questions||'';
+  document.getElementById('lr2-result').style.display='block';
+  document.getElementById('lr2-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function lr2Copy(){
+  const summary=document.getElementById('lr2-summary').textContent;
+  const questions=document.getElementById('lr2-questions').textContent;
+  const flags=Array.from(document.querySelectorAll('#lr2-flags .flag-text')).map(el=>el.textContent).join('\n');
+  navigator.clipboard.writeText(`LEASE REVIEW\n\nSummary:\n${summary}\n\nClause Analysis:\n${flags}\n\nQuestions to ask:\n${questions}`).catch(()=>{});
+}
+function lr2ShowErr(m){const e=document.getElementById('lr2-err');e.textContent=m;e.classList.add('on');}
+function lr2HideErr(){document.getElementById('lr2-err').classList.remove('on');}
+function lr2SetLoading(on){const b=document.getElementById('lr2-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Review my lease →';}}
+
+// ── Panel 8: Deal Finder ──
+const DF_BENCHMARKS={'amsterdam-centrum':9200,'amsterdam-west':7100,'amsterdam-oost':7400,'amsterdam-zuid':8800,'amsterdam':7000,'rotterdam-centrum':5100,'rotterdam-noord':3800,'rotterdam':4500,'utrecht-centrum':6200,'utrecht-west':5400,'utrecht':5500,'den-haag-centrum':4800,'den-haag':4400,'eindhoven':3800,'haarlem':5500,'leiden':5100,'delft':4700,'groningen':3200,'maastricht':3300};
+const DF_ENERGY_SCORE={A:10,B:8,C:5,D:0,E:-5,F:-10,G:-15};
+let dfCalcData={};let dfBenchmarkTimer=null;
+function dfUpgradeBenchmark(price,area,city){
+  clearTimeout(dfBenchmarkTimer);
+  if(!price||!area||!city)return;
+  dfBenchmarkTimer=setTimeout(()=>{
+    fetch('/api/price-benchmark',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({price,area,location:city.replace(/-/g,' '),type:'koop'})})
+      .then(r=>r.ok?r.json():null).then(d=>{if(d&&d.ok&&d.intel&&d.intel.benchmarkPpm2)dfCalculate(d.intel.benchmarkPpm2,d.dealScore);}).catch(()=>{});
+  },400);
+}
+function dfCalculate(benchmarkOverride,dealScoreOverride){
+  const price=parseFloat(document.getElementById('df-price').value)||0;
+  const area=parseFloat(document.getElementById('df-area').value)||0;
+  const city=document.getElementById('df-city').value;
+  const ptype=document.getElementById('df-ptype').value;
+  const year=parseInt(document.getElementById('df-year').value)||0;
+  const elabel=document.getElementById('df-elabel').value;
+  const vve=parseFloat(document.getElementById('df-vve').value)||0;
+  const days=parseInt(document.getElementById('df-days').value)||0;
+  const erfpacht=document.getElementById('df-erfpacht').value;
+  const target=document.getElementById('df-result-instant');
+  if(!price){target.innerHTML='';return;}
+  const ppm2=area>0?Math.round(price/area):0;
+  const benchmark=(benchmarkOverride!=null?benchmarkOverride:DF_BENCHMARKS[city])||null;
+  let score,ppm2verdict=null;
+  if(dealScoreOverride!=null){
+    score=dealScoreOverride;
+    if(benchmark&&ppm2>0){
+      const diff=(ppm2-benchmark)/benchmark;
+      ppm2verdict=diff<-0.15?'Below market':diff<-0.05?'Fair price':diff<0.10?'At market':diff<0.20?'Above market':'Significantly overpriced';
+    }
+  }else{
+    score=50;
+    if(benchmark&&ppm2>0){
+      const diff=(ppm2-benchmark)/benchmark;
+      if(diff<-0.15){score+=25;ppm2verdict='Below market';}
+      else if(diff<-0.05){score+=12;ppm2verdict='Fair price';}
+      else if(diff<0.10){score+=0;ppm2verdict='At market';}
+      else if(diff<0.20){score-=15;ppm2verdict='Above market';}
+      else{score-=25;ppm2verdict='Significantly overpriced';}
+    }
+  }
+  if(elabel&&DF_ENERGY_SCORE[elabel]!==undefined)score+=DF_ENERGY_SCORE[elabel];
+  if(year>0){if(year<1960)score-=10;else if(year<1970)score-=5;else if(year>2010)score+=5;}
+  if(ptype==='apartment'){if(vve>400)score-=10;else if(vve>250)score-=5;else if(vve>0&&vve<80)score-=5;}
+  if(days>60)score+=15;else if(days>30)score+=8;else if(days>21)score+=4;
+  if(erfpacht==='yes')score-=20;
+  score=Math.max(0,Math.min(100,Math.round(score)));
+  const transferTax=price*0.02,notary=1500,advisor=3000,valuation=800;
+  const annualMaint=ptype==='apartment'?price*0.005:price*0.01;
+  const annualVve=vve*12;
+  const totalBuyingCosts=transferTax+notary+advisor+valuation;
+  let negoMin=0,negoMax=0;
+  if(days>60){negoMin=5;negoMax=10;}else if(days>30){negoMin=3;negoMax=7;}else if(days>21){negoMin=2;negoMax=5;}else{negoMin=0;negoMax=3;}
+  if(benchmark&&ppm2>benchmark*1.1){negoMin+=2;negoMax+=4;}
+  if(elabel==='E'||elabel==='F'||elabel==='G'){negoMin+=2;negoMax+=4;}
+  const flags=[];
+  if(erfpacht==='yes')flags.push({level:'red',text:'Erfpacht (ground lease) - you do not own the land. Significant hidden risk, check canon revision terms.'});
+  if(elabel==='F'||elabel==='G')flags.push({level:'red',text:`Energy label ${elabel} - budget €20,000-50,000 for required upgrades. From 2030, renting label E/F/G homes may be restricted.`});
+  if(elabel==='E')flags.push({level:'yellow',text:'Energy label E - consider negotiating €10,000-20,000 off for insulation upgrades required.'});
+  if(year>0&&year<1960)flags.push({level:'yellow',text:`Built in ${year} - high maintenance risk. Always get a full building inspection (bouwkundige keuring).`});
+  if(ptype==='apartment'&&vve===0)flags.push({level:'yellow',text:'No VvE costs entered - verify VvE is active and reserve fund is healthy. Ask for MJOP documents.'});
+  if(ptype==='apartment'&&vve>0&&vve<60)flags.push({level:'yellow',text:`VvE costs of €${vve}/mo seem low for this building - costs may be deferred and a special levy is likely coming.`});
+  if(benchmark&&ppm2>benchmark*1.2)flags.push({level:'red',text:`Price per m² (€${ppm2.toLocaleString()}) is more than 20% above the ${city||'city'} benchmark (€${benchmark.toLocaleString()}). Strong negotiation grounds.`});
+  dfCalcData={price,area,ppm2,city,ptype,year,elabel,vve,days,erfpacht,benchmark,ppm2verdict,score,negoMin,negoMax,flags};
+  const scoreColor=score>=65?'#00c896':score>=40?'#ffc800':'#ff6464';
+  const scoreText=score>=65?'Good deal':score>=40?'Fair price':'Overpriced';
+  let html=`<div style="text-align:center;padding:20px 0 12px">
+    <div class="score-num" style="color:${scoreColor}">${score}</div>
+    <div class="score-lbl">Deal Score (0-100)</div>
+    <div style="font-size:16px;font-weight:700;margin-top:6px;color:${scoreColor}">${scoreText}</div>
+    <div class="score-bar"><div class="score-fill" style="width:${score}%;background:${scoreColor}"></div></div>
+  </div>
+  <div class="grid-3">
+    ${ppm2>0?`<div class="stat-box2"><div class="lbl2">Price / m²</div><div class="val">€${ppm2.toLocaleString()}</div>${benchmark?`<div class="sub">Benchmark €${benchmark.toLocaleString()}</div>`:''}</div>`:''}
+    ${ppm2verdict?`<div class="stat-box2"><div class="lbl2">Vs benchmark</div><div class="val" style="font-size:13px">${ppm2verdict}</div></div>`:''}
+    <div class="stat-box2"><div class="lbl2">Negotiation room</div><div class="val">${negoMin}-${negoMax}%</div><div class="sub">Est. off asking</div></div>
+  </div>
+  <div class="section-label">True cost of ownership</div>
+  <div class="cost-row"><span class="k">Asking price</span><span class="v">€${price.toLocaleString()}</span></div>
+  <div class="cost-row"><span class="k">Transfer tax (2% standard buyer)</span><span class="v">€${Math.round(transferTax).toLocaleString()}</span></div>
+  <div class="cost-row"><span class="k">Notary fees</span><span class="v">€${notary.toLocaleString()}</span></div>
+  <div class="cost-row"><span class="k">Mortgage / purchase advisor</span><span class="v">€${advisor.toLocaleString()}</span></div>
+  <div class="cost-row"><span class="k">Valuation report</span><span class="v">€${valuation.toLocaleString()}</span></div>
+  <div class="cost-row cost-total"><span class="k"><strong>Total buying costs (ex mortgage)</strong></span><span class="v">€${Math.round(totalBuyingCosts).toLocaleString()}</span></div>
+  ${vve>0?`<div class="cost-row"><span class="k">Annual VvE costs</span><span class="v">€${Math.round(annualVve).toLocaleString()}/yr</span></div>`:''}
+  <div class="cost-row"><span class="k">Est. annual maintenance</span><span class="v">€${Math.round(annualMaint).toLocaleString()}/yr</span></div>
+  <p style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px">Note: transfer tax is 0% if under 35 and first home under €510,000. Verify with your notary.</p>`;
+  if(flags.length){
+    html+=`<div class="section-label">Red flags</div>`;
+    html+=flags.map(f=>`<div class="flag-item ${f.level==='red'?'flag-red':'flag-yellow'}">${f.level==='red'?'🔴':'⚠️'} <span>${f.text}</span></div>`).join('');
+  }
+  target.innerHTML=html;
+  if(benchmarkOverride==null)dfUpgradeBenchmark(price,area,city);
+}
+async function dfGetAIVerdict(){
+  if(!dfCalcData.price){dfShowErr('Please enter the asking price first.');return;}
+  dfHideErr();dfSetLoading(true);
+  try{
+    const r=await fetch('/api/explain-deal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dealData:dfCalcData,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    const box=document.getElementById('df-ai-verdict');
+    box.textContent=d.verdict||'';box.classList.add('on');
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){dfShowErr(e.message||'Something went wrong.');}
+  finally{dfSetLoading(false);}
+}
+function dfShowErr(m){const e=document.getElementById('df-err');e.textContent=m;e.classList.add('on');}
+function dfHideErr(){document.getElementById('df-err').classList.remove('on');}
+function dfSetLoading(on){const b=document.getElementById('df-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Get AI verdict →';}}
+
+// ── Panel 9: Inspection Advisor ──
+async function iaAnalyse(){
+  const findings=document.getElementById('ia-findings').value.trim();
+  if(findings.length<20){iaShowErr('Please paste the inspection findings.');return;}
+  const price=parseFloat(document.getElementById('ia-price').value)||0;
+  iaHideErr();iaSetLoading(true);
+  try{
+    const r=await fetch('/api/inspection-advisor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({inspectionText:findings,purchasePrice:price,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    iaRender(d);
+  }catch(e){iaShowErr(e.message||'Something went wrong.');}
+  finally{iaSetLoading(false);}
+}
+function iaRender(d){
+  const total=d.totalEstimatedCostEur||0;
+  document.getElementById('ia-total-cost').textContent=`€${total.toLocaleString()}`;
+  const waBox=document.getElementById('ia-walk-away');
+  if(d.walkAwayRecommended){waBox.innerHTML=`<strong style="color:#ff6464">Walk away recommendation:</strong> ${escHtml(d.walkAwayReason||'')}`;waBox.classList.add('on');}
+  document.getElementById('ia-issues-list').innerHTML=(d.issues||[]).map(iss=>`<div class="issue-row"><div><div class="issue-name">${escHtml(iss.issue||'')}</div>${iss.priorityRepair?'<div class="priority-tag">URGENT - fix before move-in</div>':''}</div><span class="sev-badge sev-${iss.severity||'Minor'}">${iss.severity||'Minor'}</span><span class="cost-val">${iss.estimatedCostEur?'€'+iss.estimatedCostEur.toLocaleString():'-'}</span></div>`).join('')||'<p style="font-size:13px;color:rgba(255,255,255,0.4)">No specific issues classified.</p>';
+  document.getElementById('ia-priority-repairs').innerHTML=(d.priorityRepairs||[]).length?(d.priorityRepairs||[]).map(r=>`<div style="margin-bottom:4px">- ${escHtml(r)}</div>`).join(''):'<span style="color:rgba(255,255,255,0.4)">No urgent repairs required before move-in.</span>';
+  document.getElementById('ia-reneg-strategy').textContent=d.renegotiationStrategy||'';
+  document.getElementById('ia-reneg-script').textContent=d.renegotiationScript||'';
+  document.getElementById('ia-result').style.display='block';
+  document.getElementById('ia-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function iaCopyScript(){
+  const text=document.getElementById('ia-reneg-script').textContent;
+  navigator.clipboard.writeText(text).then(()=>{const btn=document.getElementById('ia-copy-script');btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy script';btn.classList.remove('copied');},2000);}).catch(()=>{});
+}
+function iaShowErr(m){const e=document.getElementById('ia-err');e.textContent=m;e.classList.add('on');}
+function iaHideErr(){document.getElementById('ia-err').classList.remove('on');}
+function iaSetLoading(on){const b=document.getElementById('ia-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Analyse inspection →';}}
+
+// ── Panel 10: Erfpacht Checker ──
+const EC_MORTGAGE_RISK_TEXT={Low:'Low mortgage risk - most banks will lend on these terms. Standard conditions apply.',Medium:'Medium mortgage risk - some banks may apply restrictions or require a longer residual lease. Confirm with your mortgage advisor before bidding.',High:'High mortgage risk - many banks will refuse to lend on these terms, or will significantly reduce the loan amount. Get mortgage pre-confirmation before bidding.'};
+async function ecAnalyse(){
+  const text=document.getElementById('ec-text').value.trim();
+  if(text.length<20){ecShowErr('Please paste or describe the erfpacht terms.');return;}
+  const price=document.getElementById('ec-price').value.trim();
+  const city=document.getElementById('ec-city').value;
+  ecHideErr();ecSetLoading(true);
+  try{
+    const r=await fetch('/api/erfpacht-analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({erfpachtText:text,purchasePrice:parseFloat(price)||0,city,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    ecRender(d);
+  }catch(e){ecShowErr(e.message||'Something went wrong.');}
+  finally{ecSetLoading(false);}
+}
+function ecRender(d){
+  const risk=d.riskLevel||'Medium';
+  const riskEmoji={Low:'🟢',Medium:'🟡',High:'🟠',Critical:'🔴'}[risk]||'⚠️';
+  document.getElementById('ec-risk-badge').innerHTML=`<div class="risk-badge risk-${risk}">${riskEmoji} ${risk} risk erfpacht</div>`;
+  const terms=[
+    ['Type',d.erfpachtType==='eeuwigdurende'?'Eeuwigdurende (permanent) - better':d.erfpachtType==='tijdelijke'?'Tijdelijke (temporary) - riskier':'Unknown'],
+    ['Current annual canon',d.currentCanon?`€${d.currentCanon.toLocaleString()}/year`:'Not specified'],
+    ['Next revision',d.revisionDate||'Not specified'],
+    ['Revision basis',d.revisionBasis?({WOZ:'WOZ value (expensive - market-linked)',CPI:'CPI inflation (predictable)',fixed:'Fixed',unknown:'Unknown'}[d.revisionBasis]||d.revisionBasis):'Unknown'],
+    ['Est. canon after revision',d.estimatedCanonAfterRevision?`€${d.estimatedCanonAfterRevision.toLocaleString()}/year`:'Cannot estimate'],
+    ['Mortgage risk',d.mortgageRisk||'Unknown'],
+  ];
+  document.getElementById('ec-key-terms').innerHTML=terms.map(([k,v])=>`<div class="data-row"><span class="k">${k}</span><span class="v">${escHtml(String(v))}</span></div>`).join('');
+  if(d.redFlags&&d.redFlags.length){
+    document.getElementById('ec-flags-section').style.display='block';
+    document.getElementById('ec-flags-list').innerHTML=d.redFlags.map(f=>`<div class="flag-item flag-red">🔴 <span>${escHtml(f)}</span></div>`).join('');
+  }
+  document.getElementById('ec-verdict').textContent=d.verdict||'';
+  if(d.buyoutRecommended){
+    document.getElementById('ec-buyout-block').style.display='block';
+    document.getElementById('ec-buyout-info').textContent=`Buying out (afkopen) the erfpacht is recommended. Estimated cost: ${d.estimatedBuyoutCost?'€'+d.estimatedBuyoutCost.toLocaleString():'ask the municipality'}. This eliminates ongoing canon payments and improves your mortgage and resale prospects significantly.`;
+  }
+  const mortgageRisk=d.mortgageRisk||'Medium';
+  document.getElementById('ec-mortgage-risk').textContent=EC_MORTGAGE_RISK_TEXT[mortgageRisk]||EC_MORTGAGE_RISK_TEXT['Medium'];
+  document.getElementById('ec-result').style.display='block';
+  document.getElementById('ec-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function ecShowErr(m){const e=document.getElementById('ec-err');e.textContent=m;e.classList.add('on');}
+function ecHideErr(){document.getElementById('ec-err').classList.remove('on');}
+function ecSetLoading(on){const b=document.getElementById('ec-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Analyse erfpacht →';}}
+
+// ── Panel 11: Agent Scripts ──
+function asCopyScript(btn){
+  const block=btn.closest('.script-block').querySelector('.script-text');
+  const text=block.textContent.trim().replace(/\s+/g,' ');
+  navigator.clipboard.writeText(text).then(()=>{btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);}).catch(()=>{});
+}
+function asCopyEl(elId,btnId,label){
+  const text=document.getElementById(elId).textContent;
+  navigator.clipboard.writeText(text).then(()=>{const btn=document.getElementById(btnId);btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent=label;btn.classList.remove('copied');},2000);}).catch(()=>{});
+}
+async function asGenerateScript(){
+  const situation=document.getElementById('as-situation').value.trim();
+  if(situation.length<10){asShowErr('Please describe your situation.');return;}
+  const context=document.getElementById('as-context').value.trim();
+  asHideErr();asSetLoading(true);
+  try{
+    const r=await fetch('/api/agent-script',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({situation,context,chatId})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Failed');
+    document.getElementById('as-script-en').textContent=d.script||'';
+    if(d.scriptDutch){
+      document.getElementById('as-script-nl').style.display='block';
+      document.getElementById('as-script-nl').textContent=d.scriptDutch;
+      document.getElementById('as-nl-row').style.display='flex';
+    }
+    if(d.keyPoints||d.whatToAvoid){
+      let kp='';
+      if(d.keyPoints&&d.keyPoints.length)kp+=`<p style="font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7"><strong style="color:#00c896">Key points:</strong> ${d.keyPoints.join(' | ')}</p>`;
+      if(d.whatToAvoid)kp+=`<p style="font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7;margin-top:6px"><strong style="color:#ff9650">Avoid:</strong> ${d.whatToAvoid}</p>`;
+      document.getElementById('as-key-points').innerHTML=kp;
+    }
+    document.getElementById('as-result').style.display='block';
+    document.getElementById('as-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){asShowErr(e.message||'Something went wrong.');}
+  finally{asSetLoading(false);}
+}
+function asShowErr(m){const e=document.getElementById('as-err');e.textContent=m;e.classList.add('on');}
+function asHideErr(){document.getElementById('as-err').classList.remove('on');}
+function asSetLoading(on){const b=document.getElementById('as-btn');if(b){b.disabled=on;b.innerHTML=on?'<span class="spin"></span>Working...':'Generate my script →';}}
 
 getParams();
 </script>

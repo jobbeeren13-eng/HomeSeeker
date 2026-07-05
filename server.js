@@ -104,6 +104,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// FASE 2: these standalone AI tools were merged into tabs inside rent-assistant.html /
+// buy-assistant.html (Scout). Old bookmarks and Telegram links still work — 301 redirect to the
+// matching tab, forwarding chat_id/listing so the assistant can still prefill and pass the paywall.
+function redirectToTab(assistantPath, tabNum) {
+  return (req, res) => {
+    const params = new URLSearchParams();
+    if (req.query.chat_id) params.set('chat_id', String(req.query.chat_id));
+    if (req.query.listing) params.set('listing', String(req.query.listing));
+    params.set('tab', String(tabNum));
+    res.redirect(301, `${assistantPath}?${params.toString()}`);
+  };
+}
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/filters', (req, res) => res.sendFile(path.join(__dirname, 'public', 'filters.html')));
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privacy.html')));
@@ -115,7 +128,7 @@ app.get('/letter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'le
 app.get('/apply', (req, res) => res.sendFile(path.join(__dirname, 'public', 'apply.html')));
 app.get('/guide/buy', (req, res) => res.sendFile(path.join(__dirname, 'public', 'guide', 'buy.html')));
 app.get('/guide/rent', (req, res) => res.sendFile(path.join(__dirname, 'public', 'guide', 'rent.html')));
-app.get('/tools/buyer-letter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'buyer-letter.html')));
+app.get('/tools/buyer-letter', redirectToTab('/tools/buy-assistant', 6));
 app.get('/tools/mortgage', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'mortgage.html')));
 // bid-advisor.html was a standalone, context-free implementation (no listing/user data, no
 // intelligence) duplicating the richer Bid Strategy tab inside buy-assistant.html. Redirect
@@ -123,23 +136,23 @@ app.get('/tools/mortgage', (req, res) => res.sendFile(path.join(__dirname, 'publ
 app.get('/tools/bid-advisor', (req, res) => res.redirect(301, '/tools/buy-assistant?tab=3'));
 app.get('/tools/legal', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'legal.html')));
 app.get('/tools/handover', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'handover.html')));
-app.get('/tools/lease-review', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'lease-review.html')));
+app.get('/tools/lease-review', redirectToTab('/tools/buy-assistant', 7));
 app.get('/tools/negotiate', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'negotiate.html')));
 app.get('/tools/documents', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'documents.html')));
 app.get('/tools/move-in', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'move-in.html')));
 app.get('/tools/rent-assistant', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'rent-assistant.html')));
 app.get('/tools/buy-assistant', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'buy-assistant.html')));
-app.get('/tools/landlord-reply', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'landlord-reply.html')));
-app.get('/tools/rejection-analyser', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'rejection-analyser.html')));
-app.get('/tools/reference-letter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'reference-letter.html')));
-app.get('/tools/income-check', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'income-check.html')));
-app.get('/tools/viewing-feedback', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'viewing-feedback.html')));
-app.get('/tools/tenant-rights', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'tenant-rights.html')));
-app.get('/tools/deal-finder', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'deal-finder.html')));
+app.get('/tools/landlord-reply', redirectToTab('/tools/rent-assistant', 4));
+app.get('/tools/rejection-analyser', redirectToTab('/tools/rent-assistant', 6));
+app.get('/tools/reference-letter', redirectToTab('/tools/rent-assistant', 7));
+app.get('/tools/income-check', redirectToTab('/tools/rent-assistant', 5));
+app.get('/tools/viewing-feedback', redirectToTab('/tools/rent-assistant', 8));
+app.get('/tools/tenant-rights', redirectToTab('/tools/rent-assistant', 9));
+app.get('/tools/deal-finder', redirectToTab('/tools/buy-assistant', 8));
 app.get('/tools/overbid-calculator', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'overbid-calculator.html')));
-app.get('/tools/inspection-advisor', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'inspection-advisor.html')));
-app.get('/tools/erfpacht-checker', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'erfpacht-checker.html')));
-app.get('/tools/agent-scripts', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'agent-scripts.html')));
+app.get('/tools/inspection-advisor', redirectToTab('/tools/buy-assistant', 9));
+app.get('/tools/erfpacht-checker', redirectToTab('/tools/buy-assistant', 10));
+app.get('/tools/agent-scripts', redirectToTab('/tools/buy-assistant', 11));
 app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 
 app.get('/subscribe', async (req, res) => {
