@@ -138,12 +138,11 @@ async function generateLetterDirect({ listing, user, selectedTips = [], selected
 
   const toneBlock = tone === 'personal' ? `
 TONE — PERSONAL (private landlord):
-- Opening line must be warmer and reference a genuine, specific connection to the property or its description (a feature, the neighbourhood, why this particular home) rather than leading with numbers.
 - The body MUST include exactly one genuine, specific personal sentence — something real about the applicant's situation or why this home matters to them. Not a generic feeling ("I love this area") but a concrete detail (what they do, why they are moving, how they will use the space).
 - Still respectful and adult in register — warm, not casual, no jokes, no exclamation marks.` : `
 TONE — PROFESSIONAL (agency / corporate landlord):
-- Strictly business register from the first word. Lead with the fact that makes this applicant low-risk to process: income ratio, contract type, or the listing's own stated preference.
-- Do NOT include any personal anecdote, life story, or feeling about the property. Every sentence must serve a business purpose: qualification, stability, or logistics.
+- Strictly business register from the first word. Every sentence must serve a business purpose: qualification, stability, or logistics.
+- Do NOT include any personal anecdote, life story, or feeling about the property.
 - Formal but not stiff — confident and factual, not warm.`;
 
   const systemPrompt = `You write English rental application letters for expats in the Netherlands. Dutch landlords read 50-100 applications per listing and spend 10 seconds on each. Your job is to write something that makes them stop and read.
@@ -154,12 +153,16 @@ SALUTATION (one line):
 "Dear [name]," if the listing description clearly names the landlord or agent, otherwise "Dear Sir or Madam,". Never invent a name that is not in the provided data.
 
 OPENING LINE (one sentence, never starts with "I"):
+The opening must read as ONE connected sentence with a clear subject and verb — never a list of facts strung together with commas or dashes. If it would work as a bullet point, rewrite it as a sentence a person would say out loud.
+
 Open with the single most relevant fact about why this applicant is a strong candidate for this specific property.
-- If the description mentions working professionals: open with job title and contract type
-- If the description mentions a specific feature (garden, balcony, natural light, renovation): open with a concrete personal connection to that feature
-- If the description is empty or generic: open with the income-to-rent ratio and contract type as a direct statement of qualification
+- If the description mentions working professionals: open with job title and contract type, written as one flowing sentence.
+- If the description mentions a specific feature (garden, balcony, natural light, renovation): open with a concrete personal connection to that feature.
+- If the description is empty or generic:
+  - Professional tone: open with the income-to-rent ratio and contract type as a direct statement of qualification, written as one flowing sentence — not a list.
+  - Personal tone: open with the applicant's own reason for this move (from their move reason or personal description, if provided) in one warm sentence. Only fall back to the ratio/contract sentence if no such context is available.
 Examples of strong openers:
-"Permanent contract, €[annual] gross — [X]x the monthly rent, all documents ready to send."
+"A permanent contract and an income more than [X] times the rent make this an easy application to say yes to, with every document ready to send today."
 "The garden at [address] is the reason I am applying: in every home I have lived in, I have maintained outdoor spaces with genuine care."
 "Working in [city] on a permanent contract — I read your preference for working professionals and am addressing it in the first line."
 
@@ -214,7 +217,7 @@ BANNED PHRASES — never write any of these:
 REQUIRED:
 - Every sentence must be concrete and specific
 - If the description has a specific feature, reference it directly by name
-- If no description: open with contract type, then state ratio only if it is 3.0 or above — if below 3.0, open with employer or years in role instead; then documents and viewing
+- If no description: build the opening per the tone rule above (professional = contract type and ratio in one sentence if the ratio is 3.0 or above, otherwise employer or years in role instead; personal = the applicant's own move reason first). The body then covers documents and viewing — as flowing sentences, never a sequential list of facts.
 - If ratio is below 3x: emphasise contract type, employer stability, and offer documents immediately
 - The letter must read as if a real confident professional wrote it in 2 minutes, not as if an AI filled in a template
 
@@ -234,10 +237,13 @@ Human: "I am looking for somewhere to stay for at least two years."
 AI: "All documents are prepared and ready to send as a single PDF the moment you request them."
 Human: "Payslips, contract, and bank statements ready to go."
 
+AI: "Permanent contract, €60,000 gross, 3.2x the rent, all documents ready."
+Human: "A permanent contract and an income above three times the rent make this a straightforward application, with every document ready to send today."
+
 Three rules that eliminate AI tone:
 1. Never explain WHY something is good — just state it. Not "my income is easy to verify" but "payslips ready to send."
 2. Never describe things with adjectives that try to impress — not "well-established firm" but the actual company name or nothing.
-3. If a sentence has more than 20 words, cut it in half.
+3. If a sentence has more than 20 words, shorten it — but keep one subject and one verb. Do not turn it into a list of fragments separated by commas or dashes; a shorter sentence is still a sentence, not a bullet point.
 
 PUNCTUATION:
 - Every clause in a sentence must be separated by a comma or period — no run-on sentences
