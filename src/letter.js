@@ -30,10 +30,13 @@ function stripMarkdown(text) {
     .trim();
 }
 
-// Try primary model with 30s timeout, fall back to previous generation if model unavailable
-async function callClaude(params) {
+// Try primary model within timeoutMs, fall back to previous generation if model unavailable.
+// Default is 60s; callers with a large max_tokens budget and a long/complex system prompt
+// (e.g. the rent/buy assistant's heaviest tabs) should pass a higher value explicitly — a flat
+// 30s timeout was too short for those and surfaced as "Request was aborted" in production.
+async function callClaude(params, timeoutMs = 60000) {
   let controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const result = await client.messages.create({ ...params, model: 'claude-sonnet-4-6' }, { signal: controller.signal });
     clearTimeout(timer);
@@ -44,7 +47,7 @@ async function callClaude(params) {
     if (status === 404 || status === 400) {
       console.warn('[letter] claude-sonnet-4-6 unavailable (status=%s), retrying with claude-sonnet-4-5', status);
       controller = new AbortController();
-      const timer2 = setTimeout(() => controller.abort(), 30000);
+      const timer2 = setTimeout(() => controller.abort(), timeoutMs);
       try {
         const result = await client.messages.create({ ...params, model: 'claude-sonnet-4-5' }, { signal: controller.signal });
         clearTimeout(timer2);
@@ -763,13 +766,16 @@ Renter's insurance: Centraal Beheer, Interpolis, InShared (cheapest)${userProfil
     : userMessage;
 
   const maxTokens = tabNum === 3 ? 1800 : tabNum === 4 ? 1400 : 1000;
+  // Tab 3 (Viewing Tips) has both the highest token budget and the longest, most detailed
+  // system prompt of the four tabs — it needs more headroom than the shared 60s default.
+  const timeoutMs = tabNum === 3 ? 75000 : 60000;
 
   // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: maxTokens,
     system,
     messages: [{ role: 'user', content }],
-  });
+  }, timeoutMs);
 
   return { response: sanitizeResponse(message.content[0].text) };
 }
@@ -927,12 +933,14 @@ Your due diligence is the only protection you have. The notary will not save you
     ? `Listing context: ${listingContext}\n\nUser input: ${userMessage}`
     : userMessage;
 
+  // All 5 tabs share the same 1800-token budget and similarly long, detailed system prompts —
+  // the same risk profile as the rent assistant's heaviest tab, so use the same extra headroom.
   // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
     max_tokens: 1800,
     system,
     messages: [{ role: 'user', content }],
-  });
+  }, 75000);
 
   return { response: sanitizeResponse(message.content[0].text) };
 }

@@ -877,11 +877,13 @@ app.post('/api/rent-assistant', async (req, res) => {
     }
     const promise = (async () => {
       if (hetznerUrl && adminKey) {
+        // Hetzner's own generateRentAssistantResponse can take up to 75s for the heaviest tab
+        // (Viewing Tips) — this outer wrapper must allow more than that or it aborts first.
         const r = await timedFetch(`${hetznerUrl}/api/generate-rent-assistant`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
           body: JSON.stringify({ tab, userMessage, user, listingContext: enrichedContext }),
-        });
+        }, 90000);
         const data = await r.json();
         if (!r.ok) throw new Error('Hetzner error');
         return data;
@@ -945,11 +947,13 @@ app.post('/api/buy-assistant', async (req, res) => {
     }
     const promise = (async () => {
       if (hetznerUrl && adminKey) {
+        // All 5 buy-assistant tabs share the same heavy 1800-token/75s budget on the Hetzner
+        // side — this outer wrapper must allow more than that or it aborts first.
         const r = await timedFetch(`${hetznerUrl}/api/generate-buy-assistant`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
           body: JSON.stringify({ tab, userMessage, user, listingContext: enrichedContext }),
-        });
+        }, 90000);
         const data = await r.json();
         if (!r.ok) throw new Error('Hetzner error');
         return data;
@@ -1016,9 +1020,9 @@ function buildIntelligenceContext(listing, user) {
   return `\n\nVerified listing intelligence (this is computed from real data — prefer it over general assumptions):\n${lines.join('\n')}`;
 }
 
-async function timedFetch(url, options) {
+async function timedFetch(url, options, timeoutMs = 25000) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(url, { ...options, signal: controller.signal });
   } finally {
