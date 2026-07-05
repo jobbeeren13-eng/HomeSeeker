@@ -176,6 +176,9 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .prog-lbl{font-size:11px;font-weight:500;color:rgba(255,255,255,0.3);transition:color .2s;white-space:nowrap}
 .prog-step.on .prog-lbl{color:#fff;font-weight:600}
 .prog-conn{flex:1;height:1px;background:rgba(255,255,255,0.08);min-width:6px;margin:0 4px}
+.mobile-menu-btn{display:none;align-items:center;gap:10px;background:transparent;border:none;color:#fff;font-family:inherit;cursor:pointer;padding:8px 4px;width:100%}
+.hamburger-icon{font-size:20px;line-height:1;color:rgba(255,255,255,0.7)}
+.mobile-current-tab{font-size:14px;font-weight:600}
 
 /* Three-column layout: side-nav (tabs) | main-col (content) | sidebar (Scout tips) */
 .page-outer{display:flex;gap:24px;max-width:1300px;margin:100px auto 0;padding:28px 24px 80px}
@@ -245,11 +248,18 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 @media(max-width:767px){
   .mob-nav{display:flex}
   .page-outer{padding:16px 16px 72px;flex-direction:column}
-  .side-nav{width:auto;flex-direction:row;flex-wrap:wrap}
-  .side-nav .tab{display:none} /* the 3 core tabs are covered by .mob-nav's bottom bar */
-  .side-nav-group{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-  .side-nav-group .side-nav-label{width:100%;padding:0 0 2px}
-  .side-nav .more-tool-btn{width:auto;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
+  /* The 3 numbered dots read as an unlabeled progress flow on narrow screens (labels are
+     hidden below 420px) rather than clear tappable nav — replaced by a hamburger + current
+     tab name that opens the full grouped tab list (identical content to the desktop sidebar). */
+  .prog-steps{display:none}
+  .mobile-menu-btn{display:flex}
+  .side-nav{display:none;width:auto}
+  .side-nav.mobile-menu-open{
+    display:flex;flex-direction:column;position:fixed;top:100px;left:0;right:0;
+    max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
+    border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px 24px;
+    z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
+  }
   /* Property header: not sticky on mobile — it scrolls away with the page instead of pinning
      to the top and blocking the view. It moves into normal document flow, so it needs its own
      top margin to clear the still-fixed site header + progress bar (56px + 44px), and the
@@ -258,11 +268,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   body.has-pc #property-card{position:static;height:auto;margin-top:100px;padding:12px 16px}
   body.has-pc .prog-bar{top:56px}
   body.has-pc .page-outer{margin-top:16px}
-}
-@media(max-width:420px){
-  .prog-lbl{display:none}
-  .prog-step-inner{justify-content:center}
-  .prog-dot{width:26px;height:26px;font-size:11px}
 }
 
 /* ── Ported tool tabs (Landlord Reply, Income Check, Rejection Analyser,
@@ -401,6 +406,10 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="prog-conn"></div>
     <div class="prog-step" id="ps-2" onclick="switchTab(2)"><div class="prog-step-inner"><div class="prog-dot">3</div><span class="prog-lbl">Viewing Tips</span></div></div>
   </div>
+  <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open menu">
+    <span class="hamburger-icon">&#9776;</span>
+    <span class="mobile-current-tab" id="mobile-current-tab">Letter</span>
+  </button>
 </div>
 
 <div class="lbar" id="lbar">
@@ -1259,13 +1268,26 @@ function switchTab(n){
   document.querySelectorAll('.mnav-tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.more-tool-btn').forEach(b=>b.classList.remove('on'));
   const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
-  document.querySelector(`.tab[data-tab="${n}"]`)?.classList.add('on');
+  const activeTab=document.querySelector(`.tab[data-tab="${n}"]`);
+  activeTab?.classList.add('on');
   document.getElementById(`ps-${n}`)?.classList.add('on');
   document.getElementById(`mn-${n}`)?.classList.add('on');
-  document.getElementById(`more-btn-${n}`)?.classList.add('on');
+  const activeMore=document.getElementById(`more-btn-${n}`);
+  activeMore?.classList.add('on');
   const po=document.querySelector('.page-outer');
   if(po){if(n===0)po.classList.add('analyse-mode');else po.classList.remove('analyse-mode');}
+  const curLbl=document.getElementById('mobile-current-tab');
+  if(curLbl){const label=(activeTab||activeMore)?.textContent?.trim();if(label)curLbl.textContent=label;}
+  closeMobileMenu();
 }
+function toggleMobileMenu(){document.getElementById('side-nav')?.classList.toggle('mobile-menu-open');}
+function closeMobileMenu(){document.getElementById('side-nav')?.classList.remove('mobile-menu-open');}
+document.addEventListener('click',(e)=>{
+  const nav=document.getElementById('side-nav');
+  if(!nav||!nav.classList.contains('mobile-menu-open'))return;
+  if(nav.contains(e.target)||document.getElementById('mobile-menu-btn')?.contains(e.target))return;
+  closeMobileMenu();
+});
 
 function updateSidebar(d){
   const strat=document.getElementById('sb-strategy');

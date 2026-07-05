@@ -33,6 +33,13 @@ body{background:var(--bg);color:var(--text-primary);font-family:'Inter',sans-ser
 .lbar-addr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lbar-price{font-size:12px;color:var(--muted);flex-shrink:0}
 
+/* Mobile-only tab bar (hamburger + current tab name) — hidden on desktop, shown via the
+   max-width:767px media query below. */
+.mobile-bar{display:none;position:fixed;top:56px;left:0;right:0;height:44px;z-index:98;background:#0d1117;border-bottom:1px solid rgba(255,255,255,0.06);align-items:center;padding:0 16px}
+.mobile-menu-btn{display:flex;align-items:center;gap:10px;background:transparent;border:none;color:#fff;font-family:inherit;cursor:pointer;padding:8px 4px;width:100%}
+.hamburger-icon{font-size:20px;line-height:1;color:rgba(255,255,255,0.7)}
+.mobile-current-tab{font-size:14px;font-weight:600}
+
 /* Layout: side-nav (tabs) | wrap (content) */
 .page-outer{display:flex;gap:24px;max-width:960px;margin:0 auto;margin-top:56px}
 body.has-lb .page-outer{margin-top:92px}
@@ -157,20 +164,26 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 @media(max-width:767px){
   .mob-nav{display:block}
-  .page-outer{flex-direction:column}
+  .page-outer{flex-direction:column;margin-top:100px} /* clears the fixed header+mobile tab bar when the listing bar isn't shown */
   .wrap{padding:20px 16px 100px}
   .row2{grid-template-columns:1fr}
   .prog{display:none}
-  .side-nav{width:auto;flex-direction:row;padding:12px 16px 0}
-  .side-nav-group-main{display:none} /* covered by .mob-nav bottom bar */
-  .side-nav-group-more{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-  .side-nav-group-more .side-nav-label{width:100%;padding:0 0 2px}
-  .side-nav-group-more .more-tool-btn{width:auto;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
+  /* Mobile tab bar: hamburger + current tab name, replacing the always-visible horizontal
+     "more tools" strip with a single toggle that opens the full grouped tab list (same content
+     as the desktop sidebar) — analogous to the rent-assistant mobile nav. */
+  .mobile-bar{display:flex}
+  .side-nav{display:none;width:auto}
+  .side-nav.mobile-menu-open{
+    display:flex;flex-direction:column;position:fixed;top:100px;left:0;right:0;
+    max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
+    border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px 24px;
+    z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
+  }
   /* Property header (listing bar): not sticky on mobile — scrolls away with the page instead of
      pinning to the top and blocking the view. Moves into normal document flow with its own top
-     margin to clear the still-fixed site header (56px). */
-  .lbar{position:static;margin-top:56px}
-  body.has-lb .page-outer{margin-top:16px}
+     margin to clear the still-fixed site header + mobile tab bar (56px + 44px). */
+  .lbar{position:static;margin-top:100px}
+  body.has-lb .page-outer{margin-top:16px} /* listing bar is now in-flow and already provides the offset */
 }
 
 /* ── Ported tool tabs (Buyer Letter, Lease Review, Deal Finder, Inspection
@@ -281,6 +294,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   <div class="lbar-dot"></div>
   <div class="lbar-addr" id="lbar-addr"></div>
   <div class="lbar-price" id="lbar-price"></div>
+</div>
+
+<div class="mobile-bar">
+  <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open menu">
+    <span class="hamburger-icon">&#9776;</span>
+    <span class="mobile-current-tab" id="mobile-current-tab">Affordability</span>
+  </button>
 </div>
 
 <div class="page-outer">
@@ -1056,7 +1076,8 @@ function switchBuyTab(n){
   const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
   const desktopTab=document.querySelector(`.tab[data-tab="${n}"]`);if(desktopTab)desktopTab.classList.add('on');
   const mobTab=document.getElementById(`mob-${n}`);if(mobTab)mobTab.classList.add('on');
-  if(n>=5){const btn=document.getElementById(`more-btn-${n}`);if(btn)btn.classList.add('on');}
+  let moreBtn=null;
+  if(n>=5){moreBtn=document.getElementById(`more-btn-${n}`);if(moreBtn)moreBtn.classList.add('on');}
   for(let i=1;i<=3;i++){
     const s=document.getElementById(`prog-${i}`);
     const l=document.getElementById(`prog-line-${i}`);
@@ -1067,7 +1088,18 @@ function switchBuyTab(n){
     if(i<mainTab){s.classList.add('done');if(l)l.classList.add('done');}
     else if(i===mainTab){s.classList.add('active');}
   }
+  const curLbl=document.getElementById('mobile-current-tab');
+  if(curLbl){const label=(desktopTab||moreBtn)?.textContent?.trim();if(label)curLbl.textContent=label;}
+  closeMobileMenu();
 }
+function toggleMobileMenu(){document.getElementById('side-nav')?.classList.toggle('mobile-menu-open');}
+function closeMobileMenu(){document.getElementById('side-nav')?.classList.remove('mobile-menu-open');}
+document.addEventListener('click',(e)=>{
+  const nav=document.getElementById('side-nav');
+  if(!nav||!nav.classList.contains('mobile-menu-open'))return;
+  if(nav.contains(e.target)||document.getElementById('mobile-menu-btn')?.contains(e.target))return;
+  closeMobileMenu();
+});
 
 function uc(el,ccId,max){
   const cc=document.getElementById(ccId);if(cc)cc.textContent=`${el.value.length} / ${max||2000}`;
