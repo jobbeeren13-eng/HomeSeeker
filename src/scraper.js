@@ -146,7 +146,6 @@ function rowToListing(row) {
     postalCode: row.postal_code || null, neighbourhood: row.neighbourhood || null,
     llmSignals: row.llm_signals || null,
     cbsContext: row.cbs_context || null, leefbaarometerScore: row.leefbaarometer_score ?? null,
-    energyLabelSource: row.energy_label_source || null,
   };
 }
 

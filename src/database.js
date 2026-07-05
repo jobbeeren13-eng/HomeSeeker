@@ -168,14 +168,6 @@ db.exec(`
     fetched_at INTEGER
   );
 
-  CREATE TABLE IF NOT EXISTS ep_online_energylabel_cache (
-    address_key TEXT PRIMARY KEY,
-    postcode TEXT,
-    huisnummer TEXT,
-    energy_label TEXT,
-    fetched_at INTEGER
-  );
-
   CREATE TABLE IF NOT EXISTS outcome_snapshots (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     chat_id TEXT NOT NULL,
@@ -381,9 +373,6 @@ const updateListingDescription = db.prepare('UPDATE listings SET description = ?
 const updateListingImage = db.prepare("UPDATE listings SET image = ? WHERE url = ? AND (image IS NULL OR image = '')");
 const updateListingLlmSignals = db.prepare('UPDATE listings SET llm_signals = ?, description_hash = ? WHERE url = ?');
 const updateListingExternalData = db.prepare('UPDATE listings SET cbs_context = ?, leefbaarometer_score = ? WHERE url = ?');
-const updateListingEnergyLabelFromEpOnline = db.prepare(
-  "UPDATE listings SET energy_label = ?, energy_label_source = 'ep-online' WHERE url = ? AND (energy_label IS NULL OR energy_label = '')"
-);
 const getLlmSignalsByDescriptionHash = db.prepare(
   'SELECT llm_signals FROM listings WHERE description_hash = ? AND llm_signals IS NOT NULL LIMIT 1'
 );
@@ -405,12 +394,6 @@ const upsertLeefbaarometerPc4 = db.prepare(`
   ON CONFLICT(pc4) DO UPDATE SET score = excluded.score, year = excluded.year, fetched_at = excluded.fetched_at
 `);
 
-const getEpOnlineEnergyLabel = db.prepare('SELECT * FROM ep_online_energylabel_cache WHERE address_key = ?');
-const upsertEpOnlineEnergyLabel = db.prepare(`
-  INSERT INTO ep_online_energylabel_cache (address_key, postcode, huisnummer, energy_label, fetched_at)
-  VALUES (@addressKey, @postcode, @huisnummer, @energyLabel, @fetchedAt)
-  ON CONFLICT(address_key) DO UPDATE SET energy_label = excluded.energy_label, fetched_at = excluded.fetched_at
-`);
 const getRecentListings = db.prepare(
   "SELECT * FROM listings WHERE scraped_at > datetime('now', '-7 days') ORDER BY scraped_at DESC"
 );
@@ -580,10 +563,9 @@ module.exports = {
   getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest,
   insertScraperStat, getCityPriceBenchmark, getNeighbourhoodPriceBenchmark, getListingVolumeByCity,
   updateListingLlmSignals, getLlmSignalsByDescriptionHash,
-  updateListingExternalData, updateListingEnergyLabelFromEpOnline,
+  updateListingExternalData,
   getCbsNeighbourhoodCache, upsertCbsNeighbourhoodCache,
   getLeefbaarometerPc4, countLeefbaarometerPc4, upsertLeefbaarometerPc4,
-  getEpOnlineEnergyLabel, upsertEpOnlineEnergyLabel,
   insertAgencyListing, getAgencyInsights,
 };
  

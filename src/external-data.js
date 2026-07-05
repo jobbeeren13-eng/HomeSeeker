@@ -1,15 +1,12 @@
 const {
   getCbsNeighbourhoodCache, upsertCbsNeighbourhoodCache,
   getLeefbaarometerPc4, countLeefbaarometerPc4, upsertLeefbaarometerPc4,
-  getEpOnlineEnergyLabel, upsertEpOnlineEnergyLabel,
 } = require('./database');
 const { sendAdminAlert } = require('./admin-alert');
 
 // ── Feature flags — each source is independently killable without a code change ──
 const CBS_ENABLED = process.env.ENABLE_CBS_DATA !== 'false';               // free, public — default on
 const LEEFBAAROMETER_ENABLED = process.env.ENABLE_LEEFBAAROMETER !== 'false'; // free, public — default on
-// EP-Online requires a free API key from apikey.ep-online.nl (human signup) — off until both are set
-const EP_ONLINE_ENABLED = process.env.ENABLE_EP_ONLINE === 'true' && !!process.env.EP_ONLINE_API_KEY;
 
 const CBS_CACHE_TTL_MS = 180 * 24 * 60 * 60 * 1000; // CBS updates this table ~yearly
 const LEEFBAAROMETER_YEAR = 2020;
@@ -174,33 +171,7 @@ function getLeefbaarometerScore(postalCode) {
   }
 }
 
-// ─────────────────────────────────────────────
-// EP-Online — official registered energy labels (RVO)
-// Requires a free API key (human signup at apikey.ep-online.nl) — disabled until configured.
-// ─────────────────────────────────────────────
-
-async function getEpOnlineLabel(postalCode, houseNumber) {
-  if (!EP_ONLINE_ENABLED) return null;
-  if (!postalCode || !houseNumber) return null;
-  const addressKey = `${normaliseForMatch(postalCode)}|${normaliseForMatch(String(houseNumber))}`;
-  try {
-    const cached = getEpOnlineEnergyLabel.get(addressKey);
-    if (cached) return cached.energy_label || null;
-
-    // NOTE: EP-Online only exposes bulk total/mutation files behind an API key, not a
-    // per-address query endpoint. The exact bulk-file URL depends on the account's key
-    // and is not documented publicly without one — confirm against RVO's documentation
-    // once EP_ONLINE_API_KEY is set, then implement the bulk download + parse here,
-    // mirroring the Leefbaarometer bulk-load-and-cache pattern above.
-    return null;
-  } catch (e) {
-    console.error('[external-data] EP-Online lookup failed (non-fatal):', e.message);
-    maybeAlert('ep-online', `EP-Online lookup failing: ${e.message}`);
-    return null;
-  }
-}
-
 module.exports = {
-  CBS_ENABLED, LEEFBAAROMETER_ENABLED, EP_ONLINE_ENABLED,
-  getCbsContext, ensureLeefbaarometerLoaded, getLeefbaarometerScore, getEpOnlineLabel,
+  CBS_ENABLED, LEEFBAAROMETER_ENABLED,
+  getCbsContext, ensureLeefbaarometerLoaded, getLeefbaarometerScore,
 };
