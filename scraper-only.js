@@ -17,7 +17,7 @@ const { sendAlert } = require('./src/telegram');
 
 const RAILWAY_URL = process.env.RAILWAY_URL || 'https://homeseeker.dev';
 const ADMIN_KEY   = process.env.ADMIN_KEY;
-const { generateLetterDirect, getAITip, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
+const { generateLetterDirect, getAITip, generateFirstContactMessage, generateBuyerLetterDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 const PORT        = parseInt(process.env.MATCH_NOW_PORT || '3001', 10);
 
 const REQUIRED_VARS = ['TELEGRAM_BOT_TOKEN', 'RAILWAY_URL', 'ADMIN_KEY'];
@@ -264,21 +264,6 @@ app.post('/api/generate-negotiate', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('[generate-negotiate] Error:', err);
-    res.status(500).json({ error: 'Internal error. Check server logs.' });
-  }
-});
-
-// Bid advisor generation proxy
-app.post('/api/generate-bid-advice', async (req, res) => {
-  const key = req.headers['x-admin-key'];
-  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
-  const { listingPrice, neighborhood, situation, extraContext } = req.body;
-  if (!listingPrice) return res.status(400).json({ error: 'listingPrice required' });
-  try {
-    const advice = await generateBidAdviceDirect({ listingPrice, neighborhood, situation, extraContext });
-    res.json(advice);
-  } catch (err) {
-    console.error('[generate-bid-advice] Error:', err);
     res.status(500).json({ error: 'Internal error. Check server logs.' });
   }
 });

@@ -371,7 +371,13 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
         <textarea class="inp" id="lt-extra" rows="2" placeholder="E.g. I have a dog, I work from home 3 days/week, I can move in immediately..." oninput="uc(this,'cc-lt',400)" maxlength="400"></textarea>
       </div>
       <button class="btn-main" id="btn-lt" onclick="ltGenerate()">Write my letter &#8594;</button>
+      <button class="btn-link" id="btn-qm" onclick="qmGenerate()" style="display:block;width:100%;text-align:center;margin-top:10px">Or generate a quick first message instead &#8594;</button>
       <div class="errtxt" id="err-lt"></div>
+      <div id="qm-box" style="display:none;margin-top:10px;padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:8px">
+        <div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-bottom:6px;text-transform:uppercase">Quick first message (max 80 words)</div>
+        <div id="qm-text" style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.8);white-space:pre-wrap"></div>
+        <button class="btn-main" id="qm-copy" onclick="qmCopy()" style="margin-top:10px;height:38px;font-size:12px">Copy message</button>
+      </div>
     </div>
 
     <div class="card">
@@ -916,6 +922,32 @@ function ltCopy(){
   if(!ltState.letter)return;
   navigator.clipboard.writeText(ltState.letter).then(()=>{
     const btn=document.getElementById('lt-copy');if(btn){btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy letter';},2000);}
+  }).catch(()=>{});
+}
+
+const qmState={message:''};
+async function qmGenerate(){
+  if(!cacheId){showEL('Open this page from a listing alert in Telegram to generate a quick message.');return;}
+  clearEL();
+  const{listingTips,generalTips}=getSelectedTips();
+  const allTips=[...listingTips,...generalTips];
+  const extra=document.getElementById('lt-extra')?.value.trim()||'';
+  const btn=document.getElementById('btn-qm');
+  if(btn){btn.disabled=true;btn.textContent='Writing...';}
+  try{
+    const r=await fetch('/api/first-contact-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cacheId,selectedTipTexts:allTips,extraContext:extra})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'Message generation failed');
+    qmState.message=d.message||'';
+    const box=document.getElementById('qm-box');if(box)box.style.display='block';
+    const el=document.getElementById('qm-text');if(el)el.textContent=qmState.message;
+  }catch(e){showEL(e.message||'Something went wrong.');}
+  finally{if(btn){btn.disabled=false;btn.textContent='Or generate a quick first message instead →';}}
+}
+function qmCopy(){
+  if(!qmState.message)return;
+  navigator.clipboard.writeText(qmState.message).then(()=>{
+    const btn=document.getElementById('qm-copy');if(btn){btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy message';},2000);}
   }).catch(()=>{});
 }
 function showEL(msg){const e=document.getElementById('err-lt');if(e){e.textContent=msg;e.classList.add('on');}}

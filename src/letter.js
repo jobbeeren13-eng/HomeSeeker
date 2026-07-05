@@ -435,38 +435,6 @@ Rules:
   return stripMarkdown(message.content[0].text);
 }
 
-async function generateBidAdviceDirect({ listingPrice, neighborhood, situation, extraContext = '' }) {
-  const systemPrompt = `You are a Dutch real estate expert advising expat buyers on bid strategy. Return a JSON object with exactly these keys:
-- "recommendation": one sentence bid strategy (e.g. "Bid 5% above asking price")
-- "bidAmount": suggested bid as an integer (euros, no formatting)
-- "reasoning": 2-3 sentences explaining the reasoning based on Dutch market conditions
-- "conditions": array of strings listing conditions to include (e.g. "financing condition", "building inspection")
-- "conditionsToWaive": array of strings listing conditions to consider waiving with brief reason each
-- "marketSignal": one of "hot", "warm", "neutral", "cool"
-- "marketNote": one sentence about current market dynamics for this type of property
-
-Return only valid JSON. No explanation, no code blocks, no markdown.`;
-
-  const lines = [];
-  lines.push(`Property asking price: ${listingPrice}`);
-  if (neighborhood) lines.push(`Location/neighborhood: ${neighborhood}`);
-  if (situation) lines.push(`Buyer situation: ${situation}`);
-  if (extraContext) lines.push(`Additional context: ${extraContext}`);
-  lines.push('Generate bid strategy as JSON.');
-
-  // User profile data included in prompt - covered under privacy policy section 4
-  const message = await callClaude({
-    max_tokens: 700,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: lines.join('\n') }],
-  });
-
-  const raw = message.content[0].text.trim();
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON in bid advice response');
-  return JSON.parse(jsonMatch[0]);
-}
-
 async function generateLeaseReviewDirect({ leaseText, context = '' }) {
   const systemPrompt = `You are a Dutch tenant law expert helping an expat review a rental lease. Return a JSON object with exactly these keys:
 - "summary": 2-3 sentence plain English summary of what the lease covers
@@ -1465,4 +1433,4 @@ ABSOLUTE RULES:
   return { message: stripMarkdown(message.content[0].text) };
 }
 
-module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect, STYLE_LABELS };
+module.exports = { generateLetter, generateLetterDirect, generatePackageDirect, getAITip, generateFirstContactMessage, generateBuyerLetterDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect, STYLE_LABELS };

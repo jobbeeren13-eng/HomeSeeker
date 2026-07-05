@@ -23,7 +23,7 @@ const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing,
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext, resolveCityKey, UNIFIED_PRICE_BENCHMARK_ENABLED } = require('./src/score');
 const { calculateDealScore, dealLabel } = require('./src/deal_score');
-const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
+const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -88,7 +88,10 @@ app.get('/guide/buy', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 app.get('/guide/rent', (req, res) => res.sendFile(path.join(__dirname, 'public', 'guide', 'rent.html')));
 app.get('/tools/buyer-letter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'buyer-letter.html')));
 app.get('/tools/mortgage', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'mortgage.html')));
-app.get('/tools/bid-advisor', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'bid-advisor.html')));
+// bid-advisor.html was a standalone, context-free implementation (no listing/user data, no
+// intelligence) duplicating the richer Bid Strategy tab inside buy-assistant.html. Redirect
+// instead of maintaining two implementations of the same feature.
+app.get('/tools/bid-advisor', (req, res) => res.redirect(301, '/tools/buy-assistant?tab=3'));
 app.get('/tools/legal', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'legal.html')));
 app.get('/tools/handover', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'handover.html')));
 app.get('/tools/lease-review', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools', 'lease-review.html')));
@@ -816,34 +819,6 @@ app.post('/api/negotiate', async (req, res) => {
   } catch (err) {
     console.error('[api/negotiate]', err.message);
     res.status(500).json({ error: 'Negotiation strategy generation failed. Try again in a moment.' });
-  }
-});
-
-// AI bid advisor — proxies to Hetzner
-app.post('/api/bid-advisor', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
-  if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { listingPrice, neighborhood, situation, extraContext } = req.body;
-  if (!listingPrice) return res.status(400).json({ error: 'listingPrice required' });
-  try {
-    const hetznerUrl = process.env.HETZNER_URL;
-    const adminKey = process.env.ADMIN_KEY;
-    let advice;
-    if (hetznerUrl && adminKey) {
-      const resp = await timedFetch(`${hetznerUrl}/api/generate-bid-advice`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ listingPrice, neighborhood, situation, extraContext }),
-      });
-      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
-      advice = await resp.json();
-    } else {
-      advice = await generateBidAdviceDirect({ listingPrice, neighborhood, situation, extraContext });
-    }
-    res.json(advice);
-  } catch (err) {
-    console.error('[api/bid-advisor]', err.message);
-    res.status(500).json({ error: 'Bid advice generation failed. Try again in a moment.' });
   }
 });
 
