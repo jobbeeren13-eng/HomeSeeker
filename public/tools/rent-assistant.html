@@ -182,9 +182,12 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 }
 body.has-pc .side-nav.mobile-menu-open{top:188px;max-height:calc(100vh - 188px)}
 
-/* Three-column layout: side-nav (tabs) | main-col (content) | sidebar (Scout tips) */
-.page-outer{display:flex;gap:24px;max-width:1300px;margin:100px auto 0;padding:28px 24px 80px}
-.main-col{flex:1;min-width:0}
+/* Content column (main-col) + optional Scout-tips sidebar, centered as a group within
+   page-outer instead of stretching main-col to fill the leftover width the old permanent
+   side-nav column used to occupy — that stretch is what made the page look left-heavy with a
+   bare right half. */
+.page-outer{display:flex;gap:24px;max-width:1300px;margin:100px auto 0;padding:28px 24px 80px;justify-content:center}
+.main-col{flex:1;max-width:720px;min-width:0}
 .sidebar{width:296px;flex-shrink:0;display:none}
 .sb-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 18px;margin-bottom:12px}
 .sb-card-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:600;margin-bottom:10px}
@@ -249,7 +252,8 @@ body.has-pc .side-nav.mobile-menu-open{top:188px;max-height:calc(100vh - 188px)}
 @media(min-width:768px){.sidebar{display:block}.page-outer.analyse-mode .sidebar{display:none}}
 @media(max-width:767px){
   .mob-nav{display:flex}
-  .page-outer{padding:16px 16px 72px;flex-direction:column}
+  .page-outer{padding:16px 16px 72px;flex-direction:column;justify-content:flex-start}
+  .main-col{max-width:none}
   .side-nav.mobile-menu-open{padding:14px 12px 20px}
 }
 
