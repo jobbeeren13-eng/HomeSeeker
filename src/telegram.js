@@ -570,26 +570,6 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   lines.push('');
   lines.push(verdictCTA(score, isHuur));
 
-  const hoursOnline = listing.listedAt
-    ? (Date.now() - new Date(listing.listedAt).getTime()) / 3600000
-    : 48;
-  const cityRanges = {
-    amsterdam: '50-200', utrecht: '30-120', haarlem: '30-100',
-    rotterdam: '15-60', eindhoven: '10-40', 'den-haag': '20-80',
-    leiden: '20-70', delft: '15-50',
-  };
-  const range = cityRanges[(listing.city || '').toLowerCase()];
-  let contextLine = '';
-  if (hoursOnline < 6 && range) {
-    contextLine = `_Listed ${Math.round(hoursOnline)} hours ago. Competition is building._`;
-  } else if (hoursOnline > 504 && range) {
-    contextLine = `_Listed over 3 weeks ago. Ask the landlord why it has not been rented._`;
-  }
-  if (contextLine) {
-    lines.push('');
-    lines.push(contextLine);
-  }
-
   if (conflicts.length > 0) {
     lines.push('');
     lines.push('*Possible profile mismatch. Read landlord requirements carefully.*');
