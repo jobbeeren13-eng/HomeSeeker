@@ -198,10 +198,10 @@ app.post('/api/generate-first-contact', async (req, res) => {
 app.post('/api/generate-letter', async (req, res) => {
   const key = req.headers['x-admin-key'];
   if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
-  const { listing, user, selectedTips } = req.body;
+  const { listing, user, selectedTips, tone, intelligenceContext } = req.body;
   if (!listing) return res.status(400).json({ error: 'listing required' });
   try {
-    const result = await generateLetterDirect({ listing, user: user || {}, selectedTips: selectedTips || [] });
+    const result = await generateLetterDirect({ listing, user: user || {}, selectedTips: selectedTips || [], tone: tone || 'professional', intelligenceContext: intelligenceContext || '' });
     res.json({ letter: result.letter });
   } catch (err) {
     console.error('[generate-letter] Error:', err);

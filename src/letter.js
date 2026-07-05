@@ -110,7 +110,7 @@ Rules:
   return stripMarkdown(message.content[0].text);
 }
 
-async function generateLetterDirect({ listing, user, selectedTips = [], selectedTipTexts = [], extraContext = '', cacheId = null, tone = 'professional' }) {
+async function generateLetterDirect({ listing, user, selectedTips = [], selectedTipTexts = [], extraContext = '', cacheId = null, tone = 'professional', intelligenceContext = '' }) {
   const allTips = [...selectedTips, ...selectedTipTexts].filter(Boolean);
 
   const rawNaam = (user?.naam || '').trim();
@@ -133,14 +133,25 @@ async function generateLetterDirect({ listing, user, selectedTips = [], selected
   const user_description = (user?.user_description || '').trim();
   const move_reason = (user?.move_reason || '').trim();
 
-  const wordLimit = 130;
+  const wordLimit = 170;
+  const signOffText = noName ? 'Kind regards,' : `Kind regards,\n${firstName}`;
 
-  const conciseNote = '';
-  const personalNote = tone === 'personal' ? '\nPERSONAL mode: warmer opener, one brief genuine personal detail in sentence 3.' : '';
+  const toneBlock = tone === 'personal' ? `
+TONE — PERSONAL (private landlord):
+- Opening line must be warmer and reference a genuine, specific connection to the property or its description (a feature, the neighbourhood, why this particular home) rather than leading with numbers.
+- The body MUST include exactly one genuine, specific personal sentence — something real about the applicant's situation or why this home matters to them. Not a generic feeling ("I love this area") but a concrete detail (what they do, why they are moving, how they will use the space).
+- Still respectful and adult in register — warm, not casual, no jokes, no exclamation marks.` : `
+TONE — PROFESSIONAL (agency / corporate landlord):
+- Strictly business register from the first word. Lead with the fact that makes this applicant low-risk to process: income ratio, contract type, or the listing's own stated preference.
+- Do NOT include any personal anecdote, life story, or feeling about the property. Every sentence must serve a business purpose: qualification, stability, or logistics.
+- Formal but not stiff — confident and factual, not warm.`;
 
   const systemPrompt = `You write English rental application letters for expats in the Netherlands. Dutch landlords read 50-100 applications per listing and spend 10 seconds on each. Your job is to write something that makes them stop and read.
 
-THE LETTER HAS THREE PARTS — no more, no less:
+THE LETTER HAS FIVE PARTS — no more, no less:
+
+SALUTATION (one line):
+"Dear [name]," if the listing description clearly names the landlord or agent, otherwise "Dear Sir or Madam,". Never invent a name that is not in the provided data.
 
 OPENING LINE (one sentence, never starts with "I"):
 Open with the single most relevant fact about why this applicant is a strong candidate for this specific property.
@@ -158,22 +169,23 @@ Write naturally. Do not list facts mechanically. Do not repeat any number or fac
 CLOSING (one sentence):
 State viewing availability with two specific days. Confirm documents are ready to send. One sentence only.
 
-SIGN-OFF:
-${noName ? 'Kind regards,' : `Kind regards,\n${firstName}`}
+SIGN-OFF (mandatory, always present, never shortened or omitted):
+${signOffText}
+${toneBlock}
 
 WHAT THE SELECTED TIPS ARE:
 The user has selected points they want emphasised. These are NOT sentences to copy. They are context that shapes the letter's angle — which facts to lead with, what to highlight. Let them guide emphasis, not literal content.
 
 ABSOLUTE RULES:
-- Maximum 130 words
+- Maximum ${wordLimit} words for the salutation, opening, body, and closing combined. The sign-off line(s) ("${signOffText.replace(/\n/g, ' / ')}") do NOT count toward this limit and must always be written in full, exactly as shown above — never cut, shortened, or dropped to save words.
 - Never start the letter body with "I" as the first word
 - Never state any number (income, ratio) more than once in the entire letter
 - Never use: "I am writing to", "I came across", "I would like to apply", "I am very interested", "perfect fit", "ideal candidate", "dream home", "passionate about", "reliable", "responsible", "delighted", "pleased"
 - Never use double dashes (--) or em dashes or exclamation marks
-- If name is unknown, sign off with "Kind regards," only — no name line. If income is unknown, do not mention it. If viewing days are unknown, write "Tuesday or Wednesday this week". Never write a placeholder like [X] or [date] or [Job title] in the letter — always use real data or omit the detail entirely.
+- If income is unknown, do not mention it. If viewing days are unknown, write "Tuesday or Wednesday this week". Never write a placeholder like [X] or [date] or [Job title] in the letter — always use real data or omit the detail entirely.
 - Never refuse to write — if description is empty, write the best possible letter using address, city, price, and income data only
 - No markdown, no bold, no lists, no formatting
-- English only${personalNote}
+- English only
 
 BANNED PHRASES — never write any of these:
 - "suits my situation directly"
@@ -244,18 +256,22 @@ PUNCTUATION:
   if (user.heeft_borg === 'ja') lines.push('Guarantor: available if required.');
   else lines.push('Do NOT mention guarantors or co-applicants.');
   if (allTips.length > 0) lines.push(`CONTEXT — the user wants to emphasise these points. Use them to determine the letter's angle and emphasis. Do not copy them as sentences. Let them guide what to lead with and what to highlight: ${allTips.slice(0, 5).join(' | ')}`);
-  lines.push(`Maximum ${wordLimit} words. NEVER start with "I". Follow the three-part structure from the system prompt.`);
+  if (intelligenceContext) lines.push(`${intelligenceContext}\n(Use at most one of the facts above, as a natural detail — never list them mechanically.)`);
+  lines.push(`Maximum ${wordLimit} words (sign-off excluded). NEVER start with "I". Follow the five-part structure from the system prompt: salutation, opening, body, closing, sign-off.`);
   if (noName) lines.push('Sign off with "Kind regards," only (no name below).');
-  else lines.push(`Sign off with first name only: ${firstName}.`);
+  else lines.push(`Sign off with first name only: ${firstName}. This line is mandatory and must always be present.`);
 
   // User profile data included in prompt - covered under privacy policy section 4
   const message = await callClaude({
-    max_tokens: 500,
+    max_tokens: 600,
     system: systemPrompt,
     messages: [{ role: 'user', content: lines.join('\n') }],
   });
 
-  const letter = stripMarkdown(message.content[0].text);
+  let letter = stripMarkdown(message.content[0].text);
+  if (!/kind regards/i.test(letter)) {
+    letter = `${letter}\n\n${signOffText}`;
+  }
   return { letter };
 }
 
@@ -952,10 +968,11 @@ async function modifyLetterDirect({ letter, instruction }) {
     system: `You are an expert at editing rental motivation letters. You receive an existing letter and an editing instruction. Apply the instruction precisely and return only the revised letter text with no explanation.
 
 Rules:
-- Keep the same structure (Dear landlord / 3 paragraphs / Kind regards)
+- Keep the same structure: salutation line ("Dear [name]," or "Dear Sir or Madam,"), one-sentence opening hook, a short body of two or three sentences, a one-sentence closing about viewing availability, then the sign-off ("Kind regards," plus the applicant's first name on its own line, or "Kind regards," alone if no name was in the original)
+- Never remove or shorten the salutation or the sign-off — they must always be present in full, even if the instruction does not mention them
 - Preserve all factual details (name, income, property)
 - English only, no markdown, no dashes
-- Max 200 words
+- Max 200 words (salutation and sign-off excluded from this limit)
 - Return only the letter text`,
     messages: [{
       role: 'user',

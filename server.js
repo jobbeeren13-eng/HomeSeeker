@@ -508,11 +508,9 @@ app.post('/api/generate-letter-web', async (req, res) => {
 
   const selectedTips = [...(selectedTipTexts || [])];
   if (extraContext && extraContext.trim()) selectedTips.push(extraContext.trim());
-  try {
-    for (const tip of buildAutoLetterTips(listing, user)) {
-      if (!selectedTips.includes(tip)) selectedTips.push(tip);
-    }
-  } catch (e) { console.error('[api/generate-letter-web] auto tips failed (non-fatal):', e.message); }
+
+  let intelligenceContext = '';
+  try { intelligenceContext = buildIntelligenceContext(listing, user); } catch (e) { console.error('[api/generate-letter-web] intelligence context failed (non-fatal):', e.message); }
 
   try {
     const hetznerUrl = process.env.HETZNER_URL;
@@ -522,12 +520,12 @@ app.post('/api/generate-letter-web', async (req, res) => {
       const resp = await timedFetch(`${hetznerUrl}/api/generate-letter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ listing, user: user || {}, selectedTips, tone }),
+        body: JSON.stringify({ listing, user: user || {}, selectedTips, tone, intelligenceContext }),
       });
       if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
       letter = (await resp.json()).letter;
     } else {
-      ({ letter } = await generateLetterDirect({ listing, user: user || {}, selectedTips, tone }));
+      ({ letter } = await generateLetterDirect({ listing, user: user || {}, selectedTips, tone, intelligenceContext }));
     }
     res.json({ letter });
   } catch (err) {
@@ -1023,28 +1021,6 @@ function buildIntelligenceContext(listing, user) {
   } catch (_) {}
   if (!lines.length) return '';
   return `\n\nVerified listing intelligence (this is computed from real data — prefer it over general assumptions):\n${lines.join('\n')}`;
-}
-
-// Same signals as buildIntelligenceContext, but as short imperative tip strings for the
-// Letter tab, which takes a "selectedTips" array (used to shape angle/emphasis) rather than
-// a free-text context block. Automatic tips are added alongside whatever the user selected
-// manually — this does not replace user choice, only fills the gap when the user selects none.
-function buildAutoLetterTips(listing, user) {
-  if (!ASSISTANT_INTELLIGENCE_ENABLED || !listing) return [];
-  const tips = [];
-  try {
-    const persona = detectLandlordPersona(listing);
-    if (persona && persona.strategy) tips.push(`${persona.label}: ${persona.strategy}`);
-  } catch (_) {}
-  try {
-    const priceIntel = getPriceIntelligence(listing);
-    if (priceIntel && (priceIntel.color === 'green' || priceIntel.color === 'red')) tips.push(priceIntel.action);
-  } catch (_) {}
-  try {
-    const docReadiness = getDocumentReadiness(user, listing);
-    if (docReadiness && docReadiness.urgency) tips.push(docReadiness.urgency);
-  } catch (_) {}
-  return tips;
 }
 
 async function timedFetch(url, options) {
