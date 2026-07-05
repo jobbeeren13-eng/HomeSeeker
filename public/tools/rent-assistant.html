@@ -373,8 +373,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <div class="prog-step" id="ps-1" onclick="switchTab(1)"><div class="prog-step-inner"><div class="prog-dot">2</div><span class="prog-lbl">Letter</span></div></div>
     <div class="prog-conn"></div>
     <div class="prog-step" id="ps-2" onclick="switchTab(2)"><div class="prog-step-inner"><div class="prog-dot">3</div><span class="prog-lbl">Viewing Tips</span></div></div>
-    <div class="prog-conn"></div>
-    <div class="prog-step" id="ps-3" onclick="switchTab(3)"><div class="prog-step-inner"><div class="prog-dot">4</div><span class="prog-lbl">Negotiation</span></div></div>
   </div>
 </div>
 
@@ -391,7 +389,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <button class="tab" data-tab="0" onclick="switchTab(0)">Analyse</button>
     <button class="tab on" data-tab="1" onclick="switchTab(1)">Letter</button>
     <button class="tab" data-tab="2" onclick="switchTab(2)">Viewing Tips</button>
-    <button class="tab" data-tab="3" onclick="switchTab(3)">Negotiation</button>
   </div>
 
   <div class="more-tools-row">
@@ -570,50 +567,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <div class="rb" id="body-2"></div>
       <div class="act-row" id="acts-2">
         <button class="btn-sm" onclick="cpResp(2)">Copy</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Panel 3: Negotiation -->
-  <div id="panel-3" class="panel">
-
-    <div class="scout-row" id="scout-intro-3">
-      <div class="scout-av">
-        <svg class="scout-char" width="56" height="70" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
-        <div class="scout-name">Scout</div>
-      </div>
-      <div class="scout-msg">Tell me your situation and I'll tell you if negotiating is realistic here.</div>
-    </div>
-
-    <div class="card">
-      <div class="fld">
-        <div class="lbl">What do you want to negotiate?</div>
-        <div class="tone-row" id="neg-row">
-          <button class="tp on" onclick="setNegGoal(this,'lower rent')">Lower rent</button>
-          <button class="tp" onclick="setNegGoal(this,'longer lease')">Longer lease</button>
-          <button class="tp" onclick="setNegGoal(this,'competing offer')">Competing offers</button>
-        </div>
-      </div>
-      <div class="fld">
-        <div class="lbl">Your situation <span class="cc" id="cc-3">0 / 2000</span></div>
-        <textarea class="inp" id="t3-msg" rows="4" placeholder="City, how long the listing has been online, your position..." oninput="uc(this,'cc-3',2000)"></textarea>
-      </div>
-      <button class="btn-main" id="btn-3" onclick="submit(3)">Get advice &#8594;</button>
-      <div class="errtxt" id="err-3"></div>
-    </div>
-    <div class="card">
-      <div class="empty-st" id="empty-3">Your response appears here.</div>
-      <div class="skel" id="skel-3"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-      <div class="scout-row scout-row-sm" id="scout-out-3" style="display:none">
-        <div class="scout-av">
-          <svg class="scout-char" width="44" height="55" viewBox="0 0 64 80"><line x1="32" y1="4" x2="32" y2="13" stroke="#00c896" stroke-width="2.5" stroke-linecap="round"/><circle cx="32" cy="4" r="4" fill="#00c896"/><rect x="6" y="12" width="52" height="56" rx="10" fill="#00c896"/><rect x="10" y="15" width="44" height="30" rx="8" fill="#00b380"/><circle class="scout-eye" cx="22" cy="31" r="7.5" fill="white"/><circle class="scout-eye" cx="42" cy="31" r="7.5" fill="white"/><circle cx="23" cy="32" r="3.5" fill="#0a1a14"/><circle cx="43" cy="32" r="3.5" fill="#0a1a14"/><circle cx="20" cy="28" r="2" fill="white"/><circle cx="40" cy="28" r="2" fill="white"/><path d="M18 41 Q32 50 46 41" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="6" cy="34" r="5" fill="#009e70"/><circle cx="58" cy="34" r="5" fill="#009e70"/><rect x="0" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="56" y="20" width="8" height="26" rx="4" fill="#009e70"/><rect x="16" y="66" width="13" height="14" rx="5" fill="#009e70"/><rect x="35" y="66" width="13" height="14" rx="5" fill="#009e70"/><polygon points="32,48 21,58 43,58" fill="white" opacity="0.4"/><rect x="23" y="58" width="18" height="10" rx="2" fill="white" opacity="0.4"/><rect x="28" y="62" width="8" height="6" rx="1" fill="#00c896" opacity="0.5"/></svg>
-          <div class="scout-name">Scout</div>
-        </div>
-        <div class="scout-msg">Read the market assessment first. Only use the scripts if I say negotiating is realistic here.</div>
-      </div>
-      <div class="rb" id="body-3"></div>
-      <div class="act-row" id="acts-3">
-        <button class="btn-sm" onclick="cpResp(3)">Copy</button>
       </div>
     </div>
   </div>
@@ -1116,15 +1069,14 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   <button class="mnav-tab" id="mn-0" onclick="switchTab(0)"><span class="mnav-icon">📊</span><span class="mnav-lbl">Analyse</span></button>
   <button class="mnav-tab" id="mn-1" onclick="switchTab(1)"><span class="mnav-icon">✉️</span><span class="mnav-lbl">Letter</span></button>
   <button class="mnav-tab" id="mn-2" onclick="switchTab(2)"><span class="mnav-icon">👁</span><span class="mnav-lbl">Viewing</span></button>
-  <button class="mnav-tab" id="mn-3" onclick="switchTab(3)"><span class="mnav-icon">💬</span><span class="mnav-lbl">Negotiate</span></button>
 </nav>
 
 <script>
-let chatId=null,listingContext='',cacheId=null,negGoal='lower rent',propType='';
+let chatId=null,listingContext='',cacheId=null,propType='';
 let _lastListing=null,_lastIntel=null;
 const lastResp={};
-const API_TAB_MAP={2:'3',3:'4'};
-const BTN={2:'Get viewing tips →',3:'Get advice →'};
+const API_TAB_MAP={2:'3'};
+const BTN={2:'Get viewing tips →'};
 const ltState={letter:'',tone:'professional'};
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const escAttr=s=>esc(s).replace(/"/g,'&quot;');
@@ -1201,7 +1153,7 @@ function getParams(){
   const tParam=p.get('tab');
   const defaultTab=cacheId?0:1;
   const t=tParam!=null?parseInt(tParam,10):defaultTab;
-  switchTab(t>=0&&t<=9?t:defaultTab);
+  switchTab(t>=0&&t<=9&&t!==3?t:defaultTab);
   const scoutMsg=document.getElementById('scout-msg-lt');
   const scoutMsg2=document.getElementById('scout-msg-2');
   if(cacheId){
@@ -1435,10 +1387,6 @@ function setTone(btn,tone){
   document.querySelectorAll('#tone-row .tp').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');ltState.tone=tone;
 }
-function setNegGoal(btn,goal){
-  document.querySelectorAll('#neg-row .tp').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');negGoal=goal;
-}
 function setPropType(btn,type){
   if(btn.classList.contains('on')){btn.classList.remove('on');propType='';}
   else{document.querySelectorAll('#prop-row .tp').forEach(b=>b.classList.remove('on'));btn.classList.add('on');propType=type;}
@@ -1558,11 +1506,10 @@ function buildMsg(tab){
       if(!base)return null;
       return propType?`Property type: ${propType}\n\n${base}`:base;
     }
-    case 3:{const s=document.getElementById('t3-msg')?.value.trim();return s?`Goal: ${negGoal}\n\n${s}`:`Goal: ${negGoal}`;}
     default:return null;
   }
 }
-const ERR={2:'Please describe the property, or open this from a listing alert.',3:'Please describe your situation.'};
+const ERR={2:'Please describe the property, or open this from a listing alert.'};
 
 async function submit(tab){
   const msg=buildMsg(tab);
