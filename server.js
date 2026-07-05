@@ -1,8 +1,11 @@
 require('dotenv').config();
 
-const REQUIRED_ENV = ['ANTHROPIC_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_ID', 'ADMIN_KEY', 'TELEGRAM_BOT_TOKEN'];
+const REQUIRED_ENV = ['ANTHROPIC_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'STRIPE_PRICE_ID', 'ADMIN_KEY', 'TELEGRAM_BOT_TOKEN', 'LINK_SECRET'];
 for (const key of REQUIRED_ENV) {
   if (!process.env[key]) console.warn(`[startup] WARNING: ${key} is not set`);
+}
+if (process.env.LINK_SECRET === 'changeme_set_in_env') {
+  console.warn('[startup] WARNING: LINK_SECRET is still the placeholder default — signed chat-tokens will fail closed (every paywalled AI request will be rejected) until a real secret is set on BOTH Railway and Hetzner.');
 }
 
 process.on('uncaughtException', (err) => {
@@ -16,10 +19,10 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, getListingByUrl } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, getListingByUrl, checkAndIncrementAiUsage, purgeOldAiUsage } = require('./src/database');
 const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot, rowToListing } = require('./src/scraper');
-const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
+const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry, signChatId, verifyChatToken } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext, resolveCityKey, UNIFIED_PRICE_BENCHMARK_ENABLED } = require('./src/score');
 const { calculateDealScore, dealLabel } = require('./src/deal_score');
@@ -79,15 +82,46 @@ function isPaidUser(chatId) {
 }
 
 const PAYWALL_MESSAGE = 'Start your free trial to use this feature.';
+const DAILY_CAP_MESSAGE = 'Daily limit reached for AI features. Try again tomorrow, or contact support@homeseeker.dev if you need a higher limit.';
+const MAX_AI_CALLS_PER_DAY = parseInt(process.env.MAX_AI_CALLS_PER_DAY, 10) || 50;
 
-// Call at the top of an AI endpoint handler right after the rate-limit check. Returns the paid
-// user row and lets the handler continue, or sends the 403 itself and returns null so the
-// handler can `if (!user) return;`.
-function requirePaidUser(req, res, chatId) {
+// Applies the hard per-user daily cap (DB-backed, see checkAndIncrementAiUsage) once a chatId has
+// already been established as belonging to a paid user. Shared by both requirePaidUser and
+// requirePaidUserTrusted below so the cap applies identically regardless of how chatId was proven.
+function enforceDailyCap(res, chatId) {
+  if (!checkAndIncrementAiUsage(String(chatId), MAX_AI_CALLS_PER_DAY)) {
+    res.status(429).json({ error: DAILY_CAP_MESSAGE, code: 'DAILY_CAP' });
+    return false;
+  }
+  return true;
+}
+
+// Call at the top of an AI endpoint handler right after the rate-limit check, passing the
+// signed chat-token the client presents (never a raw chat_id — those are guessable numeric
+// Telegram ids and trusting them directly lets anyone impersonate a paying user). Verifies the
+// HMAC signature and expiry, derives the real chat_id from the token itself, then checks the
+// paywall and the daily cap. Returns the paid user row and lets the handler continue, or sends
+// the error itself and returns null so the handler can `if (!user) return;`.
+function requirePaidUser(req, res, ct) {
+  const chatId = verifyChatToken(ct);
+  if (!chatId || !isPaidUser(chatId)) {
+    res.status(403).json({ error: PAYWALL_MESSAGE, code: 'PAYWALL' });
+    return null;
+  }
+  if (!enforceDailyCap(res, chatId)) return null;
+  return getUser.get(String(chatId));
+}
+
+// For the handful of endpoints where chatId is derived server-side from an unguessable cacheId
+// (crypto.randomUUID(), looked up via getCachedEntry) rather than taken directly from client
+// input — the cacheId itself is already the unforgeable credential here, so no separate signed
+// token is required. Still enforces the same paywall + daily cap as requirePaidUser.
+function requirePaidUserTrusted(req, res, chatId) {
   if (!isPaidUser(chatId)) {
     res.status(403).json({ error: PAYWALL_MESSAGE, code: 'PAYWALL' });
     return null;
   }
+  if (!enforceDailyCap(res, chatId)) return null;
   return getUser.get(String(chatId));
 }
 
@@ -111,6 +145,7 @@ function redirectToTab(assistantPath, tabNum) {
   return (req, res) => {
     const params = new URLSearchParams();
     if (req.query.chat_id) params.set('chat_id', String(req.query.chat_id));
+    if (req.query.ct) params.set('ct', String(req.query.ct));
     if (req.query.listing) params.set('listing', String(req.query.listing));
     params.set('tab', String(tabNum));
     res.redirect(301, `${assistantPath}?${params.toString()}`);
@@ -445,6 +480,7 @@ app.get('/api/letter-data', (req, res) => {
     score,
     dealScore,
     chatId: chatId || null,
+    ct: chatId ? signChatId(chatId) : null,
   });
 });
 
@@ -551,7 +587,7 @@ app.post('/api/generate-letter-web', async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
 
   const { listing, chatId } = entry;
-  const user = requirePaidUser(req, res, chatId);
+  const user = requirePaidUserTrusted(req, res, chatId);
   if (!user) return;
 
   const selectedTips = [...(selectedTipTexts || [])];
@@ -593,7 +629,7 @@ app.post('/api/first-contact-message', async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
 
   const { listing, chatId } = entry;
-  const user = requirePaidUser(req, res, chatId);
+  const user = requirePaidUserTrusted(req, res, chatId);
   if (!user) return;
 
   try {
@@ -629,7 +665,7 @@ app.post('/api/generate-package', async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
 
   const { listing, chatId } = entry;
-  const user = requirePaidUser(req, res, chatId);
+  const user = requirePaidUserTrusted(req, res, chatId);
   if (!user) return;
 
   try {
@@ -1151,9 +1187,9 @@ app.post('/api/rejection-analyser', async (req, res) => {
     // Best-effort: any failure just means this list stays empty and the analysis falls back
     // to self-reported text only, exactly as before.
     let outcomeHistory = [];
-    if (chatId) {
+    if (paidUser.chat_id) {
       try {
-        outcomeHistory = getTrackerOutcomesWithScoresForChat.all(String(chatId)).map(r => ({
+        outcomeHistory = getTrackerOutcomesWithScoresForChat.all(String(paidUser.chat_id)).map(r => ({
           address: r.listing_address || null, status: r.status, score: r.score, dealScore: r.deal_score, updatedAt: r.updated_at,
         }));
       } catch (e) { console.error('[api/rejection-analyser] outcome history lookup failed (non-fatal):', e.message); }
@@ -1423,6 +1459,8 @@ async function runDailyJob() {
 setInterval(runDailyJob, 60 * 60 * 1000);
 
 let lastBackupStatus = 'never';
+let lastOffsiteBackupAt = null;
+let lastOffsiteBackupStatus = 'never';
 
 async function runDbBackup() {
   const backupPath = path.join(path.dirname(dbPath), 'homeseeker_backup.db');
@@ -1434,6 +1472,36 @@ async function runDbBackup() {
   } catch (err) {
     lastBackupStatus = `failed: ${err.message}`;
     console.error('[backup] DB backup failed:', err.message);
+    return; // no point pushing an off-site copy if the local backup itself failed
+  }
+
+  try { purgeOldAiUsage.run(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)); } catch (e) { console.error('[backup] ai_usage_daily purge failed (non-fatal):', e.message); }
+
+  // Off-site copy: the local backup above lives on the same Railway volume as the live DB, so it
+  // protects against nothing if that volume is ever lost (platform incident, misconfiguration,
+  // accidental deletion). Push a copy to the Hetzner VPS — a genuinely separate machine and
+  // provider — as an independent second location. Best-effort: any failure here is logged but
+  // does not affect the (already-succeeded) local backup above.
+  try {
+    const hetznerUrl = process.env.HETZNER_URL;
+    const adminKey = process.env.ADMIN_KEY;
+    if (!hetznerUrl || !adminKey) {
+      lastOffsiteBackupStatus = 'skipped: HETZNER_URL/ADMIN_KEY not configured';
+      return;
+    }
+    const buf = fs.readFileSync(backupPath);
+    const resp = await timedFetch(`${hetznerUrl}/api/backup-upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream', 'x-admin-key': adminKey },
+      body: buf,
+    }, 60000);
+    if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+    lastOffsiteBackupAt = new Date().toISOString();
+    lastOffsiteBackupStatus = 'ok';
+    console.log('[backup] Off-site copy pushed to Hetzner');
+  } catch (err) {
+    lastOffsiteBackupStatus = `failed: ${err.message}`;
+    console.error('[backup] Off-site push to Hetzner failed (local backup still ok):', err.message);
   }
 }
 
@@ -1447,7 +1515,7 @@ app.get('/admin/backup-status', (req, res) => {
   const backupPath = path.join(path.dirname(dbPath), 'homeseeker_backup.db');
   let backupSize = null;
   try { backupSize = fs.statSync(backupPath).size; } catch (_) {}
-  res.json({ lastBackupAt, lastBackupStatus, backupPath, backupSizeBytes: backupSize, ts: new Date().toISOString() });
+  res.json({ lastBackupAt, lastBackupStatus, lastOffsiteBackupAt, lastOffsiteBackupStatus, backupPath, backupSizeBytes: backupSize, ts: new Date().toISOString() });
 });
 
 // Public healthcheck — Railway probes this without auth

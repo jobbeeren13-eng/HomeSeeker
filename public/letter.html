@@ -262,7 +262,7 @@
     { tip: 'Your move-in timeline and document readiness', category: 'documents' },
   ];
 
-  let state = { tips: [], cacheId: null, listing: null, chatId: null };
+  let state = { tips: [], cacheId: null, listing: null, chatId: null, ct: null };
 
   async function init() {
     const params = new URLSearchParams(location.search);
@@ -287,11 +287,12 @@
     }
   }
 
-  function render({ listing, tips, score, dealScore, chatId }) {
+  function render({ listing, tips, score, dealScore, chatId, ct }) {
     document.getElementById('loading-state').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
     state.listing = listing;
     state.chatId = chatId || null;
+    state.ct = ct || null;
 
     // Listing card
     const img = document.getElementById('listing-img');
@@ -453,11 +454,12 @@
     if (!el) return;
     const cacheId = state.cacheId;
     const chatId = state.chatId;
+    const ct = state.ct;
     const base = '/tools/rent-assistant';
-    const qs = chatId ? `chat_id=${chatId}&listing=${cacheId}` : `listing=${cacheId}`;
+    const qs = ct ? `chat_id=${chatId}&ct=${ct}&listing=${cacheId}` : `listing=${cacheId}`;
     document.getElementById('help-coach').href = `${base}?${qs}&tab=1`;
     document.getElementById('help-viewing').href = `${base}?${qs}&tab=2`;
-    document.getElementById('help-reply').href = chatId ? `${base}?chat_id=${chatId}&tab=4` : `${base}?tab=4`;
+    document.getElementById('help-reply').href = ct ? `${base}?chat_id=${chatId}&ct=${ct}&tab=4` : `${base}?tab=4`;
     el.style.display = 'block';
   }
 

@@ -22,6 +22,35 @@ const letterState = new Map();
 const pendingLinkState = new Map(); // chatId -> true, waiting for email input
 const listingCache = new Map();
 
+// --- Signed chat-id token (prevents impersonating a paying user by guessing their
+// numeric Telegram chat_id) --- Web pages must present this token instead of a raw
+// chat_id for anything paywall-gated; the server derives the authoritative chat_id
+// from the token itself rather than trusting a client-supplied value directly.
+const CHAT_TOKEN_TTL_MS = 45 * 24 * 60 * 60 * 1000; // 45 days — alerts can sit unread for a while
+function linkSecretConfigured() {
+  return !!LINK_SECRET && LINK_SECRET !== 'changeme_set_in_env';
+}
+function signChatId(chatId) {
+  if (!chatId || !linkSecretConfigured()) return null;
+  const id = String(chatId);
+  const expiresAt = Date.now() + CHAT_TOKEN_TTL_MS;
+  const sig = crypto.createHmac('sha256', LINK_SECRET).update(`${id}.${expiresAt}`).digest('hex').slice(0, 32);
+  return `${id}.${expiresAt}.${sig}`;
+}
+function verifyChatToken(token) {
+  if (!token || !linkSecretConfigured()) return null;
+  const parts = String(token).split('.');
+  if (parts.length !== 3) return null;
+  const [id, expiresAtStr, sig] = parts;
+  const expiresAt = parseInt(expiresAtStr, 10);
+  if (!id || !expiresAt || Number.isNaN(expiresAt) || Date.now() > expiresAt) return null;
+  const expected = crypto.createHmac('sha256', LINK_SECRET).update(`${id}.${expiresAtStr}`).digest('hex').slice(0, 32);
+  const sigBuf = Buffer.from(sig, 'utf8');
+  const expBuf = Buffer.from(expected, 'utf8');
+  if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) return null;
+  return id;
+}
+
 // --- Signed start payload (prevents brute-forcing customer IDs) ---
 function generateStartPayload(customerId) {
   const sig = crypto
@@ -309,11 +338,11 @@ function createBot(useWebhook = false) {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🤖 Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}` }, { text: '💬 Landlord Reply Coach', url: `${BASE_URL}/tools/landlord-reply` }],
-          [{ text: '🔍 Rejection Analyser', url: `${BASE_URL}/tools/rejection-analyser?chat_id=${chatId}` }, { text: '💰 Income Check', url: `${BASE_URL}/tools/income-check` }],
+          [{ text: '🤖 Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}&ct=${signChatId(chatId)}` }, { text: '💬 Landlord Reply Coach', url: `${BASE_URL}/tools/landlord-reply` }],
+          [{ text: '🔍 Rejection Analyser', url: `${BASE_URL}/tools/rejection-analyser?chat_id=${chatId}&ct=${signChatId(chatId)}` }, { text: '💰 Income Check', url: `${BASE_URL}/tools/income-check` }],
           [{ text: '📄 Reference Letters', url: `${BASE_URL}/tools/reference-letter` }, { text: '👁 Viewing Feedback', url: `${BASE_URL}/tools/viewing-feedback` }],
           [{ text: '⚖️ Tenant Rights', url: `${BASE_URL}/tools/tenant-rights` }, { text: '📖 Rental Guide', url: `${BASE_URL}/guide/rent` }],
-          [{ text: '🏡 Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}` }, { text: '🎯 Deal Finder', url: `${BASE_URL}/tools/deal-finder` }],
+          [{ text: '🏡 Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}&ct=${signChatId(chatId)}` }, { text: '🎯 Deal Finder', url: `${BASE_URL}/tools/deal-finder` }],
           [{ text: '📈 Overbid Calculator', url: `${BASE_URL}/tools/overbid-calculator` }, { text: '🔎 Inspection Advisor', url: `${BASE_URL}/tools/inspection-advisor` }],
           [{ text: '🏗 Erfpacht Checker', url: `${BASE_URL}/tools/erfpacht-checker` }, { text: '🗣 Agent Scripts', url: `${BASE_URL}/tools/agent-scripts` }],
         ],
@@ -583,11 +612,12 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
   console.log('[alert] captionLength:', captionText.length);
 
   const cacheId = cacheListing(listing, chatId, score, dealScore);
+  const ct = signChatId(chatId);
   const keyboard = isHuur ? {
     inline_keyboard: [
       [
         { text: 'View listing', url: listing.url },
-        { text: 'AI Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}&listing=${cacheId}` },
+        { text: 'AI Rental Assistant', url: `${BASE_URL}/tools/rent-assistant?chat_id=${chatId}&ct=${ct}&listing=${cacheId}` },
       ],
       [
         { text: 'Share', callback_data: `share:${cacheId}` },
@@ -598,10 +628,10 @@ async function sendAlert(chatId, listing, score, label, dealScore, dLabel, user 
     inline_keyboard: [
       [
         { text: 'View listing', url: listing.url },
-        { text: 'AI Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}&listing=${cacheId}` },
+        { text: 'AI Buyer Assistant', url: `${BASE_URL}/tools/buy-assistant?chat_id=${chatId}&ct=${ct}&listing=${cacheId}` },
       ],
       [
-        { text: 'Deal Score', url: `${BASE_URL}/tools/deal-finder?chat_id=${chatId}` },
+        { text: 'Deal Score', url: `${BASE_URL}/tools/deal-finder?chat_id=${chatId}&ct=${ct}` },
         { text: 'Share', callback_data: `share:${cacheId}` },
       ],
       [{ text: 'Unsubscribe', callback_data: 'unsubscribe' }],
@@ -693,5 +723,5 @@ function processWebhookUpdate(update) {
   try { bot.processUpdate(update); } catch (err) { console.error('[telegram] processWebhookUpdate error:', err.message); }
 }
  
-module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState, generateStartPayload, injectCachedListing, getCachedEntry };
+module.exports = { createBot, getBot, sendAlert, processWebhookUpdate, clearLetterState, generateStartPayload, injectCachedListing, getCachedEntry, signChatId, verifyChatToken };
  

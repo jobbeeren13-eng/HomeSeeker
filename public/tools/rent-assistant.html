@@ -1157,7 +1157,7 @@ function getSelectedTips(){
 
 function getParams(){
   const p=new URLSearchParams(location.search);
-  chatId=p.get('chat_id')||null;
+  chatId=p.get('ct')||null; // signed chat-token, not the raw chat_id — server verifies it
   cacheId=p.get('listing')||null;
   const tParam=p.get('tab');
   const defaultTab=cacheId?0:1;

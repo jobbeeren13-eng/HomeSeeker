@@ -8,6 +8,8 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const cron = require('node-cron');
 const TelegramBot = require('node-telegram-bot-api');
 const { scrapeListings, markListingsAsSent, rowToListing, setAdminBot } = require('./src/scraper');
@@ -148,6 +150,33 @@ const app = express();
 app.use(express.json());
 
 app.get('/health', (_req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
+
+// Off-site copy of Railway's daily SQLite backup — this Hetzner VPS is a separate machine and
+// provider from Railway's volume, so a copy here survives a Railway volume incident. Raw-body
+// route (not the global express.json() above) since the payload is a binary .db file, not JSON.
+// Keeps only the most recent BACKUP_RETENTION_COUNT copies to bound disk usage.
+const BACKUP_DIR = path.join(__dirname, 'offsite-backups');
+const BACKUP_RETENTION_COUNT = 7;
+app.post('/api/backup-upload', express.raw({ type: 'application/octet-stream', limit: '100mb' }), (req, res) => {
+  const key = req.headers['x-admin-key'];
+  if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'Empty body' });
+  try {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const filename = `homeseeker_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.db`;
+    fs.writeFileSync(path.join(BACKUP_DIR, filename), req.body);
+    const files = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('homeseeker_backup_')).sort();
+    while (files.length > BACKUP_RETENTION_COUNT) {
+      const oldest = files.shift();
+      try { fs.unlinkSync(path.join(BACKUP_DIR, oldest)); } catch (_) {}
+    }
+    console.log(`[backup-upload] Received off-site backup: ${filename} (${req.body.length} bytes)`);
+    res.json({ ok: true, filename, bytes: req.body.length });
+  } catch (err) {
+    console.error('[backup-upload] Failed to save backup:', err.message);
+    res.status(500).json({ error: 'Failed to save backup' });
+  }
+});
 
 app.post('/api/match-now', (req, res) => {
   const key = req.headers['x-admin-key'];

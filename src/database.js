@@ -176,6 +176,16 @@ db.exec(`
     deal_score INTEGER,
     alerted_at INTEGER NOT NULL
   );
+
+  -- Hard per-user daily cap on AI-generation calls, on top of the shared per-IP rate limit.
+  -- A persistent DB counter (not in-memory) so the cap survives restarts/redeploys and is
+  -- correct even if Railway ever runs more than one instance.
+  CREATE TABLE IF NOT EXISTS ai_usage_daily (
+    chat_id TEXT NOT NULL,
+    usage_date TEXT NOT NULL,
+    count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (chat_id, usage_date)
+  );
 `);
 
 try {
@@ -410,6 +420,27 @@ const getPersistedCacheListing = db.prepare(
 );
 const purgeExpiredCacheListings = db.prepare('DELETE FROM listing_cache WHERE expires_at <= ?');
 
+const getAiUsageToday = db.prepare('SELECT count FROM ai_usage_daily WHERE chat_id = ? AND usage_date = ?');
+const incrementAiUsage = db.prepare(`
+  INSERT INTO ai_usage_daily (chat_id, usage_date, count) VALUES (?, ?, 1)
+  ON CONFLICT(chat_id, usage_date) DO UPDATE SET count = count + 1
+`);
+const purgeOldAiUsage = db.prepare('DELETE FROM ai_usage_daily WHERE usage_date < ?');
+
+// Hard per-user daily cap on AI-generation calls (on top of the shared per-IP rate limit).
+// Synchronous end-to-end (better-sqlite3) so there is no race between the read and the write —
+// two near-simultaneous calls for the same chat_id cannot both slip through at the cap boundary.
+// Returns true and increments the counter if still under maxPerDay for today (UTC calendar day);
+// returns false without incrementing if already at/over the cap.
+function checkAndIncrementAiUsage(chatId, maxPerDay) {
+  const today = new Date().toISOString().slice(0, 10);
+  const row = getAiUsageToday.get(String(chatId), today);
+  const current = row ? row.count : 0;
+  if (current >= maxPerDay) return false;
+  incrementAiUsage.run(String(chatId), today);
+  return true;
+}
+
 const getFavorites = db.prepare('SELECT * FROM favorites WHERE chat_id = ? ORDER BY added_at DESC');
 const addFavorite = db.prepare('INSERT OR REPLACE INTO favorites (chat_id, listing_url, listing_json) VALUES (?, ?, ?)');
 const removeFavorite = db.prepare('DELETE FROM favorites WHERE chat_id = ? AND listing_url = ?');
@@ -557,6 +588,7 @@ module.exports = {
   persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings,
   getRecentListings,
   getFavorites, addFavorite, removeFavorite,
+  checkAndIncrementAiUsage, purgeOldAiUsage,
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
   getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, insertOutcomeSnapshot,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,
