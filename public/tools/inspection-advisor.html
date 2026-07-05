@@ -108,6 +108,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
 </div>
 
 <script>
+const chatId = new URLSearchParams(location.search).get('chat_id') || null;
 async function analyse() {
   const findings = document.getElementById('findings').value.trim();
   if (findings.length < 20) { showErr('Please paste the inspection findings.'); return; }
@@ -116,7 +117,7 @@ async function analyse() {
   try {
     const r = await fetch('/api/inspection-advisor', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inspectionText: findings, purchasePrice: price }),
+      body: JSON.stringify({ inspectionText: findings, purchasePrice: price, chatId }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed');

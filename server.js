@@ -62,6 +62,35 @@ function rateLimit(key, maxPerMinute) {
 }
 setInterval(() => { const now = Date.now(); for (const [k, v] of rateLimits) { if (v.every(t => now - t > 60000)) rateLimits.delete(k); } }, 300000);
 
+// Paywall for every AI-generation endpoint — same definition of "active subscriber" as
+// getAllActiveUsers (matcher/alerts): actief=1 AND betaald=1. betaald flips to 1 as soon as a
+// user starts a Stripe trial (see createUserByCustomerId/linkChatToCustomer), so this does not
+// block trial users, only people with no trial/subscription at all or a cancelled one.
+// A cacheId alone (e.g. a still-valid but abandoned Telegram alert cache entry) is deliberately
+// NOT sufficient — the chatId behind it must resolve to a currently active, paying user.
+function isPaidUser(chatId) {
+  if (!chatId) return false;
+  try {
+    const user = getUser.get(String(chatId));
+    return !!(user && user.actief === 1 && user.betaald === 1);
+  } catch (_) {
+    return false;
+  }
+}
+
+const PAYWALL_MESSAGE = 'Start your free trial to use this feature.';
+
+// Call at the top of an AI endpoint handler right after the rate-limit check. Returns the paid
+// user row and lets the handler continue, or sends the 403 itself and returns null so the
+// handler can `if (!user) return;`.
+function requirePaidUser(req, res, chatId) {
+  if (!isPaidUser(chatId)) {
+    res.status(403).json({ error: PAYWALL_MESSAGE, code: 'PAYWALL' });
+    return null;
+  }
+  return getUser.get(String(chatId));
+}
+
 // Listing-tips response cache (30 min TTL) — avoids recomputing intelligence per request
 const tipsCache = new Map();
 const TIPS_CACHE_TTL = 30 * 60 * 1000;
@@ -509,7 +538,8 @@ app.post('/api/generate-letter-web', async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
 
   const { listing, chatId } = entry;
-  const user = chatId ? getUser.get(String(chatId)) : null;
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
 
   const selectedTips = [...(selectedTipTexts || [])];
   if (extraContext && extraContext.trim()) selectedTips.push(extraContext.trim());
@@ -550,7 +580,8 @@ app.post('/api/first-contact-message', async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
 
   const { listing, chatId } = entry;
-  const user = chatId ? getUser.get(String(chatId)) : null;
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
 
   try {
     const hetznerUrl = process.env.HETZNER_URL;
@@ -585,7 +616,8 @@ app.post('/api/generate-package', async (req, res) => {
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
 
   const { listing, chatId } = entry;
-  const user = chatId ? getUser.get(String(chatId)) : null;
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
 
   try {
     const hetznerUrl = process.env.HETZNER_URL;
@@ -742,8 +774,10 @@ app.post('/api/application-status', (req, res) => {
 app.post('/api/buyer-letter', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext } = req.body;
+  const { houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext, chatId } = req.body;
   if (!houseAddress) return res.status(400).json({ error: 'houseAddress required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
@@ -770,8 +804,10 @@ app.post('/api/buyer-letter', async (req, res) => {
 app.post('/api/lease-review', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { leaseText, context } = req.body;
+  const { leaseText, context, chatId } = req.body;
   if (!leaseText || leaseText.length < 50) return res.status(400).json({ error: 'leaseText must be at least 50 characters' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
@@ -797,8 +833,10 @@ app.post('/api/lease-review', async (req, res) => {
 app.post('/api/negotiate', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { goal, property, situation, extraContext } = req.body;
+  const { goal, property, situation, extraContext, chatId } = req.body;
   if (!goal || !situation || situation.length < 20) return res.status(400).json({ error: 'goal and situation are required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
@@ -824,8 +862,10 @@ app.post('/api/negotiate', async (req, res) => {
 app.post('/api/modify-letter-web', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { letter, instruction } = req.body;
+  const { letter, instruction, chatId } = req.body;
   if (!letter || !instruction) return res.status(400).json({ error: 'letter and instruction required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
@@ -855,6 +895,8 @@ app.post('/api/rent-assistant', async (req, res) => {
   if (!userMessage || typeof userMessage !== 'string') return res.status(400).json({ error: 'userMessage required' });
   if (userMessage.length > 2000) return res.status(400).json({ error: 'userMessage must be under 2000 characters' });
   if (tab !== undefined && typeof tab !== 'string') return res.status(400).json({ error: 'tab must be a string' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   const reqKey = `rent:${tab}:${userMessage.slice(0, 50)}`;
   if (pendingRequests.has(reqKey)) {
     try { return res.json(await pendingRequests.get(reqKey)); } catch (err) { return res.status(500).json({ error: 'Assistant response failed. Try again in a moment.' }); }
@@ -862,10 +904,6 @@ app.post('/api/rent-assistant', async (req, res) => {
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
-    let user = null;
-    if (chatId) {
-      try { user = getUser.get(String(chatId)); } catch (_) {}
-    }
     let enrichedContext = listingContext;
     if (cacheId) {
       try {
@@ -907,6 +945,8 @@ app.post('/api/buy-assistant', async (req, res) => {
   if (!userMessage || typeof userMessage !== 'string') return res.status(400).json({ error: 'userMessage required' });
   if (userMessage.length > 2000) return res.status(400).json({ error: 'userMessage must be under 2000 characters' });
   if (tab !== undefined && typeof tab !== 'string') return res.status(400).json({ error: 'tab must be a string' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   const reqKey = `buy:${tab}:${userMessage.slice(0, 50)}`;
   if (pendingRequests.has(reqKey)) {
     try { return res.json(await pendingRequests.get(reqKey)); } catch (err) { return res.status(500).json({ error: 'Assistant response failed. Try again in a moment.' }); }
@@ -914,10 +954,6 @@ app.post('/api/buy-assistant', async (req, res) => {
   try {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
-    let user = null;
-    if (chatId) {
-      try { user = getUser.get(String(chatId)); } catch (_) {}
-    }
     let enrichedContext = listingContext;
     if (cacheId) {
       try {
@@ -1056,9 +1092,10 @@ app.post('/api/landlord-reply', async (req, res) => {
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { message, chatId } = req.body;
   if (!message || message.length < 5) return res.status(400).json({ error: 'message required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
-    let userProfile = {};
-    if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
+    const userProfile = user || {};
     const data = await proxyToHetzner('/api/generate-landlord-reply', { message, userProfile }, () => generateLandlordReplyDirect({ message, userProfile }));
     res.json(data);
   } catch (err) { console.error('[api/landlord-reply]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
@@ -1069,11 +1106,10 @@ app.post('/api/rejection-analyser', async (req, res) => {
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { applications, chatId, userProfile: selfReportedProfile } = req.body;
   if (!applications) return res.status(400).json({ error: 'applications required' });
+  const paidUser = requirePaidUser(req, res, chatId);
+  if (!paidUser) return;
   try {
-    let userProfile = { ...(selfReportedProfile || {}) };
-    if (chatId) {
-      try { const dbUser = getUser.get(String(chatId)); if (dbUser) userProfile = { ...dbUser, ...(selfReportedProfile || {}) }; } catch (_) {}
-    }
+    const userProfile = { ...paidUser, ...(selfReportedProfile || {}) };
     // Cross-reference the user's self-reported text with their own objective outcome history
     // (real Application Score at alert time vs what they later marked as applied/rejected/
     // accepted) so the diagnosis isn't based purely on what they remember to type in.
@@ -1095,8 +1131,10 @@ app.post('/api/rejection-analyser', async (req, res) => {
 app.post('/api/reference-letter', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { type, details } = req.body;
+  const { type, details, chatId } = req.body;
   if (!type || !details) return res.status(400).json({ error: 'type and details required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const data = await proxyToHetzner('/api/generate-reference-letter', { type, details }, () => generateReferenceLetterDirect({ type, details }));
     res.json(data);
@@ -1106,8 +1144,10 @@ app.post('/api/reference-letter', async (req, res) => {
 app.post('/api/income-explain', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { income, rent, situation } = req.body;
+  const { income, rent, situation, chatId } = req.body;
   if (!income || !rent) return res.status(400).json({ error: 'income and rent required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const data = await proxyToHetzner('/api/generate-income-explain', { income, rent, situation: situation || '' }, () => generateIncomeExplainDirect({ income, rent, situation: situation || '' }));
     res.json(data);
@@ -1119,9 +1159,10 @@ app.post('/api/viewing-feedback', async (req, res) => {
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { viewingNotes, chatId } = req.body;
   if (!viewingNotes || viewingNotes.length < 20) return res.status(400).json({ error: 'viewingNotes must be at least 20 characters' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
-    let userProfile = {};
-    if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
+    const userProfile = user || {};
     const data = await proxyToHetzner('/api/generate-viewing-feedback', { viewingNotes, userProfile }, () => generateViewingFeedbackDirect({ viewingNotes, userProfile }));
     res.json(data);
   } catch (err) { console.error('[api/viewing-feedback]', err.message); res.status(500).json({ error: 'Analysis failed. Try again in a moment.' }); }
@@ -1130,8 +1171,10 @@ app.post('/api/viewing-feedback', async (req, res) => {
 app.post('/api/tenant-rights-question', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { question } = req.body;
+  const { question, chatId } = req.body;
   if (!question || question.length < 10) return res.status(400).json({ error: 'question required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const data = await proxyToHetzner('/api/generate-tenant-rights', { question }, () => generateTenantRightsAnswerDirect({ question }));
     res.json(data);
@@ -1176,8 +1219,10 @@ app.post('/api/price-benchmark', (req, res) => {
 app.post('/api/explain-deal', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { dealData } = req.body;
+  const { dealData, chatId } = req.body;
   if (!dealData) return res.status(400).json({ error: 'dealData required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     // score.js is the single source of truth for the benchmark verdict — recompute it
     // server-side from whatever the client sent and prefer it over the client's own
@@ -1206,9 +1251,10 @@ app.post('/api/overbid-bid-letter', async (req, res) => {
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { bidDetails, chatId } = req.body;
   if (!bidDetails) return res.status(400).json({ error: 'bidDetails required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
-    let userProfile = {};
-    if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
+    const userProfile = user || {};
     const data = await proxyToHetzner('/api/generate-overbid-letter', { bidDetails, userProfile }, () => generateOverbidLetterDirect({ bidDetails, userProfile }));
     res.json(data);
   } catch (err) { console.error('[api/overbid-bid-letter]', err.message); res.status(500).json({ error: 'Letter generation failed. Try again in a moment.' }); }
@@ -1217,8 +1263,10 @@ app.post('/api/overbid-bid-letter', async (req, res) => {
 app.post('/api/inspection-advisor', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { inspectionText, purchasePrice } = req.body;
+  const { inspectionText, purchasePrice, chatId } = req.body;
   if (!inspectionText || inspectionText.length < 20) return res.status(400).json({ error: 'inspectionText must be at least 20 characters' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const data = await proxyToHetzner('/api/generate-inspection-advice', { inspectionText, purchasePrice: purchasePrice || 0 }, () => generateInspectionAdviceDirect({ inspectionText, purchasePrice: purchasePrice || 0 }));
     res.json(data);
@@ -1228,8 +1276,10 @@ app.post('/api/inspection-advisor', async (req, res) => {
 app.post('/api/erfpacht-analysis', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { erfpachtText, purchasePrice, city } = req.body;
+  const { erfpachtText, purchasePrice, city, chatId } = req.body;
   if (!erfpachtText || erfpachtText.length < 20) return res.status(400).json({ error: 'erfpachtText must be at least 20 characters' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const data = await proxyToHetzner('/api/generate-erfpacht-analysis', { erfpachtText, purchasePrice: purchasePrice || 0, city: city || '' }, () => generateErfpachtAnalysisDirect({ erfpachtText, purchasePrice: purchasePrice || 0, city: city || '' }));
     res.json(data);
@@ -1239,8 +1289,10 @@ app.post('/api/erfpacht-analysis', async (req, res) => {
 app.post('/api/agent-script', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { situation, context } = req.body;
+  const { situation, context, chatId } = req.body;
   if (!situation || situation.length < 10) return res.status(400).json({ error: 'situation required' });
+  const user = requirePaidUser(req, res, chatId);
+  if (!user) return;
   try {
     const data = await proxyToHetzner('/api/generate-agent-script', { situation, context: context || '' }, () => generateAgentScriptDirect({ situation, context: context || '' }));
     res.json(data);

@@ -118,6 +118,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
 </div>
 
 <script>
+const chatId = new URLSearchParams(location.search).get('chat_id') || null;
 const MORTGAGE_RISK_TEXT = {
   Low: 'Low mortgage risk - most banks will lend on these terms. Standard conditions apply.',
   Medium: 'Medium mortgage risk - some banks may apply restrictions or require a longer residual lease. Confirm with your mortgage advisor before bidding.',
@@ -133,7 +134,7 @@ async function analyse() {
   try {
     const r = await fetch('/api/erfpacht-analysis', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ erfpachtText: text, purchasePrice: parseFloat(price) || 0, city }),
+      body: JSON.stringify({ erfpachtText: text, purchasePrice: parseFloat(price) || 0, city, chatId }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed');

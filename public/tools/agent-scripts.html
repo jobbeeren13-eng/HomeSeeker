@@ -214,6 +214,7 @@ h1{font-size:24px;font-weight:700;margin-bottom:6px}h1 span{color:var(--green)}
 </div>
 
 <script>
+const chatId = new URLSearchParams(location.search).get('chat_id') || null;
 function copyScript(btn) {
   const block = btn.closest('.script-block').querySelector('.script-text');
   const text = block.textContent.trim().replace(/\s+/g, ' ');
@@ -240,7 +241,7 @@ async function generateScript() {
   try {
     const r = await fetch('/api/agent-script', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ situation, context }),
+      body: JSON.stringify({ situation, context, chatId }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed');

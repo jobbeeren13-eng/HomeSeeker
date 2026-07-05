@@ -154,6 +154,7 @@
 </div>
 
 <script>
+  const chatId = new URLSearchParams(location.search).get('chat_id') || null;
   function showError(msg) {
     const el = document.getElementById('error-msg');
     el.textContent = msg; el.style.display = 'block';
@@ -182,6 +183,7 @@
           property: document.getElementById('property').value.trim(),
           situation,
           extraContext: document.getElementById('extra').value.trim(),
+          chatId,
         }),
       });
       const data = await resp.json();

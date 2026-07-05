@@ -162,6 +162,7 @@ h1 span{color:var(--green)}
 </div>
 
 <script>
+const chatId = new URLSearchParams(location.search).get('chat_id') || null;
 function switchTab(type, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -198,7 +199,7 @@ async function generate(type) {
   try {
     const r = await fetch('/api/reference-letter', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, details }),
+      body: JSON.stringify({ type, details, chatId }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed');
