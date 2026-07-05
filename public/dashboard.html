@@ -254,12 +254,14 @@
 
 <script>
   let chatId = null;
+  let ct = null; // signed chat-token — required by /api/dashboard, /api/favorites, /api/application-status
 
   async function init() {
     const params = new URLSearchParams(location.search);
     chatId = params.get('chat_id');
+    ct = params.get('ct');
 
-    if (!chatId) {
+    if (!chatId || !ct) {
       showError('No account linked. Use /dashboard in Telegram to get your personal link.');
       return;
     }
@@ -267,7 +269,7 @@
     document.getElementById('filters-link').href = `/filters?chat_id=${chatId}`;
 
     try {
-      const resp = await fetch(`/api/dashboard?chat_id=${encodeURIComponent(chatId)}`);
+      const resp = await fetch(`/api/dashboard?chat_id=${encodeURIComponent(chatId)}&ct=${encodeURIComponent(ct)}`);
       if (!resp.ok) {
         const e = await resp.json().catch(() => ({}));
         return showError(e.error || 'Dashboard not found.');
@@ -473,7 +475,7 @@
       await fetch('/api/favorites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, listing_url: url, action: 'remove' }),
+        body: JSON.stringify({ chat_id: chatId, ct, listing_url: url, action: 'remove' }),
       });
       btn.closest('.listing-row').remove();
       const count = parseInt(document.getElementById('fav-count').textContent) - 1;
@@ -490,7 +492,7 @@
       await fetch('/api/application-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, listing_url: url, status }),
+        body: JSON.stringify({ chat_id: chatId, ct, listing_url: url, status }),
       });
     } catch (e) {
       console.error('[updateStatus] failed:', e.message);

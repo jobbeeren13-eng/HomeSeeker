@@ -353,7 +353,7 @@ function createBot(useWebhook = false) {
   bot.onText(/\/dashboard/, async (msg) => {
     const chatId = String(msg.chat.id);
     if (!hasAccess(chatId)) return denyAccess(chatId);
-    const dashUrl = `${BASE_URL}/dashboard?chat_id=${chatId}`;
+    const dashUrl = `${BASE_URL}/dashboard?chat_id=${chatId}&ct=${signChatId(chatId)}`;
     await bot.sendMessage(chatId, '📊 *Your HomeSeeker Dashboard*\n\nView your saved listings, application status, and quick links to all tools:', {
       parse_mode: 'Markdown',
       reply_markup: { inline_keyboard: [[{ text: '📊 Open Dashboard', url: dashUrl }]] },

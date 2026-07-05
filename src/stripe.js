@@ -1,5 +1,5 @@
 const Stripe = require('stripe');
-const { createUserByCustomerId, setUserPaidByCustomerId, cancelUserByStripe } = require('./database');
+const { createUserByCustomerId, setUserPaidByCustomerId, cancelUserByStripe, markStripeEventProcessed } = require('./database');
 const { sendWelcomeEmail, sendCancellationEmail } = require('./email');
  
 let _stripe = null;
@@ -37,8 +37,6 @@ async function createCheckoutSession(successUrl, cancelUrl) {
   return session;
 }
  
-const processedEvents = new Set();
- 
 async function handleWebhook(payload, sig) {
   const stripe = getStripe();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -48,17 +46,14 @@ async function handleWebhook(payload, sig) {
   } catch (err) {
     throw new Error(`Webhook signature verification failed: ${err.message}`);
   }
- 
-  if (processedEvents.has(event.id)) {
+
+  // Persisted in the DB (not an in-memory Set) so a webhook Stripe retries right after a
+  // restart/redeploy is still recognised as a duplicate instead of being processed twice.
+  if (!markStripeEventProcessed(event.id)) {
     console.log(`[stripe] Skipping duplicate event ${event.id}`);
     return event.type;
   }
-  processedEvents.add(event.id);
-  if (processedEvents.size > 1000) {
-    const first = processedEvents.values().next().value;
-    processedEvents.delete(first);
-  }
- 
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const email = session.customer_email || session.customer_details?.email;

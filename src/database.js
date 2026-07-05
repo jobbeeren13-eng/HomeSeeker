@@ -186,6 +186,14 @@ db.exec(`
     count INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (chat_id, usage_date)
   );
+
+  -- Stripe webhook idempotency, persisted (was an in-memory Set that forgot every processed
+  -- event on restart/redeploy — a retried webhook arriving right after a restart could then be
+  -- processed twice).
+  CREATE TABLE IF NOT EXISTS processed_stripe_events (
+    event_id TEXT PRIMARY KEY,
+    processed_at INTEGER NOT NULL
+  );
 `);
 
 try {
@@ -441,6 +449,20 @@ function checkAndIncrementAiUsage(chatId, maxPerDay) {
   return true;
 }
 
+const getProcessedStripeEvent = db.prepare('SELECT event_id FROM processed_stripe_events WHERE event_id = ?');
+const insertProcessedStripeEvent = db.prepare('INSERT OR IGNORE INTO processed_stripe_events (event_id, processed_at) VALUES (?, ?)');
+const purgeOldProcessedStripeEvents = db.prepare('DELETE FROM processed_stripe_events WHERE processed_at < ?');
+
+// Stripe webhook idempotency check, persisted in the DB instead of an in-memory Set — survives
+// restarts/redeploys, so a webhook retried right after a restart is still recognised as a
+// duplicate. Returns true (and records the event) if this event_id has not been seen before;
+// returns false if it has already been processed.
+function markStripeEventProcessed(eventId) {
+  if (getProcessedStripeEvent.get(eventId)) return false;
+  insertProcessedStripeEvent.run(eventId, Date.now());
+  return true;
+}
+
 const getFavorites = db.prepare('SELECT * FROM favorites WHERE chat_id = ? ORDER BY added_at DESC');
 const addFavorite = db.prepare('INSERT OR REPLACE INTO favorites (chat_id, listing_url, listing_json) VALUES (?, ?, ?)');
 const removeFavorite = db.prepare('DELETE FROM favorites WHERE chat_id = ? AND listing_url = ?');
@@ -589,6 +611,7 @@ module.exports = {
   getRecentListings,
   getFavorites, addFavorite, removeFavorite,
   checkAndIncrementAiUsage, purgeOldAiUsage,
+  markStripeEventProcessed, purgeOldProcessedStripeEvents,
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
   getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, insertOutcomeSnapshot,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,

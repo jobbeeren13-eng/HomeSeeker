@@ -26,7 +26,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 
-const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, getListingByUrl, checkAndIncrementAiUsage, purgeOldAiUsage } = require('./src/database');
+const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, getListingByUrl, checkAndIncrementAiUsage, purgeOldAiUsage, purgeOldProcessedStripeEvents } = require('./src/database');
 const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot, rowToListing } = require('./src/scraper');
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry, signChatId, verifyChatToken } = require('./src/telegram');
@@ -320,22 +320,39 @@ app.post('/api/cancel', async (req, res) => {
 
 // Reviews
 app.get('/api/reviews', (req, res) => {
-  res.json(getApprovedReviews.all());
+  try {
+    res.json(getApprovedReviews.all());
+  } catch (err) {
+    console.error('[api/reviews]', err.message);
+    res.status(500).json({ error: 'Could not load reviews' });
+  }
 });
 
 app.post('/api/reviews', (req, res) => {
+  const clientIp = req.ip;
+  if (!rateLimit(`api:${clientIp}`, 5)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { name, rating, review_text } = req.body;
   if (!name || !rating || !review_text) return res.status(400).json({ error: 'Missing fields' });
   if (rating < 1 || rating > 5) return res.status(400).json({ error: 'Rating must be 1-5' });
-  insertReview.run(name, parseInt(rating), review_text);
-  res.json({ success: true });
+  try {
+    insertReview.run(name, parseInt(rating), review_text);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[api/reviews]', err.message);
+    res.status(500).json({ error: 'Could not submit review' });
+  }
 });
 
 app.post('/api/reviews/:id/approve', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
-  approveReview.run(req.params.id);
-  res.json({ success: true });
+  try {
+    approveReview.run(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[api/reviews/:id/approve]', err.message);
+    res.status(500).json({ error: 'Could not approve review' });
+  }
 });
 
 // Admin: manually link a Telegram chat_id to a user by email or Stripe customer ID
@@ -347,26 +364,31 @@ app.post('/api/admin/link-chat', (req, res) => {
   if (!chat_id) return res.status(400).json({ error: 'chat_id is required' });
   if (!email && !customer_id) return res.status(400).json({ error: 'email or customer_id is required' });
 
-  let user = null;
-  if (customer_id) {
-    user = getUserByCustomerId.get(customer_id.trim());
-  } else {
-    user = getUserByEmail.get(email.trim().toLowerCase());
+  try {
+    let user = null;
+    if (customer_id) {
+      user = getUserByCustomerId.get(customer_id.trim());
+    } else {
+      user = getUserByEmail.get(email.trim().toLowerCase());
+    }
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const chatIdStr = String(chat_id).trim();
+    clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
+    if (user.stripe_customer_id) {
+      linkChatToCustomer.run(chatIdStr, user.stripe_customer_id);
+    } else {
+      setUserChatId.run(chatIdStr, user.email);
+    }
+
+    const updated = getUserByEmail.get(user.email);
+    console.log(`[admin] Linked chat_id=${chatIdStr} to user email=${user.email} customer=${user.stripe_customer_id}`);
+    res.json({ success: true, user: { email: updated.email, chat_id: updated.chat_id, betaald: updated.betaald, actief: updated.actief } });
+  } catch (err) {
+    console.error('[api/admin/link-chat]', err.message);
+    res.status(500).json({ error: 'Could not link chat_id' });
   }
-
-  if (!user) return res.status(404).json({ error: 'User not found' });
-
-  const chatIdStr = String(chat_id).trim();
-  clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
-  if (user.stripe_customer_id) {
-    linkChatToCustomer.run(chatIdStr, user.stripe_customer_id);
-  } else {
-    setUserChatId.run(chatIdStr, user.email);
-  }
-
-  const updated = getUserByEmail.get(user.email);
-  console.log(`[admin] Linked chat_id=${chatIdStr} to user email=${user.email} customer=${user.stripe_customer_id}`);
-  res.json({ success: true, user: { email: updated.email, chat_id: updated.chat_id, betaald: updated.betaald, actief: updated.actief } });
 });
 
 // Admin: upsert a user by email and link their chat_id (creates row if missing)
@@ -380,29 +402,35 @@ app.post('/api/admin/fix-user', (req, res) => {
   const emailNorm = email.trim().toLowerCase();
   const chatIdStr = String(chat_id).trim();
 
-  let user = getUserByEmail.get(emailNorm)
-          || (stripe_customer_id ? getUserByCustomerId.get(stripe_customer_id.trim()) : null);
+  try {
+    let user = getUserByEmail.get(emailNorm)
+            || (stripe_customer_id ? getUserByCustomerId.get(stripe_customer_id.trim()) : null);
+    const wasCreated = !user;
 
-  if (!user) {
-    // Create the user row from scratch
-    const custId = (stripe_customer_id || '').trim();
-    const subId  = (stripe_subscription_id || '').trim();
-    createUserByCustomerId.run(chatIdStr, emailNorm, custId, subId, Date.now());
-    user = getUserByEmail.get(emailNorm) || getUserByCustomerId.get(custId);
-    console.log(`[admin] fix-user: created user email=${emailNorm} chat_id=${chatIdStr}`);
-  } else {
-    // User exists — link the chat_id
-    clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
-    if (user.stripe_customer_id) {
-      linkChatToCustomer.run(chatIdStr, user.stripe_customer_id);
+    if (!user) {
+      // Create the user row from scratch
+      const custId = (stripe_customer_id || '').trim();
+      const subId  = (stripe_subscription_id || '').trim();
+      createUserByCustomerId.run(chatIdStr, emailNorm, custId, subId, Date.now());
+      user = getUserByEmail.get(emailNorm) || getUserByCustomerId.get(custId);
+      console.log(`[admin] fix-user: created user email=${emailNorm} chat_id=${chatIdStr}`);
     } else {
-      setUserChatId.run(chatIdStr, emailNorm);
+      // User exists — link the chat_id
+      clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
+      if (user.stripe_customer_id) {
+        linkChatToCustomer.run(chatIdStr, user.stripe_customer_id);
+      } else {
+        setUserChatId.run(chatIdStr, emailNorm);
+      }
+      console.log(`[admin] fix-user: linked chat_id=${chatIdStr} to email=${emailNorm}`);
     }
-    console.log(`[admin] fix-user: linked chat_id=${chatIdStr} to email=${emailNorm}`);
-  }
 
-  const updated = getUserByEmail.get(emailNorm) || getUserByCustomerId.get((stripe_customer_id || '').trim());
-  res.json({ success: true, created: !user, user: { email: updated?.email, chat_id: updated?.chat_id, betaald: updated?.betaald, actief: updated?.actief } });
+    const updated = getUserByEmail.get(emailNorm) || getUserByCustomerId.get((stripe_customer_id || '').trim());
+    res.json({ success: true, created: wasCreated, user: { email: updated?.email, chat_id: updated?.chat_id, betaald: updated?.betaald, actief: updated?.actief } });
+  } catch (err) {
+    console.error('[api/admin/fix-user]', err.message);
+    res.status(500).json({ error: 'Could not fix user' });
+  }
 });
 
 // Admin: resend activation email with Telegram link
@@ -460,7 +488,12 @@ app.get('/api/user-profile', (req, res) => {
   if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { chat_id } = req.query;
   if (!chat_id) return res.status(400).json({ error: 'chat_id required' });
-  res.json({});
+  try {
+    res.json({});
+  } catch (err) {
+    console.error('[api/user-profile]', err.message);
+    res.status(500).json({ error: 'Could not load profile' });
+  }
 });
 
 const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_action']);
@@ -536,6 +569,8 @@ app.get('/api/listing-tips', (req, res) => {
 
   const entry = getCachedEntry(id);
   if (!entry) return res.status(404).json({ error: 'Listing not found or expired' });
+
+  try {
   const { listing, chatId, score, dealScore } = entry;
   const user = chatId ? getUser.get(String(chatId)) : null;
   const isKoop = listing.transactionType === 'koop';
@@ -586,6 +621,10 @@ app.get('/api/listing-tips', (req, res) => {
   }
   tipsCache.set(cacheKey, { data, ts: Date.now() });
   return res.json(data);
+  } catch (err) {
+    console.error('[api/listing-tips]', err.message);
+    res.status(500).json({ error: 'Could not load listing tips' });
+  }
 });
 
 // Generates letter from web page selections
@@ -724,8 +763,13 @@ app.post('/api/cache-listing', (req, res) => {
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
   const { id, listing } = req.body;
   if (!id || !listing) return res.status(400).json({ error: 'Missing id or listing' });
-  injectCachedListing(id, listing);
-  res.json({ ok: true });
+  try {
+    injectCachedListing(id, listing);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[api/cache-listing]', err.message);
+    res.status(500).json({ error: 'Could not cache listing' });
+  }
 });
 
 // API endpoint for Hetzner matcher to fetch active users
@@ -747,11 +791,16 @@ app.get('/api/users', (req, res) => {
 app.get('/api/admin/db-status', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
-  const total  = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
-  const paid   = db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald = 1').get().c;
-  const linked = db.prepare("SELECT COUNT(*) as c FROM users WHERE chat_id IS NOT NULL AND chat_id != ''").get().c;
-  const active = db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald = 1 AND actief = 1').get().c;
-  res.json({ dbPath, total, paid, linked, active, ts: new Date().toISOString() });
+  try {
+    const total  = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
+    const paid   = db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald = 1').get().c;
+    const linked = db.prepare("SELECT COUNT(*) as c FROM users WHERE chat_id IS NOT NULL AND chat_id != ''").get().c;
+    const active = db.prepare('SELECT COUNT(*) as c FROM users WHERE betaald = 1 AND actief = 1').get().c;
+    res.json({ dbPath, total, paid, linked, active, ts: new Date().toISOString() });
+  } catch (err) {
+    console.error('[api/admin/db-status]', err.message);
+    res.status(500).json({ error: 'Could not load db status' });
+  }
 });
 
 // Read-only outcome-learning report (Laag 1) — score-band vs. tracked application outcome.
@@ -797,13 +846,13 @@ app.get('/api/admin/outcome-report', (req, res) => {
 // ── Dashboard API ──────────────────────────────────────────────────────────
 
 app.get('/api/dashboard', (req, res) => {
-  const { chat_id } = req.query;
-  if (!chat_id) return res.status(400).json({ error: 'chat_id required' });
+  const chatId = verifyChatToken(req.query.ct);
+  if (!chatId) return res.status(403).json({ error: 'Invalid or expired link. Use /dashboard in Telegram to get a fresh link.' });
   try {
-    const user = getUser.get(String(chat_id));
+    const user = getUser.get(String(chatId));
     if (!user) return res.status(404).json({ error: 'User not found' });
-    const favorites = getFavorites.all(String(chat_id));
-    const tracker = getApplicationTracker.all(String(chat_id));
+    const favorites = getFavorites.all(String(chatId));
+    const tracker = getApplicationTracker.all(String(chatId));
     res.json({
       user: { naam: user.naam, email: user.email, locatie: user.locatie, type: user.type, betaald: user.betaald, actief: user.actief },
       favorites: favorites.map(f => { try { return { url: f.listing_url, listing: JSON.parse(f.listing_json), addedAt: f.added_at }; } catch { return { url: f.listing_url, listing: {}, addedAt: f.added_at }; } }),
@@ -816,13 +865,15 @@ app.get('/api/dashboard', (req, res) => {
 });
 
 app.post('/api/favorites', (req, res) => {
-  const { chat_id, listing_url, listing, action } = req.body;
-  if (!chat_id || !listing_url) return res.status(400).json({ error: 'chat_id and listing_url required' });
+  const { ct, listing_url, listing, action } = req.body;
+  const chatId = verifyChatToken(ct);
+  if (!chatId) return res.status(403).json({ error: 'Invalid or expired link. Use /dashboard in Telegram to get a fresh link.' });
+  if (!listing_url) return res.status(400).json({ error: 'listing_url required' });
   try {
     if (action === 'remove') {
-      removeFavorite.run(String(chat_id), listing_url);
+      removeFavorite.run(String(chatId), listing_url);
     } else {
-      addFavorite.run(String(chat_id), listing_url, JSON.stringify(listing || {}));
+      addFavorite.run(String(chatId), listing_url, JSON.stringify(listing || {}));
     }
     res.json({ ok: true });
   } catch (err) {
@@ -832,13 +883,15 @@ app.post('/api/favorites', (req, res) => {
 });
 
 app.post('/api/application-status', (req, res) => {
-  const { chat_id, listing_url, listing_address, listing_price, listing_image, status, notes } = req.body;
-  if (!chat_id || !listing_url) return res.status(400).json({ error: 'chat_id and listing_url required' });
+  const { ct, listing_url, listing_address, listing_price, listing_image, status, notes } = req.body;
+  const chatId = verifyChatToken(ct);
+  if (!chatId) return res.status(403).json({ error: 'Invalid or expired link. Use /dashboard in Telegram to get a fresh link.' });
+  if (!listing_url) return res.status(400).json({ error: 'listing_url required' });
   try {
     if (!status) {
-      removeApplicationStatus.run(String(chat_id), listing_url);
+      removeApplicationStatus.run(String(chatId), listing_url);
     } else {
-      upsertApplicationStatus.run(String(chat_id), listing_url, listing_address || '', listing_price || '', listing_image || '', status, notes || '');
+      upsertApplicationStatus.run(String(chatId), listing_url, listing_address || '', listing_price || '', listing_image || '', status, notes || '');
     }
     res.json({ ok: true });
   } catch (err) {
@@ -1532,6 +1585,7 @@ async function runDbBackup() {
   }
 
   try { purgeOldAiUsage.run(new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)); } catch (e) { console.error('[backup] ai_usage_daily purge failed (non-fatal):', e.message); }
+  try { purgeOldProcessedStripeEvents.run(Date.now() - 30 * 24 * 60 * 60 * 1000); } catch (e) { console.error('[backup] processed_stripe_events purge failed (non-fatal):', e.message); }
 
   // Off-site copy: the local backup above lives on the same Railway volume as the live DB, so it
   // protects against nothing if that volume is ever lost (platform incident, misconfiguration,
