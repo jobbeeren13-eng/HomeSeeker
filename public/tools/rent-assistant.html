@@ -451,6 +451,10 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
         <span class="an-price-nums" id="an-price-nums"></span>
       </div>
       <div class="an-price-action" id="an-price-action"></div>
+      <div class="an-price-row" id="an-deal-row" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+        <span class="an-price-badge" id="an-deal-badge"></span>
+        <span class="an-price-nums">Deal score — same metric used in your Telegram alert</span>
+      </div>
     </div>
 
     <!-- Block 5: Documents missing (only if incomplete) -->
@@ -893,9 +897,9 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <div class="tr-card">
         <div class="tag">Rent increase</div>
         <h3>What your landlord can legally do</h3>
-        <p>For free-market rentals (liberale sector, rent above the social sector limit), the landlord can only increase rent once per year and must give at least 2 months written notice. The increase must follow the legal indexation rate set annually by the government - in 2024 this is 5.8% for free-market rentals.</p>
+        <p>Since the Wet betaalbare huur, the maximum annual increase depends on which segment your rent falls into under the WWS points system (per 1 January 2026): social sector (up to 143 points, kale huur up to roughly €933/month), midden-huur (144-186 points, up to roughly €1,228/month), or vrije sector (186+ points, no cap on the rent itself). For 2026 the maximum increase is 4.4% in the free sector, and 6.1% in the midden-huur segment (capped at 3.65% for homes right at the 186-point boundary) - always check Rijksoverheid.nl for the exact current-year percentage since it is re-indexed annually.</p>
         <p>The landlord cannot increase rent mid-contract without your agreement unless the contract explicitly allows it. Any clause giving the landlord unlimited or arbitrary rent increase power is legally unenforceable.</p>
-        <p>For social rentals (huurprijs sociale sector), the annual increase is capped by law and is usually lower than free-market increases.</p>
+        <p>For social rentals, the annual increase is capped by law and is usually lower than free-market increases, and can also depend on household income (an income-dependent increase applies from 1 July each year, based on income from two years earlier).</p>
         <div class="action-steps">
           <strong>What to do</strong>
           <ol>
@@ -988,6 +992,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
         <div class="tag">Service costs (servicekosten)</div>
         <h3>What landlords can charge and how to challenge it</h3>
         <p>Service costs must be specified separately from rent and must reflect actual costs. Allowable service costs include: gas, water, electricity for common areas, building cleaning, garden maintenance, lift maintenance, and internet if provided. The landlord must provide a yearly breakdown of actual costs and must refund any overpayment.</p>
+        <p>As of 2026, service costs must in principle be charged excluding VAT - a landlord may only charge including VAT if a legally required minimum share of tenants in the building has explicitly agreed to it. If your service costs invoice includes VAT and you never agreed to this, ask the landlord to justify it - this is a legitimate, current basis for a challenge.</p>
         <p>Lump-sum service costs with no itemisation are a red flag. If the landlord refuses to provide a breakdown, the Huurcommissie can order them to do so and can reduce or eliminate service costs that are not substantiated.</p>
         <div class="action-steps">
           <strong>If service costs seem too high</strong>
@@ -1374,6 +1379,20 @@ function renderAnalyse(listing,intel){
     const actionEl=document.getElementById('an-price-action');
     if(actionEl)actionEl.textContent=pi.action||'';
     priceCard.style.display='block';
+  }
+  const dealRow=document.getElementById('an-deal-row');
+  if(dealRow&&priceCard){
+    if(d?.dealScore!=null){
+      const ds=d.dealScore;
+      const dsCls=ds>=80?'green':ds>=60?'green':ds>=40?'amber':'red';
+      const dsLbl=ds>=80?'Great deal':ds>=60?'Good deal':ds>=40?'Fair':'Overpriced';
+      const dsBadge=document.getElementById('an-deal-badge');
+      if(dsBadge){dsBadge.textContent=`${ds}/100 — ${dsLbl}`;dsBadge.className='an-price-badge '+dsCls;}
+      dealRow.style.display='flex';
+      priceCard.style.display='block';
+    } else {
+      dealRow.style.display='none';
+    }
   }
 
   // ── Block 5: Document readiness card (only if incomplete) ──
