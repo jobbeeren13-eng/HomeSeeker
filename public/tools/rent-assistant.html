@@ -43,14 +43,15 @@ body.has-pc .page-outer{margin-top:188px}
 .lbar-dot,.lbar-addr,.lbar-price{}
 
 
-/* ── Nav menu (hamburger + dropdown, same on desktop and mobile): "Win a
-   Rental" (the tools that directly help win a rental — Analyse/Letter/
-   Viewing Tips/Income Check/Landlord Reply) is the prominent, primary
-   group at the top. "Resources" (Tenant Rights/Rejection Analyser/
-   Reference Letter/Viewing Feedback) is the quieter, secondary group
-   below. Hidden by default on every screen size; opens as a dropdown
-   below the top bar when the hamburger is tapped — see
-   .side-nav.mobile-menu-open further down for the open-state styling. ── */
+/* ── Nav menu: "Win a Rental" (the tools that directly help win a rental —
+   Analyse/Letter/Viewing Tips/Income Check/Landlord Reply) is the
+   prominent, primary group at the top. "Resources" (Tenant Rights/
+   Rejection Analyser/Reference Letter/Viewing Feedback) is the quieter,
+   secondary group below. On desktop this is a permanent left column next
+   to the content (see the @media(min-width:768px) override further down).
+   On mobile it is hidden by default and opens as a dropdown below the top
+   hamburger bar instead — see .side-nav.mobile-menu-open, scoped to mobile
+   further down. ── */
 .side-nav{display:none;flex-direction:column;width:auto}
 .side-nav-group{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
 .side-nav-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.3);padding:4px 12px 8px}
@@ -166,27 +167,17 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .scout-eye{transform-box:fill-box;transform-origin:50% 50%}
 .scout-thinking .scout-eye{animation:scout-think 2s ease-in-out infinite}
 
-/* Top nav bar — hamburger + current tab name, replacing the old numbered-dot progress flow */
+/* Top bar — hamburger + current tab name. Mobile only (see @media(min-width:768px) further
+   down, which hides this entirely once the nav is a permanent column instead). */
 .prog-bar{position:fixed;top:56px;left:0;right:0;z-index:98;height:44px;background:#0d1117;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 20px}
 .mobile-menu-btn{display:flex;align-items:center;gap:10px;background:transparent;border:none;color:#fff;font-family:inherit;cursor:pointer;padding:8px 4px;width:auto}
 .hamburger-icon{font-size:20px;line-height:1;color:rgba(255,255,255,0.7)}
 .mobile-current-tab{font-size:14px;font-weight:600}
 
-/* Dropdown menu — open state, all screen sizes. Sits right below the top bar (.hdr + .prog-bar),
-   which is at top:144px when the property card is also fixed and shown, or top:100px otherwise. */
-.side-nav.mobile-menu-open{
-  display:flex;position:fixed;top:100px;left:0;right:0;
-  max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
-  border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px 24px;
-  z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
-}
-body.has-pc .side-nav.mobile-menu-open{top:188px;max-height:calc(100vh - 188px)}
-
-/* Content column (main-col) left-aligned, Scout-tips sidebar filling the space to its right —
-   page-outer's own max-width is sized to exactly fit main-col(720) + gap(24) + sidebar(296) +
-   its own horizontal padding(48), so there is no leftover bare space to the right of the
-   sidebar. When the sidebar is hidden (analyse-mode) page-outer tightens further to just fit
-   main-col alone, for the same reason. */
+/* Content column (main-col), Scout-tips sidebar to its right when present. page-outer's own
+   max-width is sized to exactly fit its visible children + its own horizontal padding, so
+   there's no leftover bare space — see the desktop override further down for the 3-column
+   (nav | main-col | sidebar) version once the nav becomes a permanent left column there. */
 .page-outer{display:flex;gap:24px;max-width:1088px;margin:100px auto 0;padding:28px 24px 80px}
 .page-outer.analyse-mode{max-width:768px}
 .main-col{flex:1;max-width:720px;min-width:0}
@@ -251,13 +242,33 @@ body.has-pc .side-nav.mobile-menu-open{top:188px;max-height:calc(100vh - 188px)}
 .mnav-icon{font-size:16px;line-height:1}
 .mnav-tab.on .mnav-lbl{color:#00c896}
 
-@media(min-width:768px){.sidebar{display:block}.page-outer.analyse-mode .sidebar{display:none}}
+/* ── Desktop: 3-column layout (nav | main-col | sidebar). The top hamburger bar disappears
+   (the nav is a permanent, always-visible column instead of a dropdown), so the fixed-offset
+   math no longer needs to account for it — just .hdr, and #property-card when shown.
+   page-outer's max-width is sized to exactly fit nav(260) + gap(24) + main-col(720) + gap(24) +
+   sidebar(296, when shown) + page-outer's own horizontal padding(48), so the whole group sits
+   centered with no leftover bare space on either side. ── */
+@media(min-width:768px){
+  .sidebar{display:block}
+  .page-outer.analyse-mode .sidebar{display:none}
+  .prog-bar{display:none}
+  .page-outer{margin-top:56px;max-width:1372px}
+  .page-outer.analyse-mode{max-width:1052px}
+  body.has-pc .page-outer{margin-top:144px}
+  .side-nav{display:flex;width:260px;flex-shrink:0;padding-top:28px}
+}
 @media(max-width:767px){
   .mob-nav{display:flex}
   .page-outer{padding:16px 16px 72px;flex-direction:column}
   .page-outer,.page-outer.analyse-mode{max-width:none}
   .main-col{max-width:none}
-  .side-nav.mobile-menu-open{padding:14px 12px 20px}
+  .side-nav.mobile-menu-open{
+    display:flex;position:fixed;top:100px;left:0;right:0;
+    max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
+    border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 12px 20px;
+    z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
+  }
+  body.has-pc .side-nav.mobile-menu-open{top:188px;max-height:calc(100vh - 188px)}
 }
 
 /* ── Ported tool tabs (Landlord Reply, Income Check, Rejection Analyser,
