@@ -35,33 +35,34 @@ body{background:var(--bg);color:var(--text-primary);font-family:'Inter',sans-ser
 
 /* Mobile-only tab bar (hamburger + current tab name) — hidden on desktop, shown via the
    max-width:767px media query below. */
-.mobile-bar{display:none;position:fixed;top:56px;left:0;right:0;height:44px;z-index:98;background:#0d1117;border-bottom:1px solid rgba(255,255,255,0.06);align-items:center;padding:0 16px}
-.mobile-menu-btn{display:flex;align-items:center;gap:10px;background:transparent;border:none;color:#fff;font-family:inherit;cursor:pointer;padding:8px 4px;width:100%}
+.mobile-bar{display:flex;position:fixed;top:56px;left:0;right:0;height:44px;z-index:98;background:#0d1117;border-bottom:1px solid rgba(255,255,255,0.06);align-items:center;padding:0 16px}
+body.has-lb .mobile-bar{top:92px}
+.mobile-menu-btn{display:flex;align-items:center;gap:10px;background:transparent;border:none;color:#fff;font-family:inherit;cursor:pointer;padding:8px 4px;max-width:560px;margin:0 auto}
 .hamburger-icon{font-size:20px;line-height:1;color:rgba(255,255,255,0.7)}
 .mobile-current-tab{font-size:14px;font-weight:600}
 
-/* Layout: side-nav (tabs) | wrap (content) */
-.page-outer{display:flex;gap:24px;max-width:960px;margin:0 auto;margin-top:56px}
-body.has-lb .page-outer{margin-top:92px}
+/* Dropdown menu — open state, all screen sizes. Sits right below the top bar
+   (.hdr + .mobile-bar), which is at top:136px when the listing bar is also fixed and shown
+   (56+36+44), or top:100px otherwise (56+44). */
+.side-nav.mobile-menu-open{
+  display:flex;position:fixed;top:100px;left:0;right:0;
+  max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
+  border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px 24px;
+  z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
+}
+body.has-lb .side-nav.mobile-menu-open{top:136px;max-height:calc(100vh - 136px)}
+
+/* Layout: dropdown nav menu (hidden until opened) + wrap (content) */
+.page-outer{display:flex;gap:24px;max-width:960px;margin:0 auto;margin-top:100px}
+body.has-lb .page-outer{margin-top:136px}
 .wrap{max-width:720px;flex:1;min-width:0;padding:32px 24px 120px}
 
-/* Progress bar */
-.prog{display:flex;align-items:center;margin-bottom:28px}
-.prog-step{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.prog-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);background:transparent;transition:all .2s}
-.prog-step.done .prog-num{background:var(--green);border-color:var(--green);color:#0a0a0a}
-.prog-step.active .prog-num{border-color:var(--green);color:var(--green)}
-.prog-label{font-size:11px;color:rgba(255,255,255,0.3);font-weight:500;transition:color .2s;white-space:nowrap}
-.prog-step.active .prog-label{color:var(--green);font-weight:600}
-.prog-step.done .prog-label{color:rgba(255,255,255,0.5)}
-.prog-line{flex:1;height:1px;background:rgba(255,255,255,0.08);margin:0 8px;transition:background .2s}
-.prog-line.done{background:var(--green)}
 
-/* ── Side nav (Linear-style vertical sidebar): main tabs grouped at top,
-   sub-tools grouped below. Desktop = vertical column to the left of .wrap.
-   Mobile = the "more tools" group re-flows into a horizontal scrollable
-   strip (the main tabs are covered by .mob-nav's bottom bar). ── */
-.side-nav{display:flex;flex-direction:column;width:196px;flex-shrink:0;padding-top:32px}
+/* ── Nav menu (hamburger + dropdown, same on desktop and mobile): main tabs
+   grouped at top, sub-tools ("More buyer tools") grouped below. Hidden by
+   default on every screen size; opens as a dropdown below the top bar when
+   the hamburger is tapped — see .side-nav.mobile-menu-open above. ── */
+.side-nav{display:none;flex-direction:column;width:auto}
 .side-nav-group{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
 .side-nav-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.3);padding:4px 12px 8px}
 .tab{display:block;width:100%;text-align:left;padding:9px 12px;background:transparent;border:none;border-radius:8px;color:var(--text-muted);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
@@ -164,26 +165,10 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 @media(max-width:767px){
   .mob-nav{display:block}
-  .page-outer{flex-direction:column;margin-top:100px} /* clears the fixed header+mobile tab bar when the listing bar isn't shown */
+  .page-outer{flex-direction:column}
   .wrap{padding:20px 16px 100px}
   .row2{grid-template-columns:1fr}
-  .prog{display:none}
-  /* Mobile tab bar: hamburger + current tab name, replacing the always-visible horizontal
-     "more tools" strip with a single toggle that opens the full grouped tab list (same content
-     as the desktop sidebar) — analogous to the rent-assistant mobile nav. */
-  .mobile-bar{display:flex}
-  .side-nav{display:none;width:auto}
-  .side-nav.mobile-menu-open{
-    display:flex;flex-direction:column;position:fixed;top:100px;left:0;right:0;
-    max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
-    border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 16px 24px;
-    z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
-  }
-  /* Property header (listing bar): not sticky on mobile — scrolls away with the page instead of
-     pinning to the top and blocking the view. Moves into normal document flow with its own top
-     margin to clear the still-fixed site header + mobile tab bar (56px + 44px). */
-  .lbar{position:static;margin-top:100px}
-  body.has-lb .page-outer{margin-top:16px} /* listing bar is now in-flow and already provides the offset */
+  .side-nav.mobile-menu-open{padding:14px 12px 20px}
 }
 
 /* ── Ported tool tabs (Buyer Letter, Lease Review, Deal Finder, Inspection
@@ -323,24 +308,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   </div>
 </nav>
 <div class="wrap">
-
-  <!-- Progress bar -->
-  <div class="prog">
-    <div class="prog-step active" id="prog-1">
-      <div class="prog-num">1</div>
-      <span class="prog-label">Affordability</span>
-    </div>
-    <div class="prog-line" id="prog-line-1"></div>
-    <div class="prog-step" id="prog-2">
-      <div class="prog-num">2</div>
-      <span class="prog-label">Property Analysis</span>
-    </div>
-    <div class="prog-line" id="prog-line-2"></div>
-    <div class="prog-step" id="prog-3">
-      <div class="prog-num">3</div>
-      <span class="prog-label">Bid Strategy</span>
-    </div>
-  </div>
 
   <!-- ── Panel 1: Affordability ── -->
   <div id="panel-1" class="panel on">
@@ -1078,16 +1045,6 @@ function switchBuyTab(n){
   const mobTab=document.getElementById(`mob-${n}`);if(mobTab)mobTab.classList.add('on');
   let moreBtn=null;
   if(n>=5){moreBtn=document.getElementById(`more-btn-${n}`);if(moreBtn)moreBtn.classList.add('on');}
-  for(let i=1;i<=3;i++){
-    const s=document.getElementById(`prog-${i}`);
-    const l=document.getElementById(`prog-line-${i}`);
-    if(!s)continue;
-    s.classList.remove('active','done');
-    if(l)l.classList.remove('done');
-    const mainTab=n<=3?n:0;
-    if(i<mainTab){s.classList.add('done');if(l)l.classList.add('done');}
-    else if(i===mainTab){s.classList.add('active');}
-  }
   const curLbl=document.getElementById('mobile-current-tab');
   if(curLbl){const label=(desktopTab||moreBtn)?.textContent?.trim();if(label)curLbl.textContent=label;}
   closeMobileMenu();
