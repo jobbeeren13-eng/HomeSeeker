@@ -178,7 +178,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
    max-width is sized to exactly fit its visible children + its own horizontal padding, so
    there's no leftover bare space — see the desktop override further down for the 3-column
    (nav | main-col | sidebar) version once the nav becomes a permanent left column there. */
-.page-outer{display:flex;gap:24px;max-width:1088px;margin:100px auto 0;padding:28px 24px 80px}
+.page-outer{display:flex;gap:24px;max-width:1088px;margin:100px auto 0;padding:28px 24px 100px}
 .page-outer.analyse-mode{max-width:768px}
 .main-col{flex:1;max-width:720px;min-width:0}
 .sidebar{width:296px;flex-shrink:0;display:none}
@@ -235,12 +235,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 @media(max-width:600px){.an-signals{grid-template-columns:repeat(2,1fr)}.an-area{display:none}}
 @media(max-width:380px){.an-signals{grid-template-columns:1fr}}
 
-/* Mobile bottom nav */
-.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:9990;background:#0d1117;border-top:1px solid rgba(255,255,255,0.08);height:60px;align-items:stretch}
-.mnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;cursor:pointer;font-family:inherit;padding:6px 4px 8px}
-.mnav-lbl{font-size:9px;font-weight:600;color:rgba(255,255,255,0.3);letter-spacing:0.5px;text-transform:uppercase;transition:color .15s}
-.mnav-icon{font-size:16px;line-height:1}
-.mnav-tab.on .mnav-lbl{color:#00c896}
 
 /* ── Desktop: 3-column layout (nav | main-col | sidebar). The top hamburger bar disappears
    (the nav is a permanent, always-visible column instead of a dropdown), so the fixed-offset
@@ -252,14 +246,16 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   .sidebar{display:block}
   .page-outer.analyse-mode .sidebar{display:none}
   .prog-bar{display:none}
-  .page-outer{margin-top:56px;max-width:1372px}
+  .page-outer{margin-top:56px;max-width:1372px;justify-content:center}
   .page-outer.analyse-mode{max-width:1052px}
   body.has-pc .page-outer{margin-top:144px}
   .side-nav{display:flex;width:260px;flex-shrink:0;padding-top:28px}
 }
 @media(max-width:767px){
-  .mob-nav{display:flex}
-  .page-outer{padding:16px 16px 72px;flex-direction:column}
+  /* Bottom padding clears the fixed green chat button (bottom:24px + 52px tall = needs ~76px,
+     plus a comfortable buffer) now that the old bottom tab bar (which incidentally provided
+     this clearance) is gone. */
+  .page-outer{padding:16px 16px 100px;flex-direction:column}
   .page-outer,.page-outer.analyse-mode{max-width:none}
   .main-col{max-width:none}
   .side-nav.mobile-menu-open{
@@ -1101,12 +1097,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 </div><!-- /page-outer -->
 
-<nav class="mob-nav">
-  <button class="mnav-tab" id="mn-0" onclick="switchTab(0)"><span class="mnav-icon">📊</span><span class="mnav-lbl">Analyse</span></button>
-  <button class="mnav-tab" id="mn-1" onclick="switchTab(1)"><span class="mnav-icon">✉️</span><span class="mnav-lbl">Letter</span></button>
-  <button class="mnav-tab" id="mn-2" onclick="switchTab(2)"><span class="mnav-icon">👁</span><span class="mnav-lbl">Viewing</span></button>
-</nav>
-
 <script>
 let chatId=null,listingContext='',cacheId=null,propType='';
 let _lastListing=null,_lastIntel=null;
@@ -1258,12 +1248,10 @@ function showLbar(l){
 function switchTab(n){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('.mnav-tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.more-tool-btn').forEach(b=>b.classList.remove('on'));
   const panel=document.getElementById(`panel-${n}`);if(panel)panel.classList.add('on');
   const activeTab=document.querySelector(`.tab[data-tab="${n}"]`);
   activeTab?.classList.add('on');
-  document.getElementById(`mn-${n}`)?.classList.add('on');
   const activeMore=document.getElementById(`more-btn-${n}`);
   activeMore?.classList.add('on');
   const po=document.querySelector('.page-outer');
