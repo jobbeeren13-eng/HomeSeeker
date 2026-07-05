@@ -8,11 +8,18 @@ if (process.env.LINK_SECRET === 'changeme_set_in_env') {
   console.warn('[startup] WARNING: LINK_SECRET is still the placeholder default — signed chat-tokens will fail closed (every paywalled AI request will be rejected) until a real secret is set on BOTH Railway and Hetzner.');
 }
 
+// After an uncaughtException/unhandledRejection, Node's own docs say the process is in an
+// undefined state — continuing to run (as this previously did, log-only) can silently corrupt
+// state and, worse, prevents Railway's restartPolicyType=ON_FAILURE from ever kicking in, since
+// that only triggers when the process actually exits. Exit deliberately so Railway restarts us
+// into a clean process instead.
 process.on('uncaughtException', (err) => {
   console.error('[FATAL] Uncaught exception:', err.message, err.stack);
+  process.exit(1);
 });
 process.on('unhandledRejection', (reason) => {
   console.error('[FATAL] Unhandled promise rejection:', reason);
+  process.exit(1);
 });
 
 const express = require('express');
@@ -29,6 +36,12 @@ const { calculateDealScore, dealLabel } = require('./src/deal_score');
 const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 
 const app = express();
+// Railway sits exactly one hop in front of this app (its own edge/gateway) — trusting 1 hop
+// makes Express's own req.ip resolve to that trusted hop's X-Forwarded-For entry (walking from
+// the right), rather than the manual `.split(',')[0]` parsing used throughout this file, which
+// took whatever a client put FIRST in the header — fully attacker-controlled and useless as a
+// rate-limit key. If this app is ever placed behind an additional proxy/CDN, bump this number.
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -209,7 +222,7 @@ app.get('/subscribe', async (req, res) => {
 app.get('/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 'success.html')));
 
 app.post('/api/filters', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!checkFilterRateLimit(clientIp)) {
     return res.status(429).json({ error: 'Too many requests. Wait a moment and try again.' });
   }
@@ -424,7 +437,7 @@ app.post('/api/admin/resend-activation', async (req, res) => {
 
 // Returns raw listing for rent-assistant / buy-assistant context loading
 app.get('/api/cached-listing/:id', (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   try {
     const entry = getCachedEntry(req.params.id);
@@ -443,7 +456,7 @@ app.get('/api/cached-listing/:id', (req, res) => {
 // verify ownership, so until one exists this must not return any per-user data. Always resolves
 // to an empty object (never a 404) so it doesn't even leak whether a given chat_id is registered.
 app.get('/api/user-profile', (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { chat_id } = req.query;
   if (!chat_id) return res.status(400).json({ error: 'chat_id required' });
@@ -454,7 +467,7 @@ const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_ac
 
 // Returns listing details + tips for the /letter page
 app.get('/api/letter-data', (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'Missing id' });
@@ -577,7 +590,7 @@ app.get('/api/listing-tips', (req, res) => {
 
 // Generates letter from web page selections
 app.post('/api/generate-letter-web', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { cacheId, selectedTipTexts = [], extraContext = '', tone = 'professional' } = req.body;
   if (!cacheId || !/^[a-zA-Z0-9_-]+$/.test(String(cacheId))) return res.status(400).json({ error: 'Missing or invalid cacheId' });
@@ -601,13 +614,18 @@ app.post('/api/generate-letter-web', async (req, res) => {
     const adminKey = process.env.ADMIN_KEY;
     let letter;
     if (hetznerUrl && adminKey) {
-      const resp = await timedFetch(`${hetznerUrl}/api/generate-letter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ listing, user: user || {}, selectedTips, tone, intelligenceContext }),
-      });
-      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
-      letter = (await resp.json()).letter;
+      try {
+        const resp = await timedFetch(`${hetznerUrl}/api/generate-letter`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ listing, user: user || {}, selectedTips, tone, intelligenceContext }),
+        }, 70000);
+        if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+        letter = (await resp.json()).letter;
+      } catch (hetznerErr) {
+        console.error('[api/generate-letter-web] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+        ({ letter } = await generateLetterDirect({ listing, user: user || {}, selectedTips, tone, intelligenceContext }));
+      }
     } else {
       ({ letter } = await generateLetterDirect({ listing, user: user || {}, selectedTips, tone, intelligenceContext }));
     }
@@ -620,7 +638,7 @@ app.post('/api/generate-letter-web', async (req, res) => {
 
 // First contact message — short 4-sentence message to send to landlord immediately
 app.post('/api/first-contact-message', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { cacheId, extraContext = '', selectedTipTexts = [] } = req.body;
   if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
@@ -637,13 +655,18 @@ app.post('/api/first-contact-message', async (req, res) => {
     const adminKey = process.env.ADMIN_KEY;
     let message;
     if (hetznerUrl && adminKey) {
-      const resp = await timedFetch(`${hetznerUrl}/api/generate-first-contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ listing, user: user || {}, extraContext, selectedTipTexts }),
-      });
-      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
-      message = (await resp.json()).message;
+      try {
+        const resp = await timedFetch(`${hetznerUrl}/api/generate-first-contact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ listing, user: user || {}, extraContext, selectedTipTexts }),
+        }, 70000);
+        if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+        message = (await resp.json()).message;
+      } catch (hetznerErr) {
+        console.error('[api/first-contact-message] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+        ({ message } = await generateFirstContactMessage({ listing, user: user || {}, extraContext, selectedTipTexts }));
+      }
     } else {
       ({ message } = await generateFirstContactMessage({ listing, user: user || {}, extraContext, selectedTipTexts }));
     }
@@ -656,7 +679,7 @@ app.post('/api/first-contact-message', async (req, res) => {
 
 // Generates full application package (letter + intro + quickFacts + financialSummary)
 app.post('/api/generate-package', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { cacheId, extraContext = '' } = req.body;
   if (!cacheId) return res.status(400).json({ error: 'Missing cacheId' });
@@ -673,13 +696,18 @@ app.post('/api/generate-package', async (req, res) => {
     const adminKey = process.env.ADMIN_KEY;
     let pkg;
     if (hetznerUrl && adminKey) {
-      const resp = await timedFetch(`${hetznerUrl}/api/generate-package`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ listing, user: user || {}, extraContext }),
-      });
-      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
-      pkg = await resp.json();
+      try {
+        const resp = await timedFetch(`${hetznerUrl}/api/generate-package`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ listing, user: user || {}, extraContext }),
+        }, 70000);
+        if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+        pkg = await resp.json();
+      } catch (hetznerErr) {
+        console.error('[api/generate-package] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+        pkg = await generatePackageDirect({ listing, user: user || {}, extraContext });
+      }
     } else {
       pkg = await generatePackageDirect({ listing, user: user || {}, extraContext });
     }
@@ -821,7 +849,7 @@ app.post('/api/application-status', (req, res) => {
 
 // AI buyer letter — proxies to Hetzner (ANTHROPIC_API_KEY lives there)
 app.post('/api/buyer-letter', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext, chatId } = req.body;
   if (!houseAddress) return res.status(400).json({ error: 'houseAddress required' });
@@ -832,13 +860,18 @@ app.post('/api/buyer-letter', async (req, res) => {
     const adminKey = process.env.ADMIN_KEY;
     let letter;
     if (hetznerUrl && adminKey) {
-      const resp = await timedFetch(`${hetznerUrl}/api/generate-buyer-letter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext }),
-      });
-      if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
-      letter = (await resp.json()).letter;
+      try {
+        const resp = await timedFetch(`${hetznerUrl}/api/generate-buyer-letter`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext }),
+        }, 70000);
+        if (!resp.ok) throw new Error(`Hetzner HTTP ${resp.status}`);
+        letter = (await resp.json()).letter;
+      } catch (hetznerErr) {
+        console.error('[api/buyer-letter] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+        letter = await generateBuyerLetterDirect({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext });
+      }
     } else {
       letter = await generateBuyerLetterDirect({ houseAddress, houseCity, housePrice, whyLove, situation, offerIntent, extraContext });
     }
@@ -851,7 +884,7 @@ app.post('/api/buyer-letter', async (req, res) => {
 
 // AI lease review — proxies to Hetzner, falls back to direct
 app.post('/api/lease-review', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { leaseText, context, chatId } = req.body;
   if (!leaseText || leaseText.length < 50) return res.status(400).json({ error: 'leaseText must be at least 50 characters' });
@@ -861,14 +894,18 @@ app.post('/api/lease-review', async (req, res) => {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
     if (hetznerUrl && adminKey) {
-      const r = await timedFetch(`${hetznerUrl}/api/generate-lease-review`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ leaseText, context }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Hetzner error');
-      return res.json(data);
+      try {
+        const r = await timedFetch(`${hetznerUrl}/api/generate-lease-review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ leaseText, context }),
+        }, 70000);
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Hetzner error');
+        return res.json(data);
+      } catch (hetznerErr) {
+        console.error('[api/lease-review] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+      }
     }
     const result = await generateLeaseReviewDirect({ leaseText, context });
     return res.json(result);
@@ -880,7 +917,7 @@ app.post('/api/lease-review', async (req, res) => {
 
 // AI negotiation coach — proxies to Hetzner, falls back to direct
 app.post('/api/negotiate', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { goal, property, situation, extraContext, chatId } = req.body;
   if (!goal || !situation || situation.length < 20) return res.status(400).json({ error: 'goal and situation are required' });
@@ -890,14 +927,18 @@ app.post('/api/negotiate', async (req, res) => {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
     if (hetznerUrl && adminKey) {
-      const r = await timedFetch(`${hetznerUrl}/api/generate-negotiate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ goal, property, situation, extraContext }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Hetzner error');
-      return res.json(data);
+      try {
+        const r = await timedFetch(`${hetznerUrl}/api/generate-negotiate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ goal, property, situation, extraContext }),
+        }, 70000);
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Hetzner error');
+        return res.json(data);
+      } catch (hetznerErr) {
+        console.error('[api/negotiate] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+      }
     }
     const result = await generateNegotiateDirect({ goal, property, situation, extraContext });
     return res.json(result);
@@ -909,7 +950,7 @@ app.post('/api/negotiate', async (req, res) => {
 
 // AI letter modification — proxies to Hetzner, falls back to direct
 app.post('/api/modify-letter-web', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { letter, instruction, chatId } = req.body;
   if (!letter || !instruction) return res.status(400).json({ error: 'letter and instruction required' });
@@ -919,14 +960,18 @@ app.post('/api/modify-letter-web', async (req, res) => {
     const hetznerUrl = process.env.HETZNER_URL;
     const adminKey = process.env.ADMIN_KEY;
     if (hetznerUrl && adminKey) {
-      const r = await timedFetch(`${hetznerUrl}/api/modify-letter`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-        body: JSON.stringify({ letter, instruction }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Hetzner error');
-      return res.json(data);
+      try {
+        const r = await timedFetch(`${hetznerUrl}/api/modify-letter`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+          body: JSON.stringify({ letter, instruction }),
+        }, 70000);
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Hetzner error');
+        return res.json(data);
+      } catch (hetznerErr) {
+        console.error('[api/modify-letter-web] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+      }
     }
     const modified = await modifyLetterDirect({ letter, instruction });
     return res.json({ letter: modified });
@@ -938,7 +983,7 @@ app.post('/api/modify-letter-web', async (req, res) => {
 
 // AI rental assistant — proxies to Hetzner, falls back to direct
 app.post('/api/rent-assistant', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { tab, userMessage, listingContext, chatId, cacheId } = req.body;
   if (!userMessage || typeof userMessage !== 'string') return res.status(400).json({ error: 'userMessage required' });
@@ -962,16 +1007,20 @@ app.post('/api/rent-assistant', async (req, res) => {
     }
     const promise = (async () => {
       if (hetznerUrl && adminKey) {
-        // Hetzner's own generateRentAssistantResponse can take up to 75s for the heaviest tab
-        // (Viewing Tips) — this outer wrapper must allow more than that or it aborts first.
-        const r = await timedFetch(`${hetznerUrl}/api/generate-rent-assistant`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-          body: JSON.stringify({ tab, userMessage, user, listingContext: enrichedContext }),
-        }, 90000);
-        const data = await r.json();
-        if (!r.ok) throw new Error('Hetzner error');
-        return data;
+        try {
+          // Hetzner's own generateRentAssistantResponse can take up to 75s for the heaviest tab
+          // (Viewing Tips) — this outer wrapper must allow more than that or it aborts first.
+          const r = await timedFetch(`${hetznerUrl}/api/generate-rent-assistant`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+            body: JSON.stringify({ tab, userMessage, user, listingContext: enrichedContext }),
+          }, 90000);
+          const data = await r.json();
+          if (!r.ok) throw new Error('Hetzner error');
+          return data;
+        } catch (hetznerErr) {
+          console.error('[api/rent-assistant] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+        }
       }
       return generateRentAssistantResponse({ tab, userMessage, user, listingContext: enrichedContext });
     })();
@@ -988,7 +1037,7 @@ app.post('/api/rent-assistant', async (req, res) => {
 
 // AI buyer assistant — proxies to Hetzner, falls back to direct
 app.post('/api/buy-assistant', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { tab, userMessage, listingContext, chatId, cacheId, dealFields } = req.body;
   if (!userMessage || typeof userMessage !== 'string') return res.status(400).json({ error: 'userMessage required' });
@@ -1044,16 +1093,20 @@ app.post('/api/buy-assistant', async (req, res) => {
     }
     const promise = (async () => {
       if (hetznerUrl && adminKey) {
-        // All 5 buy-assistant tabs share the same heavy 1800-token/75s budget on the Hetzner
-        // side — this outer wrapper must allow more than that or it aborts first.
-        const r = await timedFetch(`${hetznerUrl}/api/generate-buy-assistant`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
-          body: JSON.stringify({ tab, userMessage, user, listingContext: enrichedContext }),
-        }, 90000);
-        const data = await r.json();
-        if (!r.ok) throw new Error('Hetzner error');
-        return data;
+        try {
+          // All buy-assistant tabs share the same heavy 1800-token/75s budget on the Hetzner
+          // side — this outer wrapper must allow more than that or it aborts first.
+          const r = await timedFetch(`${hetznerUrl}/api/generate-buy-assistant`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey },
+            body: JSON.stringify({ tab, userMessage, user, listingContext: enrichedContext }),
+          }, 90000);
+          const data = await r.json();
+          if (!r.ok) throw new Error('Hetzner error');
+          return data;
+        } catch (hetznerErr) {
+          console.error('[api/buy-assistant] Hetzner unavailable, falling back to direct generation:', hetznerErr.message);
+        }
       }
       return generateBuyAssistantResponse({ tab, userMessage, user, listingContext: enrichedContext });
     })();
@@ -1140,7 +1193,7 @@ async function proxyToHetzner(path, body, directFn) {
   const adminKey = process.env.ADMIN_KEY;
   if (hetznerUrl && adminKey) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 25000);
+    const timer = setTimeout(() => controller.abort(), 70000);
     try {
       const r = await fetch(`${hetznerUrl}${path}`, {
         method: 'POST',
@@ -1151,6 +1204,9 @@ async function proxyToHetzner(path, body, directFn) {
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || `Hetzner HTTP ${r.status}`);
       return data;
+    } catch (err) {
+      console.error(`[proxyToHetzner] ${path} failed, falling back to direct generation:`, err.message);
+      return await directFn();
     } finally {
       clearTimeout(timer);
     }
@@ -1159,7 +1215,7 @@ async function proxyToHetzner(path, body, directFn) {
 }
 
 app.post('/api/landlord-reply', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { message, chatId } = req.body;
   if (!message || message.length < 5) return res.status(400).json({ error: 'message required' });
@@ -1173,7 +1229,7 @@ app.post('/api/landlord-reply', async (req, res) => {
 });
 
 app.post('/api/rejection-analyser', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { applications, chatId, userProfile: selfReportedProfile } = req.body;
   if (!applications) return res.status(400).json({ error: 'applications required' });
@@ -1200,7 +1256,7 @@ app.post('/api/rejection-analyser', async (req, res) => {
 });
 
 app.post('/api/reference-letter', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { type, details, chatId } = req.body;
   if (!type || !details) return res.status(400).json({ error: 'type and details required' });
@@ -1213,7 +1269,7 @@ app.post('/api/reference-letter', async (req, res) => {
 });
 
 app.post('/api/income-explain', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { income, rent, situation, chatId } = req.body;
   if (!income || !rent) return res.status(400).json({ error: 'income and rent required' });
@@ -1226,7 +1282,7 @@ app.post('/api/income-explain', async (req, res) => {
 });
 
 app.post('/api/viewing-feedback', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { viewingNotes, chatId } = req.body;
   if (!viewingNotes || viewingNotes.length < 20) return res.status(400).json({ error: 'viewingNotes must be at least 20 characters' });
@@ -1240,7 +1296,7 @@ app.post('/api/viewing-feedback', async (req, res) => {
 });
 
 app.post('/api/tenant-rights-question', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { question, chatId } = req.body;
   if (!question || question.length < 10) return res.status(400).json({ error: 'question required' });
@@ -1257,7 +1313,7 @@ app.post('/api/tenant-rights-question', async (req, res) => {
 // the same function that powers real scraped listings and Telegram alerts. Always resolves to
 // { ok:false } rather than an error status on any miss so callers can silently fall back.
 app.post('/api/price-benchmark', (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ ok: false, error: 'Too many requests.' });
   if (!UNIFIED_PRICE_BENCHMARK_ENABLED) return res.json({ ok: false });
   try {
@@ -1288,7 +1344,7 @@ app.post('/api/price-benchmark', (req, res) => {
 });
 
 app.post('/api/explain-deal', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { dealData, chatId } = req.body;
   if (!dealData) return res.status(400).json({ error: 'dealData required' });
@@ -1318,7 +1374,7 @@ app.post('/api/explain-deal', async (req, res) => {
 });
 
 app.post('/api/overbid-bid-letter', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { bidDetails, chatId } = req.body;
   if (!bidDetails) return res.status(400).json({ error: 'bidDetails required' });
@@ -1332,7 +1388,7 @@ app.post('/api/overbid-bid-letter', async (req, res) => {
 });
 
 app.post('/api/inspection-advisor', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { inspectionText, purchasePrice, chatId } = req.body;
   if (!inspectionText || inspectionText.length < 20) return res.status(400).json({ error: 'inspectionText must be at least 20 characters' });
@@ -1345,7 +1401,7 @@ app.post('/api/inspection-advisor', async (req, res) => {
 });
 
 app.post('/api/erfpacht-analysis', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { erfpachtText, purchasePrice, city, chatId } = req.body;
   if (!erfpachtText || erfpachtText.length < 20) return res.status(400).json({ error: 'erfpachtText must be at least 20 characters' });
@@ -1358,7 +1414,7 @@ app.post('/api/erfpacht-analysis', async (req, res) => {
 });
 
 app.post('/api/agent-script', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { situation, context, chatId } = req.body;
   if (!situation || situation.length < 10) return res.status(400).json({ error: 'situation required' });
@@ -1581,7 +1637,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.post('/api/support-chat', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { message, history } = req.body;
   if (!message || typeof message !== 'string') return res.status(400).json({ error: 'message required' });
@@ -1599,7 +1655,7 @@ app.post('/api/support-chat', async (req, res) => {
 
 // Funda photo proxy — called by Hetzner scraper to bypass IP-based CAPTCHA block
 app.get('/api/fetch-funda-photo', async (req, res) => {
-  const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const clientIp = req.ip;
   if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { url } = req.query;
   if (!url || !url.startsWith('https://www.funda.nl/')) return res.status(400).json({ error: 'invalid url' });

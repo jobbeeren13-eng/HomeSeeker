@@ -1,10 +1,15 @@
 require('dotenv').config();
 
+// After an uncaughtException/unhandledRejection the process is in an undefined state —
+// continuing to run (as this previously did, log-only) can silently corrupt state and prevents
+// pm2 from ever restarting us into a clean process, since that only triggers on actual exit.
 process.on('uncaughtException', (err) => {
   console.error('[FATAL] Uncaught exception:', err.message, err.stack);
+  process.exit(1);
 });
 process.on('unhandledRejection', (reason) => {
   console.error('[FATAL] Unhandled promise rejection:', reason);
+  process.exit(1);
 });
 
 const express = require('express');
