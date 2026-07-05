@@ -341,9 +341,9 @@ app.post('/api/generate-landlord-reply', async (req, res) => {
 app.post('/api/generate-rejection-analysis', async (req, res) => {
   const key = req.headers['x-admin-key'];
   if (!key || key !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
-  const { applications, userProfile } = req.body;
+  const { applications, userProfile, outcomeHistory } = req.body;
   if (!applications) return res.status(400).json({ error: 'applications required' });
-  try { res.json(await generateRejectionAnalysisDirect({ applications, userProfile: userProfile || {} })); }
+  try { res.json(await generateRejectionAnalysisDirect({ applications, userProfile: userProfile || {}, outcomeHistory: outcomeHistory || [] })); }
   catch (err) { console.error('[generate-rejection-analysis]', err); res.status(500).json({ error: 'Internal error. Check server logs.' }); }
 });
 

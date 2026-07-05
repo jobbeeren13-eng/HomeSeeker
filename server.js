@@ -22,7 +22,7 @@ const { normaliseCity, getScraperHealth, setAdminBot, rowToListing } = require('
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
 const { calculateScore, getImprovementTips, getListingIntelligence, getBuyerTips, getPriceIntelligence, detectLandlordPersona, getDocumentReadiness, getCompetitionContext, resolveCityKey, UNIFIED_PRICE_BENCHMARK_ENABLED } = require('./src/score');
-const { calculateDealScore } = require('./src/deal_score');
+const { calculateDealScore, dealLabel } = require('./src/deal_score');
 const { generateLetterDirect, generatePackageDirect, generateFirstContactMessage, generateBuyerLetterDirect, generateBidAdviceDirect, generateLeaseReviewDirect, generateNegotiateDirect, generateRentAssistantResponse, generateBuyAssistantResponse, modifyLetterDirect, generateLandlordReplyDirect, generateRejectionAnalysisDirect, generateReferenceLetterDirect, generateIncomeExplainDirect, generateViewingFeedbackDirect, generateTenantRightsAnswerDirect, generateDealExplainDirect, generateOverbidLetterDirect, generateInspectionAdviceDirect, generateErfpachtAnalysisDirect, generateAgentScriptDirect, generateSupportChatDirect } = require('./src/letter');
 
 const app = express();
@@ -405,6 +405,34 @@ app.get('/api/letter-data', (req, res) => {
   });
 });
 
+// CBS/Leefbaarometer are written to the listings table by the scraper's async external-data
+// enrichment, which can finish after a listing was already cached for the alert — so the cached
+// in-memory copy may not have them yet even though the DB row now does. Re-read the row by URL to
+// catch that case; if anything fails, the neighbourhood context is simply omitted (non-fatal).
+function getNeighbourhoodContext(listing) {
+  try {
+    let cbsRaw = listing.cbsContext || null;
+    let lbmScore = listing.leefbaarometerScore ?? null;
+    if ((!cbsRaw || lbmScore == null) && listing.url) {
+      const row = getListingByUrl.get(listing.url);
+      if (row) {
+        cbsRaw = cbsRaw || row.cbs_context || null;
+        lbmScore = lbmScore != null ? lbmScore : (row.leefbaarometer_score ?? null);
+      }
+    }
+    const cbs = cbsRaw ? JSON.parse(cbsRaw) : null;
+    if (!cbs && lbmScore == null) return null;
+    return {
+      leefbaarometerScore: lbmScore != null ? Math.round(lbmScore * 10) / 10 : null,
+      cbsInwoners: cbs?.inwoners ?? null,
+      cbsGemInkomen: cbs?.gemInkomen ?? null,
+    };
+  } catch (e) {
+    console.error('[server] neighbourhood context failed (non-fatal):', e.message);
+    return null;
+  }
+}
+
 // Returns listing intelligence for a cached listing (used by assistant panels)
 app.get('/api/listing-tips', (req, res) => {
   const { id } = req.query;
@@ -424,31 +452,7 @@ app.get('/api/listing-tips', (req, res) => {
   const persona = detectLandlordPersona(listing);
   const docReadiness = getDocumentReadiness(user, listing);
   const competitionCtx = getCompetitionContext(listing);
-
-  // CBS/Leefbaarometer are written to the listings table by the scraper's async external-data
-  // enrichment, which can finish after this listing was already cached for the alert — so the
-  // cached in-memory copy may not have them yet even though the DB row now does. Re-read the
-  // row by URL to catch that case; if anything fails, the neighbourhood card is simply omitted.
-  let neighbourhoodCtx = null;
-  try {
-    let cbsRaw = listing.cbsContext || null;
-    let lbmScore = listing.leefbaarometerScore ?? null;
-    if ((!cbsRaw || lbmScore == null) && listing.url) {
-      const row = getListingByUrl.get(listing.url);
-      if (row) {
-        cbsRaw = cbsRaw || row.cbs_context || null;
-        lbmScore = lbmScore != null ? lbmScore : (row.leefbaarometer_score ?? null);
-      }
-    }
-    const cbs = cbsRaw ? JSON.parse(cbsRaw) : null;
-    if (cbs || lbmScore != null) {
-      neighbourhoodCtx = {
-        leefbaarometerScore: lbmScore != null ? Math.round(lbmScore * 10) / 10 : null,
-        cbsInwoners: cbs?.inwoners ?? null,
-        cbsGemInkomen: cbs?.gemInkomen ?? null,
-      };
-    }
-  } catch (e) { console.error('[api/listing-tips] neighbourhood context failed (non-fatal):', e.message); }
+  const neighbourhoodCtx = getNeighbourhoodContext(listing);
 
   let data;
   if (isKoop) {
@@ -1019,6 +1023,20 @@ function buildIntelligenceContext(listing, user) {
     const docReadiness = getDocumentReadiness(user, listing);
     if (docReadiness && !docReadiness.ready) lines.push(`Document readiness: ${docReadiness.score}%. ${docReadiness.urgency || ''}`);
   } catch (_) {}
+  try {
+    const dealScoreVal = calculateDealScore(listing);
+    if (dealScoreVal != null) lines.push(`Deal score: ${dealScoreVal}/100 (${dealLabel(dealScoreVal, listing)}) vs the local market rate — the same score used in HomeSeeker's alerts.`);
+  } catch (_) {}
+  try {
+    const nbCtx = getNeighbourhoodContext(listing);
+    if (nbCtx) {
+      const parts = [];
+      if (nbCtx.leefbaarometerScore != null) parts.push(`Leefbaarometer liveability score ${nbCtx.leefbaarometerScore}/10`);
+      if (nbCtx.cbsGemInkomen) parts.push(`average neighbourhood income EUR ${Math.round(nbCtx.cbsGemInkomen)}`);
+      if (nbCtx.cbsInwoners) parts.push(`${nbCtx.cbsInwoners} residents in the buurt`);
+      if (parts.length) lines.push(`Neighbourhood (CBS/Leefbaarometer): ${parts.join(', ')}.`);
+    }
+  } catch (_) {}
   if (!lines.length) return '';
   return `\n\nVerified listing intelligence (this is computed from real data — prefer it over general assumptions):\n${lines.join('\n')}`;
 }
@@ -1072,11 +1090,13 @@ app.post('/api/landlord-reply', async (req, res) => {
 app.post('/api/rejection-analyser', async (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`ai:${clientIp}`, 10)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
-  const { applications, chatId } = req.body;
+  const { applications, chatId, userProfile: selfReportedProfile } = req.body;
   if (!applications) return res.status(400).json({ error: 'applications required' });
   try {
-    let userProfile = {};
-    if (chatId) { try { userProfile = getUser.get(String(chatId)) || {}; } catch (_) {} }
+    let userProfile = { ...(selfReportedProfile || {}) };
+    if (chatId) {
+      try { const dbUser = getUser.get(String(chatId)); if (dbUser) userProfile = { ...dbUser, ...(selfReportedProfile || {}) }; } catch (_) {}
+    }
     // Cross-reference the user's self-reported text with their own objective outcome history
     // (real Application Score at alert time vs what they later marked as applied/rejected/
     // accepted) so the diagnosis isn't based purely on what they remember to type in.
@@ -1156,12 +1176,20 @@ app.post('/api/price-benchmark', (req, res) => {
     if (!priceNumber || !areaNumber || !location) return res.json({ ok: false });
     const resolved = resolveCityKey(location);
     if (!resolved) return res.json({ ok: false });
-    const intel = getPriceIntelligence({
+    const dealListing = {
       priceNumber, area: areaNumber, city: resolved.city,
       neighbourhood: resolved.neighbourhood, transactionType: type === 'koop' ? 'koop' : 'huur',
-    });
+    };
+    const intel = getPriceIntelligence(dealListing);
     if (!intel) return res.json({ ok: false });
-    return res.json({ ok: true, intel, resolvedCity: resolved.city });
+    // deal_score.js is the same single source of truth used for Telegram alerts — callers like
+    // Deal Finder should upgrade their local estimate with this instead of scoring independently.
+    let dealScoreVal = null, dealLabelVal = null;
+    try {
+      dealScoreVal = calculateDealScore(dealListing);
+      if (dealScoreVal != null) dealLabelVal = dealLabel(dealScoreVal, dealListing);
+    } catch (_) {}
+    return res.json({ ok: true, intel, resolvedCity: resolved.city, dealScore: dealScoreVal, dealLabel: dealLabelVal });
   } catch (err) {
     console.error('[api/price-benchmark]', err.message);
     return res.json({ ok: false });

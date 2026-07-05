@@ -75,6 +75,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 @keyframes sp{to{transform:rotate(360deg)}}
 .errtxt{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
 .errtxt.on{display:block}
+.generic-note{background:rgba(255,200,0,0.08);border:1px solid rgba(255,200,0,0.25);color:#ffc800;font-size:12px;padding:10px 12px;border-radius:8px;margin-bottom:12px;line-height:1.5}
 
 .empty-st{text-align:center;padding:36px 20px;color:rgba(255,255,255,0.2);font-size:13px}
 .skel{display:none}
@@ -945,7 +946,8 @@ async function submit(tab){
 
 function renderResp(tab,text){
   const body=document.getElementById(`body-${tab}`),empty=document.getElementById(`empty-${tab}`),skel=document.getElementById(`skel-${tab}`),acts=document.getElementById(`acts-${tab}`),scoutOut=document.getElementById(`scout-out-${tab}`);
-  if(body){body.innerHTML=renderMd(text);body.style.display='block';}
+  const genericNote=cacheId?'':'<div class="generic-note">⚠ Generic advice — this isn\'t tailored to a specific listing. Open this page from a listing alert in Telegram to get advice matched to that property.</div>';
+  if(body){body.innerHTML=genericNote+renderMd(text);body.style.display='block';}
   if(empty)empty.style.display='none';
   if(skel)skel.style.display='none';
   if(acts)acts.classList.add('on');

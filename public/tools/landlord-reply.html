@@ -122,6 +122,7 @@ h1 span{color:var(--green)}
 </div>
 
 <script>
+const chatId = new URLSearchParams(location.search).get('chat_id') || null;
 const INTENT_LABELS = {
   Interested: { label: 'Interested', css: 'badge-interested', emoji: '🟢' },
   Stalling: { label: 'Stalling', css: 'badge-stalling', emoji: '🟡' },
@@ -147,7 +148,7 @@ async function analyse() {
   try {
     const r = await fetch('/api/landlord-reply', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg }),
+      body: JSON.stringify({ message: msg, chatId }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed');

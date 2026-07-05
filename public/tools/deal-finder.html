@@ -187,10 +187,11 @@ const ENERGY_SCORE = { A: 10, B: 8, C: 5, D: 0, E: -5, F: -10, G: -15 };
 let calcData = {};
 let benchmarkUpgradeTimer = null;
 
-// Best-effort upgrade: score.js (via /api/price-benchmark) is the single source of truth for
-// price benchmarks. This re-runs calculate() with the live/DB-backed figure when available,
-// replacing the hardcoded BENCHMARKS table used for the instant first render. Any failure
-// (network, unknown city, feature flag off) silently leaves the instant estimate as-is.
+// Best-effort upgrade: score.js/deal_score.js (via /api/price-benchmark) are the single source
+// of truth for price benchmarks and deal scoring — the same functions that power Telegram
+// alerts. This re-runs calculate() with the live/DB-backed benchmark and authoritative deal
+// score when available, replacing the local estimates used for the instant first render. Any
+// failure (network, unknown city, feature flag off) silently leaves the instant estimate as-is.
 function upgradeBenchmark(price, area, city) {
   clearTimeout(benchmarkUpgradeTimer);
   if (!price || !area || !city) return;
@@ -199,12 +200,12 @@ function upgradeBenchmark(price, area, city) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ price, area, location: city.replace(/-/g, ' '), type: 'koop' }),
     }).then(r => r.ok ? r.json() : null).then(d => {
-      if (d && d.ok && d.intel && d.intel.benchmarkPpm2) calculate(d.intel.benchmarkPpm2);
+      if (d && d.ok && d.intel && d.intel.benchmarkPpm2) calculate(d.intel.benchmarkPpm2, d.dealScore);
     }).catch(() => {});
   }, 400);
 }
 
-function calculate(benchmarkOverride) {
+function calculate(benchmarkOverride, dealScoreOverride) {
   const price = parseFloat(document.getElementById('price').value) || 0;
   const area = parseFloat(document.getElementById('area').value) || 0;
   const city = document.getElementById('city').value;
@@ -220,17 +221,29 @@ function calculate(benchmarkOverride) {
   const ppm2 = area > 0 ? Math.round(price / area) : 0;
   const benchmark = (benchmarkOverride != null ? benchmarkOverride : BENCHMARKS[city]) || null;
 
-  // Deal score
-  let score = 50;
-  let ppm2verdict = null;
+  // Deal score — the price-vs-market component below is a local estimate for the instant first
+  // render only. Once the server responds with the authoritative deal_score.js result (the same
+  // single source of truth used for Telegram alerts), that becomes the base score instead, and
+  // the calculator's own additional signals (energy, year, VvE, days on market, erfpacht) are
+  // layered on top of it exactly as before.
+  let score, ppm2verdict = null;
 
-  if (benchmark && ppm2 > 0) {
-    const diff = (ppm2 - benchmark) / benchmark;
-    if (diff < -0.15) { score += 25; ppm2verdict = 'Below market'; }
-    else if (diff < -0.05) { score += 12; ppm2verdict = 'Fair price'; }
-    else if (diff < 0.10) { score += 0; ppm2verdict = 'At market'; }
-    else if (diff < 0.20) { score -= 15; ppm2verdict = 'Above market'; }
-    else { score -= 25; ppm2verdict = 'Significantly overpriced'; }
+  if (dealScoreOverride != null) {
+    score = dealScoreOverride;
+    if (benchmark && ppm2 > 0) {
+      const diff = (ppm2 - benchmark) / benchmark;
+      ppm2verdict = diff < -0.15 ? 'Below market' : diff < -0.05 ? 'Fair price' : diff < 0.10 ? 'At market' : diff < 0.20 ? 'Above market' : 'Significantly overpriced';
+    }
+  } else {
+    score = 50;
+    if (benchmark && ppm2 > 0) {
+      const diff = (ppm2 - benchmark) / benchmark;
+      if (diff < -0.15) { score += 25; ppm2verdict = 'Below market'; }
+      else if (diff < -0.05) { score += 12; ppm2verdict = 'Fair price'; }
+      else if (diff < 0.10) { score += 0; ppm2verdict = 'At market'; }
+      else if (diff < 0.20) { score -= 15; ppm2verdict = 'Above market'; }
+      else { score -= 25; ppm2verdict = 'Significantly overpriced'; }
+    }
   }
 
   // Energy label

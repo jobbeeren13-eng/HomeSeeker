@@ -1068,6 +1068,7 @@ Return only valid JSON. No explanation, no code blocks.`;
   if (userProfile.inkomen) lines.push(`Monthly income: EUR ${userProfile.inkomen}`);
   if (userProfile.contract_type) lines.push(`Contract type: ${userProfile.contract_type}`);
   if (userProfile.profiel_type) lines.push(`Profile: ${userProfile.profiel_type}`);
+  if (userProfile.user_description) lines.push(`Self-reported situation: ${userProfile.user_description}`);
   if (hasOutcomeHistory) {
     const histStr = outcomeHistory
       .map(h => `${h.address || 'Listing'}: Application Score ${h.score ?? 'n/a'}${h.dealScore != null ? `, Deal Score ${h.dealScore}` : ''} at alert time -> status: ${h.status}`)
@@ -1100,8 +1101,8 @@ async function generateReferenceLetterDirect({ type, details }) {
 
 Return only valid JSON. No explanation, no code blocks.`
     : `You generate professional landlord reference letters for Dutch rental applications. Return a JSON object with exactly these keys:
-- "letter": a friendly English reference letter a previous landlord can sign. Covers: good tenant, no payment issues, property left in good condition, recommendation. Max 200 words. No dashes. Warm professional tone.
-- "letterDutch": complete Dutch translation of the letter
+- "letter": a friendly English reference letter a previous landlord can sign. Format, mandatory and always present in full — never shortened or omitted: date line, salutation ("To Whom It May Concern,"), body paragraphs, then a signature block with the landlord's name and "Landlord" (plus the rental address if provided). Covers: good tenant, no payment issues, property left in good condition, recommendation. Max 200 words (date, salutation and signature block excluded from this limit). No dashes. Warm professional tone.
+- "letterDutch": complete Dutch translation of the letter, with the same date/salutation/signature structure
 - "instructions": 3-step plain English instructions for what the tenant should do with this letter
 - "subject": email subject line if the tenant is emailing this to their previous landlord
 
