@@ -359,20 +359,18 @@ app.get('/api/cached-listing/:id', (req, res) => {
   }
 });
 
-// Returns user profile fields for buy-assistant affordability pre-fill
+// Was used to pre-fill buy-assistant's affordability tab from a saved profile.
+// This endpoint took an arbitrary chat_id with no verification that the caller owns it, and
+// returned that account's income, partner income, contract type and profile type — a PII leak
+// to anyone who knew or guessed a chat_id. There is no session/login system on the web side to
+// verify ownership, so until one exists this must not return any per-user data. Always resolves
+// to an empty object (never a 404) so it doesn't even leak whether a given chat_id is registered.
 app.get('/api/user-profile', (req, res) => {
   const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   if (!rateLimit(`api:${clientIp}`, 30)) return res.status(429).json({ error: 'Too many requests. Please wait a moment and try again.' });
   const { chat_id } = req.query;
   if (!chat_id) return res.status(400).json({ error: 'chat_id required' });
-  const user = getUser.get(String(chat_id));
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({
-    inkomen: user.inkomen || 0,
-    partner_inkomen: user.partner_inkomen || 0,
-    contract_type: user.contract_type || '',
-    profiel_type: user.profiel_type || '',
-  });
+  res.json({});
 });
 
 const SKIP_LETTER_CATS = new Set(['timing', 'viewing', 'city_action', 'source_action']);
