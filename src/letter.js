@@ -439,7 +439,13 @@ Rules:
 }
 
 async function generateLeaseReviewDirect({ leaseText, context = '' }) {
-  const systemPrompt = `You are a Dutch tenant law expert helping an expat review a rental lease. Return a JSON object with exactly these keys:
+  const systemPrompt = `You are a Dutch tenant law expert helping an expat review a rental lease. Use these current 2026 facts to classify clauses correctly:
+- Maximum deposit is 2 months' bare rent (since July 2023) — a clause requiring 3+ months is a "warning".
+- Rent-increase clauses must cite a legal indexation method. For 2026: free-sector cap is 4.4%/year, "middenhuur" (WWS 144-186 points, roughly EUR 933-1.228/month kale huur) is capped at 6.1% (3.65% right at 186 points). A clause allowing unlimited or arbitrary increases is a "warning" — it is legally unenforceable regardless of what it says.
+- Since 2026, service costs must in principle be billed excluding VAT; a clause charging service costs including VAT without documented tenant-majority consent is a "warning".
+- A clause prohibiting BRP registration at the address is a "warning" — this is a legal right and such a clause is unenforceable and often signals an undisclosed subletting/tax situation.
+- A clause shifting major/structural maintenance to the tenant is a "warning" — legally unenforceable under Book 7 BW regardless of contract wording.
+Return a JSON object with exactly these keys:
 - "summary": 2-3 sentence plain English summary of what the lease covers
 - "flags": array of objects with keys "type" ("warning", "ok", or "info") and "text" (explanation in English)
   - "warning": unusual, unfair, or potentially illegal clauses
@@ -731,10 +737,12 @@ async function generateBuyAssistantResponse({ tab, userMessage, user = null, lis
   const systems = {
     1: `You are a Dutch mortgage expert for expats. You understand exactly how Dutch banks assess foreign buyers and what kills mortgage applications before they start.
 
+2026 reference figures (NIBUD/NHG, use these unless the user gives you more specific numbers): NHG ceiling is EUR 470.000 (EUR 498.200 for homes bought with energy-saving measures) — NHG typically lowers the mortgage rate by 0.2-0.5% and is worth taking whenever the purchase price qualifies. Average 10-year-fixed mortgage rate in 2026 is around 4% (with NHG, realistic range 3.0-4.0% depending on the lender and the buyer's own rate-fixing period choice) — use 4% if the user gives no rate. NIBUD's 2026 leennormen assume 4.1% wage growth, so borrowing capacity at a given income is somewhat higher than in 2025 — but only if the buyer's own income actually grew; flag this if relevant. Energy label affects how much EXTRA can be borrowed on top of the standard income-based maximum: label A/B = +EUR 10.000, label C/D = +EUR 15.000, label E/F/G = +EUR 20.000 (this extra room exists specifically to fund energy improvements, not general budget).
+
 Structure your response in this exact order:
 
 ## Your mortgage capacity
-Show the calculation: gross annual income x 4.5 (permanent contract), x 3.5 (temporary), x 3.0 (freelance/self-employed based on 3-year average). If partner income provided: add after applying same multiplier. Show as a range — conservative (90% of max) to maximum. State monthly payment estimate at max mortgage (annuity, 4.2%, 30 years).
+Show the calculation: gross annual income x 4.5 (permanent contract), x 3.5 (temporary), x 3.0 (freelance/self-employed based on 3-year average). If partner income provided: add after applying same multiplier. Show as a range — conservative (90% of max) to maximum. Add the energy-label borrowing supplement if the user mentioned a label. State monthly payment estimate at max mortgage (annuity, ~4%, 30 years) and note NHG eligibility (and the resulting lower rate) if the purchase price is at or under EUR 470.000.
 
 ## What you can actually buy
 Purchase price = mortgage + own funds available for purchase (own funds minus buying costs). Buying costs = transfer tax (2% if under 35 and first home in NL, otherwise 2% for owner-occupiers, 10.4% for investors) + notary EUR 1.500-2.500 + mortgage advisor EUR 2.500-4.000 + valuation report EUR 700-900 + building inspection EUR 400-600. Show the math. State the realistic purchase price ceiling.
@@ -756,10 +764,11 @@ Three numbers: Conservative max (safe, comfortable), Standard max (bank will app
 ## Recommended next steps
 Numbered. Specific. Include: when to hire a mortgage advisor (hypotheekadviseur — recommended before making any offer), what documents to gather now, whether to get a mortgage pre-assessment (vrijblijvende berekening) before bidding.${userProfile}`,
 
-    2: `You are a Dutch property market analyst. You know the price per m2 benchmarks for every major Dutch city in 2025 and you give buyers the honest picture — not what they want to hear.
+    2: `You are a Dutch property market analyst. You know the price per m2 benchmarks for every major Dutch city in 2026 and you give buyers the honest picture — not what they want to hear.
 
-Always use these 2025 benchmarks (price per m2):
-Amsterdam Centrum: EUR 9.400 | Amsterdam Zuid: EUR 9.100 | Amsterdam Oost: EUR 7.600 | Amsterdam West: EUR 7.300 | Amsterdam Noord: EUR 6.000 | Rotterdam Centrum: EUR 5.300 | Rotterdam Noord: EUR 4.000 | Rotterdam Zuid: EUR 3.300 | Utrecht Centrum: EUR 6.400 | Utrecht West: EUR 5.600 | Den Haag Centrum: EUR 5.000 | Den Haag Scheveningen: EUR 5.400 | Eindhoven: EUR 4.000 | Haarlem: EUR 5.700 | Leiden: EUR 5.300 | Delft: EUR 4.900 | Groningen: EUR 3.400 | Maastricht: EUR 3.500 | Almere: EUR 3.300 | Amstelveen: EUR 5.800 | Tilburg: EUR 3.200 | Breda: EUR 3.600
+If a "Live market intelligence" or "Live benchmark" block appears in the listing context below, it is computed from real, current data for this exact city/neighbourhood — always use it instead of the static table below when both are present; the table below is only a fallback baseline for cities or situations without live data.
+
+2026 baseline benchmarks (price per m2, verified city-wide averages where noted, others are directional): Amsterdam city-wide median EUR 8.344 (Amsterdam Centrum/Zuid/Museumkwartier/Jordaan run well above EUR 10.000, Amsterdam Noord/West/Oost typically EUR 6.000-7.500) | Rotterdam city-wide average EUR 4.750-6.800 depending on source (Rotterdam-Zuid around EUR 3.200, Rotterdam Centrum EUR 6.500+) | Utrecht EUR 5.400 | Den Haag Centrum: EUR 5.000 | Den Haag Scheveningen: EUR 5.400 | Eindhoven: EUR 4.000 | Haarlem: EUR 5.700 | Leiden: EUR 5.300 | Delft: EUR 4.900 | Groningen: EUR 3.400 | Maastricht: EUR 3.500 | Almere: EUR 3.300 | Amstelveen: EUR 5.800 | Tilburg: EUR 3.200 | Breda: EUR 3.600
 
 ## Price assessment
 Calculated price per m2 for this property. Compare to benchmark. State: below market (good), at market (fair), above market (overpriced), or significantly above (red flag). State the percentage deviation clearly.
@@ -795,7 +804,7 @@ Based on what the user described: state which category applies and why.
 - Cosmetic (paint, floors, kitchen fronts): EUR 5.000-15.000
 - Moderate (new bathroom, kitchen replacement, updated heating): EUR 20.000-45.000
 - Major (structural work, full roof, all systems, insulation): EUR 60.000-120.000+
-Reference 2025 Dutch contractor rates. State what the energy label implies about insulation and heating costs.
+Reference 2026 Dutch contractor rates (roughly EUR 1.000-1.800/m² for a full renovation, EUR 40-70/hour or EUR 300-500/day per contractor) — note that Randstad cities (Amsterdam, Rotterdam, Utrecht, Den Haag) run 20-30% above these national averages due to higher labour and demand. State what the energy label implies about insulation and heating costs.
 
 ## After the viewing — your decision framework
 Three outcomes and the specific criteria for each:
@@ -1190,7 +1199,7 @@ Return only valid JSON. No explanation, no code blocks.`;
 
 async function generateInspectionAdviceDirect({ inspectionText, purchasePrice }) {
   const systemPrompt = `You are a Dutch building inspection expert and property buyer advisor. Return a JSON object with exactly these keys:
-- "issues": array of objects, each with keys: "issue" (name), "severity" ("Cosmetic", "Minor", "Significant", "Major", "DealBreaker"), "estimatedCostEur" (integer, Dutch 2024 contractor rates), "priorityRepair" (true/false - must fix before move-in)
+- "issues": array of objects, each with keys: "issue" (name), "severity" ("Cosmetic", "Minor", "Significant", "Major", "DealBreaker"), "estimatedCostEur" (integer, 2026 Dutch contractor rates — roughly EUR 1.000-1.800/m² for full renovation work, 20-30% higher in Randstad cities), "priorityRepair" (true/false - must fix before move-in)
 - "totalEstimatedCostEur": integer total of all repair costs
 - "renegotiationStrategy": how much to ask off the purchase price (specific amount or percentage), and how to frame the request. 3 sentences.
 - "renegotiationScript": word-for-word script for the conversation with the selling agent. Max 100 words.
@@ -1214,7 +1223,11 @@ Return only valid JSON. No explanation, no code blocks.`;
 }
 
 async function generateErfpachtAnalysisDirect({ erfpachtText, purchasePrice, city }) {
-  const systemPrompt = `You are a Dutch erfpacht (ground lease) expert. Analyse the erfpacht terms from a purchase contract. Return a JSON object with exactly these keys:
+  const systemPrompt = `You are a Dutch erfpacht (ground lease) expert. Analyse the erfpacht terms from a purchase contract. Use these facts, especially for Amsterdam (the most common erfpacht city) when relevant:
+- Switching from "voortdurende" (periodic, revised every ~50 years) to "eeuwigdurende" (perpetual, canon fixed once and indexed only by CPI) erfpacht is possible via the municipality's official switching portal (DigiD required, plus the WOZ value and the deed of conveyance). This is usually the single most valuable move available if the current erfpacht is still "voortdurende" — it removes the risk of a future revision based on land value, which can multiply the canon.
+- The perpetual canon after switching = leasehold land value x canon percentage, with a switching premium of roughly 35% applied. Homes with a good energy label get a discount on the switching cost.
+- Buying out (afkopen) the canon, whether for a fixed period or permanently, removes ongoing payments entirely. The annual canon itself is tax-deductible (box 1, own home) if not bought out; the buyout SUM itself is not deductible, but interest paid on a loan taken specifically to finance the buyout is deductible — this materially changes the real cost comparison between "keep paying canon" and "buy out with a loan".
+Return a JSON object with exactly these keys:
 - "erfpachtType": "eeuwigdurende" (permanent), "tijdelijke" (temporary), or "unknown"
 - "currentCanon": current annual ground rent payment in euros, or null if not mentioned
 - "revisionDate": when the canon is next revised, or null
@@ -1224,7 +1237,7 @@ async function generateErfpachtAnalysisDirect({ erfpachtText, purchasePrice, cit
 - "estimatedBuyoutCost": rough estimate in euros, or null
 - "mortgageRisk": "Low", "Medium", "High" - how will banks view this for lending
 - "redFlags": array of strings, specific red flags found
-- "verdict": 3-sentence plain English verdict: should they buy, what is the main risk, what to do next
+- "verdict": 3-sentence plain English verdict: should they buy, what is the main risk, what to do next — for a "voortdurende" erfpacht in Amsterdam, explicitly mention switching to eeuwigdurende as an option if not already perpetual
 - "riskLevel": "Low", "Medium", "High", or "Critical"
 
 Return only valid JSON. No explanation, no code blocks.`;
@@ -1257,18 +1270,18 @@ HOMESEEKER PRODUCT:
 - To set filters: send /filters to @PremiumHomeSeekerBot in Telegram
 - To cancel: send /cancel to the bot
 
-AI RENTAL ASSISTANT — 4 tabs:
+AI RENTAL ASSISTANT — main tabs (Analyse, Letter, Viewing Tips) plus more tools:
 1. Analyse: Scout reads the listing and shows competition level, price vs market, landlord type, and your strategy
 2. Letter: Generates a personalised application letter in Professional or Personal tone. Tips help shape the letter
 3. Viewing Tips: 10 specific questions to ask, room-by-room inspection checklist, red flags, follow-up message template
-4. Negotiation: Honest market assessment first (is negotiating realistic?), then word-for-word scripts
+More tools: Landlord Reply Coach (decode any landlord/agent message and get a ready reply), Income Check, Rejection Analyser (with your own real outcome history), Reference Letter generator, Viewing Feedback analyser, Tenant Rights (WWS/huurrecht Q&A)
 
-AI BUYER ASSISTANT — 5 tabs:
+AI BUYER ASSISTANT — main tabs (Affordability, Property Analysis, Bid Strategy, VvE Checker) plus more tools:
 1. Affordability: Mortgage capacity calculation, buying costs, risk profile for Dutch banks
 2. Property Analysis: Price vs benchmark, red flags, renovation cost estimate, bid/negotiate/walk away verdict
-3. Bid Strategy: Specific bid amount, overbid benchmarks per city, formal Dutch bid letter, rejection script
+3. Bid Strategy: Specific bid amount, overbid benchmarks per city, bidding-method-aware strategy, formal Dutch bid letter, counter-offer/live-negotiation scripts
 4. VvE Checker: Health assessment of apartment owners association, red flags, documents to demand
-5. Legal Process: Step-by-step Dutch buying process for expats
+More tools: Viewing Checklist, Buyer Letter generator, Lease Review, Deal Finder, Inspection Advisor, Erfpacht Checker, Agent Scripts
 
 SCORES EXPLAINED:
 - Application Score: how well your profile matches this listing based on income, contract type, document readiness, and market competition. NOT your probability of getting the home. A score of 80% means your profile is a strong match — not that you have an 80% chance.
@@ -1279,7 +1292,7 @@ FILTERS EXPLAINED:
 - Budget: maximum monthly rent or purchase price
 - Transaction type: rental (huur) or purchase (koop)
 - Property type: apartment, house, studio, or any
-- Income: used to calculate Application Score. Landlords typically require 3x monthly rent
+- Income: used to calculate Application Score. Landlords typically expect 3-4x monthly rent gross (convention, not law)
 - Contract type: permanent (vast) scores highest. Temporary or freelance may need extra documentation
 - Document readiness: how prepared your documents are — affects score and tips
 - Profile type: your situation (expat, student, professional, family, etc.)
@@ -1302,7 +1315,7 @@ WOZ waarde: municipal property valuation — used for property taxes and sometim
 Energielabel: energy performance certificate A (best) to G (worst). Affects heating costs significantly
 Stadsverwarming: district heating — shared heating system, can cost EUR 80-280/month, not always visible in listed rent
 NVM makelaar: certified Dutch real estate agent (NVM is the main professional association)
-3x regel: standard income requirement — gross income must be at least 3x the monthly rent. Private landlords often want 3.5x or 4x
+3x/4x regel: income requirement convention (not a legal minimum in the free sector) — 4x monthly rent gross is the common bar, 3x is workable for a strong profile (permanent contract) but on the lower end
 Proeftijd: probation period — most Dutch banks refuse mortgages during probation
 MJOP: multi-year maintenance plan for a VvE — essential document to check before buying an apartment
 Annuiteitenhypotheek: annuity mortgage — fixed monthly payment, most common type in Netherlands
