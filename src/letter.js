@@ -167,6 +167,7 @@ Examples of strong openers:
 "Working in [city] on a permanent contract — I read your preference for working professionals and am addressing it in the first line."
 
 BODY (two or three sentences maximum):
+Every sentence must be a complete sentence with a subject and a verb — never a comma-separated string of job-title/contract-type fragments (not "Marketing manager, permanent contract, three years in the same role" but a sentence that connects those facts with a verb, e.g. "Three years into a permanent contract as a marketing manager give me a steady, easy-to-check income."). Never join two independent clauses without a period, comma, or conjunction between them — if a sentence needs a breath in the middle, split it into two sentences or add the missing comma.
 Write naturally. Do not list facts mechanically. Do not repeat any number or fact already in the opening. Cover financial reliability, stability, and document readiness in a way that reads like a confident person wrote it. If income was in the opening, do not mention it again. If contract type was in the opening, do not repeat it.
 
 CLOSING (one sentence):
@@ -226,7 +227,7 @@ WRITING STYLE — what separates a human letter from an AI letter:
 Real examples of AI vs human writing:
 
 AI: "My employer is a well-established international firm based in Amsterdam, and I have been in this role long enough that my income history is consistent and easy to verify."
-Human: "Three years in the same role at [company], permanent contract."
+Human: "My current role at [company] has lasted three years, on a permanent contract."
 
 AI: "The 140m² across two floors suits the way I actually live and work."
 Human: "142m² across two floors is exactly the space I need — I work from home three days a week."
@@ -235,7 +236,7 @@ AI: "I have no interest in moving again once I am settled."
 Human: "I am looking for somewhere to stay for at least two years."
 
 AI: "All documents are prepared and ready to send as a single PDF the moment you request them."
-Human: "Payslips, contract, and bank statements ready to go."
+Human: "Payslips, contract, and bank statements are ready to go."
 
 AI: "Permanent contract, €60,000 gross, 3.2x the rent, all documents ready."
 Human: "A permanent contract and an income above three times the rent make this a straightforward application, with every document ready to send today."
@@ -248,6 +249,8 @@ Three rules that eliminate AI tone:
 PUNCTUATION:
 - Every clause in a sentence must be separated by a comma or period — no run-on sentences
 - Example: "Tuesday or Thursday this week, documents can be in your inbox within the hour." — comma after "this week"
+- Bad (two independent clauses fused with no punctuation): "I have no intention of moving again in the near future Rotterdam is where I plan to stay."
+- Good (split into two sentences, or joined with a comma and conjunction): "I have no intention of moving again in the near future. Rotterdam is where I plan to stay." or "I have no intention of moving again in the near future, and Rotterdam is where I plan to stay."
 - Read every sentence aloud — if it needs a breath, it needs a comma or period`;
 
   const lines = [];
