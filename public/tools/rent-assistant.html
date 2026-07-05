@@ -250,6 +250,14 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   .side-nav-group{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:12px}
   .side-nav-group .side-nav-label{width:100%;padding:0 0 2px}
   .side-nav .more-tool-btn{width:auto;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
+  /* Property header: not sticky on mobile — it scrolls away with the page instead of pinning
+     to the top and blocking the view. It moves into normal document flow, so it needs its own
+     top margin to clear the still-fixed site header + progress bar (56px + 44px), and the
+     progress bar reverts to sitting directly under the site header since the property card no
+     longer reserves fixed space above it. */
+  body.has-pc #property-card{position:static;height:auto;margin-top:100px;padding:12px 16px}
+  body.has-pc .prog-bar{top:56px}
+  body.has-pc .page-outer{margin-top:16px}
 }
 @media(max-width:420px){
   .prog-lbl{display:none}

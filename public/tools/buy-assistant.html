@@ -166,6 +166,11 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   .side-nav-group-more{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:12px}
   .side-nav-group-more .side-nav-label{width:100%;padding:0 0 2px}
   .side-nav-group-more .more-tool-btn{width:auto;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
+  /* Property header (listing bar): not sticky on mobile — scrolls away with the page instead of
+     pinning to the top and blocking the view. Moves into normal document flow with its own top
+     margin to clear the still-fixed site header (56px). */
+  .lbar{position:static;margin-top:56px}
+  body.has-lb .page-outer{margin-top:16px}
 }
 
 /* ── Ported tool tabs (Buyer Letter, Lease Review, Deal Finder, Inspection
