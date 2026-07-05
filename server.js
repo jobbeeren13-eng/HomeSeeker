@@ -974,20 +974,34 @@ app.post('/api/buy-assistant', async (req, res) => {
         if (entry && entry.listing) enrichedContext = (listingContext || '') + buildIntelligenceContext(entry.listing, user);
       } catch (e) { console.error('[api/buy-assistant] intelligence enrichment failed (non-fatal):', e.message); }
     }
-    // Property Analysis tab (dealFields): score.js is the single source of truth for the
-    // price benchmark — resolve it here instead of leaning solely on the static table baked
-    // into the systems[2] prompt. Any failure (unknown city, missing fields, flag off) leaves
-    // enrichedContext untouched and the prompt's own static table remains the fallback.
+    // Property Analysis (tab 2) and Bid Strategy (tab 3) both collect price/area/city directly —
+    // score.js is the single source of truth for price benchmark, deal score and competition,
+    // resolved here instead of leaning solely on the static tables baked into the systems[2]/
+    // systems[4] prompts. Any failure (unknown city, missing fields, flag off) leaves
+    // enrichedContext untouched and the prompt's own static tables remain the fallback.
     if (UNIFIED_PRICE_BENCHMARK_ENABLED && dealFields && dealFields.price && dealFields.area && dealFields.location) {
       try {
         const resolved = resolveCityKey(dealFields.location);
         if (resolved) {
-          const intel = getPriceIntelligence({
+          const syntheticListing = {
             priceNumber: parseFloat(dealFields.price), area: parseFloat(dealFields.area),
             city: resolved.city, neighbourhood: resolved.neighbourhood, transactionType: 'koop',
-          });
+          };
+          const lines = [];
+          const intel = getPriceIntelligence(syntheticListing);
           if (intel) {
-            enrichedContext = (enrichedContext || '') + `\n\nLive benchmark for this area: EUR ${intel.benchmarkPpm2}/m2 (${intel.source === 'live' ? `live data, ${intel.sampleSize} recent listings` : 'city estimate'}). This asking price is ${intel.diffPct > 0 ? '+' : ''}${intel.diffPct}% vs that benchmark: ${intel.label}. Use this instead of the static benchmark table above when they conflict.`;
+            lines.push(`Price vs market: ${intel.label} (${intel.diffPct > 0 ? '+' : ''}${intel.diffPct}% vs ${intel.source === 'live' ? `a live benchmark, ${intel.sampleSize} recent listings` : 'an estimated city benchmark'} of EUR ${intel.benchmarkPpm2}/m2).`);
+          }
+          try {
+            const dealScoreVal = calculateDealScore(syntheticListing);
+            if (dealScoreVal != null) lines.push(`Deal score: ${dealScoreVal}/100 (${dealLabel(dealScoreVal, syntheticListing)}) — the same score used in HomeSeeker's alerts.`);
+          } catch (_) {}
+          try {
+            const competitionCtx = getCompetitionContext(syntheticListing);
+            if (competitionCtx) lines.push(`Estimated competition: roughly ${competitionCtx.estimated.low}-${competitionCtx.estimated.high} other bidders (${competitionCtx.level}). ${competitionCtx.timingMessage}`);
+          } catch (_) {}
+          if (lines.length) {
+            enrichedContext = (enrichedContext || '') + `\n\nLive market intelligence for this listing (computed from real data — prefer it over the static tables above when they conflict):\n${lines.join('\n')}`;
           }
         }
       } catch (e) { console.error('[api/buy-assistant] price benchmark enrichment failed (non-fatal):', e.message); }
@@ -1030,6 +1044,7 @@ app.post('/api/buy-assistant', async (req, res) => {
 const ASSISTANT_INTELLIGENCE_ENABLED = process.env.ENABLE_ASSISTANT_INTELLIGENCE !== 'false';
 function buildIntelligenceContext(listing, user) {
   if (!ASSISTANT_INTELLIGENCE_ENABLED || !listing) return '';
+  const isKoop = listing.transactionType === 'koop';
   const lines = [];
   try {
     const priceIntel = getPriceIntelligence(listing);
@@ -1037,18 +1052,25 @@ function buildIntelligenceContext(listing, user) {
       lines.push(`Price vs market: ${priceIntel.label} (${priceIntel.diffPct > 0 ? '+' : ''}${priceIntel.diffPct}% vs ${priceIntel.source === 'live' ? 'a live' : 'an estimated'} benchmark of EUR ${priceIntel.benchmarkPpm2}/m2).`);
     }
   } catch (_) {}
-  try {
-    const persona = detectLandlordPersona(listing);
-    if (persona) lines.push(`Landlord type: ${persona.label} (confidence ${persona.confidence}). What they want: ${persona.whatTheyWant} Strategy: ${persona.strategy}`);
-  } catch (_) {}
+  // Landlord persona and document readiness are rental-application concepts (appealing to a
+  // landlord's emotional attachment, payslips/contract readiness) that don't map to a home
+  // seller/mortgage-buyer context — only include them for huur listings.
+  if (!isKoop) {
+    try {
+      const persona = detectLandlordPersona(listing);
+      if (persona) lines.push(`Landlord type: ${persona.label} (confidence ${persona.confidence}). What they want: ${persona.whatTheyWant} Strategy: ${persona.strategy}`);
+    } catch (_) {}
+  }
   try {
     const competitionCtx = getCompetitionContext(listing);
-    if (competitionCtx) lines.push(`Competition: roughly ${competitionCtx.estimated.low}-${competitionCtx.estimated.high} other applicants (${competitionCtx.level}). ${competitionCtx.timingMessage}`);
+    if (competitionCtx) lines.push(`Competition: roughly ${competitionCtx.estimated.low}-${competitionCtx.estimated.high} other ${isKoop ? 'bidders' : 'applicants'} (${competitionCtx.level}). ${competitionCtx.timingMessage}`);
   } catch (_) {}
-  try {
-    const docReadiness = getDocumentReadiness(user, listing);
-    if (docReadiness && !docReadiness.ready) lines.push(`Document readiness: ${docReadiness.score}%. ${docReadiness.urgency || ''}`);
-  } catch (_) {}
+  if (!isKoop) {
+    try {
+      const docReadiness = getDocumentReadiness(user, listing);
+      if (docReadiness && !docReadiness.ready) lines.push(`Document readiness: ${docReadiness.score}%. ${docReadiness.urgency || ''}`);
+    } catch (_) {}
+  }
   try {
     const dealScoreVal = calculateDealScore(listing);
     if (dealScoreVal != null) lines.push(`Deal score: ${dealScoreVal}/100 (${dealLabel(dealScoreVal, listing)}) vs the local market rate — the same score used in HomeSeeker's alerts.`);

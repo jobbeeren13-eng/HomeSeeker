@@ -1406,21 +1406,33 @@ function getCompetitionContext(listing) {
   const city = (listing.city || '').toLowerCase();
   const price = listing.priceNumber || 0;
   const area = listing.area || 0;
+  const isKoop = listing.transactionType === 'koop';
   const hoursOnline = listing.listedAt
     ? (Date.now() - new Date(listing.listedAt).getTime()) / 3600000
     : 48;
 
-  const cityBase = {
+  // Buying and renting are different competitive dynamics (a handful of bids vs. dozens of
+  // applicants) and different price orders of magnitude per m² — each transaction type has its
+  // own city bases and benchmark table so the multiplier logic below stays meaningful for both.
+  const cityBase = isKoop ? {
+    amsterdam: { low: 3, high: 15 }, utrecht: { low: 2, high: 10 },
+    haarlem: { low: 2, high: 9 }, leiden: { low: 2, high: 8 },
+    delft: { low: 2, high: 7 }, 'den-haag': { low: 1, high: 6 },
+    rotterdam: { low: 1, high: 5 }, eindhoven: { low: 1, high: 5 },
+    groningen: { low: 1, high: 4 }, maastricht: { low: 1, high: 3 },
+  } : {
     amsterdam: { low: 50, high: 200 }, haarlem: { low: 30, high: 100 },
     leiden: { low: 25, high: 80 }, utrecht: { low: 30, high: 120 },
     'den-haag': { low: 20, high: 80 }, rotterdam: { low: 15, high: 60 },
     eindhoven: { low: 10, high: 40 }, groningen: { low: 8, high: 30 },
     maastricht: { low: 5, high: 20 },
   };
-  const base = cityBase[city] || { low: 15, high: 50 };
+  const base = cityBase[city] || (isKoop ? { low: 1, high: 4 } : { low: 15, high: 50 });
 
-  const STATIC_BENCHMARKS = { amsterdam: 28, utrecht: 22, rotterdam: 18, 'den-haag': 17, haarlem: 24, eindhoven: 15, groningen: 12 };
-  const benchmark = STATIC_BENCHMARKS[city] || 18;
+  const STATIC_BENCHMARKS = isKoop
+    ? { amsterdam: 7800, utrecht: 6000, rotterdam: 4200, 'den-haag': 5200, haarlem: 5700, eindhoven: 4000, groningen: 3400, leiden: 5300, delft: 4900, maastricht: 3500, almere: 3300, amstelveen: 5800, tilburg: 3200, breda: 3600 }
+    : { amsterdam: 28, utrecht: 22, rotterdam: 18, 'den-haag': 17, haarlem: 24, eindhoven: 15, groningen: 12 };
+  const benchmark = STATIC_BENCHMARKS[city] || (isKoop ? 4000 : 18);
   const ppm2 = area > 0 ? price / area : 0;
   let multiplier = 1;
   if (ppm2 > 0 && ppm2 < benchmark * 0.85) multiplier = 1.5;
@@ -1428,35 +1440,53 @@ function getCompetitionContext(listing) {
 
   const estimated = { low: Math.round(base.low * multiplier), high: Math.round(base.high * multiplier) };
 
-  let timingMessage, urgency;
-  if (hoursOnline < 2) { timingMessage = 'Just listed — you are among the first to see this. Apply now before the shortlist forms.'; urgency = 'critical'; }
-  else if (hoursOnline < 6) { timingMessage = 'Listed a few hours ago — competition is building. Apply today.'; urgency = 'high'; }
-  else if (hoursOnline < 24) { timingMessage = 'Listed today — many applications likely already submitted. Speed still matters.'; urgency = 'medium'; }
-  else if (hoursOnline < 72) { timingMessage = 'Listed a few days ago — a strong, specific letter matters more than speed now.'; urgency = 'low'; }
-  else { timingMessage = 'Listed over 3 days ago — if not yet rented, the landlord may be selective. Ask why directly.'; urgency = 'investigate'; }
-
-  const successFactors = hoursOnline < 6
-    ? [
-        { factor: 'Speed — apply immediately', importance: 'Most important' },
-        { factor: 'Document readiness — send everything within the hour', importance: 'Critical' },
-        { factor: 'First contact message quality', importance: 'Secondary' },
-      ]
-    : hoursOnline < 24
-    ? [
-        { factor: 'Document readiness', importance: 'Most important' },
-        { factor: 'Letter quality and personalisation', importance: 'Critical' },
-        { factor: 'Follow-up call to agency', importance: 'High impact' },
-      ]
-    : [
-        { factor: 'Letter quality — show you specifically want this property', importance: 'Most important' },
-        { factor: 'Document readiness', importance: 'Critical' },
-        { factor: 'Stand out from many identical applications', importance: 'Key differentiator' },
-      ];
-
-  const level = estimated.high > 150 ? 'Very High'
-    : estimated.high > 80 ? 'High'
-    : estimated.high > 40 ? 'Medium'
-    : 'Low';
+  let timingMessage, urgency, successFactors, level;
+  if (isKoop) {
+    if (hoursOnline < 24) { timingMessage = 'Just listed — most bids come in during the first week. Move quickly if you want it.'; urgency = 'critical'; }
+    else if (hoursOnline < 24 * 7) { timingMessage = 'Listed this week — still in the high-interest window for most Dutch buyers.'; urgency = 'high'; }
+    else if (hoursOnline < 24 * 30) { timingMessage = 'Listed 1-4 weeks ago — early interest has cooled; there may be room to negotiate below the highest early bids.'; urgency = 'medium'; }
+    else if (hoursOnline < 24 * 90) { timingMessage = 'Listed 1-3 months — the asking price is more realistic now, a fair-value bid is more likely to succeed.'; urgency = 'low'; }
+    else { timingMessage = 'Listed over 3 months — the seller is likely open to bids below asking. Ask the agent directly why it has not sold.'; urgency = 'investigate'; }
+    successFactors = hoursOnline < 24 * 7
+      ? [
+          { factor: 'Speed — submit a formal bid within days', importance: 'Most important' },
+          { factor: 'Financing proof (mortgage pre-approval)', importance: 'Critical' },
+          { factor: 'Personal buyer letter to the seller', importance: 'Secondary' },
+        ]
+      : [
+          { factor: 'A fair, well-reasoned bid amount', importance: 'Most important' },
+          { factor: 'Flexible transfer date', importance: 'High impact' },
+          { factor: 'Financing proof (mortgage pre-approval)', importance: 'Critical' },
+        ];
+    level = estimated.high > 10 ? 'Very High' : estimated.high > 6 ? 'High' : estimated.high > 3 ? 'Medium' : 'Low';
+  } else {
+    if (hoursOnline < 2) { timingMessage = 'Just listed — you are among the first to see this. Apply now before the shortlist forms.'; urgency = 'critical'; }
+    else if (hoursOnline < 6) { timingMessage = 'Listed a few hours ago — competition is building. Apply today.'; urgency = 'high'; }
+    else if (hoursOnline < 24) { timingMessage = 'Listed today — many applications likely already submitted. Speed still matters.'; urgency = 'medium'; }
+    else if (hoursOnline < 72) { timingMessage = 'Listed a few days ago — a strong, specific letter matters more than speed now.'; urgency = 'low'; }
+    else { timingMessage = 'Listed over 3 days ago — if not yet rented, the landlord may be selective. Ask why directly.'; urgency = 'investigate'; }
+    successFactors = hoursOnline < 6
+      ? [
+          { factor: 'Speed — apply immediately', importance: 'Most important' },
+          { factor: 'Document readiness — send everything within the hour', importance: 'Critical' },
+          { factor: 'First contact message quality', importance: 'Secondary' },
+        ]
+      : hoursOnline < 24
+      ? [
+          { factor: 'Document readiness', importance: 'Most important' },
+          { factor: 'Letter quality and personalisation', importance: 'Critical' },
+          { factor: 'Follow-up call to agency', importance: 'High impact' },
+        ]
+      : [
+          { factor: 'Letter quality — show you specifically want this property', importance: 'Most important' },
+          { factor: 'Document readiness', importance: 'Critical' },
+          { factor: 'Stand out from many identical applications', importance: 'Key differentiator' },
+        ];
+    level = estimated.high > 150 ? 'Very High'
+      : estimated.high > 80 ? 'High'
+      : estimated.high > 40 ? 'Medium'
+      : 'Low';
+  }
 
   return { estimated, level, urgency, timingMessage, successFactors };
 }

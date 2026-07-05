@@ -475,9 +475,15 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
           <input class="inp" id="t3-max" type="text" placeholder="e.g. 460000">
         </div>
       </div>
-      <div class="fld">
-        <div class="lbl">City</div>
-        <input class="inp" id="t3-city" type="text" placeholder="e.g. Amsterdam, Rotterdam, Utrecht">
+      <div class="row2">
+        <div class="fld">
+          <div class="lbl">City</div>
+          <input class="inp" id="t3-city" type="text" placeholder="e.g. Amsterdam, Rotterdam, Utrecht">
+        </div>
+        <div class="fld">
+          <div class="lbl">Area (m²) <span class="opt-lbl">(for live price benchmark)</span></div>
+          <input class="inp" id="t3-area" type="text" placeholder="e.g. 75">
+        </div>
       </div>
       <div class="fld">
         <div class="lbl">Financing status</div>
@@ -506,6 +512,15 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
             <option value="3+ months">3+ months</option>
           </select>
         </div>
+      </div>
+      <div class="fld">
+        <div class="lbl">Bidding method <span class="opt-lbl">(ask the agent if unsure)</span></div>
+        <select class="inp" id="t3-method">
+          <option value="unknown">Not sure yet — ask the agent</option>
+          <option value="open bidding (bieden per opbod)">Open bidding (bieden per opbod / visible bids)</option>
+          <option value="sealed bidding under envelope (onder couvert / gesloten enveloppen)">Sealed bidding (onder couvert / gesloten enveloppen)</option>
+          <option value="asking price is final, no negotiation (vraagprijs is bod)">Asking price is final (vraagprijs is bod)</option>
+        </select>
       </div>
       <div class="fld">
         <div class="lbl">Extra context <span class="opt-lbl">(optional)</span> <span class="cc" id="cc-3">0 / 400</span></div>
@@ -1088,12 +1103,14 @@ function buildMsg(tab){
       const ask=(document.getElementById('t3-ask')?.value||'').trim();
       const max=(document.getElementById('t3-max')?.value||'').trim();
       const city=(document.getElementById('t3-city')?.value||'').trim();
+      const area=(document.getElementById('t3-area')?.value||'').trim();
       const fin=document.getElementById('t3-fin')?.value||'';
       const comp=document.getElementById('t3-comp')?.value||'';
       const age=document.getElementById('t3-age')?.value||'';
+      const method=document.getElementById('t3-method')?.value||'unknown';
       const extra=(document.getElementById('t3-extra')?.value||'').trim();
       if(!ask&&!city)return null;
-      const parts=[`City: ${city||'not specified'}`,`Asking price: EUR ${ask||'not specified'}`,`Maximum budget: EUR ${max||'not specified'}`,`Financing: ${fin}`,`Competition: ${comp}`,`Listed for: ${age}`];
+      const parts=[`City: ${city||'not specified'}`,`Asking price: EUR ${ask||'not specified'}`,`Area: ${area||'not specified'} m²`,`Maximum budget: EUR ${max||'not specified'}`,`Financing: ${fin}`,`Competition: ${comp}`,`Listed for: ${age}`,`Bidding method: ${method}`];
       if(extra)parts.push(`\nAdditional context:\n${extra}`);
       return parts.join('\n');
     }
@@ -1107,14 +1124,20 @@ async function submit(tab){
   const msg=buildMsg(tab);
   if(!msg){showE(tab,ERR[tab]||'Please fill in the required fields.');return;}
   hideE(tab);setLoad(tab,true);
-  // Property Analysis (tab 2): send structured fields alongside the free-text message so the
-  // server can look up the real, live price benchmark (score.js) instead of relying only on
-  // the static table baked into the prompt.
+  // Property Analysis (tab 2) and Bid Strategy (tab 3): both collect price/area/city directly —
+  // send structured fields alongside the free-text message so the server can look up the real,
+  // live price benchmark, deal score and competition estimate (score.js) instead of relying only
+  // on the static tables baked into the prompts.
   let dealFields=null;
   if(tab===2){
     const price=(document.getElementById('t2-price')?.value||'').trim();
     const area=(document.getElementById('t2-area')?.value||'').trim();
     const loc=(document.getElementById('t2-loc')?.value||'').trim();
+    if(price&&area&&loc)dealFields={price,area,location:loc};
+  }else if(tab===3){
+    const price=(document.getElementById('t3-ask')?.value||'').trim();
+    const area=(document.getElementById('t3-area')?.value||'').trim();
+    const loc=(document.getElementById('t3-city')?.value||'').trim();
     if(price&&area&&loc)dealFields={price,area,location:loc};
   }
   try{
