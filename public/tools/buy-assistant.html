@@ -33,9 +33,10 @@ body{background:var(--bg);color:var(--text-primary);font-family:'Inter',sans-ser
 .lbar-addr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lbar-price{font-size:12px;color:var(--muted);flex-shrink:0}
 
-/* Layout */
-.wrap{max-width:720px;margin:0 auto;padding:32px 24px 120px;margin-top:56px}
-body.has-lb .wrap{margin-top:92px}
+/* Layout: side-nav (tabs) | wrap (content) */
+.page-outer{display:flex;gap:24px;max-width:960px;margin:0 auto;margin-top:56px}
+body.has-lb .page-outer{margin-top:92px}
+.wrap{max-width:720px;flex:1;min-width:0;padding:32px 24px 120px}
 
 /* Progress bar */
 .prog{display:flex;align-items:center;margin-bottom:28px}
@@ -49,17 +50,20 @@ body.has-lb .wrap{margin-top:92px}
 .prog-line{flex:1;height:1px;background:rgba(255,255,255,0.08);margin:0 8px;transition:background .2s}
 .prog-line.done{background:var(--green)}
 
-/* Tabs — underline style */
-.tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:0}
-.tab{padding:10px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-muted);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:-1px}
-.tab:hover{color:rgba(255,255,255,0.7)}
-.tab.on{color:#fff;border-bottom-color:var(--green);font-weight:600}
+/* ── Side nav (Linear-style vertical sidebar): main tabs grouped at top,
+   sub-tools grouped below. Desktop = vertical column to the left of .wrap.
+   Mobile = the "more tools" group re-flows into a horizontal scrollable
+   strip (the main tabs are covered by .mob-nav's bottom bar). ── */
+.side-nav{display:flex;flex-direction:column;width:196px;flex-shrink:0;padding-top:32px}
+.side-nav-group{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+.side-nav-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.3);padding:4px 12px 8px}
+.tab{display:block;width:100%;text-align:left;padding:9px 12px;background:transparent;border:none;border-radius:8px;color:var(--text-muted);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.tab:hover{background:rgba(255,255,255,0.04);color:#fff}
+.tab.on{background:rgba(0,200,150,0.1);color:#00c896;font-weight:600}
 
-/* More tools row */
-.more-tools-row{display:flex;align-items:center;gap:8px;padding:10px 0 20px;flex-wrap:wrap}
-.more-tools-label{font-size:11px;color:rgba(255,255,255,0.3)}
-.more-tool-btn{font-size:12px;color:rgba(255,255,255,0.5);background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;transition:all .15s}
-.more-tool-btn:hover,.more-tool-btn.on{color:#00c896;border-color:rgba(0,200,150,0.3)}
+.more-tool-btn{display:block;width:100%;text-align:left;font-size:13px;color:rgba(255,255,255,0.5);background:transparent;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.more-tool-btn:hover{background:rgba(255,255,255,0.04);color:#fff}
+.more-tool-btn.on{background:rgba(0,200,150,0.1);color:#00c896;font-weight:600}
 
 /* Panels */
 .panel{display:none}
@@ -153,9 +157,15 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 
 @media(max-width:767px){
   .mob-nav{display:block}
+  .page-outer{flex-direction:column}
   .wrap{padding:20px 16px 100px}
   .row2{grid-template-columns:1fr}
   .prog{display:none}
+  .side-nav{width:auto;flex-direction:row;padding:12px 16px 0}
+  .side-nav-group-main{display:none} /* covered by .mob-nav bottom bar */
+  .side-nav-group-more{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .side-nav-group-more .side-nav-label{width:100%;padding:0 0 2px}
+  .side-nav-group-more .more-tool-btn{width:auto;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
 }
 
 /* ── Ported tool tabs (Buyer Letter, Lease Review, Deal Finder, Inspection
@@ -268,6 +278,25 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   <div class="lbar-price" id="lbar-price"></div>
 </div>
 
+<div class="page-outer">
+<nav class="side-nav" id="side-nav">
+  <div class="side-nav-group side-nav-group-main">
+    <button class="tab on" data-tab="1" onclick="switchBuyTab(1)">Affordability</button>
+    <button class="tab" data-tab="2" onclick="switchBuyTab(2)">Property Analysis</button>
+    <button class="tab" data-tab="3" onclick="switchBuyTab(3)">Bid Strategy</button>
+    <button class="tab" data-tab="4" onclick="switchBuyTab(4)">VvE Checker</button>
+  </div>
+  <div class="side-nav-group side-nav-group-more">
+    <div class="side-nav-label">More buyer tools</div>
+    <button class="more-tool-btn" id="more-btn-5" onclick="switchBuyTab(5)">Viewing Checklist</button>
+    <button class="more-tool-btn" id="more-btn-6" onclick="switchBuyTab(6)">Buyer Letter</button>
+    <button class="more-tool-btn" id="more-btn-7" onclick="switchBuyTab(7)">Lease Review</button>
+    <button class="more-tool-btn" id="more-btn-8" onclick="switchBuyTab(8)">Deal Finder</button>
+    <button class="more-tool-btn" id="more-btn-9" onclick="switchBuyTab(9)">Inspection Advisor</button>
+    <button class="more-tool-btn" id="more-btn-10" onclick="switchBuyTab(10)">Erfpacht Checker</button>
+    <button class="more-tool-btn" id="more-btn-11" onclick="switchBuyTab(11)">Agent Scripts</button>
+  </div>
+</nav>
 <div class="wrap">
 
   <!-- Progress bar -->
@@ -286,26 +315,6 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
       <div class="prog-num">3</div>
       <span class="prog-label">Bid Strategy</span>
     </div>
-  </div>
-
-  <!-- Tab row -->
-  <div class="tabs">
-    <button class="tab on" data-tab="1" onclick="switchBuyTab(1)">Affordability</button>
-    <button class="tab" data-tab="2" onclick="switchBuyTab(2)">Property Analysis</button>
-    <button class="tab" data-tab="3" onclick="switchBuyTab(3)">Bid Strategy</button>
-    <button class="tab" data-tab="4" onclick="switchBuyTab(4)">VvE Checker</button>
-  </div>
-
-  <!-- More tools row -->
-  <div class="more-tools-row">
-    <span class="more-tools-label">More buyer tools:</span>
-    <button class="more-tool-btn" id="more-btn-5" onclick="switchBuyTab(5)">Viewing Checklist</button>
-    <button class="more-tool-btn" id="more-btn-6" onclick="switchBuyTab(6)">Buyer Letter</button>
-    <button class="more-tool-btn" id="more-btn-7" onclick="switchBuyTab(7)">Lease Review</button>
-    <button class="more-tool-btn" id="more-btn-8" onclick="switchBuyTab(8)">Deal Finder</button>
-    <button class="more-tool-btn" id="more-btn-9" onclick="switchBuyTab(9)">Inspection Advisor</button>
-    <button class="more-tool-btn" id="more-btn-10" onclick="switchBuyTab(10)">Erfpacht Checker</button>
-    <button class="more-tool-btn" id="more-btn-11" onclick="switchBuyTab(11)">Agent Scripts</button>
   </div>
 
   <!-- ── Panel 1: Affordability ── -->
@@ -942,6 +951,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   </div>
 
 </div>
+</div><!-- /page-outer -->
 
 <!-- Mobile bottom nav -->
 <nav class="mob-nav">

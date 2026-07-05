@@ -43,15 +43,20 @@ body.has-pc .page-outer{margin-top:188px}
 .lbar-dot,.lbar-addr,.lbar-price{}
 
 
-.tabs{display:flex;flex-wrap:wrap;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.07);padding:0}
-.tab{padding:10px 16px;border:none;background:transparent;color:rgba(255,255,255,0.4);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:color .15s;border-bottom:2px solid transparent;margin-bottom:-1px}
-.tab:hover{color:rgba(255,255,255,0.7)}
-.tab.on{color:#ffffff;border-bottom:2px solid #00c896;font-weight:600}
+/* ── Side nav (Linear-style vertical sidebar): main tabs grouped at top,
+   sub-tools grouped below. Desktop = vertical column to the left of the
+   content. Mobile = the "more tools" group re-flows into a horizontal
+   scrollable strip (the main tabs are covered by .mob-nav's bottom bar). ── */
+.side-nav{display:flex;flex-direction:column;width:196px;flex-shrink:0}
+.side-nav-group{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+.side-nav-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:rgba(255,255,255,0.3);padding:4px 12px 8px}
+.tab{display:block;width:100%;text-align:left;padding:9px 12px;border:none;border-radius:8px;background:transparent;color:rgba(255,255,255,0.5);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s}
+.tab:hover{background:rgba(255,255,255,0.04);color:#fff}
+.tab.on{background:rgba(0,200,150,0.1);color:#00c896;font-weight:600}
 
-.more-tools-row{display:flex;align-items:center;gap:8px;padding:10px 0 20px;flex-wrap:wrap}
-.more-tools-label{font-size:12px;color:rgba(255,255,255,0.3)}
-.more-tool-btn{font-size:12px;color:rgba(255,255,255,0.5);background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;transition:all .15s}
-.more-tool-btn:hover,.more-tool-btn.on{color:#00c896;border-color:rgba(0,200,150,0.3)}
+.more-tool-btn{display:block;width:100%;text-align:left;font-size:13px;color:rgba(255,255,255,0.45);background:transparent;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.more-tool-btn:hover{background:rgba(255,255,255,0.04);color:#fff}
+.more-tool-btn.on{background:rgba(0,200,150,0.1);color:#00c896;font-weight:600}
 
 .panel{display:none}
 .panel.on{display:block}
@@ -162,8 +167,8 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .prog-step.on .prog-lbl{color:#fff;font-weight:600}
 .prog-conn{flex:1;height:1px;background:rgba(255,255,255,0.08);min-width:6px;margin:0 4px}
 
-/* Two-column layout */
-.page-outer{display:flex;gap:24px;max-width:1100px;margin:100px auto 0;padding:28px 24px 80px}
+/* Three-column layout: side-nav (tabs) | main-col (content) | sidebar (Scout tips) */
+.page-outer{display:flex;gap:24px;max-width:1300px;margin:100px auto 0;padding:28px 24px 80px}
 .main-col{flex:1;min-width:0}
 .sidebar{width:296px;flex-shrink:0;display:none}
 .sb-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 18px;margin-bottom:12px}
@@ -229,8 +234,12 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 @media(min-width:768px){.sidebar{display:block}.page-outer.analyse-mode .sidebar{display:none}}
 @media(max-width:767px){
   .mob-nav{display:flex}
-  .tabs{display:none}
-  .page-outer{padding:16px 16px 72px}
+  .page-outer{padding:16px 16px 72px;flex-direction:column}
+  .side-nav{width:auto;flex-direction:row}
+  .side-nav-group-main{display:none} /* covered by .mob-nav bottom bar */
+  .side-nav-group-more{flex-direction:row;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .side-nav-group-more .side-nav-label{width:100%;padding:0 0 2px}
+  .side-nav-group-more .more-tool-btn{width:auto;border:1px solid rgba(255,255,255,0.1);border-radius:6px}
 }
 @media(max-width:420px){
   .prog-lbl{display:none}
@@ -383,16 +392,14 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 </div>
 
 <div class="page-outer">
-<div class="main-col">
-
-  <div class="tabs" id="tabs">
+<nav class="side-nav" id="side-nav">
+  <div class="side-nav-group side-nav-group-main" id="tabs">
     <button class="tab" data-tab="0" onclick="switchTab(0)">Analyse</button>
     <button class="tab on" data-tab="1" onclick="switchTab(1)">Letter</button>
     <button class="tab" data-tab="2" onclick="switchTab(2)">Viewing Tips</button>
   </div>
-
-  <div class="more-tools-row">
-    <span class="more-tools-label">More rental tools:</span>
+  <div class="side-nav-group side-nav-group-more">
+    <div class="side-nav-label">More rental tools</div>
     <button class="more-tool-btn" id="more-btn-4" onclick="switchTab(4)">Landlord Reply</button>
     <button class="more-tool-btn" id="more-btn-5" onclick="switchTab(5)">Income Check</button>
     <button class="more-tool-btn" id="more-btn-6" onclick="switchTab(6)">Rejection Analyser</button>
@@ -400,6 +407,8 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
     <button class="more-tool-btn" id="more-btn-8" onclick="switchTab(8)">Viewing Feedback</button>
     <button class="more-tool-btn" id="more-btn-9" onclick="switchTab(9)">Tenant Rights</button>
   </div>
+</nav>
+<div class="main-col">
 
   <!-- Panel 0: Analyse -->
   <div id="panel-0" class="panel">
