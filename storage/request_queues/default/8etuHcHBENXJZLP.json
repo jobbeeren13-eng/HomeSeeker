@@ -1,9 +1,0 @@
-{
-	"id": "8etuHcHBENXJZLP",
-	"json": "{\"id\":\"8etuHcHBENXJZLP\",\"url\":\"https://www.funda.nl/zoeken/koop/?selected_area=[\\\"haarlem\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/koop/?selected_area=[%22haarlem%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/koop?selected_area=%5B%22haarlem%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"haarlem\",\"transactionType\":\"koop\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-19T23:10:57.744Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://www.funda.nl/zoeken/koop?selected_area=%5B%22haarlem%22%5D",
-	"url": "https://www.funda.nl/zoeken/koop/?selected_area=[\"haarlem\"]"
-}

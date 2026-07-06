@@ -12,6 +12,23 @@ const db = new Database(DB_PATH);
  
 db.exec(`PRAGMA journal_mode = WAL`);
 db.exec(`PRAGMA foreign_keys = ON`);
+// Wait up to 5s for a lock to clear instead of failing immediately with SQLITE_BUSY. Matters when
+// the daily online db.backup() or a WAL checkpoint briefly overlaps with a normal query.
+db.exec(`PRAGMA busy_timeout = 5000`);
+
+// Startup integrity check — surfaces on-disk corruption (e.g. after an unclean shutdown or a
+// volume issue) loudly in the logs rather than letting it fail silently mid-request later.
+// quick_check is used over the full integrity_check so it stays fast even on a large DB.
+try {
+  const integrity = db.pragma('quick_check', { simple: true });
+  if (integrity === 'ok') {
+    console.log('[db] Integrity check passed (quick_check: ok)');
+  } else {
+    console.error(`[db] INTEGRITY CHECK FAILED — quick_check returned: ${integrity}. The database may be corrupt; restore from the latest backup (homeseeker_backup.db).`);
+  }
+} catch (e) {
+  console.error('[db] Integrity check could not run:', e.message);
+}
  
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (

@@ -1807,6 +1807,27 @@ app.post('/api/funda-search', async (req, res) => {
   }
 });
 
+// ── 404 + 500 handlers (must be registered after all routes) ──────────────
+// API and webhook paths get JSON so clients can parse the error; everything else is a browser
+// navigation and gets the styled HTML page.
+function wantsJson(req) {
+  return req.path.startsWith('/api/') || req.path.startsWith('/webhook/') || (req.headers.accept || '').includes('application/json');
+}
+
+app.use((req, res) => {
+  if (wantsJson(req)) return res.status(404).json({ error: 'Not found' });
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
+// Express error handler: 4 args so Express treats it as the error middleware. Logs the stack
+// server-side but never leaks it to the client.
+app.use((err, req, res, next) => {
+  console.error('[server] Unhandled error:', err && err.stack ? err.stack : err);
+  if (res.headersSent) return next(err);
+  if (wantsJson(req)) return res.status(500).json({ error: 'Internal server error' });
+  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
+});
+
 const server = app.listen(PORT, () => {
   console.log(`[server] HomeSeeker running on port ${PORT}`);
   console.log(`[server] Base URL: ${BASE_URL}`);

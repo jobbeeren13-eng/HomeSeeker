@@ -1,9 +1,0 @@
-{
-	"id": "Zzhw9i9Fw4dHZRm",
-	"json": "{\"id\":\"Zzhw9i9Fw4dHZRm\",\"url\":\"https://www.funda.nl/zoeken/huur/?selected_area=[\\\"den-haag\\\"]\",\"loadedUrl\":\"https://www.funda.nl/zoeken/huur/?selected_area=[%22den-haag%22]\",\"uniqueKey\":\"https://www.funda.nl/zoeken/huur?selected_area=%5B%22den-haag%22%5D\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[],\"headers\":{},\"userData\":{\"source\":\"funda\",\"city\":\"den-haag\",\"transactionType\":\"huur\",\"__crawlee\":{\"state\":4}},\"handledAt\":\"2026-05-19T23:10:39.908Z\"}",
-	"method": "GET",
-	"orderNo": null,
-	"retryCount": 0,
-	"uniqueKey": "https://www.funda.nl/zoeken/huur?selected_area=%5B%22den-haag%22%5D",
-	"url": "https://www.funda.nl/zoeken/huur/?selected_area=[\"den-haag\"]"
-}

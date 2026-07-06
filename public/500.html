@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Something went wrong - HomeSeeker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --green: #00c896; --bg: #0a0a0a; --bg2: #0f1318; --border: rgba(255,255,255,0.07); --text: #e8edf3; --muted: #7a8494; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; min-height: 100vh; display: flex; flex-direction: column; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+    .logo { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--green); text-decoration: none; text-transform: uppercase; }
+    .nav-back { font-size: 13px; color: var(--muted); text-decoration: none; transition: color .15s; }
+    .nav-back:hover { color: var(--text); }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; }
+    .code { font-size: 96px; font-weight: 800; letter-spacing: -2px; color: var(--green); line-height: 1; margin-bottom: 8px; }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+    p { font-size: 15px; color: var(--muted); max-width: 460px; margin-bottom: 28px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: #04120d; font-weight: 700; font-size: 14px; padding: 12px 22px; border-radius: 11px; text-decoration: none; transition: opacity .15s; }
+    .btn:hover { opacity: .88; }
+    footer { border-top: 1px solid var(--border); padding: 24px; text-align: center; color: var(--muted); font-size: 12px; }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="/">HomeSeeker</a>
+  <a class="nav-back" href="/">← Back to home</a>
+</nav>
+<main>
+  <div class="code">500</div>
+  <h1>Something went wrong</h1>
+  <p>We hit an unexpected error on our end. It's not you. Please try again in a moment — if it keeps happening, email us and we'll sort it out.</p>
+  <a class="btn" href="/">Back to home →</a>
+</main>
+<footer>
+  © 2026 HomeSeeker &nbsp;·&nbsp; <a href="/">Home</a> &nbsp;·&nbsp; <a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a> &nbsp;·&nbsp; <a href="mailto:support@homeseeker.dev">support@homeseeker.dev</a>
+</footer>
+</body>
+</html>
