@@ -258,13 +258,16 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   .page-outer{padding:16px 16px 100px;flex-direction:column}
   .page-outer,.page-outer.analyse-mode{max-width:none}
   .main-col{max-width:none}
+  /* Property header scrolls away with the page on mobile instead of staying pinned. */
+  body.has-pc #property-card{position:static;margin-top:100px}
+  body.has-pc .prog-bar{top:56px}
+  body.has-pc .page-outer{margin-top:0}
   .side-nav.mobile-menu-open{
     display:flex;position:fixed;top:100px;left:0;right:0;
     max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
     border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 12px 20px;
     z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
   }
-  body.has-pc .side-nav.mobile-menu-open{top:188px;max-height:calc(100vh - 188px)}
 }
 
 /* ── Ported tool tabs (Landlord Reply, Income Check, Rejection Analyser,
