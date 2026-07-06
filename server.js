@@ -27,7 +27,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { db, dbPath, upsertUser, getUserByEmail, getUserByCustomerId, getAllActiveUsers, getUser, setUserChatId, linkChatToCustomer, clearChatIdFromOthers, createUserByCustomerId, cancelUserByChatId, cancelUserByStripe, createBareUserByChatId, activateUserByChatId, insertReview, getApprovedReviews, approveReview, getFavorites, addFavorite, removeFavorite, getApplicationTracker, upsertApplicationStatus, removeApplicationStatus, getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt, getUsersForTrialReminder, getUsersForNoAlertsNotification, getUsersForReviewRequest, getListingByUrl, checkAndIncrementAiUsage, purgeOldAiUsage, purgeOldProcessedStripeEvents } = require('./src/database');
-const { sendWelcomeEmail, sendTrialReminderEmail } = require('./src/email');
+const { sendWelcomeEmail, sendTrialReminderEmail, maskEmail } = require('./src/email');
 const { normaliseCity, getScraperHealth, setAdminBot, rowToListing } = require('./src/scraper');
 const { createBot, getBot, sendAlert, processWebhookUpdate, injectCachedListing, getCachedEntry, signChatId, verifyChatToken } = require('./src/telegram');
 const { createCheckoutSession, handleWebhook, cancelSubscription } = require('./src/stripe');
@@ -96,17 +96,33 @@ function isPaidUser(chatId) {
 
 const PAYWALL_MESSAGE = 'Start your free trial to use this feature.';
 const DAILY_CAP_MESSAGE = 'Daily limit reached for AI features. Try again tomorrow, or contact support@homeseeker.dev if you need a higher limit.';
+const GLOBAL_CAP_MESSAGE = 'AI features are temporarily at capacity. Please try again in a little while.';
 const MAX_AI_CALLS_PER_DAY = parseInt(process.env.MAX_AI_CALLS_PER_DAY, 10) || 50;
+// Service-wide daily ceiling across ALL users — a circuit breaker on total Anthropic spend, on
+// top of the per-user cap. Default 5000/day (= up to 100 fully-active users at the 50/day cap).
+// Tune via env as the user base grows.
+const MAX_AI_CALLS_GLOBAL_PER_DAY = parseInt(process.env.MAX_AI_CALLS_GLOBAL_PER_DAY, 10) || 5000;
+let lastGlobalCapAlertDay = null; // so we log the breach once per day, not on every blocked call
 
-// Applies the hard per-user daily cap (DB-backed, see checkAndIncrementAiUsage) once a chatId has
-// already been established as belonging to a paid user. Shared by both requirePaidUser and
-// requirePaidUserTrusted below so the cap applies identically regardless of how chatId was proven.
+// Applies the hard per-user daily cap plus the service-wide global cap (both DB-backed, see
+// checkAndIncrementAiUsage) once a chatId has already been established as belonging to a paid
+// user. Shared by both requirePaidUser and requirePaidUserTrusted below so the caps apply
+// identically regardless of how chatId was proven. A per-user breach is the user's own limit
+// (429); a global breach is a service-wide capacity stop (503) and is not the user's fault.
 function enforceDailyCap(res, chatId) {
-  if (!checkAndIncrementAiUsage(String(chatId), MAX_AI_CALLS_PER_DAY)) {
-    res.status(429).json({ error: DAILY_CAP_MESSAGE, code: 'DAILY_CAP' });
+  const result = checkAndIncrementAiUsage(String(chatId), MAX_AI_CALLS_PER_DAY, MAX_AI_CALLS_GLOBAL_PER_DAY);
+  if (result.ok) return true;
+  if (result.reason === 'global') {
+    const today = new Date().toISOString().slice(0, 10);
+    if (lastGlobalCapAlertDay !== today) {
+      lastGlobalCapAlertDay = today;
+      console.error(`[ai-cap] GLOBAL daily AI cap of ${MAX_AI_CALLS_GLOBAL_PER_DAY} reached — AI endpoints returning 503 until tomorrow (UTC).`);
+    }
+    res.status(503).json({ error: GLOBAL_CAP_MESSAGE, code: 'GLOBAL_CAP' });
     return false;
   }
-  return true;
+  res.status(429).json({ error: DAILY_CAP_MESSAGE, code: 'DAILY_CAP' });
+  return false;
 }
 
 // Call at the top of an AI endpoint handler right after the rate-limit check, passing the
@@ -383,7 +399,7 @@ app.post('/api/admin/link-chat', (req, res) => {
     }
 
     const updated = getUserByEmail.get(user.email);
-    console.log(`[admin] Linked chat_id=${chatIdStr} to user email=${user.email} customer=${user.stripe_customer_id}`);
+    console.log(`[admin] Linked chat_id=${chatIdStr} to user email=${maskEmail(user.email)} customer=${user.stripe_customer_id}`);
     res.json({ success: true, user: { email: updated.email, chat_id: updated.chat_id, betaald: updated.betaald, actief: updated.actief } });
   } catch (err) {
     console.error('[api/admin/link-chat]', err.message);
@@ -413,7 +429,7 @@ app.post('/api/admin/fix-user', (req, res) => {
       const subId  = (stripe_subscription_id || '').trim();
       createUserByCustomerId.run(chatIdStr, emailNorm, custId, subId, Date.now());
       user = getUserByEmail.get(emailNorm) || getUserByCustomerId.get(custId);
-      console.log(`[admin] fix-user: created user email=${emailNorm} chat_id=${chatIdStr}`);
+      console.log(`[admin] fix-user: created user email=${maskEmail(emailNorm)} chat_id=${chatIdStr}`);
     } else {
       // User exists — link the chat_id
       clearChatIdFromOthers.run(chatIdStr, user.stripe_customer_id || '');
@@ -422,7 +438,7 @@ app.post('/api/admin/fix-user', (req, res) => {
       } else {
         setUserChatId.run(chatIdStr, emailNorm);
       }
-      console.log(`[admin] fix-user: linked chat_id=${chatIdStr} to email=${emailNorm}`);
+      console.log(`[admin] fix-user: linked chat_id=${chatIdStr} to email=${maskEmail(emailNorm)}`);
     }
 
     const updated = getUserByEmail.get(emailNorm) || getUserByCustomerId.get((stripe_customer_id || '').trim());
@@ -475,7 +491,7 @@ app.post('/api/admin/resend-activation', async (req, res) => {
 
   try {
     await sendWelcomeEmail(user.email, user.naam || '', user.stripe_customer_id);
-    console.log(`[admin] Resent activation email to ${user.email}`);
+    console.log(`[admin] Resent activation email to ${maskEmail(user.email)}`);
     res.json({ success: true, email: user.email });
   } catch (err) {
     console.error('[admin] Resend activation error:', err.message);
@@ -1530,7 +1546,7 @@ async function runDailyJob() {
     ).all(expiryCutoff);
     for (const u of expiredUsers) {
       db.prepare('UPDATE users SET betaald = 0, actief = 0 WHERE chat_id = ?').run(u.chat_id);
-      console.log(`[daily] Trial expired (no subscription confirmed) — deactivated user ${u.email || u.chat_id}`);
+      console.log(`[daily] Trial expired (no subscription confirmed) — deactivated user ${u.email ? maskEmail(u.email) : u.chat_id}`);
     }
     if (expiredUsers.length) console.log(`[daily] Expired trial users deactivated: ${expiredUsers.length}`);
   } catch (e) { console.error('[daily] trial expiry check error:', e.message); }
@@ -1697,12 +1713,12 @@ if (useWebhook) {
     const existing = getUserByEmail.get(bootEmail);
     if (!existing) {
       createUserByCustomerId.run(bootChat, bootEmail, '', '', Date.now());
-      console.log(`[boot] DB reset detected — created user: email=${bootEmail} chat_id=${bootChat}`);
+      console.log(`[boot] DB reset detected — created user: email=${maskEmail(bootEmail)} chat_id=${bootChat}`);
     } else if (!existing.chat_id || existing.chat_id !== bootChat) {
       setUserChatId.run(bootChat, bootEmail);
-      console.log(`[boot] Re-linked chat_id=${bootChat} to email=${bootEmail}`);
+      console.log(`[boot] Re-linked chat_id=${bootChat} to email=${maskEmail(bootEmail)}`);
     } else {
-      console.log(`[boot] User OK: email=${bootEmail} chat_id=${bootChat}`);
+      console.log(`[boot] User OK: email=${maskEmail(bootEmail)} chat_id=${bootChat}`);
     }
   }
 }

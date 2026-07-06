@@ -437,18 +437,29 @@ const incrementAiUsage = db.prepare(`
 `);
 const purgeOldAiUsage = db.prepare('DELETE FROM ai_usage_daily WHERE usage_date < ?');
 
-// Hard per-user daily cap on AI-generation calls (on top of the shared per-IP rate limit).
-// Synchronous end-to-end (better-sqlite3) so there is no race between the read and the write —
-// two near-simultaneous calls for the same chat_id cannot both slip through at the cap boundary.
-// Returns true and increments the counter if still under maxPerDay for today (UTC calendar day);
-// returns false without incrementing if already at/over the cap.
-function checkAndIncrementAiUsage(chatId, maxPerDay) {
+// Sentinel chat_id used to accumulate the service-wide AI call total for a day in the same
+// ai_usage_daily table (real chat_ids are numeric Telegram ids, so this can never collide).
+const GLOBAL_AI_USAGE_KEY = '__global__';
+
+// Hard per-user daily cap on AI-generation calls (on top of the shared per-IP rate limit), plus
+// an optional service-wide global cap that protects against runaway Anthropic spend from many
+// users at once. Synchronous end-to-end (better-sqlite3) so there is no race between read and
+// write — two near-simultaneous calls cannot both slip through at a cap boundary.
+// Returns { ok: true } and increments both the per-user and global counters if under both caps
+// for today (UTC calendar day). Returns { ok: false, reason: 'user' | 'global' } without
+// incrementing anything if either cap is already reached. maxGlobalPerDay is optional; when
+// omitted or falsy the global cap is not enforced (backwards compatible).
+function checkAndIncrementAiUsage(chatId, maxPerDay, maxGlobalPerDay) {
   const today = new Date().toISOString().slice(0, 10);
-  const row = getAiUsageToday.get(String(chatId), today);
-  const current = row ? row.count : 0;
-  if (current >= maxPerDay) return false;
+  const userRow = getAiUsageToday.get(String(chatId), today);
+  if ((userRow ? userRow.count : 0) >= maxPerDay) return { ok: false, reason: 'user' };
+  if (maxGlobalPerDay) {
+    const globalRow = getAiUsageToday.get(GLOBAL_AI_USAGE_KEY, today);
+    if ((globalRow ? globalRow.count : 0) >= maxGlobalPerDay) return { ok: false, reason: 'global' };
+  }
   incrementAiUsage.run(String(chatId), today);
-  return true;
+  if (maxGlobalPerDay) incrementAiUsage.run(GLOBAL_AI_USAGE_KEY, today);
+  return { ok: true };
 }
 
 const getProcessedStripeEvent = db.prepare('SELECT event_id FROM processed_stripe_events WHERE event_id = ?');

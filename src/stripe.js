@@ -1,6 +1,6 @@
 const Stripe = require('stripe');
 const { createUserByCustomerId, setUserPaidByCustomerId, cancelUserByStripe, markStripeEventProcessed } = require('./database');
-const { sendWelcomeEmail, sendCancellationEmail } = require('./email');
+const { sendWelcomeEmail, sendCancellationEmail, maskEmail } = require('./email');
  
 let _stripe = null;
 function getStripe() {
@@ -28,7 +28,7 @@ async function createCheckoutSession(successUrl, cancelUrl) {
     allow_promotion_codes: true,
     custom_text: {
       submit: {
-        message: 'Cancel anytime before day 7 and you won\'t be charged. After the free trial, €9.99/month is billed automatically until cancelled. By subscribing you agree to the Terms of Service (homeseeker.dev/terms) and Privacy Policy (homeseeker.dev/privacy). HomeSeeker is not affiliated with Funda or any housing platform.',
+        message: 'Cancel anytime before day 7 and you won\'t be charged. After the free trial, €9.99/month is billed automatically until cancelled. By subscribing you agree to the Terms of Service (homeseeker.dev/terms) and Privacy Policy (homeseeker.dev/privacy), you request that the service starts immediately, and you acknowledge that your 14-day right of withdrawal lapses once the service has been provided. HomeSeeker is not affiliated with Funda or any housing platform.',
       },
     },
     success_url: successUrl,
@@ -63,7 +63,7 @@ async function handleWebhook(payload, sig) {
     if (customerId) {
       const naam = session.customer_details?.name || '';
       createUserByCustomerId.run(naam, email || '', customerId, subscriptionId, Date.now());
-      console.log(`[stripe] Trial started for customer ${customerId} (${email})`);
+      console.log(`[stripe] Trial started for customer ${customerId} (${maskEmail(email)})`);
       if (email) {
         sendWelcomeEmail(email, naam, customerId).catch(err => console.error('[email] Failed to send welcome email:', err));
       }

@@ -1,5 +1,20 @@
 const { Resend } = require('resend');
 
+// Masks an email for logging so raw PII never lands in stdout/log storage, while keeping enough
+// (first char of local part + domain) to still recognise an account when debugging.
+// e.g. "jane.doe@gmail.com" -> "j***e@gmail.com", "ab@x.com" -> "a*@x.com".
+function maskEmail(email) {
+  if (!email || typeof email !== 'string') return '';
+  const at = email.indexOf('@');
+  if (at < 1) return '***';
+  const local = email.slice(0, at);
+  const domain = email.slice(at + 1);
+  const maskedLocal = local.length <= 2
+    ? local[0] + '*'
+    : local[0] + '***' + local[local.length - 1];
+  return `${maskedLocal}@${domain}`;
+}
+
 let resend = null;
 
 function getResend() {
@@ -129,4 +144,4 @@ async function sendCancellationEmail(email, naam) {
   });
 }
 
-module.exports = { sendWelcomeEmail, sendTrialReminderEmail, sendCancellationEmail };
+module.exports = { sendWelcomeEmail, sendTrialReminderEmail, sendCancellationEmail, maskEmail };

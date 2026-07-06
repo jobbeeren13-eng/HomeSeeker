@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { getUser, getUserByEmail, getListingByUrl, getUserByCustomerId, linkChatToCustomer, clearChatIdFromOthers, setUserChatId, upsertChat, setUserActive, cancelUserByChatId, persistCacheListing, getPersistedCacheListing, purgeExpiredCacheListings, updateLastAlertSentAt, insertOutcomeSnapshot } = require('./database');
 const { rowToListing } = require('./scraper');
 const { detectLandlordIntent } = require('./score');
+const { maskEmail } = require('./email');
  
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
@@ -471,7 +472,7 @@ function createBot(useWebhook = false) {
         setUserChatId.run(chatId, email);
       }
       const filterUrl = `${BASE_URL}/filters?chat_id=${chatId}`;
-      console.log(`[telegram] Self-serve linked chat_id=${chatId} to email=${email}`);
+      console.log(`[telegram] Self-serve linked chat_id=${chatId} to email=${maskEmail(email)}`);
       await bot.sendMessage(chatId,
         `✅ *Account connected!* Your subscription is active.\n\nSet your filters to start receiving alerts:`,
         {
