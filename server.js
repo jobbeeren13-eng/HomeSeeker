@@ -783,10 +783,10 @@ app.post('/api/generate-package', async (req, res) => {
 app.post('/api/cache-listing', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
-  const { id, listing } = req.body;
+  const { id, listing, chat_id } = req.body;
   if (!id || !listing) return res.status(400).json({ error: 'Missing id or listing' });
   try {
-    injectCachedListing(id, listing);
+    injectCachedListing(id, listing, chat_id ? String(chat_id) : null);
     res.json({ ok: true });
   } catch (err) {
     console.error('[api/cache-listing]', err.message);

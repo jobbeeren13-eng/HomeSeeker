@@ -142,10 +142,10 @@ function getCachedEntry(id) {
   return null;
 }
 
-function injectCachedListing(id, listing) {
+function injectCachedListing(id, listing, chatId = null) {
   const expiresAt = Date.now() + CACHE_TTL_MS;
-  listingCache.set(String(id), { listing, chatId: null, expiresAt });
-  try { persistCacheListing.run(String(id), JSON.stringify({ listing, chatId: null }), expiresAt, null, null, null); } catch (_) {}
+  listingCache.set(String(id), { listing, chatId, expiresAt });
+  try { persistCacheListing.run(String(id), JSON.stringify({ listing, chatId }), expiresAt, null, null, chatId ?? null); } catch (_) {}
 }
  
 // Server-side access check — always hits DB, never trusts cached state
