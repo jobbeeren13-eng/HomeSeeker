@@ -255,16 +255,17 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   /* Bottom padding clears the fixed green chat button (bottom:24px + 52px tall = needs ~76px,
      plus a comfortable buffer) now that the old bottom tab bar (which incidentally provided
      this clearance) is gone. */
-  .page-outer{padding:16px 16px 100px;flex-direction:column}
+  .page-outer{padding:16px 16px 100px;flex-direction:column;margin-top:0}
   .page-outer,.page-outer.analyse-mode{max-width:none}
   .main-col{max-width:none}
-  /* Property header scrolls away with the page on mobile instead of staying pinned. */
-  body.has-pc #property-card{position:static;margin-top:100px}
-  body.has-pc .prog-bar{top:56px}
-  body.has-pc .page-outer{margin-top:0}
+  /* Nothing stays pinned on mobile — logo header, hamburger bar and property header all
+     scroll away with the page instead of staying fixed. */
+  .hdr{position:static}
+  .prog-bar{position:static}
+  body.has-pc #property-card{position:static}
   .side-nav.mobile-menu-open{
-    display:flex;position:fixed;top:100px;left:0;right:0;
-    max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
+    display:flex;position:fixed;top:0;left:0;right:0;
+    max-height:100vh;overflow-y:auto;background:#0d1117;
     border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 12px 20px;
     z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
   }

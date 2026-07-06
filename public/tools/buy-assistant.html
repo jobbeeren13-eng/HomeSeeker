@@ -162,16 +162,17 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
   .side-nav{display:flex;width:260px;flex-shrink:0;padding-top:32px}
 }
 @media(max-width:767px){
-  .page-outer{flex-direction:column;max-width:none}
+  .page-outer{flex-direction:column;max-width:none;margin-top:0}
   .wrap{padding:20px 16px 100px;max-width:none}
   .row2{grid-template-columns:1fr}
-  /* Property header scrolls away with the page on mobile instead of staying pinned. */
-  body.has-lb .lbar{position:static;margin-top:100px}
-  body.has-lb .mobile-bar{top:56px}
-  body.has-lb .page-outer{margin-top:0}
+  /* Nothing stays pinned on mobile — logo header, hamburger bar and property header all
+     scroll away with the page instead of staying fixed. */
+  .hdr{position:static}
+  .mobile-bar{position:static}
+  body.has-lb .lbar{position:static}
   .side-nav.mobile-menu-open{
-    display:flex;position:fixed;top:100px;left:0;right:0;
-    max-height:calc(100vh - 100px);overflow-y:auto;background:#0d1117;
+    display:flex;position:fixed;top:0;left:0;right:0;
+    max-height:100vh;overflow-y:auto;background:#0d1117;
     border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 12px 20px;
     z-index:97;box-shadow:0 12px 28px rgba(0,0,0,0.45);
   }
