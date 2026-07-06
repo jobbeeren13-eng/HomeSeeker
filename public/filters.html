@@ -116,6 +116,14 @@
 
     #error-msg { margin-top: 12px; font-size: 14px; color: var(--red); display: none; padding: 12px 16px; background: rgba(226,75,74,0.1); border: 1px solid rgba(226,75,74,0.25); border-radius: var(--radius-sm); }
 
+    /* ── CONSENT ── */
+    .consent-block { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+    .consent-block input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green); flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+    .consent-block label { cursor: pointer; }
+    .consent-block a { color: var(--green); text-decoration: none; }
+    .consent-block a:hover { text-decoration: underline; }
+    #consent-error { margin-top: 8px; font-size: 13px; color: var(--red); display: none; }
+
     /* ── SUCCESS ── */
     #success-msg { display: none; text-align: center; padding: 60px 24px; }
     #success-msg.visible { display: block; }
@@ -459,6 +467,12 @@
       </div>
     </div>
 
+    <div class="consent-block">
+      <input type="checkbox" id="consent" name="consent" />
+      <label for="consent">I agree to the <a href="/terms" target="_blank" rel="noopener">Terms of Service</a> and consent to HomeSeeker processing the data I provide here — including my income, employment type, housing preferences and Telegram chat ID — to deliver the service, as described in the <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>. I understand my data may be processed outside the EU by the providers listed there.</label>
+    </div>
+    <div id="consent-error">Please agree to the Terms and Privacy Policy to continue.</div>
+
     <button type="submit" class="submit-btn" id="submit-btn">Save my filters &amp; start alerts →</button>
     <div id="error-msg"></div>
   </form>
@@ -617,6 +631,17 @@ if(localStorage.getItem('hs_co')==='1')setTimeout(hsT,300);
     const btn = document.getElementById('submit-btn');
     const errEl = document.getElementById('error-msg');
     errEl.style.display = 'none';
+
+    // Explicit consent to Terms + Privacy is required before we process any profile data.
+    const consentEl = document.getElementById('consent');
+    const consentErr = document.getElementById('consent-error');
+    if (!consentEl.checked) {
+      consentErr.style.display = 'block';
+      consentEl.focus();
+      return;
+    }
+    consentErr.style.display = 'none';
+
     btn.disabled = true;
     btn.textContent = 'Saving…';
 
