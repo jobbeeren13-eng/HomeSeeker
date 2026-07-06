@@ -154,6 +154,25 @@
   }
   .journey-badge svg{width:18px;height:18px;flex-shrink:0;color:var(--green)}
 
+  /* TELEGRAM */
+  .tg{background:linear-gradient(180deg,transparent,var(--bg-2) 40%,transparent)}
+  .tg-card{
+    max-width:820px;margin:0 auto;text-align:center;position:relative;
+    background:linear-gradient(180deg,var(--card-2),var(--card));
+    border:1px solid var(--green-line);border-radius:24px;padding:56px 40px;overflow:hidden;
+  }
+  .tg-ic{width:56px;height:56px;border-radius:16px;background:var(--green-soft);border:1px solid var(--green-line);display:grid;place-items:center;margin:0 auto 22px;color:var(--green);position:relative}
+  .tg-ic svg{width:26px;height:26px}
+  .tg-card h2{font-size:34px;font-weight:800;margin-bottom:14px;position:relative}
+  .tg-card>p{color:var(--tx-2);font-size:16px;max-width:520px;margin:0 auto;position:relative}
+  .tg-points{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:36px;text-align:left;position:relative}
+  .tg-point{display:flex;gap:11px;align-items:flex-start}
+  .tg-point svg{width:19px;height:19px;color:var(--green);flex-shrink:0;margin-top:2px}
+  .tg-point p{color:var(--tx-2);font-size:14px;line-height:1.55}
+  .tg-steps{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:34px;position:relative}
+  .tg-step{font-size:13px;font-weight:600;color:var(--tx-2);background:rgba(255,255,255,.03);border:1px solid var(--line-2);padding:10px 18px;border-radius:100px}
+  .tg-step b{color:var(--green);margin-right:6px}
+
   /* TOOLS */
   .tools-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:40px}
   .tools-tab{
@@ -195,6 +214,7 @@
   .smarter-steps{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:34px;position:relative}
   .smarter-pill{font-size:13px;font-weight:600;color:var(--tx-2);background:rgba(255,255,255,.03);border:1px solid var(--line-2);padding:10px 18px;border-radius:100px}
   .smarter-pill b{color:var(--green)}
+  .smarter-grow{color:var(--tx-3);font-size:13.5px;max-width:520px;margin:24px auto 0;position:relative}
 
   /* PRICING */
   .pricing-card{
@@ -260,6 +280,8 @@
     .sec-head h2{font-size:30px}
     .sec-head p{font-size:15.5px}
     .tools-grid{grid-template-columns:1fr}
+    .tg-card{padding:40px 24px}
+    .tg-points{grid-template-columns:1fr}
     .smarter-card{padding:40px 24px}
     .smarter-card h2{font-size:27px}
     .final h2{font-size:32px}
@@ -304,14 +326,14 @@
   <div class="glow glow-1"></div>
   <div class="glow glow-2"></div>
   <div class="wrap hero-in">
-    <span class="eyebrow"><span class="dot"></span>Funda · Kamernet · HousingAnywhere — monitored 24/7</span>
+    <span class="eyebrow"><span class="dot"></span>Funda · Kamernet · HousingAnywhere &amp; more — straight to Telegram</span>
     <h1>Find your home.<br><span class="accent">Win it.</span></h1>
     <p class="sub">HomeSeeker spots every new listing the second it appears — then Scout, your AI assistant, guides you from first match to signed contract. And it gets sharper with every outcome.</p>
     <div class="hero-ctas">
       <a href="#pricing" class="btn btn-primary btn-lg">Start free trial →</a>
       <a href="#journey" class="btn btn-ghost btn-lg">See how it works</a>
     </div>
-    <p class="trust"><b>7-day free trial</b> · Cancel anytime · Instant setup</p>
+    <p class="trust"><b>7-day free trial</b> · Cancel anytime · Set up in under 2 minutes</p>
 
     <div class="hero-mock">
       <div class="mock-src"><span class="pin">📍</span> Funda · Amsterdam</div>
@@ -345,7 +367,7 @@
         <div class="step-card">
           <span class="step-phase">Find</span>
           <h3>Set your filters, we watch</h3>
-          <p>Tell HomeSeeker your city, budget and profile. We monitor all three platforms around the clock and send new listings to Telegram the moment they go live — each with your personal Application Score.</p>
+          <p>Tell HomeSeeker your city, budget and profile. We monitor Funda, Kamernet, HousingAnywhere and more around the clock and send new listings to Telegram the moment they go live — each with your personal Application Score.</p>
         </div>
       </div>
       <div class="step reveal">
@@ -369,6 +391,36 @@
     <div class="journey-badge reveal">
       <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h7l-1 8 11-14h-7l1-6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
       Scout gets sharper with every listing, letter and outcome across HomeSeeker.
+    </div>
+  </div>
+</section>
+
+<!-- TELEGRAM -->
+<section class="sec tg">
+  <div class="wrap">
+    <div class="tg-card reveal">
+      <div class="tg-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h2>Delivered to Telegram, not your inbox.</h2>
+      <p>Your alerts land in a dedicated space — never lost in a crowded inbox or buried between personal messages.</p>
+      <div class="tg-points">
+        <div class="tg-point">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p>Alerts arrive in Telegram — completely separate from your personal email and WhatsApp. No listings buried between personal messages, no noise.</p>
+        </div>
+        <div class="tg-point">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p>Telegram is free and takes under 2 minutes to set up.</p>
+        </div>
+        <div class="tg-point">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p>No separate account needed on Funda, Kamernet or HousingAnywhere.</p>
+        </div>
+      </div>
+      <div class="tg-steps">
+        <span class="tg-step"><b>1</b>Connect Telegram</span>
+        <span class="tg-step"><b>2</b>Set your filters</span>
+        <span class="tg-step"><b>3</b>Start receiving alerts</span>
+      </div>
     </div>
   </div>
 </section>
@@ -500,6 +552,7 @@
         <span class="smarter-pill">Outcome <b>learning</b></span>
         <span class="smarter-pill">Landlord <b>pattern detection</b></span>
       </div>
+      <p class="smarter-grow">And HomeSeeker itself keeps growing — more source platforms and more tools are added on an ongoing basis, on top of an AI that gets sharper with every listing.</p>
     </div>
   </div>
 </section>
@@ -516,7 +569,7 @@
       <div class="price-tag"><span class="amt">€9,99</span><span class="per">/month</span></div>
       <div class="price-sub">incl. 21% VAT · 7-day free trial · cancel anytime</div>
       <ul class="price-feats">
-        <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Real-time alerts across Funda, Kamernet &amp; HousingAnywhere</li>
+        <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Real-time alerts across Funda, Kamernet, HousingAnywhere &amp; more</li>
         <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Application Score &amp; Market Value Score on every listing</li>
         <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Full AI Rental &amp; Buyer Assistant, guided by Scout</li>
         <li><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Tailored letters, viewing prep &amp; negotiation scripts</li>
@@ -538,7 +591,11 @@
     <div class="faq">
       <div class="faq-item">
         <div class="faq-q">Which platforms does HomeSeeker monitor?<span class="chev">▾</span></div>
-        <div class="faq-a"><p>Funda, Kamernet and HousingAnywhere, 24/7 across 19 Dutch cities — for both renting and buying. New listings reach your Telegram the moment they go live.</p></div>
+        <div class="faq-a"><p>Funda, Kamernet and HousingAnywhere today, with more source platforms added on an ongoing basis — 24/7 across 19 Dutch cities, for both renting and buying. New listings reach your Telegram the moment they go live.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Why Telegram and not email?<span class="chev">▾</span></div>
+        <div class="faq-a"><p>Telegram keeps new listings completely separate from your personal email and WhatsApp, so an alert never gets buried between other messages. It also delivers instantly the moment a listing goes live, and takes under 2 minutes to connect — no separate account needed.</p></div>
       </div>
       <div class="faq-item">
         <div class="faq-q">What does the Application Score mean?<span class="chev">▾</span></div>
@@ -554,7 +611,7 @@
       </div>
       <div class="faq-item">
         <div class="faq-q">Can I cancel anytime?<span class="chev">▾</span></div>
-        <div class="faq-a"><p>Yes. Start with a 7-day free trial and cancel whenever you like — no lock-in, instant setup.</p></div>
+        <div class="faq-a"><p>Yes. Start with a 7-day free trial and cancel whenever you like — no lock-in, set up in under 2 minutes.</p></div>
       </div>
     </div>
   </div>
