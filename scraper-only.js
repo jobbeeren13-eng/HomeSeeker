@@ -465,7 +465,16 @@ app.post('/api/support-chat', async (req, res) => {
 app.listen(PORT, () => console.log(`[match-now] Listening on port ${PORT}`));
 
 // ── Boot: run once immediately then on schedule ───────────────────────────
+// SHUTDOWN is FAIL-SAFE PAUSED: unless SHUTDOWN=false, the scraping cron and the initial scrape do
+// NOT run — so even if pm2 restarts this process (reboot, `pm2 resurrect`), no scraping resumes.
+// The Express server above stays up on purpose: it still receives the off-site DB backup
+// (/api/backup-upload) and serves the AI generation proxies. To resume scraping: set SHUTDOWN=false.
+const SHUTDOWN = String(process.env.SHUTDOWN ?? 'true').toLowerCase() !== 'false';
 (async () => {
+  if (SHUTDOWN) {
+    console.warn('[shutdown] Scraper PAUSED — no cron, no scraping, no alerts. Express server stays up to receive backups. Set SHUTDOWN=false to resume.');
+    return;
+  }
   await new Promise(r => setTimeout(r, 2000));
   cron.schedule('*/30 * * * *', runScrapeAndAlert);
   console.log('[cron] Scraper running every 30 minutes');

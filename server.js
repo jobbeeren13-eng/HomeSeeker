@@ -46,6 +46,16 @@ const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
+// ── SHUTDOWN / paused mode ────────────────────────────────────────────────
+// HomeSeeker is being wound down. This flag is FAIL-SAFE PAUSED: unless SHUTDOWN is explicitly set
+// to "false", the server boots in a paused state — no proactive Telegram/email outbound (daily
+// job), no Telegram bot, no new Stripe checkouts, and all tool/AI /api endpoints return 503.
+// What stays up on purpose: /health (Railway healthcheck), /webhook/stripe (existing-subscriber
+// consistency — we are NOT cancelling anyone), /admin/* (backup + status), static pages, and the
+// daily DB backup job. Nothing is deleted. To resume the service later: set SHUTDOWN=false.
+const SHUTDOWN = String(process.env.SHUTDOWN ?? 'true').toLowerCase() !== 'false';
+if (SHUTDOWN) console.warn('[shutdown] PAUSED mode active — outbound jobs, Telegram bot, checkout and tool endpoints are OFF. Set SHUTDOWN=false to resume.');
+
 // Simple in-memory rate limiter for /api/filters (10 requests per IP per hour)
 const filterRateLimits = new Map();
 function checkFilterRateLimit(ip) {
@@ -167,6 +177,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// SHUTDOWN: take the tool/AI API surface offline (503) while keeping /admin/* (backup + status)
+// reachable. Infrastructure lives outside /api (/health, /webhook/*, static pages) so it is
+// unaffected. Pages still render; their API calls return a clean 503 "temporarily unavailable".
+if (SHUTDOWN) {
+  app.use('/api', (req, res, next) => {
+    if (req.path.startsWith('/admin')) return next();
+    res.set('Retry-After', '3600');
+    return res.status(503).json({ error: 'HomeSeeker is temporarily unavailable.' });
+  });
+}
+
 // FASE 2: these standalone AI tools were merged into tabs inside rent-assistant.html /
 // buy-assistant.html (Scout). Old bookmarks and Telegram links still work — 301 redirect to the
 // matching tab, forwarding chat_id/listing so the assistant can still prefill and pass the paywall.
@@ -220,6 +241,11 @@ app.get('/tools/agent-scripts', redirectToTab('/tools/buy-assistant', 11));
 app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 
 app.get('/subscribe', async (req, res) => {
+  // SHUTDOWN: stop billing new customers — no new checkout sessions are created.
+  if (SHUTDOWN) {
+    res.set('Retry-After', '3600');
+    return res.status(503).type('html').send('<!doctype html><meta charset="utf-8"><title>Temporarily unavailable</title><body style="font-family:system-ui,sans-serif;max-width:520px;margin:80px auto;padding:0 24px;text-align:center;color:#222"><h1>Temporarily unavailable</h1><p>New sign-ups are paused right now. Please check back later.</p></body>');
+  }
   if (!process.env.STRIPE_PRICE_ID || !process.env.STRIPE_SECRET_KEY) {
     return res.status(500).send('Stripe is not configured. Contact support.');
   }
@@ -303,6 +329,7 @@ app.post('/api/filters', async (req, res) => {
 
 app.post('/webhook/telegram', (req, res) => {
   res.sendStatus(200);
+  if (SHUTDOWN) return; // paused: no bot, no outbound — swallow any residual Telegram updates
   try { processWebhookUpdate(req.body); } catch (err) { console.error('[webhook/telegram]', err.message); }
 });
 
@@ -1610,7 +1637,8 @@ async function runDailyJob() {
   } catch (e) { console.error('[daily] review request step error:', e.message); }
 }
 
-setInterval(runDailyJob, 60 * 60 * 1000);
+if (!SHUTDOWN) setInterval(runDailyJob, 60 * 60 * 1000);
+else console.log('[shutdown] Daily job (trial reminders / no-alerts notices / review requests) disabled');
 
 let lastBackupStatus = 'never';
 let lastOffsiteBackupAt = null;
@@ -1660,9 +1688,24 @@ async function runDbBackup() {
   }
 }
 
-// Run immediately on boot, then every 24 hours
+// Run immediately on boot, then every 24 hours. The boot run means a deploy (incl. the shutdown
+// deploy) always produces a fresh local backup + off-site push to Hetzner.
 runDbBackup();
 setInterval(runDbBackup, 24 * 60 * 60 * 1000);
+
+// On-demand backup trigger — used during shutdown to force a final off-site copy and confirm it.
+app.post('/admin/run-backup', async (req, res) => {
+  const adminKey = req.headers['x-admin-key'];
+  if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  await runDbBackup();
+  res.json({
+    ok: lastBackupStatus === 'ok',
+    backupPath: path.join(path.dirname(dbPath), 'homeseeker_backup.db'),
+    lastBackupAt, lastBackupStatus,
+    lastOffsiteBackupAt, lastOffsiteBackupStatus,
+    ts: new Date().toISOString(),
+  });
+});
 
 app.get('/admin/backup-status', (req, res) => {
   const adminKey = req.headers['x-admin-key'];
@@ -1700,10 +1743,13 @@ app.get('/admin/health', (req, res) => {
 
 // ── Boot ─────────────────────────────────────
 const useWebhook = IS_PRODUCTION && !!process.env.TELEGRAM_BOT_TOKEN;
-const bot = createBot(useWebhook);
+// SHUTDOWN: do not start the Telegram bot at all — no polling, no webhook registration, no
+// outbound messages. Alerts from the scraper are stopped separately (pm2 stop on Hetzner).
+const bot = SHUTDOWN ? null : createBot(useWebhook);
 if (bot) setAdminBot(bot);
+if (SHUTDOWN) console.log('[shutdown] Telegram bot disabled (no polling/webhook, no outbound messages)');
 
-if (useWebhook) {
+if (!SHUTDOWN && useWebhook) {
   const TelegramBot = require('node-telegram-bot-api');
   const tmpBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
   tmpBot.setWebHook(`${BASE_URL}/webhook/telegram`).then(() => {
