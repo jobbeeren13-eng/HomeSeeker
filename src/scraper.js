@@ -310,6 +310,11 @@ function parseHits(hits, city, transactionType) {
 }
 
 let lastFundaWatchdogAlertAt = 0;
+// Raw Funda hits (before dedup) seen across the current scrapeFunda() cycle. newCount (deduped
+// new listings) is a poor failure signal — many healthy cycles legitimately add 0 new listings.
+// If the *entire* cycle (all cities × both offering types) returns 0 raw hits, that is a strong
+// signal that the template id / index changed and Funda is silently returning empty result sets.
+let fundaCycleRawHits = 0;
 
 async function fetchFundaCity(city, transactionType) {
   const offeringType = transactionType === 'huur' ? 'rent' : 'buy';
@@ -324,18 +329,24 @@ async function fetchFundaCity(city, transactionType) {
     if (item?.error) {
       const reason = item.error.reason || item.error.type || 'unknown';
       console.error(`[api] ${city} ${transactionType}: query error — ${reason}`);
-      const now = Date.now();
-      if (now - lastFundaWatchdogAlertAt > 30 * 60 * 1000) {
-        lastFundaWatchdogAlertAt = now;
-        sendAdminAlert(`Funda search query failing: ${reason}\nCity: ${city} ${transactionType}\nThis usually means Funda's search template/index changed again — check the template id in scraper.js.`);
-      }
+      maybeAlertFundaBroken(`Funda search query failing: ${reason}\nCity: ${city} ${transactionType}\nThis usually means Funda's search template/index changed again — check SEARCH_TEMPLATE_ID (${SEARCH_TEMPLATE_ID}) in scraper.js.`);
       return [];
     }
     const hits = item?.hits?.hits || [];
+    fundaCycleRawHits += hits.length;
     return parseHits(hits, city, transactionType);
   } catch (err) {
     console.error(`[api] Failed ${city} ${transactionType}: ${err.message}`);
     return [];
+  }
+}
+
+// Throttled admin alert (max once per 30 min) for Funda-specific breakage — template/index change.
+function maybeAlertFundaBroken(msg) {
+  const now = Date.now();
+  if (now - lastFundaWatchdogAlertAt > 30 * 60 * 1000) {
+    lastFundaWatchdogAlertAt = now;
+    sendAdminAlert(msg);
   }
 }
 
@@ -403,6 +414,7 @@ async function fetchKamernetDescription(url) {
 async function scrapeFunda() {
   const startTime = Date.now();
   let newCount = 0;
+  fundaCycleRawHits = 0;
   const needsDesc = [];
   const needsExternalEnrich = [];
   console.log(`[scraper] Starting funda API (${CITIES.length * 2} searches)…`);
@@ -475,7 +487,14 @@ async function scrapeFunda() {
   const runtime = Date.now() - startTime;
   scraperStats.sourceCounts.funda += newCount;
   scraperStats.lastCycleSources.funda = newCount;
-  console.log(`[scraper] funda API done — ${newCount} new listings in ${Math.round(runtime / 1000)}s`);
+  console.log(`[scraper] funda API done — ${newCount} new listings (${fundaCycleRawHits} raw hits) in ${Math.round(runtime / 1000)}s`);
+  // Template/index-change detector: 0 raw hits across every city AND both offering types is not a
+  // plausible real-world state (Funda always has listings in the major cities). It means the search
+  // template returned empty result sets — alert the admin immediately rather than waiting for the
+  // slower generic consecutive-zero watchdog.
+  if (fundaCycleRawHits === 0) {
+    maybeAlertFundaBroken(`Funda returned 0 results across all ${CITIES.length} cities (rent + buy) this cycle.\nLikely a template-id/index mismatch — verify SEARCH_TEMPLATE_ID (${SEARCH_TEMPLATE_ID}) still matches Funda's current search API.`);
+  }
   recordScraperRun(newCount, runtime);
   return newCount;
 }

@@ -493,6 +493,14 @@ function markStripeEventProcessed(eventId) {
   return true;
 }
 
+// Un-mark an event so a Stripe retry reprocesses it. Used when processing failed *after* the
+// event was marked processed (e.g. user creation threw after a successful checkout) — otherwise
+// the idempotency guard would treat the retry as a duplicate and the paid user would be lost.
+const deleteProcessedStripeEvent = db.prepare('DELETE FROM processed_stripe_events WHERE event_id = ?');
+function unmarkStripeEventProcessed(eventId) {
+  try { deleteProcessedStripeEvent.run(eventId); } catch (_) {}
+}
+
 const getFavorites = db.prepare('SELECT * FROM favorites WHERE chat_id = ? ORDER BY added_at DESC');
 const addFavorite = db.prepare('INSERT OR REPLACE INTO favorites (chat_id, listing_url, listing_json) VALUES (?, ?, ?)');
 const removeFavorite = db.prepare('DELETE FROM favorites WHERE chat_id = ? AND listing_url = ?');
@@ -642,7 +650,7 @@ module.exports = {
   getRecentListings,
   getFavorites, addFavorite, removeFavorite,
   checkAndIncrementAiUsage, purgeOldAiUsage,
-  markStripeEventProcessed, purgeOldProcessedStripeEvents,
+  markStripeEventProcessed, unmarkStripeEventProcessed, purgeOldProcessedStripeEvents,
   getApplicationTracker, upsertApplicationStatus, removeApplicationStatus,
   getTrackerOutcomesWithScores, getTrackerOutcomesWithScoresForChat, countApplicationTrackerAll, insertOutcomeSnapshot,
   updateLastAlertSentAt, updateLastNoAlertsNotificationAt, updateLastReviewRequestAt,

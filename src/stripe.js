@@ -1,5 +1,5 @@
 const Stripe = require('stripe');
-const { createUserByCustomerId, setUserPaidByCustomerId, cancelUserByStripe, markStripeEventProcessed } = require('./database');
+const { createUserByCustomerId, setUserPaidByCustomerId, cancelUserByStripe, markStripeEventProcessed, unmarkStripeEventProcessed } = require('./database');
 const { sendWelcomeEmail, sendCancellationEmail, maskEmail } = require('./email');
  
 let _stripe = null;
@@ -62,8 +62,21 @@ async function handleWebhook(payload, sig) {
  
     if (customerId) {
       const naam = session.customer_details?.name || '';
-      createUserByCustomerId.run(naam, email || '', customerId, subscriptionId, Date.now());
-      console.log(`[stripe] Trial started for customer ${customerId} (${maskEmail(email)})`);
+      try {
+        // chat_id is UNKNOWN at checkout time — the user only links their Telegram later via the
+        // /start deep-link (see linkChatToCustomer). It must be null here. Passing the customer's
+        // name into the chat_id PRIMARY KEY (the previous bug) both corrupted the row and made the
+        // Telegram activation reject the user with "already used on another account" (telegram.js),
+        // and collided on the PK for empty/duplicate names — silently dropping paid users.
+        createUserByCustomerId.run(null, email || '', customerId, subscriptionId, Date.now());
+        console.log(`[stripe] Trial started for customer ${customerId} (${maskEmail(email)})`);
+      } catch (err) {
+        // A paid user we must not lose. Un-mark the event so Stripe's retry reprocesses it, and
+        // log loudly (recoverable via POST /api/admin/fix-user with the customer id + chat_id).
+        console.error(`[stripe] CRITICAL: user creation failed after successful checkout for customer ${customerId} (${maskEmail(email)}) sub=${subscriptionId}: ${err.message}`);
+        unmarkStripeEventProcessed(event.id);
+        throw new Error(`User creation failed for ${customerId}: ${err.message}`);
+      }
       if (email) {
         sendWelcomeEmail(email, naam, customerId).catch(err => console.error('[email] Failed to send welcome email:', err));
       }

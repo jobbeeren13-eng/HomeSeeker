@@ -144,9 +144,20 @@ function getCachedEntry(id) {
 }
 
 function injectCachedListing(id, listing, chatId = null) {
+  const key = String(id);
+  const cid = (chatId === undefined || chatId === null || chatId === '') ? null : String(chatId);
+  // A cache entry with a null chatId is unusable for the paywall — the AI Letter/Assistant
+  // buttons derive the paying user from this chatId, so a null owner blocks the paid user
+  // (the historical "all paid users blocked" bug). Never cache or overwrite with a null chatId.
+  if (cid === null) {
+    const existing = listingCache.get(key);
+    if (existing && existing.chatId) return; // keep the good entry — do not clobber it
+    console.warn(`[cache] injectCachedListing skipped: null/empty chatId for id=${key}`);
+    return;
+  }
   const expiresAt = Date.now() + CACHE_TTL_MS;
-  listingCache.set(String(id), { listing, chatId, expiresAt });
-  try { persistCacheListing.run(String(id), JSON.stringify({ listing, chatId }), expiresAt, null, null, chatId ?? null); } catch (_) {}
+  listingCache.set(key, { listing, chatId: cid, expiresAt });
+  try { persistCacheListing.run(key, JSON.stringify({ listing, chatId: cid }), expiresAt, null, null, cid); } catch (_) {}
 }
  
 // Server-side access check — always hits DB, never trusts cached state

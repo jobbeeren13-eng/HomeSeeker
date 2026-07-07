@@ -801,8 +801,15 @@ app.post('/api/cache-listing', (req, res) => {
   if (!adminKey || adminKey !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
   const { id, listing, chat_id } = req.body;
   if (!id || !listing) return res.status(400).json({ error: 'Missing id or listing' });
+  // chat_id is required: the cached entry is what the paywalled AI buttons resolve the paying
+  // user from. A missing chat_id here means a null-owner entry that would block the paid user —
+  // reject it loudly rather than caching a broken entry (the historical paid-user-blocked bug).
+  if (!chat_id) {
+    console.warn(`[api/cache-listing] Rejected cache write with no chat_id (id=${id})`);
+    return res.status(400).json({ error: 'chat_id required' });
+  }
   try {
-    injectCachedListing(id, listing, chat_id ? String(chat_id) : null);
+    injectCachedListing(id, listing, String(chat_id));
     res.json({ ok: true });
   } catch (err) {
     console.error('[api/cache-listing]', err.message);
