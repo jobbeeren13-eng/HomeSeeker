@@ -92,6 +92,8 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .btn-main{width:100%;height:50px;background:#00c896;color:#0a0a0a;font-family:inherit;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-main:hover:not(:disabled){background:#00b386}
 .btn-main:disabled{opacity:.4;cursor:not-allowed}
+.btn-sec{width:100%;height:50px;background:transparent;color:#f2f2f7;font-family:inherit;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,0.16);border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn-sec:hover{border-color:rgba(0,200,150,0.5);background:rgba(0,200,150,0.06)}
 .spin{width:14px;height:14px;border:2.5px solid rgba(10,10,10,0.3);border-top-color:#0a0a0a;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
 .errtxt{color:#ff6b6b;font-size:12px;margin-top:8px;display:none}
@@ -554,6 +556,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
           <span class="wc-badge wc-green" id="wc-badge" style="display:none"></span>
         </div>
         <button class="btn-main" id="lt-copy" onclick="ltCopy()" style="margin-bottom:8px">Copy letter</button>
+        <a class="btn-sec" id="lt-open" href="#" target="_blank" rel="noopener" style="display:none;margin-bottom:8px">Open listing to apply</a>
         <div style="display:flex;gap:20px;justify-content:center;width:100%;margin-bottom:4px">
           <button class="btn-link" onclick="ltModify('shorter')">Make it shorter</button>
           <button class="btn-link" onclick="ltModify('personal')">Make it more personal</button>
@@ -1111,7 +1114,7 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 </div>
 
 <script>
-let chatId=null,listingContext='',cacheId=null,propType='';
+let chatId=null,listingContext='',cacheId=null,propType='',listingUrl=null;
 let _lastListing=null,_lastIntel=null;
 const lastResp={};
 const API_TAB_MAP={2:'3'};
@@ -1202,6 +1205,7 @@ function getParams(){
     fetch(`/api/letter-data?id=${encodeURIComponent(cacheId)}`).then(r=>r.ok?r.json():null).then(d=>{
       if(!d||!d.listing)return;
       const l=d.listing;
+      listingUrl=(l.url&&/^https?:\/\//.test(l.url))?l.url:null;
       listingContext=[l.address,l.city,l.price,l.description].filter(Boolean).join(' - ');
       showLbar(l);
       renderAnalyse(l,null);
@@ -1489,6 +1493,8 @@ function showLetter(text){
   document.getElementById('lt-skel').style.display='none';
   const box=document.getElementById('lt-box');if(box)box.style.display='block';
   const el=document.getElementById('lt-text');if(el)el.textContent=text;
+  const openBtn=document.getElementById('lt-open');
+  if(openBtn){if(listingUrl){openBtn.href=listingUrl;openBtn.style.display='';}else{openBtn.style.display='none';}}
   document.getElementById('lt-actions').classList.add('on');
   const scoutOut=document.getElementById('scout-lt-out');if(scoutOut)scoutOut.style.display='flex';
   wcBadge(text);
